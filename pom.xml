@@ -16,7 +16,7 @@
         <name>dianping</name>
         <url>http://www.dianping.com/</url>
     </organization>
-    <inceptionYear>2012.06</inceptionYear>
+    <inceptionYear>2012.06.04</inceptionYear>
 
     <modules>
         <module>swallow-common</module>
@@ -132,6 +132,11 @@
                 <groupId>com.dianping.hawk</groupId>
                 <artifactId>hawk-client</artifactId>
                 <version>0.2.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.netty</groupId>
+                <artifactId>netty</artifactId>
+                <version>3.2.7.Final</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
