@@ -1,3 +1,17 @@
+# should not ignored #
+!*.java
+!*.gitignore
+!*.xml
+!*.jsp
+!*.html
+!*.htm
+!*.js
+!*.css
+!*.jpg
+!*.gif
+!*.properties
+
+
 # Compiled source #
 ###################
 *.com
@@ -41,4 +55,8 @@ Thumbs.db
 ######################
 .project
 .classpath
-org.eclipse.jdt.core.prefs
+*/.settings/
+
+# temp folder #
+######################
+*/target/

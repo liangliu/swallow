@@ -33,5 +33,10 @@
             <artifactId>file-queue</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.dianping.swallow</groupId>
+            <artifactId>${swallow-common.aid}</artifactId>
+            <version>${swallow-common.version}</version>
+        </dependency>
     </dependencies>
 </project>
