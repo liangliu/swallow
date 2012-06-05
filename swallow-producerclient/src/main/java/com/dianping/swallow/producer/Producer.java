@@ -13,7 +13,7 @@
  * accordance with the terms of the license agreement you entered into
  * with dianping.com.
  */
-package com.dianping.swallow.impl;
+package com.dianping.swallow.producer;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -37,7 +37,7 @@ import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
 import org.jboss.netty.util.HashedWheelTimer;
 import org.jboss.netty.util.Timer;
 
-import com.dianping.swallow.Destination;
+import com.dianping.swallow.producer.Destination;
 
 /**
  * TODO Comment of Producer
