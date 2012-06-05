@@ -29,7 +29,7 @@ import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.serialization.ObjectDecoder;
 import org.jboss.netty.handler.codec.serialization.ObjectEncoder;
 
-import com.dianping.swallow.MQService;
+//import com.dianping.swallow.MQService;
 
 /**
  * TODO Comment of SwallowP
