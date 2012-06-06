@@ -4,7 +4,9 @@ import org.json.simple.JSONObject;
 
 public class JsonMessage extends AbstractMessage<JSONObject> {
 
-   private JSONObject content;
+   private static final long serialVersionUID = -4756799841621304498L;
+
+   private JSONObject        content;
 
    public JSONObject getContent() {
       return content;

@@ -1,21 +1,24 @@
 package com.dianping.swallow.common.message;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Properties;
 
-public abstract class AbstractMessage<T> implements Message<T> {
+public abstract class AbstractMessage<T> implements Message<T>, Serializable {
 
-   private Date generatedTime;
+   private static final long serialVersionUID = -7019466307875540596L;
 
-   private Long messageId;
+   private Date              generatedTime;
 
-   private Properties properties = new Properties();
+   private Long              messageId;
 
-   private int retryCount;
+   private Properties        properties       = new Properties();
 
-   private String version;
+   private int               retryCount;
 
-   private ContentType contentType;
+   private String            version;
+
+   private ContentType       contentType;
 
    public Date getGeneratedTime() {
       return generatedTime;
@@ -63,6 +66,13 @@ public abstract class AbstractMessage<T> implements Message<T> {
 
    public void setProperties(Properties properties) {
       this.properties = properties;
+   }
+
+   @Override
+   public String toString() {
+      return this.getClass().getName() + " [generatedTime=" + generatedTime + ", messageId=" + messageId
+            + ", properties=" + properties + ", retryCount=" + retryCount + ", version=" + version + ", contentType="
+            + contentType + ", content=" + this.getContent() + "]";
    }
 
 }

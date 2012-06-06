@@ -25,7 +25,7 @@ import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 
 import com.caucho.hessian.io.Hessian2Output;
 import com.caucho.hessian.io.SerializerFactory;
-import com.google.protobuf.Message;
+import com.dianping.swallow.common.message.Message;
 
 /**
  * 用法:
