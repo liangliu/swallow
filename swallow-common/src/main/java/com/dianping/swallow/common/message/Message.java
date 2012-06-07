@@ -19,11 +19,9 @@ public interface Message<T> {
 
    T getContent();
 
-   public enum ContentType {
-      /** 普通Java对象 */
+   public static enum ContentType {
+      /** 普通Bean对象 */
       BeanMessage(),
-      /** Json对象 */
-      JsonMessage(),
       /** 文本对象 */
       TextMessage(),
       /** 字节数组对象 */
