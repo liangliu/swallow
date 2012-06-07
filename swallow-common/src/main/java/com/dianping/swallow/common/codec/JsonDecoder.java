@@ -23,7 +23,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
 
 import com.dianping.swallow.common.message.BeanMessage;
-import com.dianping.swallow.common.message.BytesMessage;
+import com.dianping.swallow.common.message.ByteMessage;
 import com.dianping.swallow.common.message.JsonBinder;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.TextMessage;
@@ -63,7 +63,7 @@ public class JsonDecoder extends OneToOneDecoder {
       if (contentTypeOrdinal == Message.ContentType.BeanMessage.ordinal()) {
          message = jsonBinder.fromJson(json, BeanMessage.class);
       } else if (contentTypeOrdinal == Message.ContentType.BytesMessage.ordinal()) {
-         message = jsonBinder.fromJson(json, BytesMessage.class);
+         message = jsonBinder.fromJson(json, ByteMessage.class);
       } else if (contentTypeOrdinal == Message.ContentType.TextMessage.ordinal()) {
          message = jsonBinder.fromJson(json, TextMessage.class);
       } else {

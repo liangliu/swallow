@@ -21,6 +21,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.dianping.swallow.common.example.message.DemoBean;
 import com.dianping.swallow.common.message.BeanMessage;
+import com.dianping.swallow.common.message.ByteMessage;
 import com.dianping.swallow.common.message.TextMessage;
 
 @SuppressWarnings("unused")
@@ -40,6 +41,10 @@ public class EchoServerHandler extends SimpleChannelUpstreamHandler {
       //      demoBean.setA(22);
       //      demoBean.setB("hello");
       //      m.writeBeanAsJsonString(demoBean);
+
+      //3 测试ByteMessage
+//      ByteMessage m = new ByteMessage();
+//      m.setContent(new byte[] { 1, 2, 3, 4, 5 });
 
       e.getChannel().write(m);
    }
