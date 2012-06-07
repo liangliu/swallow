@@ -56,7 +56,7 @@ public abstract class AbstractMessage<T> implements Message<T>, Serializable {
       return contentType;
    }
 
-   public void setContentType(ContentType contentType) {
+   protected void setContentType(ContentType contentType) {
       this.contentType = contentType;
    }
 
@@ -68,11 +68,15 @@ public abstract class AbstractMessage<T> implements Message<T>, Serializable {
       this.properties = properties;
    }
 
+   public abstract void setContent(T content);
+
    @Override
    public String toString() {
-      return this.getClass().getName() + " [generatedTime=" + generatedTime + ", messageId=" + messageId
-            + ", properties=" + properties + ", retryCount=" + retryCount + ", version=" + version + ", contentType="
-            + contentType + ", content=" + this.getContent() + "]";
+      return String
+            .format(
+                  "%s [generatedTime=%s, messageId=%s, properties=%s, retryCount=%s, version=%s, contentType=%s, content=%s]",
+                  this.getClass().getName(), generatedTime, messageId, properties, retryCount, version, contentType,
+                  getContent());
    }
 
 }

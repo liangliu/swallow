@@ -6,6 +6,10 @@ public class BytesMessage extends AbstractMessage<byte[]> {
 
    private byte[]            content;
 
+   public BytesMessage() {
+      this.setContentType(Message.ContentType.BytesMessage);
+   }
+
    @Override
    public byte[] getContent() {
       return content;
