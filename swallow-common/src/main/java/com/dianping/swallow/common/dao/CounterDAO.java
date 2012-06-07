@@ -6,4 +6,5 @@ public interface CounterDAO {
 	
 	BSONTimestamp getMaxTimeStamp(String topicId, String consumerId);
 	
+	int addCounter(String topicId, String consumerId);
 }
