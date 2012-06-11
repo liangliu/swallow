@@ -4,6 +4,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import com.dianping.swallow.producer.impl.Producer;
+
 /**
  * Unit test for simple App.
  */
@@ -35,4 +37,29 @@ public class AppTest
     {
         assertTrue( true );
     }
+    
+    private class task implements Runnable{
+    	String content;
+    	public task(String content){
+    		this.content = content;
+    	}
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+		Producer ps = Producer.getInstance();
+		System.out.println(ps.send(content));
+		}
+    }
+    
+    public void doTest(){
+    	for(int i = 0; i < 10; i++){
+    		String newContent = "NO: " + i;
+    		Thread td = new Thread(new task(newContent));
+    		td.start();
+    	}
+    }
+    
+    public static void main(String[] args) {
+    	new AppTest("111").doTest();
+	}
 }
