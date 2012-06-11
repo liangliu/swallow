@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+	<bean class="com.dianping.dpsf.spring.ServiceRegistry" init-method="init">
+		<!-- 服务端暴露的对外服务端口 -->
+		<property name="port" value="4000"/>
+		<!-- 服务端暴露的service集合 -->
+		<property name="services">
+			<map>
+				<!-- key对应serviceName(与客户端配置对应,定位具体service实例), value-ref为该service实例的实现-->
+				<entry key="getStr" value-ref="producerServer"/>
+			</map>
+		</property>
+	</bean>
+
+	<!-- 定义具体service的本地实例 -->
+	<bean id="producerServer" class="com.dianping.swallow.producerserver.ProducerServerDemo">
+		<property name="str" value="you are a little pig."></property>
+	</bean>
+</beans>

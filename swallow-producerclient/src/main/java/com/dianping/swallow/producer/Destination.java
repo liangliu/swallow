@@ -68,5 +68,4 @@ public class Destination implements Serializable{
 	public boolean isTopic() {
 		return type == Type.TOPIC;
 	}
-
 }

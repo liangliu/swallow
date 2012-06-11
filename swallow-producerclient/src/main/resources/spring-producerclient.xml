@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+	
+	<bean id="server" class="com.dianping.dpsf.spring.ProxyBeanFactory" init-method="init">
+		<!-- 该远程service在服务端定义的serviceName,需要一一对应上 -->
+		<property name="serviceName" value="getStr"/>
+		<!-- 该远程service的接口类, 用于本地生成stub -->
+		<property name="iface" value="com.dianping.swallow.producer.impl.ProducerServer"/>
+		<!-- 远程通信中使用的序列化协议(支持java, hessian, protobuf, thrift, 推荐使用hessian, 若追求极端性能,则可以考虑使用protobuf或thrift, 但DTO对象维护起来较为繁琐, 每次改动都需要从新生成) -->
+		<property name="serialize" value="hessian"/>
+		<!-- 该service调用的方式,分为sync(同步),oneway(单向调用,没有响应),future(异步调用), callback(异步回调) -->
+		<property name="callMethod" value="sync"/>
+		<!-- service调用的超时时间,超过该时间,视作超时,抛出NetTimeoutException异常 -->
+		<property name="timeout" value="5000"/>
+		<!-- 目前版本支持lion时,用isTest作为标记,标记是否允许本地配置hosts, 而非从lion上获取hosts配置 -->
+		<property name="isTest" value="true"/>
+		<!-- 本地配置hosts列表,为提供该service服务的服务器列表,搭配服务端口,多个以逗号间隔 -->
+		<property name="hosts" value="127.0.0.1:4000"/>
+		<!-- 本地配置上述hosts列表各服务端调用的权重, 以逗号间隔,个数需与host个数相同 -->
+		<property name="weight" value="1"/>
+	</bean>
+</beans>

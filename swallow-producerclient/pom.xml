@@ -38,5 +38,11 @@
             <artifactId>${swallow-common.aid}</artifactId>
             <version>${swallow-common.version}</version>
         </dependency>
+        <dependency>
+			<groupId>com.dianping.dpsf</groupId>
+			<artifactId>dpsf-net</artifactId>
+			<version>1.4.5</version>
+		</dependency>
+        
     </dependencies>
 </project>
