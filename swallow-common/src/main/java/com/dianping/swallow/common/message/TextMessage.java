@@ -6,11 +6,16 @@ public class TextMessage extends AbstractMessage<String> {
 
    private String            content;
 
+   public TextMessage() {
+      this.setContentType(Message.ContentType.TextMessage);
+   }
+
    @Override
    public String getContent() {
       return content;
    }
 
+   @Override
    public void setContent(String content) {
       this.content = content;
    }

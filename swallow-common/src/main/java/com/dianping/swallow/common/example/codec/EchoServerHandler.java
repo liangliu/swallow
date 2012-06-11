@@ -19,15 +19,32 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
+import com.dianping.swallow.common.example.message.DemoBean;
+import com.dianping.swallow.common.message.BeanMessage;
+import com.dianping.swallow.common.message.ByteMessage;
 import com.dianping.swallow.common.message.TextMessage;
 
+@SuppressWarnings("unused")
 public class EchoServerHandler extends SimpleChannelUpstreamHandler {
 
    @Override
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
       //服务器发送消息
+
+      //1 测试TextMessage
       TextMessage m = new TextMessage();
       m.setContent("这是一则来自服务器的测试消息。");
+
+      //2 测试BeanMessage
+      //      BeanMessage m = new BeanMessage();
+      //      DemoBean demoBean = new DemoBean();
+      //      demoBean.setA(22);
+      //      demoBean.setB("hello");
+      //      m.writeBeanAsJsonString(demoBean);
+
+      //3 测试ByteMessage
+//      ByteMessage m = new ByteMessage();
+//      m.setContent(new byte[] { 1, 2, 3, 4, 5 });
 
       e.getChannel().write(m);
    }

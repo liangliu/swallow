@@ -30,7 +30,7 @@ import com.dianping.swallow.common.codec.HessianEncoder;
 /**
  * 收到客户端的连接后，发送经过ProtobufVarint32LengthFieldPrepender和HessianEncoder编码后的消息。
  */
-public class EchoServer {
+public class HessianEchoServer {
 
     public static void main(String[] args) throws Exception {
         // Configure the server.
