@@ -1,15 +1,19 @@
 package com.dianping.swallow.consumerserver;
 
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Executors;
 
-import org.bson.types.BSONTimestamp;
+import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 import com.dianping.swallow.consumerserver.config.ConfigManager;
+import com.dianping.swallow.consumerserver.netty.MessageServerPipelineFactory;
 import com.dianping.swallow.consumerserver.util.MongoUtil;
 import com.mongodb.Mongo;
 import com.mongodb.MongoOptions;
@@ -17,9 +21,10 @@ import com.mongodb.ServerAddress;
 
 
 public class ConsumerService {
-
+	//TODO 是否lion中
+	private static int port = 8081;
 	private ConfigManager configManager;
-	
+	public static ConsumerService cService;
 	private Mongo mongo;
 	//channel的连接状态
     private Map<String, HashMap<Channel, String>> channelWorkStatue;
@@ -93,5 +98,19 @@ public class ConsumerService {
 		Thread t = threadFactory.newThread(server, topicId + consumerId + "-consumer-");
     	t.start();
     	threads.put(consumerId, Boolean.TRUE);
+    }
+	public static void main(String[] args) throws Exception {
+    	//TODO 获取lion中的配置，主要是mongo的地址！    	
+    	String uri = "192.168.31.178:27016";
+    	cService = new ConsumerService(uri);
+        // Configure the server.
+        ServerBootstrap bootstrap = new ServerBootstrap(
+                new NioServerSocketChannelFactory(
+                        Executors.newCachedThreadPool(),
+                        Executors.newCachedThreadPool()));
+        //读取配置文件，把线程启起来
+        bootstrap.setPipelineFactory(new MessageServerPipelineFactory());
+        // Bind and start to accept incoming connections.
+        bootstrap.bind(new InetSocketAddress(port));
     }
 }
