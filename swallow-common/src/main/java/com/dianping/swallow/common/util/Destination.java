@@ -13,7 +13,7 @@
  * accordance with the terms of the license agreement you entered into
  * with dianping.com.
  */
-package com.dianping.swallow.producer;
+package com.dianping.swallow.common.util;
 
 import java.io.Serializable;
 
@@ -68,4 +68,5 @@ public class Destination implements Serializable{
 	public boolean isTopic() {
 		return type == Type.TOPIC;
 	}
+
 }

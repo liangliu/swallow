@@ -5,9 +5,9 @@
 	
 	<bean id="server" class="com.dianping.dpsf.spring.ProxyBeanFactory" init-method="init">
 		<!-- 该远程service在服务端定义的serviceName,需要一一对应上 -->
-		<property name="serviceName" value="getStr"/>
+		<property name="serviceName" value="sendMessage"/>
 		<!-- 该远程service的接口类, 用于本地生成stub -->
-		<property name="iface" value="com.dianping.swallow.producer.impl.ProducerServer"/>
+		<property name="iface" value="com.dianping.swallow.common.util.MQService"/>
 		<!-- 远程通信中使用的序列化协议(支持java, hessian, protobuf, thrift, 推荐使用hessian, 若追求极端性能,则可以考虑使用protobuf或thrift, 但DTO对象维护起来较为繁琐, 每次改动都需要从新生成) -->
 		<property name="serialize" value="hessian"/>
 		<!-- 该service调用的方式,分为sync(同步),oneway(单向调用,没有响应),future(异步调用), callback(异步回调) -->

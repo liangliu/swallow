@@ -10,13 +10,13 @@
 		<property name="services">
 			<map>
 				<!-- key对应serviceName(与客户端配置对应,定位具体service实例), value-ref为该service实例的实现-->
-				<entry key="getStr" value-ref="producerServer"/>
+				<entry key="sendMessage" value-ref="producerServer"/>
 			</map>
 		</property>
 	</bean>
 
 	<!-- 定义具体service的本地实例 -->
-	<bean id="producerServer" class="com.dianping.swallow.producerserver.ProducerServerDemo">
+	<bean id="producerServer" class="com.dianping.swallow.producerserver.impl.ProducerServer">
 		<property name="str" value="you are a little pig."></property>
 	</bean>
 </beans>

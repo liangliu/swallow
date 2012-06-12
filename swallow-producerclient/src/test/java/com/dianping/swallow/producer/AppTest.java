@@ -4,6 +4,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import com.dianping.swallow.common.packet.PktStringMessage;
 import com.dianping.swallow.producer.impl.Producer;
 
 /**
