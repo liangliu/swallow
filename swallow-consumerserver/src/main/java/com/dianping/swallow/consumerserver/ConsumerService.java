@@ -55,6 +55,7 @@ public class ConsumerService {
     	List<ServerAddress> replicaSetSeeds = MongoUtil.parseUri(uri);
 		mongo = new Mongo(replicaSetSeeds, getDefaultOptions());
     }
+	//一些option暂时设置好，先不提供
 	private MongoOptions getDefaultOptions() {
 		MongoOptions options = new MongoOptions();
 //		options.slaveOk = config.isMongoSlaveOk();
