@@ -27,11 +27,11 @@ public final class PktStringMessage extends Packet{
 	private String content;
 	private int ackNum;
 
-	public PktStringMessage(Destination dest, String content, int ackNum) {
+	public PktStringMessage(Destination dest, String content) {
 		this.setPacketType(PacketType.STRING_MSG);
 		this.dest = dest;
 		this.setContent(content);
-		this.ackNum = ackNum;
+		this.ackNum = 0;
 	}
 	
 	public void setContent(String content) {
