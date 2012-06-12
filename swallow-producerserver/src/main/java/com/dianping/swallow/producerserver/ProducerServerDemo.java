@@ -2,6 +2,8 @@ package com.dianping.swallow.producerserver;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.dianping.swallow.common.message.TextMessage;
+
 public class ProducerServerDemo implements ProducerServer {
 	private String str;
 	public String getStr(){
