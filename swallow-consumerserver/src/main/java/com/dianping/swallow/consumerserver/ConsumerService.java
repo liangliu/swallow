@@ -47,12 +47,15 @@ public class ConsumerService {
 	public ConfigManager getConfigManager() {
 		return configManager;
 	}
+	
 	public Map<String, HashMap<Channel, String>> getChannelWorkStatue() {
 		return channelWorkStatue;
 	}
+	
 	public Map<String, Boolean> getThreads() {
 		return threads;
 	}
+	
 	public ConsumerService(String uri){    	
     	this.channelWorkStatue = new HashMap<String, HashMap<Channel, String>>();
     	this.configManager = ConfigManager.getInstance();
@@ -60,6 +63,7 @@ public class ConsumerService {
     	List<ServerAddress> replicaSetSeeds = MongoUtil.parseUri(uri);
 		mongo = new Mongo(replicaSetSeeds, getDefaultOptions());
     }
+	
 	//一些option暂时设置好，先不提供
 	private MongoOptions getDefaultOptions() {
 		MongoOptions options = new MongoOptions();
@@ -78,6 +82,7 @@ public class ConsumerService {
 //		options.safe = config.isMongoSafe();
 		return options;
 	}
+	
     //有新消息到的时候，更新channel的状态
 	public void updateChannelWorkStatue(String consumerId, Channel channel){
     	if(channelWorkStatue.get(consumerId) == null){
@@ -99,7 +104,9 @@ public class ConsumerService {
     	t.start();
     	threads.put(consumerId, Boolean.TRUE);
     }
+	
 	public static void main(String[] args) throws Exception {
+		
     	//TODO 获取lion中的配置，主要是mongo的地址！    	
     	String uri = "192.168.31.178:27016";
     	cService = new ConsumerService(uri);
