@@ -13,7 +13,7 @@
  * accordance with the terms of the license agreement you entered into
  * with dianping.com.
  */
-package com.dianping.swallow.producer.backup;
+package com.dianping.swallow.common.packet;
 
 import com.dianping.swallow.common.util.Destination;
 
@@ -23,13 +23,13 @@ import com.dianping.swallow.common.util.Destination;
  * @author tong.song
  *
  */
-public final class PkgBinaryMessage extends Package {
+public final class PktBinaryMessage extends Packet {
 	private Destination dest;
 	private byte[] content;
 	private int ackNum;
 	
-	public PkgBinaryMessage(Destination dest, byte[] content, int ackNum){
-		this.setPackageType(PackageType.BINARY_MSG);
+	public PktBinaryMessage(Destination dest, byte[] content, int ackNum){
+		this.setPacketType(PacketType.BINARY_MSG);
 		this.dest = dest;
 		this.setContent(content);
 		this.ackNum = ackNum;

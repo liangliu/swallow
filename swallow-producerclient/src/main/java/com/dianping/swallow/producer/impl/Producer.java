@@ -4,12 +4,17 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.dianping.swallow.common.message.TextMessage;
+import com.dianping.swallow.common.packet.Packet;
+import com.dianping.swallow.common.packet.PktStringMessage;
+import com.dianping.swallow.common.util.Destination;
+import com.dianping.swallow.common.util.MQService;
 
 public class Producer {
 	private static Producer instance;
 	private static int count;
+	private static int ackNum;
 	ApplicationContext ctx = new ClassPathXmlApplicationContext("spring-producerclient.xml");
-	ProducerServer swallowAgency = (ProducerServer) ctx.getBean("server", ProducerServer.class);
+	MQService swallowAgency = (MQService) ctx.getBean("server", MQService.class);
 
 	private Producer(){
 		count = 0;
@@ -21,12 +26,9 @@ public class Producer {
 		return instance;
 	}
 	
-	public String send(String content){
-		TextMessage txtMsg = new TextMessage();
-		txtMsg.setContent(content);
-		return swallowAgency.getStr(txtMsg);
-	}
-	public static synchronized void setOptions(){
-		
+	public Packet send(String content){
+		Destination dest = Destination.queue("master.slave");
+		PktStringMessage strMsg = new PktStringMessage(dest, "U R a Little Pig", ++ackNum);
+		return swallowAgency.sendMessage(strMsg);
 	}
 }
