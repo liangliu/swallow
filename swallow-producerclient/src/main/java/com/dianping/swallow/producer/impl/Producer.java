@@ -45,6 +45,7 @@ public class Producer {
 		return instance;
 	}
 	
+	//TODO 返回UUID
 	public Packet send(String content){
 		Destination dest = Destination.queue("master.slave");
 		PktStringMessage strMsg = new PktStringMessage(dest, "U R a Little Pig");

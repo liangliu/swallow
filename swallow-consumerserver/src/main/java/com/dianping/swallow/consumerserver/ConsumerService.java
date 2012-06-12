@@ -84,6 +84,7 @@ public class ConsumerService {
 	}
 	
     //有新消息到的时候，更新channel的状态
+	//TODO 线程安全，方法名
 	public void updateChannelWorkStatue(String consumerId, Channel channel){
     	if(channelWorkStatue.get(consumerId) == null){
 			HashMap<Channel, String> channels = new HashMap<Channel, String>();

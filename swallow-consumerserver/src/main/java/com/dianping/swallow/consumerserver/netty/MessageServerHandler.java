@@ -18,6 +18,7 @@ import com.dianping.swallow.consumerserver.ConsumerService;
 @ChannelPipelineCoverage("all")
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 	int i = 0;
+	//TODO log4j
     private static final Logger logger = Logger.getLogger(
             MessageServerHandler.class.getName());
 //    //channel的连接状态
@@ -43,8 +44,11 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     	String topicId = message.split(":")[0];
     	String consumerId = message.split(":")[1];
     	String timeStamp = message.split(":")[2];
+    	//TODO 使用构造函数传递cService，抽象接口
     	ConsumerService.cService.updateChannelWorkStatue(consumerId, channel);
     	//对应consumerID的线程不存在,应该是可以用threadslist代替。
+    	//TODO 转移到cService
+    	//TODO 线程安全
     	if(!ConsumerService.cService.getThreads().containsKey(consumerId)){
     		ConsumerService.cService.newThread(consumerId, topicId);   		
     	}   	    	
