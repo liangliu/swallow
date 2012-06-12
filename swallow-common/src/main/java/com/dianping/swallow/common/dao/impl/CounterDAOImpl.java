@@ -27,7 +27,7 @@ public class CounterDAOImpl implements CounterDAO {
 	}
 
 	@Override
-	public int addCounter(String topicId, String consumerId) {
+	public int addCounter(String topicId, String consumerId, BSONTimestamp maxTStamp) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
