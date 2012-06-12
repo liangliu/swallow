@@ -1,11 +1,8 @@
 package com.dianping.swallow.consumerserver.netty;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.bson.types.BSONTimestamp;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipelineCoverage;
@@ -13,8 +10,8 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.jboss.netty.channel.group.ChannelGroup;
-import org.jboss.netty.channel.group.DefaultChannelGroup;
+
+import com.dianping.swallow.consumerserver.ConsumerService;
 
 
 
@@ -46,10 +43,10 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     	String topicId = message.split(":")[0];
     	String consumerId = message.split(":")[1];
     	String timeStamp = message.split(":")[2];
-    	MessageServer.cService.updateChannelWorkStatue(consumerId, channel);
+    	ConsumerService.cService.updateChannelWorkStatue(consumerId, channel);
     	//对应consumerID的线程不存在,应该是可以用threadslist代替。
-    	if(!MessageServer.cService.getThreads().containsKey(consumerId)){
-    		MessageServer.cService.newThread(consumerId, topicId);   		
+    	if(!ConsumerService.cService.getThreads().containsKey(consumerId)){
+    		ConsumerService.cService.newThread(consumerId, topicId);   		
     	}   	    	
     }
  

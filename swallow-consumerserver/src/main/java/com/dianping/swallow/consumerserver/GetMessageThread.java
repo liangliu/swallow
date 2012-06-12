@@ -10,7 +10,6 @@ import org.bson.types.BSONTimestamp;
 import org.jboss.netty.channel.Channel;
 import com.dianping.swallow.common.dao.CounterDAO;
 import com.dianping.swallow.common.dao.impl.CounterDAOImpl;
-import com.dianping.swallow.consumerserver.netty.MessageServer;
 
 public class GetMessageThread implements Runnable{
 	private String topicId;
@@ -33,7 +32,7 @@ public class GetMessageThread implements Runnable{
 
 		//maxTStamp = dao.getMaxTimeStamp(topicId, consumerId);
 		
-		HashMap<Channel, String> channels = MessageServer.cService.getChannelWorkStatue().get(consumerId);		
+		HashMap<Channel, String> channels = ConsumerService.cService.getChannelWorkStatue().get(consumerId);		
 		while(isLive){
 			Iterator<Entry<Channel, String>> iterator = channels.entrySet().iterator();
 			while(iterator.hasNext()){
@@ -45,7 +44,7 @@ public class GetMessageThread implements Runnable{
 						preparedMes = null;
 					} else{
 						//用blockingqueue就不用在内存中记录最大timeStamp了。
-						ArrayBlockingQueue<String> messages = MessageServer.cService.getMessageQueue().get(consumerId);
+						ArrayBlockingQueue<String> messages = ConsumerService.cService.getMessageQueue().get(consumerId);
 						try {
 							String message = messages.take();
 						} catch (InterruptedException e) {
@@ -73,8 +72,8 @@ public class GetMessageThread implements Runnable{
 				}
 			}
 			try {
-				//处理完一次，线程睡眠1秒，继续循环处理。
-				Thread.sleep(1000);
+				//处理完一次，线程睡眠，然后继续执行。
+				Thread.sleep(ConsumerService.cService.getConfigManager().getPullingTime());
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

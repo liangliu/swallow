@@ -24,7 +24,7 @@ public class ConfigManager {
 	private int heartbeatMaxStopTime = 120000;
 	private int heartbeatUpdateInterval = 10000;
 	private int blockQueueFailoverSleepTime = 1000;
-	private int pollingTime = 1000;
+	private int pullingTime = 1000;
 
 	// db and collection name related
 	private String counterDB = "swallow_counter";
@@ -35,8 +35,8 @@ public class ConfigManager {
 		return blockQueueFailoverSleepTime;
 	}
 
-	public int getPollingTime() {
-		return pollingTime;
+	public int getPullingTime() {
+		return pullingTime;
 	}
 
 	public String getCounterDB() {
