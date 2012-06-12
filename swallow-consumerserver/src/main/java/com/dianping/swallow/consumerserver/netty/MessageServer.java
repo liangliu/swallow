@@ -18,9 +18,11 @@ import com.dianping.swallow.consumerserver.ConsumerService;
 public class MessageServer {
 	//TODO 是否lion中
 	private static int port = 8081;
-	public static ConsumerService cService = new ConsumerService();
+	public static ConsumerService cService;
     public static void main(String[] args) throws Exception {
-
+    	//TODO 获取lion中的配置，主要是mongo的地址！    	
+    	String uri = "192.168.31.178:27016";
+    	cService = new ConsumerService(uri);
         // Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(

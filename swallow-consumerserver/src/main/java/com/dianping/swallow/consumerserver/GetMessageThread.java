@@ -73,8 +73,8 @@ public class GetMessageThread implements Runnable{
 				}
 			}
 			try {
-				//处理完一次，线程睡眠1秒，继续循环处理。
-				Thread.sleep(1000);
+				//处理完一次，线程睡眠，然后继续执行。
+				Thread.sleep(MessageServer.cService.getConfigManager().getPullingTime());
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

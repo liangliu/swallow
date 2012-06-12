@@ -2,6 +2,7 @@ package com.dianping.swallow.consumerserver;
 
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -9,11 +10,17 @@ import org.bson.types.BSONTimestamp;
 import org.jboss.netty.channel.Channel;
 
 import com.dianping.swallow.consumerserver.config.ConfigManager;
+import com.dianping.swallow.consumerserver.util.MongoUtil;
+import com.mongodb.Mongo;
+import com.mongodb.MongoOptions;
+import com.mongodb.ServerAddress;
 
 
 public class ConsumerService {
 
 	private ConfigManager configManager;
+	
+	private Mongo mongo;
 	//channel的连接状态
     private Map<String, HashMap<Channel, String>> channelWorkStatue;
     
@@ -27,6 +34,11 @@ public class ConsumerService {
     public Map<String, ArrayBlockingQueue<String>> getMessageQueue() {
 		return messageQueue;
 	}
+    
+	public Mongo getMongo() {
+		return mongo;
+	}
+
 	public ConfigManager getConfigManager() {
 		return configManager;
 	}
@@ -36,11 +48,30 @@ public class ConsumerService {
 	public Map<String, Boolean> getThreads() {
 		return threads;
 	}
-	public ConsumerService(){    	
+	public ConsumerService(String uri){    	
     	this.channelWorkStatue = new HashMap<String, HashMap<Channel, String>>();
     	this.configManager = ConfigManager.getInstance();
     	this.threadFactory = new MQThreadFactory();
+    	List<ServerAddress> replicaSetSeeds = MongoUtil.parseUri(uri);
+		mongo = new Mongo(replicaSetSeeds, getDefaultOptions());
     }
+	private MongoOptions getDefaultOptions() {
+		MongoOptions options = new MongoOptions();
+//		options.slaveOk = config.isMongoSlaveOk();
+//		options.socketKeepAlive = config.isMongoSocketKeepAlive();
+//		options.socketTimeout = config.getMongoSocketTimeout();
+//		options.connectionsPerHost = config.getMongoConnectionsPerHost();
+//		options.threadsAllowedToBlockForConnectionMultiplier = config
+//				.getMongoThreadsAllowedToBlockForConnectionMultiplier();
+//		options.w = config.getMongoW();
+//		options.wtimeout = config.getMongoWtimeout();
+//		options.fsync = config.isMongoFsync();
+//		options.connectTimeout = config.getMongoConnectTimeout();
+//		options.maxWaitTime = config.getMongoMaxWaitTime();
+//		options.autoConnectRetry = config.isMongoAutoConnectRetry();
+//		options.safe = config.isMongoSafe();
+		return options;
+	}
     //有新消息到的时候，更新channel的状态
 	public void updateChannelWorkStatue(String consumerId, Channel channel){
     	if(channelWorkStatue.get(consumerId) == null){
