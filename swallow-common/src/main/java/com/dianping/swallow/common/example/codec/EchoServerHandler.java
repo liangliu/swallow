@@ -43,8 +43,8 @@ public class EchoServerHandler extends SimpleChannelUpstreamHandler {
       //      m.writeBeanAsJsonString(demoBean);
 
       //3 测试ByteMessage
-//      ByteMessage m = new ByteMessage();
-//      m.setContent(new byte[] { 1, 2, 3, 4, 5 });
+      //      ByteMessage m = new ByteMessage();
+      //      m.setContent(new byte[] { 1, 2, 3, 4, 5 });
 
       e.getChannel().write(m);
    }

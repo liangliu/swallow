@@ -32,25 +32,23 @@ import com.dianping.swallow.common.codec.HessianEncoder;
  */
 public class HessianEchoServer {
 
-    public static void main(String[] args) throws Exception {
-        // Configure the server.
-        ServerBootstrap bootstrap = new ServerBootstrap(
-                new NioServerSocketChannelFactory(
-                        Executors.newCachedThreadPool(),
-                        Executors.newCachedThreadPool()));
+   public static void main(String[] args) throws Exception {
+      // Configure the server.
+      ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
+            Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
 
-        // Set up the pipeline factory.
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
-            public ChannelPipeline getPipeline() throws Exception {
-               ChannelPipeline p = Channels.pipeline();
-               p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
-               p.addLast("hessianEncoder", new HessianEncoder());
-               p.addLast("handler", new EchoServerHandler());
-                return p;
-            }
-        });
+      // Set up the pipeline factory.
+      bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+         public ChannelPipeline getPipeline() throws Exception {
+            ChannelPipeline p = Channels.pipeline();
+            p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
+            p.addLast("hessianEncoder", new HessianEncoder());
+            p.addLast("handler", new EchoServerHandler());
+            return p;
+         }
+      });
 
-        // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(8080));
-    }
+      // Bind and start to accept incoming connections.
+      bootstrap.bind(new InetSocketAddress(8080));
+   }
 }
