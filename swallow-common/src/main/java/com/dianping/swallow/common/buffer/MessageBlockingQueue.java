@@ -33,7 +33,7 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
 
    private volatile Thread     messageRetrieverDemonThread;
 
-   public MessageBlockingQueue(Long cid, String topicName, int threshold, int capacity) {
+   public MessageBlockingQueue(Long cid, String topicName, int threshold, int capacity, long messageIdOfTailMessage) {
       super(capacity);
       //能运行到这里，说明capacity>0
       this.cid = cid;
@@ -41,9 +41,10 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       if (threshold < 0)
          throw new IllegalArgumentException("threshold: " + threshold);
       this.threshold = threshold;
+      this.messageIdOfTailMessage = messageIdOfTailMessage;
    }
 
-   public MessageBlockingQueue(Long cid, String topicName, int threshold) {
+   public MessageBlockingQueue(Long cid, String topicName, int threshold, long messageIdOfTailMessage) {
       super();
       //能运行到这里，说明capacity>0
       this.cid = cid;
@@ -51,13 +52,15 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       if (threshold < 0)
          throw new IllegalArgumentException("threshold: " + threshold);
       this.threshold = threshold;
+      this.messageIdOfTailMessage = messageIdOfTailMessage;
    }
 
-   public MessageBlockingQueue(Long cid, String topicName) {
+   public MessageBlockingQueue(Long cid, String topicName, long messageIdOfTailMessage) {
       super();
       this.cid = cid;
       this.topicName = topicName;
       this.threshold = DEFAULT_THRESHOLD;
+      this.messageIdOfTailMessage = messageIdOfTailMessage;
    }
 
    public Message poll() {
