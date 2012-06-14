@@ -211,8 +211,6 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<version>2.4</version>
 			</plugin>
-
 		</plugins>
 	</build>
-
 </project>
