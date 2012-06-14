@@ -43,6 +43,12 @@ Thumbs.db
 .classpath
 */.settings/
 
+# jupiter generated files #
+######################
+.jupiter
+.review
+*.review
+
 # temp folder #
 ######################
 */target/

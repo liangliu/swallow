@@ -15,10 +15,9 @@
  */
 package com.dianping.swallow.common.codec;
 
-import static org.jboss.netty.buffer.ChannelBuffers.wrappedBuffer;
-
 import java.io.ByteArrayOutputStream;
 
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
@@ -43,7 +42,7 @@ import com.dianping.swallow.common.message.Message;
  */
 public class HessianEncoder extends OneToOneEncoder {
 
-   private SerializerFactory factory = new SerializerFactory();;
+   private SerializerFactory factory = new SerializerFactory();
 
    public HessianEncoder() {
       super();
@@ -58,7 +57,7 @@ public class HessianEncoder extends OneToOneEncoder {
          h2o.writeObject(msg);
          h2o.flush();
          byte[] content = bos.toByteArray();
-         return wrappedBuffer(content);
+         return ChannelBuffers.wrappedBuffer(content);
       }
       return msg;
    }
