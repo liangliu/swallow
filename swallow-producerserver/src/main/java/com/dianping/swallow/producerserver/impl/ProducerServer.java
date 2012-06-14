@@ -3,7 +3,7 @@ package com.dianping.swallow.producerserver.impl;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.dianping.swallow.common.packet.Packet;
-import com.dianping.swallow.common.packet.PacketType;
+import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.common.packet.PktStringMessage;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.util.MQService;
@@ -31,6 +31,10 @@ public class ProducerServer implements MQService {
 			System.out.println((PktStringMessage)pkt);
 			break;
 		case BINARY_MSG:
+			break;
+		case OBJECT_MSG:
+			pktRet = new PktSwallowPACK(SHAGenerater.generateSHA(((PktObjectMessage)pkt).getContent()));
+			System.out.println("Got ObjectMessage. " + (String)((PktObjectMessage)pkt).getContent());
 			break;
 		default:
 			break;

@@ -24,7 +24,7 @@ import com.dianping.swallow.common.util.Destination;
  * @author tong.song
  *
  */
-public final class PktStringMessage extends Packet{
+public final class PktStringMessage extends Packet implements Message{
 	private Destination		dest;
 	private String			content;
 	private Date			date;
@@ -37,9 +37,16 @@ public final class PktStringMessage extends Packet{
 		this.date = new Date();
 	}
 	
+	@Override
 	public String getContent() {
 		return content;
 	}
+	
+	@Override
+	public Destination getDestination() {
+		return dest;
+	}
+
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub

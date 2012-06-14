@@ -23,24 +23,25 @@ import com.dianping.swallow.common.util.Destination;
  * @author tong.song
  *
  */
-public final class PktBinaryMessage extends Packet {
+public final class PktBinaryMessage extends Packet implements Message{
 	private Destination dest;
 	private byte[] content;
-	private int ackNum;
 	
-	public PktBinaryMessage(Destination dest, byte[] content, int ackNum){
+	public PktBinaryMessage(Destination dest, byte[] content){
 		this.setPacketType(PacketType.BINARY_MSG);
 		this.dest = dest;
 		this.setContent(content);
-		this.ackNum = ackNum;
 	}
 	public void setContent(byte[] content) {
 		this.content = content;
 	}
+	@Override
 	public byte[] getContent() {
 		return content;
 	}
-	public int getAckNum(){
-		return ackNum;
+	@Override
+	public Destination getDestination() {
+		// TODO Auto-generated method stub
+		return dest;
 	}
 }
