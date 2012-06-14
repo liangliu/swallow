@@ -46,8 +46,8 @@ Thumbs.db
 # jupiter generated files #
 ######################
 .jupiter
-.review
 *.review
+*/review/
 
 # temp folder #
 ######################
