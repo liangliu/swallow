@@ -7,6 +7,7 @@ import com.dianping.swallow.common.packet.PacketType;
 import com.dianping.swallow.common.packet.PktStringMessage;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.util.MQService;
+import com.dianping.swallow.producerserver.util.SHAGenerater;
 
 public class ProducerServer implements MQService {
 	private String str;
@@ -23,10 +24,10 @@ public class ProducerServer implements MQService {
 		Packet pktRet = null;
 		switch(pkt.getPacketType()){
 		case PRODUCER_GREET:
-			pktRet = new PktSwallowPACK(-1);
+			pktRet = new PktSwallowPACK(SHAGenerater.generateSHA("im a little pig"));
 			break;
 		case STRING_MSG:
-			pktRet = new PktSwallowPACK(((PktStringMessage)pkt).getAckNum());
+			pktRet = new PktSwallowPACK(SHAGenerater.generateSHA(((PktStringMessage)pkt).getContent()));
 			System.out.println((PktStringMessage)pkt);
 			break;
 		case BINARY_MSG:
