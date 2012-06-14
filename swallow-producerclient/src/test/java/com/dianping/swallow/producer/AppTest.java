@@ -4,7 +4,6 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import com.dianping.swallow.common.packet.PktStringMessage;
 import com.dianping.swallow.producer.impl.Producer;
 
 /**
@@ -48,15 +47,14 @@ public class AppTest
 		public void run() {
 			// TODO Auto-generated method stub
 		Producer ps = Producer.getInstance();
-		int i = 0;
 		while(true){
 //			content += i++;
-			System.out.println(ps.sendString(content));
-			try {
-				Thread.sleep(1000);
-			} catch (Exception e) {
-				// TODO: handle exception
-			}
+			System.out.println(ps.sendMessage(content));
+//			try {
+//				Thread.sleep(1000);
+//			} catch (Exception e) {
+//				// TODO: handle exception
+//			}
 		}
 		}
     }
