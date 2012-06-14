@@ -29,7 +29,7 @@ public class MQThreadFactory implements ThreadFactory {
 
 	private List<WeakReference<Thread>> threadList = Collections
 			.synchronizedList(new ArrayList<WeakReference<Thread>>());
-	private ConcurrentHashMap<String, AtomicInteger> prefixToSeq = new ConcurrentHashMap<String, AtomicInteger>();;
+	private ConcurrentHashMap<String, AtomicInteger> prefixToSeq = new ConcurrentHashMap<String, AtomicInteger>();
 
 	public MQThreadFactory() {
 		//暂时注掉监控那玩意。

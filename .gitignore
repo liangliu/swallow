@@ -1,17 +1,3 @@
-# should not ignored #
-!*.java
-!*.gitignore
-!*.xml
-!*.jsp
-!*.html
-!*.htm
-!*.js
-!*.css
-!*.jpg
-!*.gif
-!*.properties
-
-
 # Compiled source #
 ###################
 *.com
@@ -60,3 +46,22 @@ Thumbs.db
 # temp folder #
 ######################
 */target/
+*/bin/
+
+# temp file #
+######################
+*~
+
+# should not ignored #
+!*.java
+!*.gitignore
+!*.xml
+!*.jsp
+!*.html
+!*.htm
+!*.js
+!*.css
+!*.jpg
+!*.gif
+!*.properties
+

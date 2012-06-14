@@ -29,8 +29,8 @@ import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import com.dianping.swallow.common.codec.JsonDecoder;
 
 /**
- * 连接到服务器之后，会收到服务器发送的经过ProtobufVarint32LengthFieldPrepender和JsonEncoder编码后的消息
- * ， 收到消息后ProtobufVarint32FrameDecoder和JsonDecoder解码，使用然后打印消息.
+ * 连接到服务器之后，会收到服务器发送的经过ProtobufVarint32LengthFieldPrepender和JsonEncoder编码后的消息 ，
+ * 收到消息后ProtobufVarint32FrameDecoder和JsonDecoder解码，使用然后打印消息.
  */
 public class JsonEchoClient {
 
