@@ -23,6 +23,7 @@ import com.dianping.swallow.common.example.message.DemoBean;
 import com.dianping.swallow.common.message.BeanMessage;
 import com.dianping.swallow.common.message.ByteMessage;
 import com.dianping.swallow.common.message.TextMessage;
+import com.dianping.swallow.common.message2.SwallowMessage;
 
 @SuppressWarnings("unused")
 public class EchoServerHandler extends SimpleChannelUpstreamHandler {
@@ -32,8 +33,8 @@ public class EchoServerHandler extends SimpleChannelUpstreamHandler {
       //服务器发送消息
 
       //1 测试TextMessage
-      TextMessage m = new TextMessage();
-      m.setContent("这是一则来自服务器的测试消息。");
+      //      TextMessage m = new TextMessage();
+      //      m.setContent("这是一则来自服务器的测试消息。");
 
       //2 测试BeanMessage
       //      BeanMessage m = new BeanMessage();
@@ -45,6 +46,13 @@ public class EchoServerHandler extends SimpleChannelUpstreamHandler {
       //3 测试ByteMessage
       //      ByteMessage m = new ByteMessage();
       //      m.setContent(new byte[] { 1, 2, 3, 4, 5 });
+
+      //4 测试SwallowMessage
+      DemoBean demoBean = new DemoBean();
+      demoBean.setA(1);
+      demoBean.setB("b");
+      SwallowMessage m = new SwallowMessage();
+      m.serializeAsJsonString(demoBean);
 
       e.getChannel().write(m);
    }
