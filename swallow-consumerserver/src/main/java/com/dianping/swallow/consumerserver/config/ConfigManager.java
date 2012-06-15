@@ -29,7 +29,7 @@ public class ConfigManager {
 
 	// db and collection name related
 	private String counterDB = "swallow_counter";
-	private String haha = "swallow_topic";
+	private String topicDB = "swallow_topic";
 
 
 	public int getBlockQueueFailoverSleepTime() {
@@ -147,7 +147,7 @@ public class ConfigManager {
 	}
 
 
-//	public String getTopicDB() {
-//		return topicDB;
-//	}
+	public String getTopicDB() {
+		return topicDB;
+	}
 }
