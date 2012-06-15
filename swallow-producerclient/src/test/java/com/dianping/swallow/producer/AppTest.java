@@ -50,11 +50,11 @@ public class AppTest
 		while(true){
 //			content += i++;
 			System.out.println(ps.sendMessage(content));
-//			try {
-//				Thread.sleep(1000);
-//			} catch (Exception e) {
-//				// TODO: handle exception
-//			}
+			try {
+				Thread.sleep(1000);
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
 		}
 		}
     }
