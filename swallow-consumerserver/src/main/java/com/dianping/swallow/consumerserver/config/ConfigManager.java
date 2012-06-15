@@ -25,6 +25,7 @@ public class ConfigManager {
 	private int heartbeatUpdateInterval = 10000;
 	private int blockQueueFailoverSleepTime = 1000;
 	private int pullingTime = 1000;
+	private long semaphoreTimeOutTime = 120000;
 
 	// db and collection name related
 	private String counterDB = "swallow_counter";
@@ -33,6 +34,10 @@ public class ConfigManager {
 
 	public int getBlockQueueFailoverSleepTime() {
 		return blockQueueFailoverSleepTime;
+	}
+
+	public long getSemaphoreTimeOutTime() {
+		return semaphoreTimeOutTime;
 	}
 
 	public int getPullingTime() {

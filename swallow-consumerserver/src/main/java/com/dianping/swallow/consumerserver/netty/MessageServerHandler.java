@@ -17,19 +17,13 @@ import com.dianping.swallow.consumerserver.ConsumerService;
 
 @ChannelPipelineCoverage("all")
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
-	int i = 0;
+	private ConsumerService cService;
+	public MessageServerHandler(ConsumerService cService){
+		this.cService = cService;
+	}
 	//TODO log4j
     private static final Logger logger = Logger.getLogger(
             MessageServerHandler.class.getName());
-//    //channel的连接状态
-//    public static Map<String, HashMap<Channel, String>> channelWorkStatue = new HashMap<String, HashMap<Channel, String>>();
-//    //Map<Channel,Boolean> channelStatue = new HashMap<Channel,Boolean>();
-//    public static ChannelGroup channelGroup = new DefaultChannelGroup();
-//    //一个consumerId对应一个thread，这是对各thread的状态的管理
-//    private static Map<String, Boolean> threads = new HashMap<String, Boolean>();
-//    //每个consumerID对应最大TimeStamp
-//    public static Map<String, BSONTimestamp> maxTimeStamp = new HashMap<String, BSONTimestamp>();
-//    private MQThreadFactory threadFactory = new MQThreadFactory();
     @Override  
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)  
         throws Exception {     
@@ -44,14 +38,10 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     	String topicId = message.split(":")[0];
     	String consumerId = message.split(":")[1];
     	String timeStamp = message.split(":")[2];
-    	//TODO 使用构造函数传递cService，抽象接口
-    	ConsumerService.cService.updateChannelWorkStatue(consumerId, channel);
+    	cService.updateChannelWorkStatues(consumerId, channel);
     	//对应consumerID的线程不存在,应该是可以用threadslist代替。
-    	//TODO 转移到cService
-    	//TODO 线程安全
-    	if(!ConsumerService.cService.getThreads().containsKey(consumerId)){
-    		ConsumerService.cService.newThread(consumerId, topicId);   		
-    	}   	    	
+    	//线程安全  	  
+    	cService.updateThreadWorkStatues(consumerId, topicId); 
     }
  
     @Override
@@ -61,6 +51,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
                 Level.WARNING,
         "客户端断开连接！");
         Channel channel = e.getChannel();
+        cService.changeStatuesWhenChannelBreak(channel);
         channel.close();
     }
 }
