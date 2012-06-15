@@ -4,7 +4,6 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import com.dianping.swallow.common.packet.PktStringMessage;
 import com.dianping.swallow.producer.impl.Producer;
 
 /**
@@ -48,12 +47,20 @@ public class AppTest
 		public void run() {
 			// TODO Auto-generated method stub
 		Producer ps = Producer.getInstance();
-		System.out.println(ps.send(content));
+		while(true){
+//			content += i++;
+			System.out.println(ps.sendMessage(content));
+//			try {
+//				Thread.sleep(1000);
+//			} catch (Exception e) {
+//				// TODO: handle exception
+//			}
+		}
 		}
     }
     
     public void doTest(){
-    	for(int i = 0; i < 10; i++){
+    	for(int i = 0; i < 2; i++){
     		String newContent = "NO: " + i;
     		Thread td = new Thread(new task(newContent));
     		td.start();

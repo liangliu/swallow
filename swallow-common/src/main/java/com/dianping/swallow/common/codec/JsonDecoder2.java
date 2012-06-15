@@ -15,16 +15,15 @@
  */
 package com.dianping.swallow.common.codec;
 
-import java.io.ByteArrayOutputStream;
+import java.nio.charset.Charset;
 
-import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
+import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
 
-import com.caucho.hessian.io.Hessian2Output;
-import com.caucho.hessian.io.SerializerFactory;
-import com.dianping.swallow.common.message.Message;
+import com.dianping.swallow.common.message.JsonBinder;
+import com.dianping.swallow.common.message2.SwallowMessage;
 
 /**
  * 用法:
@@ -32,33 +31,31 @@ import com.dianping.swallow.common.message.Message;
  * <pre>
  * ChannelPipeline p = pipeline();
  * p.addLast(&quot;frameDecoder&quot;, new ProtobufVarint32FrameDecoder());
- * p.addLast(&quot;hessianDecoder&quot;, new HessianDecoder());
+ * p.addLast(&quot;jsonDecoder&quot;, new JsonDecoder());
  * 
  * p.addLast(&quot;frameEncoder&quot;, new ProtobufVarint32LengthFieldPrepender());
- * p.addLast(&quot;hessianEncoder&quot;, new HessianEncoder());
+ * p.addLast(&quot;jsonEncoder&quot;, new JsonEncoder());
  * 
  * p.addLast(&quot;handler&quot;, new XXClientHandler());
  * </pre>
  */
-public class HessianEncoder extends OneToOneEncoder {
+public class JsonDecoder2 extends OneToOneDecoder {
 
-   private SerializerFactory factory = new SerializerFactory();
-
-   public HessianEncoder() {
+   public JsonDecoder2() {
       super();
    }
 
    @Override
-   protected Object encode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
-      if (msg instanceof Message) {// 对Message进行编码
-         ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
-         Hessian2Output h2o = new Hessian2Output(bos);
-         h2o.setSerializerFactory(factory);
-         h2o.writeObject(msg);
-         h2o.flush();
-         byte[] content = bos.toByteArray();
-         return ChannelBuffers.wrappedBuffer(content);
+   protected Object decode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
+      if (!(msg instanceof ChannelBuffer)) {
+         return msg;
       }
-      return msg;
+
+      ChannelBuffer buf = (ChannelBuffer) msg;
+      String json = buf.toString(Charset.forName("UTF-8"));
+      JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+      SwallowMessage message = jsonBinder.fromJson(json, SwallowMessage.class);
+      return message;
    }
+
 }

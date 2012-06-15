@@ -21,22 +21,21 @@ package com.dianping.swallow.common.packet;
  *
  */
 public final class PktSwallowPACK extends Packet {
-	private int ackNum;
+	private String shaInfo;
 
-	public void setAckNum(int ackNum) {
-		this.ackNum = ackNum;
-	}
-	public int getAckNum() {
-		return ackNum;
-	}
-	public PktSwallowPACK(int ackNum){
+	public PktSwallowPACK(String shaInfo){
 		this.setPacketType(PacketType.SWALLOW_P_ACK);
-		this.ackNum = ackNum;
+		this.setShaInfo(shaInfo);
+	}
+	public String getShaInfo() {
+		return shaInfo;
+	}
+	public void setShaInfo(String shaInfo) {
+		this.shaInfo = shaInfo;
 	}
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
-		return String.valueOf(ackNum);
+		return shaInfo;
 	}
-	
 }

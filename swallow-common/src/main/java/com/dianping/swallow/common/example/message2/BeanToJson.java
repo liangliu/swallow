@@ -1,11 +1,9 @@
-package com.dianping.swallow.common.example.message;
+package com.dianping.swallow.common.example.message2;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
-import com.dianping.swallow.common.message.BeanMessage;
 import com.dianping.swallow.common.message.JsonBinder;
+import com.dianping.swallow.common.message2.SwallowMessage;
 
 public class BeanToJson {
 
@@ -15,8 +13,8 @@ public class BeanToJson {
       demoBean.setA(1);
       demoBean.setB("b");
 
-      BeanMessage message = new BeanMessage();
-      message.writeBeanAsJsonString(demoBean);
+      SwallowMessage message = new SwallowMessage();
+      message.serializeAsJsonString(demoBean);
       Properties properties = new Properties();
       properties.setProperty("property-key", "property-value");
       message.setProperties(properties);
@@ -24,10 +22,6 @@ public class BeanToJson {
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
       String json = jsonBinder.toJson(message);
       System.out.println(json);
-      //Map
-      Map<String, String> map = new HashMap<String, String>();
-      map.put("key", "value");
-      System.out.println(jsonBinder.toJson(map));
 
    }
 

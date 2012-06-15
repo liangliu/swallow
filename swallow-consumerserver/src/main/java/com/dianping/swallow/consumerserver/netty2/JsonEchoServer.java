@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.dianping.swallow.common.example.codec;
+package com.dianping.swallow.consumerserver.netty2;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -25,12 +25,12 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 
-import com.dianping.swallow.common.codec.HessianEncoder;
+import com.dianping.swallow.common.codec.JsonEncoder;
 
 /**
- * 收到客户端的连接后，发送经过ProtobufVarint32LengthFieldPrepender和HessianEncoder编码后的消息。
+ * 收到客户端的连接后，发送经过ProtobufVarint32LengthFieldPrepender和JsonEncoder编码后的消息。
  */
-public class HessianEchoServer {
+public class JsonEchoServer {
 
    public static void main(String[] args) throws Exception {
       // Configure the server.
@@ -42,7 +42,7 @@ public class HessianEchoServer {
          public ChannelPipeline getPipeline() throws Exception {
             ChannelPipeline p = Channels.pipeline();
             p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
-            p.addLast("hessianEncoder", new HessianEncoder());
+            p.addLast("jsonEncoder", new JsonEncoder());
             p.addLast("handler", new EchoServerHandler());
             return p;
          }

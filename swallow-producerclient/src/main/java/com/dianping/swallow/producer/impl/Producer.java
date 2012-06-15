@@ -1,58 +1,121 @@
 package com.dianping.swallow.producer.impl;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.UUID;
 
+import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.dianping.dpsf.spring.ProxyBeanFactory;
-import com.dianping.filequeue.DefaultFileQueueImpl;
-import com.dianping.filequeue.FileQueue;
-import com.dianping.swallow.common.packet.Packet;
+import com.dianping.filequeue.FileQueueClosedException;
+import com.dianping.swallow.common.packet.Message;
+import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.common.packet.PktStringMessage;
+import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.util.Destination;
 import com.dianping.swallow.common.util.MQService;
+import com.dianping.swallow.producer.HandlerUndeliverable;
 
 public class Producer {
 	//变量定义
-	private static Producer 	instance;//Producer实例
-	private Destination 		dest	= null;//Producer目标topic，未设置Destination时从Lion获取默认值
-	private ApplicationContext	ctx		= new ClassPathXmlApplicationContext("spring-producerclient.xml");//spring
-	private MQService			swallowAgency	= (MQService) ctx.getBean("server", MQService.class);//获取Swallow代理
-	private boolean				isSynchro		= true;//是否同步
-	private ExecutorService		sender			= Executors.newCachedThreadPool();
-	private FileQueue<Packet>	messageQueue	= new DefaultFileQueueImpl<Packet>("filequeue.properties", "aa");
+	private static Producer 		instance;				//Producer实例
+	private Destination				defaultDest		= Destination.queue("master.slave");
+	private ApplicationContext		ctx				= new ClassPathXmlApplicationContext("spring-producerclient.xml");//spring
+	private MQService				swallowAgency	= (MQService) ctx.getBean("server", MQService.class);//获取Swallow代理
+	private boolean					synchroMode		= true;	//是否同步
+	private String					producerID		= UUID.randomUUID().toString();//Producer UUID
+	private HandlerAsynchroMode		asyncHandler;	//异步处理对象
+	private HandlerSynchroMode		syncHandler;	//同步处理对象
+	private HandlerUndeliverable	undeliverableMessageHandler;
+	
+	//常量定义
+	public static final int		SENDER_NUM		= 10;//异步处理对象的线程池大小
+	private static final Logger	log				= Logger.getLogger(Producer.class);
+	
 	//构造函数
 	private Producer(){
-		dest = null;//设置默认Destination//正式版本将从Lion获取
-		if(!isSynchro){
-			
+		//Producer异步模式
+		if(synchroMode){
+			syncHandler		= new HandlerSynchroMode(this);
+		}else{
+			asyncHandler	= new HandlerAsynchroMode(this);
 		}
+		undeliverableMessageHandler = new HandlerUndeliverable() {
+			@Override
+			public void handleUndeliverableMessage(Message msg) {
+				// TODO Auto-generated method stub
+				log.info("[Dest][" + msg.getDestination().getName() + "]" + msg.getContent());
+			}
+		};
 	}
 	//getters && setters
-	public Destination getDestination() {
-		return dest;
+	public Destination getDefaultDestination() {
+		return defaultDest;
 	}
-	public void setDestination(Destination dest) {
-		this.dest = dest;
+	public void setDefaultDestination(Destination defaultDest) {
+		this.defaultDest = defaultDest;
+	}
+	public String getProducerID() {
+		return producerID;
+	}
+	public MQService getSwallowAgency() {
+		return swallowAgency;
 	}
 	public static synchronized Producer getInstance(){
-		if(instance == null){
-			instance = new Producer();
-		}
+		if(instance == null)	instance = new Producer();
 		return instance;
 	}
-	
-	//TODO 返回UUID
-	public Packet send(String content){
-		Destination dest = Destination.queue("master.slave");
-		PktStringMessage strMsg = new PktStringMessage(dest, "U R a Little Pig");
-		return swallowAgency.sendMessage(strMsg);
+	//发送带Destination的String
+	public String sendString(Destination dest, String content){
+		String ret = null;
+		PktStringMessage strMsg = new PktStringMessage(dest, content);
+		if(synchroMode){
+			ret = ((PktSwallowPACK)syncHandler.doSendMsg(strMsg)).getShaInfo();
+			if(ret == null){
+				handleUndeliverableMessage(strMsg);
+			}
+		}else{
+			try {
+				asyncHandler.doSendMsg(strMsg);
+			} catch (FileQueueClosedException e) {
+				e.printStackTrace();
+				handleUndeliverableMessage(strMsg);
+			}
+		}
+		return ret;
 	}
-	
-	private void sendMessageQueue(){
-		
+	//发送默认Destination的String
+	public String sendString(String content){
+		return sendString(defaultDest, content);
+	}
+	//发送指定Destination的Object//TODO: 使用序列化
+	public String sendMessage(Destination dest, Object content){
+		String ret = null;
+		PktObjectMessage objMsg = new PktObjectMessage(dest, content);
+		if(synchroMode){
+			ret = ((PktSwallowPACK)syncHandler.doSendMsg(objMsg)).getShaInfo();
+			if(ret == null){
+				handleUndeliverableMessage(objMsg);
+			}
+		}else{
+			try {
+				asyncHandler.doSendMsg(objMsg);
+			} catch (FileQueueClosedException e) {
+				e.printStackTrace();
+				handleUndeliverableMessage(objMsg);
+			}
+		}
+		return ret;
+	}
+	//发生送默认Destination的Object
+	public String sendMessage(Object content){
+		return sendMessage(defaultDest, content);
+	}
+	//处理发送失败的Handle
+	private void handleUndeliverableMessage(Message msg) {
+		try {
+			undeliverableMessageHandler.handleUndeliverableMessage(msg);
+		} catch (Exception e) {
+			log.error("error processing undeliverable message", e);
+		}
 	}
 }
