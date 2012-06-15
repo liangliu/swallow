@@ -9,7 +9,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.packet.Message;
 import com.dianping.swallow.common.packet.PktObjectMessage;
-import com.dianping.swallow.common.packet.PktStringMessage;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.util.Destination;
 import com.dianping.swallow.common.util.MQService;
@@ -23,22 +22,25 @@ public class Producer {
 	private MQService				swallowAgency	= (MQService) ctx.getBean("server", MQService.class);//获取Swallow代理
 	private boolean					synchroMode		= true;	//是否同步
 	private String					producerID		= UUID.randomUUID().toString();//Producer UUID
-	private HandlerAsynchroMode		asyncHandler;	//异步处理对象
-	private HandlerSynchroMode		syncHandler;	//同步处理对象
+	private HandlerAsynchroMode		asyncHandler;			//异步处理对象
+	private HandlerSynchroMode		syncHandler;			//同步处理对象
 	private HandlerUndeliverable	undeliverableMessageHandler;
+	private String					filequeueName	= null;
 	
 	//常量定义
 	public static final int		SENDER_NUM		= 10;//异步处理对象的线程池大小
 	private static final Logger	log				= Logger.getLogger(Producer.class);
 	
 	//构造函数
-	private Producer(){
-		//Producer异步模式
+	//异步模式
+	private Producer(String filequeueName){
+		//Producer工作模式
 		if(synchroMode){
 			syncHandler		= new HandlerSynchroMode(this);
 		}else{
 			asyncHandler	= new HandlerAsynchroMode(this);
 		}
+		//Message发送出错处理类
 		undeliverableMessageHandler = new HandlerUndeliverable() {
 			@Override
 			public void handleUndeliverableMessage(Message msg) {
@@ -47,6 +49,11 @@ public class Producer {
 			}
 		};
 	}
+	//同步模式
+	private Producer(){
+		
+	}
+	
 	//getters && setters
 	public Destination getDefaultDestination() {
 		return defaultDest;
@@ -64,29 +71,13 @@ public class Producer {
 		if(instance == null)	instance = new Producer();
 		return instance;
 	}
-	//发送带Destination的String
-	public String sendString(Destination dest, String content){
-		String ret = null;
-		PktStringMessage strMsg = new PktStringMessage(dest, content);
-		if(synchroMode){
-			ret = ((PktSwallowPACK)syncHandler.doSendMsg(strMsg)).getShaInfo();
-			if(ret == null){
-				handleUndeliverableMessage(strMsg);
-			}
-		}else{
-			try {
-				asyncHandler.doSendMsg(strMsg);
-			} catch (FileQueueClosedException e) {
-				e.printStackTrace();
-				handleUndeliverableMessage(strMsg);
-			}
-		}
-		return ret;
+	public String getFilequeueName() {
+		return filequeueName;
 	}
-	//发送默认Destination的String
-	public String sendString(String content){
-		return sendString(defaultDest, content);
+	public void setFilequeueName(String filequeueName) {
+		this.filequeueName = filequeueName;
 	}
+	
 	//发送指定Destination的Object//TODO: 使用序列化
 	public String sendMessage(Destination dest, Object content){
 		String ret = null;
