@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+           
+    <bean id="cService" class="com.dianping.swallow.consumerserver.ConsumerService">
+		<constructor-arg>
+			<value>192.168.31.178:27016</value>
+		</constructor-arg>
+	</bean>
+	
+	
+	
+	       
+    <bean id="placeholderConfig"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location" value="classpath:ox.properties" />
+	</bean>
+
+	<bean id="mongo" class="com.mongodb.Mongo">
+		<constructor-arg>
+			<bean class="com.mongodb.MongoURI">
+				<constructor-arg value="mongodb://${storage.mongourl}" />
+			</bean>
+		</constructor-arg>
+	</bean>
+
+	<bean id="morphiaFactory" class="com.dianping.ox.common.mongo.MorphiaFactory" />
+	
+	<context:component-scan base-package="com.dianping.ox.common" />
+
+</beans>

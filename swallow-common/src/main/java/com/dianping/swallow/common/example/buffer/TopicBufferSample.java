@@ -13,7 +13,8 @@ public class TopicBufferSample {
       String topicName = "topicA";
       Long cid = 1L;
       TopicBuffer topicBuffer = TopicBuffer.getTopicBuffer(topicName);
-      BlockingQueue<Message> queue = topicBuffer.getMessageQueue(cid);
+      long messageIdOfTailMessage = 1L;
+      BlockingQueue<Message> queue = topicBuffer.createMessageQueue(cid, messageIdOfTailMessage);
 
       int i = 0;
       while (true) {

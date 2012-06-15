@@ -11,37 +11,24 @@ import com.dianping.swallow.common.message.Message;
 @SuppressWarnings("rawtypes")
 public class TopicBuffer implements Serializable {
 
-   private static final long                               serialVersionUID                  = 8764667102499944469L;
+   private static final long                               serialVersionUID                 = 8764667102499944469L;
 
    /**
     * 锁是为了防止相同topicName的TopicBuffer被并发创建，所以相同的topicName对应相同的锁。
     * 锁的个数也决定了最多能有多少创建TopicBuffer的并发操作
     */
-   private static final int                                LOCK_NUM_FOR_CREATE_TOPIC_BUFFER  = 10;
-   private static ReentrantLock[]                          locksForCreateTopicBuffer         = new ReentrantLock[LOCK_NUM_FOR_CREATE_TOPIC_BUFFER];
+   private static final int                                LOCK_NUM_FOR_CREATE_TOPIC_BUFFER = 10;
+   private static ReentrantLock[]                          locksForCreateTopicBuffer        = new ReentrantLock[LOCK_NUM_FOR_CREATE_TOPIC_BUFFER];
    static {
       for (int i = 0; i < locksForCreateTopicBuffer.length; i++) {
          locksForCreateTopicBuffer[i] = new ReentrantLock();
       }
    }
-   private static final ConcurrentMap<String, TopicBuffer> topicBuffers                      = new ConcurrentHashMap<String, TopicBuffer>();
-
-   /**
-    * 锁是为了防止相同cid并发创建MessageQueue，所以相同的cid对应相同的锁。
-    * 锁的个数也决定了最多能有多少创建MessageQueue的并发操作
-    */
-   private static final int                                LOCK_NUM_FOR_CREATE_MESSAGE_QUEUE = 128;
-
-   private ReentrantLock[]                                 locksForCreateMessageQueue        = new ReentrantLock[LOCK_NUM_FOR_CREATE_MESSAGE_QUEUE];
-   {
-      for (int i = 0; i < locksForCreateMessageQueue.length; i++) {
-         locksForCreateMessageQueue[i] = new ReentrantLock();
-      }
-   }
+   private static final ConcurrentMap<String, TopicBuffer> topicBuffers                     = new ConcurrentHashMap<String, TopicBuffer>();
 
    private final String                                    topicName;
 
-   private ConcurrentHashMap<Long, BlockingQueue<Message>> messageQueues                     = new ConcurrentHashMap<Long, BlockingQueue<Message>>();
+   private ConcurrentHashMap<Long, BlockingQueue<Message>> messageQueues                    = new ConcurrentHashMap<Long, BlockingQueue<Message>>();
 
    private TopicBuffer(String topicName) {
       this.topicName = topicName;
@@ -80,43 +67,23 @@ public class TopicBuffer implements Serializable {
     * @param cid 消费者id
     * @return 返回消费者id对应的消息队列
     */
-   public BlockingQueue<Message> getMessageQueue(Long cid) {
-      BlockingQueue<Message> queue = messageQueues.get(cid);
-      if (queue != null) {
-         return queue;
-      }
-      //cid对应的queue不存在，创建queue
-      ReentrantLock reentrantLock = locksForCreateMessageQueue[index(cid)];
-      try {
-         reentrantLock.lock();// 加锁，防止同时创建相同topicName的TopicBuffer
-         queue = messageQueues.get(cid);// double check
-         if (queue == null) {
-            queue = createMessageQueue(cid);
-            messageQueues.put(cid, queue);
-         }
-      } finally {// 释放锁
-         reentrantLock.unlock();
-      }
-      return queue;
+   public BlockingQueue<Message> getMessageQueue(long cid) {
+      return messageQueues.get(cid);
    }
 
-   private BlockingQueue<Message> createMessageQueue(Long cid) {
+   public BlockingQueue<Message> createMessageQueue(long cid, long messageIdOfTailMessage) {
       MessageBlockingQueue messageBlockingQueue;
       //TODO 通过lion获取参数
       int threshold = 10;
       int capacity = 100;
       if (capacity < 0) {
-         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold);
+         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, messageIdOfTailMessage);
       } else {
-         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, capacity);
+         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, capacity,
+               messageIdOfTailMessage);
       }
       messageBlockingQueue.setMessageRetriever(new MongoDBMessageRetriever());
       return messageBlockingQueue;
-   }
-
-   private int index(long cid) {
-      cid = cid >= 0 ? cid : cid == Long.MIN_VALUE ? 0 : Math.abs(cid);// 保证cid非负
-      return (int) (cid % LOCK_NUM_FOR_CREATE_MESSAGE_QUEUE);
    }
 
    private static int index(String topicName) {

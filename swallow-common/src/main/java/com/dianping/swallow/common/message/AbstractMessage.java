@@ -20,6 +20,8 @@ public abstract class AbstractMessage<T> implements Message<T>, Serializable {
 
    private ContentType       contentType;
 
+   private String            sha1;
+
    public Date getGeneratedTime() {
       return generatedTime;
    }
@@ -66,6 +68,14 @@ public abstract class AbstractMessage<T> implements Message<T>, Serializable {
 
    public void setProperties(Properties properties) {
       this.properties = properties;
+   }
+
+   public String getSha1() {
+      return sha1;
+   }
+
+   public void setSha1(String sha1) {
+      this.sha1 = sha1;
    }
 
    public abstract void setContent(T content);
