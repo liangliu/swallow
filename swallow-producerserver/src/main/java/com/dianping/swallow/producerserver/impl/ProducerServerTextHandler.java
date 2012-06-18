@@ -23,6 +23,15 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler{
     	this.producerServerText = producerServerText;
 	}
 
+    
+	@Override
+	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
+			throws Exception {
+		// TODO Auto-generated method stub
+		e.getChannel().write("U R a little pig\r\n");
+	}
+
+
 	@Override
 	public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)
 			throws Exception {
@@ -40,9 +49,9 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler{
         String request = (String) e.getMessage();
         PktStringMessage pkt = (PktStringMessage) TextHandler.changeTextToPacket(e.getChannel().getRemoteAddress(), request);
         if(pkt == null){
-        	e.getChannel().write("Wrong format!");
+        	e.getChannel().write("Wrong format!\r\n");
         }else{
-        	e.getChannel().write("Message is sent!");
+        	e.getChannel().write("Message is sent!\r\n");
         }
     }
     

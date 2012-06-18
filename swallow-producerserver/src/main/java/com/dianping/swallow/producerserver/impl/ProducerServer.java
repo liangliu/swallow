@@ -18,7 +18,7 @@ import com.dianping.swallow.producerserver.util.SHAGenerater;
 public class ProducerServer implements MQService {
 
 	private static Map<Destination, InetSocketAddress> DestinationAndDBMap = new HashMap<Destination, InetSocketAddress>();
-	private MongoClient mongoClient;
+//	private MongoClient mongoClient;
 	
 	public ProducerServer(){
 		new ProducerServerText().start();

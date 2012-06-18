@@ -4,6 +4,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import com.dianping.swallow.common.util.Destination;
 import com.dianping.swallow.producer.impl.Producer;
 
 /**
@@ -49,7 +50,7 @@ public class AppTest
 		Producer ps = Producer.getInstance();
 		while(true){
 //			content += i++;
-			System.out.println(ps.sendMessage(content));
+			System.out.println(ps.sendMessage(Destination.queue("master.slave"), content));
 			try {
 				Thread.sleep(1000);
 			} catch (Exception e) {
