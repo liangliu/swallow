@@ -38,10 +38,10 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     	String topicId = message.split(":")[0];
     	String consumerId = message.split(":")[1];
     	String timeStamp = message.split(":")[2];
-    	cService.updateChannelWorkStatues(consumerId, channel);
+    	cService.putChannelToBlockQueue(consumerId, channel);
     	//对应consumerID的线程不存在,应该是可以用threadslist代替。
-    	//线程安全  	  
-    	cService.updateThreadWorkStatues(consumerId, topicId); 
+    	//线程安全
+    	cService.updateThreadWorkStatues(consumerId, topicId);
     }
  
     @Override

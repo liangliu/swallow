@@ -9,5 +9,16 @@ public interface TopicDAO<ID> {
    /**
     * 获取topic数据库的topicName集合/表里，size条messageId字段比messageId参数大的记录
     */
-   List<SwallowMessage> getMessagesGreaterThan( ID messageId,String topicName,int size);
+   List<SwallowMessage> getMessagesGreaterThan(String topicName, ID messageId, int size);
+
+   /**
+    * 获取topic数据库的topicName集合/表里，messageId字段最小的size条记录
+    */
+   List<SwallowMessage> getMinMessages(String topicName, int size);
+
+   /**
+    * 往topic数据库的topicName集合/表里，插入一条信息
+    */
+   void saveMessage(String topicName, SwallowMessage message);
+
 }

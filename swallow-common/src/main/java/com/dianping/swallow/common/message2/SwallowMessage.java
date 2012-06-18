@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Properties;
 
-import com.dianping.swallow.common.dao.impl.mongodb.MessageId;
 import com.dianping.swallow.common.message.JsonBinder;
 
 public class SwallowMessage implements Serializable {
@@ -13,7 +12,7 @@ public class SwallowMessage implements Serializable {
 
    private Date              generatedTime;
 
-   private MessageId         messageId;
+   private Long              messageId;
 
    private Properties        properties       = new Properties();
 
@@ -35,11 +34,11 @@ public class SwallowMessage implements Serializable {
       this.generatedTime = generatedTime;
    }
 
-   public MessageId getMessageId() {
+   public Long getMessageId() {
       return messageId;
    }
 
-   public void setMessageId(MessageId messageId) {
+   public void setMessageId(Long messageId) {
       this.messageId = messageId;
    }
 
@@ -75,7 +74,7 @@ public class SwallowMessage implements Serializable {
       this.sha1 = sha1;
    }
 
-   public <T> T deserializeAsBean(Class<T> clazz) {
+   public <T> T getContentAsBean(Class<T> clazz) {
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
       return jsonBinder.fromJson(content, clazz);
    }
@@ -84,17 +83,17 @@ public class SwallowMessage implements Serializable {
       return content;
    }
 
-   public byte[] deserializeAsBytes() {
+   public byte[] getContentAsBytes() {
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
       return jsonBinder.fromJson(content, byte[].class);
    }
 
-   public void serializeAsJsonString(Object bean) {
+   public void setContentAsJsonString(Object bean) {
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
       this.content = jsonBinder.toJson(bean);
    }
 
-   public void serializeAsJsonString(byte[] content) {
+   public void setContentAsJsonString(byte[] content) {
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
       this.content = jsonBinder.toJson(content);
    }

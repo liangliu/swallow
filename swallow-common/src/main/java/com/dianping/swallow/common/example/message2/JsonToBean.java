@@ -13,7 +13,7 @@ public class JsonToBean {
       String json = "{\"generatedTime\":null,\"messageId\":null,\"properties\":{\"adasd\":\"dasd\"},\"retryCount\":0,\"version\":null,\"sha1\":null,\"content\":\"{\\\"a\\\":1,\\\"b\\\":\\\"b\\\"}\"}";
       SwallowMessage msg = jsonBinder.fromJson(json, SwallowMessage.class);
       System.out.println(msg);
-      System.out.println(msg.deserializeAsBean(DemoBean.class));
+      System.out.println(msg.getContentAsBean(DemoBean.class));
    }
 
 }

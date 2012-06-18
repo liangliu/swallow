@@ -14,7 +14,7 @@ public class BeanToJson {
       demoBean.setB("b");
 
       SwallowMessage message = new SwallowMessage();
-      message.serializeAsJsonString(demoBean);
+      message.setContentAsJsonString(demoBean);
       Properties properties = new Properties();
       properties.setProperty("property-key", "property-value");
       message.setProperties(properties);

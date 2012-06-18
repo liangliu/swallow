@@ -1,6 +1,6 @@
 package com.dianping.swallow.consumerserver;
 
-import java.util.HashMap;
+import java.util.HashSet;
 
 import org.jboss.netty.channel.Channel;
 
@@ -32,19 +32,16 @@ public class GetMessageThread implements Runnable{
 	public void run() {
 		//TODO 获取mongo中最大的timeStamp，然后blockingQueue去获取！
 		while(isLive){
-			cService.ergodicChannelByCId(consumerId, topicId, isLive);
+			cService.ergodicChannelByCId(consumerId, topicId);
 			synchronized(cService.getThreads()){
-				HashMap<Channel, String> channels = cService.getChannelWorkStatue().get(consumerId);
+				HashSet<Channel> channels = cService.getChannelWorkStatue().get(consumerId);
+				//TODO 貌似是不需要同步！
 				if(channels.isEmpty()){
-					cService.getThreads().remove(consumerId);	
+					cService.getThreads().remove(consumerId);
 					isLive = false;
 				}
 			}
-		}
-
-		
-		
-		
+		}		
 		//maxTStamp = dao.getMaxTimeStamp(topicId, consumerId);
 		
 		//TODO refactor to ConsumerService
