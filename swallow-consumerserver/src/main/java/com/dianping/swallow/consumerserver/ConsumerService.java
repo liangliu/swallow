@@ -5,11 +5,11 @@ import org.jboss.netty.channel.Channel;
 public interface ConsumerService {
 
 	/**
-	 * 有新消息到的时候，更新channel的状态
+	 * 有新消息到的时候，往blockQueue中插入channel，表示此channel可接受消息。
 	 * @param consumerId
 	 * @param channel
 	 */
-	public void updateChannelWorkStatues(String consumerId, Channel channel);
+	public void putChannelToBlockQueue(String consumerId, Channel channel);
 	
 	/**
 	 * @param consumerId
@@ -22,9 +22,8 @@ public interface ConsumerService {
 	 * 遍历一遍同consumerId下所有的channel
 	 * @param consumerId
 	 * @param topicId
-	 * @param isLive
 	 */
-	public void ergodicChannelByCId(String consumerId,String topicId, Boolean isLive);
+	public void ergodicChannelByCId(String consumerId,String topicId);
 	
 	/**
 	 * 当channel断开时做的处理

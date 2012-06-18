@@ -1,6 +1,7 @@
 package com.dianping.swallow.consumerserver.impl;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.bson.types.BSONTimestamp;
 import org.jboss.netty.channel.Channel;
+
 import com.dianping.swallow.common.dao.CounterDAO;
 import com.dianping.swallow.consumerserver.ConsumerService;
 import com.dianping.swallow.consumerserver.GetMessageThread;
@@ -27,7 +29,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 	
 	private Mongo mongo;
 
-	private Map<String, HashMap<Channel, String>> channelWorkStatue;	//channel的可接受消息的状态
+	private Map<String, HashSet<Channel>> channelWorkStatue;	//channel是否存在的状态
     
     private Map<String, Semaphore> freeChannelNums = new HashMap<String, Semaphore>();
     
@@ -42,12 +44,20 @@ public class ConsumerServiceImpl implements ConsumerService{
     
     private Map<String, ArrayBlockingQueue<String>> messageQueue = new HashMap<String, ArrayBlockingQueue<String>>();
     
+    private Map<String, ArrayBlockingQueue<Channel>> freeChannelQueue = new HashMap<String, ArrayBlockingQueue<Channel>>();
+    
     private CounterDAO dao;
+    
+    private ArrayBlockingQueue<Channel> freeChannels;
 	   
     public Map<String, ArrayBlockingQueue<String>> getMessageQueue() {
 		return messageQueue;
 	}
     
+	public Map<String, ArrayBlockingQueue<Channel>> getFreeChannelQueue() {
+		return freeChannelQueue;
+	}
+
 	public Mongo getMongo() {
 		return mongo;
 	}
@@ -56,16 +66,17 @@ public class ConsumerServiceImpl implements ConsumerService{
 		return configManager;
 	}
 	
-	public Map<String, HashMap<Channel, String>> getChannelWorkStatue() {
+	
+	public Map<String, HashSet<Channel>> getChannelWorkStatue() {
 		return channelWorkStatue;
 	}
-	
+
 	public Map<String, Boolean> getThreads() {
 		return threads;
 	}
 	
 	public ConsumerServiceImpl(String uri){    	
-    	this.channelWorkStatue = new HashMap<String, HashMap<Channel, String>>();
+    	this.channelWorkStatue = new HashMap<String, HashSet<Channel>>();
     	this.configManager = ConfigManager.getInstance();
     	this.threadFactory = new MQThreadFactory();
     	List<ServerAddress> replicaSetSeeds = MongoUtil.parseUri(uri);
@@ -91,19 +102,28 @@ public class ConsumerServiceImpl implements ConsumerService{
 		return options;
 	}
 		
-	public void updateChannelWorkStatues(String consumerId, Channel channel){
+	public void putChannelToBlockQueue(String consumerId, Channel channel){
 		synchronized(channelWorkStatue){
 			if(channelWorkStatue.get(consumerId) == null){
-				HashMap<Channel, String> channels = new HashMap<Channel, String>();
-				channels.put(channel, "done");
-				freeChannelNums.put(consumerId, new Semaphore(1));
+				HashSet<Channel> channels = new HashSet<Channel>();
+				channels.add(channel);
 				channelWorkStatue.put(consumerId, channels);
 			} else{
-				HashMap<Channel, String> channels = channelWorkStatue.get(consumerId);
-				channels.put(channel, "done");
-				freeChannelNums.get(consumerId).release();
+				HashSet<Channel> channels = channelWorkStatue.get(consumerId);
+				channels.add(channel);
 			}
 		}    	
+		freeChannels = freeChannelQueue.get(consumerId);
+		if(freeChannels == null){
+			freeChannels = new ArrayBlockingQueue<Channel>(10);//TODO
+			freeChannelQueue.put(consumerId, freeChannels);
+		}
+		try {
+			freeChannels.put(channel);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 		
 	public void updateThreadWorkStatues(String consumerId, String topicId){
@@ -120,37 +140,21 @@ public class ConsumerServiceImpl implements ConsumerService{
 		}			
     }
 	
-	public void ergodicChannelByCId(String consumerId,String topicId, Boolean isLive){
+	public void ergodicChannelByCId(String consumerId,String topicId){
 		
-		//获得同consumerId下所有的channel
-		HashMap<Channel, String> channels = channelWorkStatue.get(consumerId);
-		Iterator<Entry<Channel, String>> iterator = channels.entrySet().iterator();
+		freeChannels = freeChannelQueue.get(consumerId);
 		ArrayBlockingQueue<String> messages = messageQueue.get(consumerId);
-		while(iterator.hasNext()){
-			Entry<Channel, String> entry = iterator.next();
-			try {
-				//TODO 
-				boolean isTimeOut = freeChannelNums.get(consumerId).tryAcquire(configManager.getSemaphoreTimeOutTime(),TimeUnit.MILLISECONDS);
-				if(!isTimeOut){
+		try {
+			while(true){
+				Channel channel = freeChannels.poll(configManager.getSemaphoreTimeOutTime(),TimeUnit.MILLISECONDS);//TODO 
+				if(channel == null){
 					break;
-				}
-				freeChannelNums.get(consumerId).release();
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			if("done".equals(entry.getValue())){
-				//TODO 换成message的类，暂时用String代替吧。
-				if(preparedMesssages.get(consumerId) != null){
-					message = preparedMesssages.get(consumerId);
-					preparedMesssages.remove(consumerId);
-				} else{
-					//用blockingqueue就不用在内存中记录最大timeStamp了。
-					try {
+				}else if(channel.isConnected()){
+					if(preparedMesssages.get(consumerId) != null){
+						message = preparedMesssages.get(consumerId);
+						preparedMesssages.remove(consumerId);
+					} else{					
 						String message = messages.take();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
 					//TODO 从消息中得到maxTStamp
 					//TODO 是否可以自己设置BSongtimestamp
@@ -158,48 +162,99 @@ public class ConsumerServiceImpl implements ConsumerService{
 					//更新mongo中最大timeStamp
 					//TODO 受到ack再更新
 					dao.addCounter(topicId, consumerId,maxTStamp);
-				}										
-				Channel channel = entry.getKey();
-				//如果此时连接断了，则把消息存到预发消息变量中。
-				if(!channel.isConnected()){
-					preparedMesssages.put(consumerId, message);
-				} else{
-					//TODO 如何防止内存使用过量，问游泳
-					channel.write(message);
-					channels.put(channel, "doing");
-					try {
-						freeChannelNums.get(consumerId).acquire();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					if(!channel.isConnected()){
+						preparedMesssages.put(consumerId, message);
+					} else{
+						channel.write(message);
 					}
 				}
 			}
-		}		
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//获得同consumerId下所有的channel
+//		HashMap<Channel, String> channels = channelWorkStatue.get(consumerId);
+//		Iterator<Entry<Channel, String>> iterator = channels.entrySet().iterator();
+//		ArrayBlockingQueue<String> messages = messageQueue.get(consumerId);
+//		while(iterator.hasNext()){
+//			Entry<Channel, String> entry = iterator.next();
+//			try {
+//				//TODO 
+//				boolean isTimeOut = freeChannelNums.get(consumerId).tryAcquire(configManager.getSemaphoreTimeOutTime(),TimeUnit.MILLISECONDS);
+//				if(!isTimeOut){
+//					break;
+//				}
+//				freeChannelNums.get(consumerId).release();
+//			} catch (InterruptedException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+//			if("done".equals(entry.getValue())){
+//				//TODO 换成message的类，暂时用String代替吧。
+//				if(preparedMesssages.get(consumerId) != null){
+//					message = preparedMesssages.get(consumerId);
+//					preparedMesssages.remove(consumerId);
+//				} else{
+//					//用blockingqueue就不用在内存中记录最大timeStamp了。
+//					try {
+//						String message = messages.take();
+//					} catch (InterruptedException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//					//TODO 从消息中得到maxTStamp
+//					//TODO 是否可以自己设置BSongtimestamp
+//					BSONTimestamp maxTStamp = new BSONTimestamp();
+//					//更新mongo中最大timeStamp
+//					//TODO 受到ack再更新
+//					dao.addCounter(topicId, consumerId,maxTStamp);
+//				}										
+//				Channel channel = entry.getKey();
+//				//如果此时连接断了，则把消息存到预发消息变量中。
+//				if(!channel.isConnected()){
+//					preparedMesssages.put(consumerId, message);
+//				} else{
+//					//TODO 如何防止内存使用过量，问游泳
+//					channel.write(message);
+//					channels.put(channel, "doing");
+//					try {
+//						freeChannelNums.get(consumerId).acquire();
+//					} catch (InterruptedException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//				}
+//			}
+//		}		
 	}
 	
 	public void changeStatuesWhenChannelBreak(Channel channel){
-		String cId = null;
-		HashMap<Channel, String> channels = null;
-		Iterator<Map.Entry<String,HashMap<Channel,String>>> iterator = channelWorkStatue.entrySet().iterator();
-		while(iterator.hasNext()){
-			Entry<String, HashMap<Channel, String>> entry = iterator.next();
-			channels = entry.getValue();
-			if(channels.containsKey(channel)){
-				cId = entry.getKey();					
-				break;
+		
+//		String cId = null;
+		HashSet<Channel> channels = null;
+		synchronized(channelWorkStatue){
+			Iterator<Map.Entry<String,HashSet<Channel>>> iterator = channelWorkStatue.entrySet().iterator();
+			while(iterator.hasNext()){
+				Entry<String, HashSet<Channel>> entry = iterator.next();
+				channels = entry.getValue();
+				if(channels.remove(channel)){		
+					break;
+				}
 			}
 		}
-		channels = channelWorkStatue.get(cId);
-		if("done".equals(channels.get(channel))){
-			try {
-				freeChannelNums.get(cId).acquire();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		channels.remove(cId);
+		
+//		channels = channelWorkStatue.get(cId);
+//		if("done".equals(channels.get(channel))){
+//			try {
+//				freeChannelNums.get(cId).acquire();
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+//		channels.remove(cId);
 //		synchronized(threads){
 //			if(channels.isEmpty()){
 //				threads.remove(cId);						
