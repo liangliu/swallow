@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Properties;
 
-import com.dianping.swallow.common.dao.impl.mongodb.MessageId;
 import com.dianping.swallow.common.message.JsonBinder;
 
 public class SwallowMessage implements Serializable {
@@ -13,7 +12,7 @@ public class SwallowMessage implements Serializable {
 
    private Date              generatedTime;
 
-   private MessageId         messageId;
+   private Long              messageId;
 
    private Properties        properties       = new Properties();
 
@@ -35,11 +34,11 @@ public class SwallowMessage implements Serializable {
       this.generatedTime = generatedTime;
    }
 
-   public MessageId getMessageId() {
+   public Long getMessageId() {
       return messageId;
    }
 
-   public void setMessageId(MessageId messageId) {
+   public void setMessageId(Long messageId) {
       this.messageId = messageId;
    }
 

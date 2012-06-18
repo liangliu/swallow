@@ -19,7 +19,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
 
-public class TopicDAOImpl implements TopicDAO<MessageId> {
+public class TopicDAOImpl implements TopicDAO<Long> {
 
    @SuppressWarnings("unused")
    private static final Logger LOG = LoggerFactory.getLogger(TopicDAOImpl.class);
@@ -34,12 +34,12 @@ public class TopicDAOImpl implements TopicDAO<MessageId> {
     * 记录的格式如：<br>
     */
    @Override
-   public List<SwallowMessage> getMessagesGreaterThan(String topicName, MessageId messageId, int size) {
+   public List<SwallowMessage> getMessagesGreaterThan(String topicName, Long messageId, int size) {
       DBCollection collection = this.db.getCollection(topicName);
 
       BasicDBObject keys = new BasicDBObject();
       keys.put("_id", 0);
-      DBObject gt = BasicDBObjectBuilder.start().add("$gt", MessageId.toBSONTimestamp(messageId)).get();
+      DBObject gt = BasicDBObjectBuilder.start().add("$gt", BSONTimestampUtils.longToBSONTimestamp(messageId)).get();
       DBObject query = BasicDBObjectBuilder.start().add("messageId", gt).get();
       DBObject orderBy = BasicDBObjectBuilder.start().add("messageId", Integer.valueOf(1)).get();
       DBCursor cursor = collection.find(query, keys).sort(orderBy).limit(size);
@@ -49,7 +49,7 @@ public class TopicDAOImpl implements TopicDAO<MessageId> {
          DBObject result = cursor.next();
          SwallowMessage swallowMessage = new SwallowMessage();
          BSONTimestamp timestamp = (BSONTimestamp) result.get("messageId");
-         swallowMessage.setMessageId(MessageId.fromBSONTimestamp(timestamp));
+         swallowMessage.setMessageId(BSONTimestampUtils.BSONTimestampToLong(timestamp));
          swallowMessage.setContent((String) result.get("content"));
          swallowMessage.setVersion((String) result.get("version"));
          swallowMessage.setGeneratedTime((Date) result.get("generatedTime"));
@@ -80,7 +80,7 @@ public class TopicDAOImpl implements TopicDAO<MessageId> {
          DBObject result = cursor.next();
          SwallowMessage swallowMessage = new SwallowMessage();
          BSONTimestamp timestamp = (BSONTimestamp) result.get("messageId");
-         swallowMessage.setMessageId(MessageId.fromBSONTimestamp(timestamp));
+         swallowMessage.setMessageId(BSONTimestampUtils.BSONTimestampToLong(timestamp));
          swallowMessage.setContent((String) result.get("content"));
          swallowMessage.setVersion((String) result.get("version"));
          swallowMessage.setGeneratedTime((Date) result.get("generatedTime"));
