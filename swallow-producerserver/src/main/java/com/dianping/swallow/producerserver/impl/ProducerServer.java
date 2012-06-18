@@ -1,23 +1,32 @@
 package com.dianping.swallow.producerserver.impl;
 
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.dianping.swallow.common.packet.Packet;
 import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.common.packet.PktStringMessage;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
+import com.dianping.swallow.common.util.Destination;
 import com.dianping.swallow.common.util.MQService;
 import com.dianping.swallow.producerserver.util.SHAGenerater;
 
 public class ProducerServer implements MQService {
-	private String str;
-	public String getStr(){
-		return str;
-	}
-	public void setStr(String str) {
-		this.str = str;
-	}
 
+	private static Map<Destination, InetSocketAddress> DestinationAndDBMap = new HashMap<Destination, InetSocketAddress>();
+	
+	public ProducerServer(){
+		
+	}
+	
+	//Lion的Destination-DB映射（DDMap）配置更新
+	private void onDDMapChanged(){
+		
+	}
+	
 	@Override
 	public Packet sendMessage(Packet pkt) {
 		// TODO Auto-generated method stub
