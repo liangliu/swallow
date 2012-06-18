@@ -2,7 +2,7 @@ package com.dianping.swallow.common.dao.impl.mongodb;
 
 import java.util.List;
 
-import com.dianping.swallow.common.message2.SwallowMessage;
+import com.dianping.swallow.common.message.SwallowMessage;
 
 public interface TopicDAO<ID> {
 

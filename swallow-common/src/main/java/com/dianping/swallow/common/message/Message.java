@@ -3,11 +3,9 @@ package com.dianping.swallow.common.message;
 import java.util.Date;
 import java.util.Properties;
 
-public interface Message<T> {
+public interface Message {
 
    Long getMessageId();
-
-   ContentType getContentType();
 
    Date getGeneratedTime();
 
@@ -17,15 +15,8 @@ public interface Message<T> {
 
    Properties getProperties();
 
-   T getContent();
+   String getContent();
 
-   public static enum ContentType {
-      /** 普通Bean对象 */
-      BeanMessage(),
-      /** 文本对象 */
-      TextMessage(),
-      /** 字节数组对象 */
-      BytesMessage();
-   }
+   String getSha1();
 
 }
