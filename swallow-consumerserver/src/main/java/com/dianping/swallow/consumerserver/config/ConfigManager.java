@@ -20,12 +20,13 @@ public class ConfigManager {
 	
 	private static ConfigManager ins = new ConfigManager();
 
+	private int freeChannelBlockQueueSize = 10;
 	// time related
 	private int heartbeatMaxStopTime = 120000;
 	private int heartbeatUpdateInterval = 10000;
 	private int blockQueueFailoverSleepTime = 1000;
 	private int pullingTime = 1000;
-	private long semaphoreTimeOutTime = 120000;
+	private long freeChannelBlockQueueOutTime = 120000;
 
 	// db and collection name related
 	private String counterDB = "swallow_counter";
@@ -36,9 +37,16 @@ public class ConfigManager {
 		return blockQueueFailoverSleepTime;
 	}
 
-	public long getSemaphoreTimeOutTime() {
-		return semaphoreTimeOutTime;
+
+	public long getFreeChannelBlockQueueOutTime() {
+		return freeChannelBlockQueueOutTime;
 	}
+
+
+	public int getFreeChannelBlockQueueSize() {
+		return freeChannelBlockQueueSize;
+	}
+
 
 	public int getPullingTime() {
 		return pullingTime;

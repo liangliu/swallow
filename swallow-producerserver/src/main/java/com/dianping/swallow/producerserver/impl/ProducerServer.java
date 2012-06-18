@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.dianping.swallow.common.dao.impl.mongodb.MongoClient;
 import com.dianping.swallow.common.packet.Packet;
 import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.common.packet.PktStringMessage;
@@ -17,9 +18,10 @@ import com.dianping.swallow.producerserver.util.SHAGenerater;
 public class ProducerServer implements MQService {
 
 	private static Map<Destination, InetSocketAddress> DestinationAndDBMap = new HashMap<Destination, InetSocketAddress>();
+	private MongoClient mongoClient;
 	
 	public ProducerServer(){
-		
+		new ProducerServerText().start();
 	}
 	
 	//Lion的Destination-DB映射（DDMap）配置更新
