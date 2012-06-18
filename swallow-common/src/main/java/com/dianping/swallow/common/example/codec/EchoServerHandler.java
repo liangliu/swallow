@@ -52,7 +52,7 @@ public class EchoServerHandler extends SimpleChannelUpstreamHandler {
       demoBean.setA(1);
       demoBean.setB("b");
       SwallowMessage m = new SwallowMessage();
-      m.serializeAsJsonString(demoBean);
+      m.setContentAsJsonString(demoBean);
 
       e.getChannel().write(m);
    }
