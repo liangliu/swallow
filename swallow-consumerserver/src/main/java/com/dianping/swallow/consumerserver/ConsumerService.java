@@ -8,8 +8,15 @@ public interface ConsumerService {
 	 * 有新消息到的时候，往blockQueue中插入channel，表示此channel可接受消息。
 	 * @param consumerId
 	 * @param channel
-	 */
+	 */	
 	public void putChannelToBlockQueue(String consumerId, Channel channel);
+	
+	/**
+	 * 有新消息到的时候，更新ChannelWorkStatue
+	 * @param consumerId
+	 * @param channel
+	 */
+	public void changeChannelWorkStatue(String consumerId, Channel channel);
 	
 	/**
 	 * @param consumerId
