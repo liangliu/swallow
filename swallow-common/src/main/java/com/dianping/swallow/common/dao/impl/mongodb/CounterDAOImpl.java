@@ -11,7 +11,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
 
-public class CounterDAOImpl implements CounterDAO<MessageId> {
+public class CounterDAOImpl implements CounterDAO<Long> {
 
    @SuppressWarnings("unused")
    private static final Logger LOG = LoggerFactory.getLogger(CounterDAOImpl.class);
@@ -23,7 +23,7 @@ public class CounterDAOImpl implements CounterDAO<MessageId> {
    }
 
    @Override
-   public MessageId getMaxMessageId(String topicName, String consumerId) {
+   public Long getMaxMessageId(String topicName, String consumerId) {
       DBCollection collection = this.db.getCollection(topicName);
       DBObject query = BasicDBObjectBuilder.start().add("consumerId", consumerId).get();
       DBObject fields = BasicDBObjectBuilder.start().add("messageId", Integer.valueOf(1)).get();
@@ -31,14 +31,14 @@ public class CounterDAOImpl implements CounterDAO<MessageId> {
       DBCursor cursor = collection.find(query, fields).sort(orderBy).limit(1);
       DBObject result = cursor.next();
       BSONTimestamp timestamp = (BSONTimestamp) result.get("messageId");
-      return MessageId.fromBSONTimestamp(timestamp);
+      return BSONTimestampUtils.BSONTimestampToLong(timestamp);
 
    }
 
    @Override
-   public void add(String topicName, String consumerId, MessageId messageId) {
+   public void add(String topicName, String consumerId, Long messageId) {
       DBCollection collection = this.db.getCollection(topicName);
-      BSONTimestamp timestamp = MessageId.toBSONTimestamp(messageId);
+      BSONTimestamp timestamp = BSONTimestampUtils.longToBSONTimestamp(messageId);
       DBObject add = BasicDBObjectBuilder.start().add("consumerId", consumerId).add("messageId", timestamp).get();
       collection.insert(add, WriteConcern.SAFE);
    }

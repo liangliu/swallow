@@ -17,7 +17,6 @@ import com.dianping.swallow.producer.HandlerUndeliverable;
 public class Producer {
 	//变量定义
 	private static Producer 		instance;				//Producer实例
-	private Destination				defaultDest		= Destination.queue("master.slave");
 	private ApplicationContext		ctx				= new ClassPathXmlApplicationContext("spring-producerclient.xml");//spring
 	private MQService				swallowAgency	= (MQService) ctx.getBean("server", MQService.class);//获取Swallow代理
 	private boolean					synchroMode		= true;	//是否同步
@@ -55,21 +54,15 @@ public class Producer {
 	}
 	
 	//getters && setters
-	public Destination getDefaultDestination() {
-		return defaultDest;
-	}
-	public void setDefaultDestination(Destination defaultDest) {
-		this.defaultDest = defaultDest;
+	public static synchronized Producer getInstance(){
+		if(instance == null)	instance = new Producer();
+		return instance;
 	}
 	public String getProducerID() {
 		return producerID;
 	}
 	public MQService getSwallowAgency() {
 		return swallowAgency;
-	}
-	public static synchronized Producer getInstance(){
-		if(instance == null)	instance = new Producer();
-		return instance;
 	}
 	public String getFilequeueName() {
 		return filequeueName;
@@ -91,16 +84,13 @@ public class Producer {
 			try {
 				asyncHandler.doSendMsg(objMsg);
 			} catch (FileQueueClosedException e) {
-				e.printStackTrace();
+				log.info(e.toString());
 				handleUndeliverableMessage(objMsg);
 			}
 		}
 		return ret;
 	}
-	//发生送默认Destination的Object
-	public String sendMessage(Object content){
-		return sendMessage(defaultDest, content);
-	}
+	
 	//处理发送失败的Handle
 	private void handleUndeliverableMessage(Message msg) {
 		try {

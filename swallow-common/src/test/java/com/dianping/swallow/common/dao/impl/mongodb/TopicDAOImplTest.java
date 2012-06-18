@@ -41,7 +41,7 @@ public class TopicDAOImplTest {
    public void testGetMessagesGreaterThan() {
       //查询messageId比指定id大的按messageId升序排序的5条消息
       List<SwallowMessage> minMessages = topicDAOImpl.getMinMessages("topicB", 1);
-      MessageId messageId = minMessages.get(0).getMessageId();
+      Long messageId = minMessages.get(0).getMessageId();
       List<SwallowMessage> messagesGreaterThan = topicDAOImpl.getMessagesGreaterThan("topicB", messageId, 5);
       System.out.println(messagesGreaterThan);
    }
