@@ -7,7 +7,7 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.dianping.swallow.common.message2.SwallowMessage;
+import com.dianping.swallow.common.message.SwallowMessage;
 
 public class TopicDAOImplTest {
 
@@ -52,7 +52,7 @@ public class TopicDAOImplTest {
       message.setGeneratedTime(new Date());
       Properties properties = new Properties();
       properties.setProperty("property-key", "property-value");
-      message.setProperties(properties);
+      message.getProperties().setProperty("property-key", "property-value");
       message.setRetryCount(1);
       message.setSha1("sha-1 string");
       message.setVersion("0.6.0");

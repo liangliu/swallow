@@ -101,8 +101,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 //		options.safe = config.isMongoSafe();
 		return options;
 	}
-		
-	public void putChannelToBlockQueue(String consumerId, Channel channel){
+	public void changeChannelWorkStatue(String consumerId, Channel channel){
 		synchronized(channelWorkStatue){
 			if(channelWorkStatue.get(consumerId) == null){
 				HashSet<Channel> channels = new HashSet<Channel>();
@@ -112,10 +111,13 @@ public class ConsumerServiceImpl implements ConsumerService{
 				HashSet<Channel> channels = channelWorkStatue.get(consumerId);
 				channels.add(channel);
 			}
-		}    	
+		}    
+	}
+	
+	public void putChannelToBlockQueue(String consumerId, Channel channel){			
 		freeChannels = freeChannelQueue.get(consumerId);
 		if(freeChannels == null){
-			freeChannels = new ArrayBlockingQueue<Channel>(10);//TODO
+			freeChannels = new ArrayBlockingQueue<Channel>(configManager.getFreeChannelBlockQueueSize());
 			freeChannelQueue.put(consumerId, freeChannels);
 		}
 		try {
@@ -146,7 +148,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 		ArrayBlockingQueue<String> messages = messageQueue.get(consumerId);
 		try {
 			while(true){
-				Channel channel = freeChannels.poll(configManager.getSemaphoreTimeOutTime(),TimeUnit.MILLISECONDS);//TODO 
+				Channel channel = freeChannels.poll(configManager.getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
 				if(channel == null){
 					break;
 				}else if(channel.isConnected()){
@@ -239,7 +241,8 @@ public class ConsumerServiceImpl implements ConsumerService{
 			while(iterator.hasNext()){
 				Entry<String, HashSet<Channel>> entry = iterator.next();
 				channels = entry.getValue();
-				if(channels.remove(channel)){		
+				if(channels.contains(channel)){	
+					channels.remove(channel);
 					break;
 				}
 			}

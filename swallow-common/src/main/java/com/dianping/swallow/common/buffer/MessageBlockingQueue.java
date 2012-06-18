@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.common.message.Message;
 
-@SuppressWarnings("rawtypes")
 public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
 
    private static final long   serialVersionUID  = -633276713494338593L;
@@ -94,7 +93,7 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
                   public void run() {
                      try {
                         List<Message> messages = messageRetriever.retriveMessage(MessageBlockingQueue.this.topicName,
-                              MessageBlockingQueue.this.cid, MessageBlockingQueue.this.messageIdOfTailMessage);
+                              MessageBlockingQueue.this.messageIdOfTailMessage);
                         if (messages != null) {
                            int size = messages.size();
                            for (int i = 0; i < size; i++) {
