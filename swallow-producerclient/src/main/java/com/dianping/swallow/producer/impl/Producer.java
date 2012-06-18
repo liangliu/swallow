@@ -28,8 +28,8 @@ public class Producer {
 	private String					filequeueName	= null;
 	
 	//常量定义
-	public static final int		SENDER_NUM		= 10;//异步处理对象的线程池大小
-	private static final Logger	log				= Logger.getLogger(Producer.class);
+	public static final int			SENDER_NUM		= 10;//异步处理对象的线程池大小
+	private static final Logger		log				= Logger.getLogger(Producer.class);
 	
 	//构造函数
 	//异步模式

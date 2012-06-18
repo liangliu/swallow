@@ -7,6 +7,7 @@ public class HandlerSynchroMode {
 	public HandlerSynchroMode(Producer producer){
 		this.producer = producer;
 	}
+	//对外接口
 	public Packet doSendMsg(Packet pkt){
 		return producer.getSwallowAgency().sendMessage(pkt);
 	}
