@@ -46,6 +46,7 @@ public class ProducerServer implements MQService {
 		case OBJECT_MSG:
 			pktRet = new PktSwallowPACK(SHAGenerater.generateSHA(((PktObjectMessage)pkt).getContent()));
 			System.out.println("Got ObjectMessage. " + (String)((PktObjectMessage)pkt).getContent());
+			//TODO: DAO
 			break;
 		default:
 			break;

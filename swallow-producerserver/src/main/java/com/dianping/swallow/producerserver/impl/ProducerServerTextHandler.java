@@ -52,6 +52,8 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler{
         	e.getChannel().write("Wrong format!\r\n");
         }else{
         	e.getChannel().write("Message is sent!\r\n");
+        	System.out.println(pkt.getContent());
+        	//TODO: DAO
         }
     }
     
