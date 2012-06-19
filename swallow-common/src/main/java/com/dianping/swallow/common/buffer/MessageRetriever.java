@@ -7,15 +7,15 @@ import com.dianping.swallow.common.message.Message;
 public interface MessageRetriever {
 
    /**
-    * 从数据库获取时间戳大于tailMessageTimeStamp的消息，fetchSize可配置
+    * 从数据库获取messageId大于tailMessageId的消息，fetchSize可配置
     * 
     * @param topicName
     * @param cid
-    * @param tailMessageTimeStamp
+    * @param tailMessageId
     * @return
     * @throws Exception
     */
-   List<Message> retriveMessage(String topicName, Long tailMessageTimeStamp) throws Exception;
+   List<Message> retriveMessage(String topicName, Long tailMessageId) throws Exception;
 
    void setFetchSize(int fetchSize);
 

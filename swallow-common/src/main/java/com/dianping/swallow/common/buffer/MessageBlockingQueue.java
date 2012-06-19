@@ -26,13 +26,11 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
 
    private ReentrantLock       reentrantLock     = new ReentrantLock();
 
-   protected volatile long     messageIdOfTailMessage;
-
-   private volatile long       lastAccessTime;
+   protected volatile Long     messageIdOfTailMessage;
 
    private volatile Thread     messageRetrieverDemonThread;
 
-   public MessageBlockingQueue(Long cid, String topicName, int threshold, int capacity, long messageIdOfTailMessage) {
+   public MessageBlockingQueue(Long cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage) {
       super(capacity);
       //能运行到这里，说明capacity>0
       this.cid = cid;
@@ -40,25 +38,28 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       if (threshold < 0)
          throw new IllegalArgumentException("threshold: " + threshold);
       this.threshold = threshold;
+      if (messageIdOfTailMessage == null)
+         throw new IllegalArgumentException("messageIdOfTailMessage is null.");
       this.messageIdOfTailMessage = messageIdOfTailMessage;
    }
 
-   public MessageBlockingQueue(Long cid, String topicName, int threshold, long messageIdOfTailMessage) {
-      super();
-      //能运行到这里，说明capacity>0
+   public MessageBlockingQueue(Long cid, String topicName, int threshold, Long messageIdOfTailMessage) {
       this.cid = cid;
       this.topicName = topicName;
       if (threshold < 0)
          throw new IllegalArgumentException("threshold: " + threshold);
       this.threshold = threshold;
+      if (messageIdOfTailMessage == null)
+         throw new IllegalArgumentException("messageIdOfTailMessage is null.");
       this.messageIdOfTailMessage = messageIdOfTailMessage;
    }
 
-   public MessageBlockingQueue(Long cid, String topicName, long messageIdOfTailMessage) {
-      super();
+   public MessageBlockingQueue(Long cid, String topicName, Long messageIdOfTailMessage) {
       this.cid = cid;
       this.topicName = topicName;
       this.threshold = DEFAULT_THRESHOLD;
+      if (messageIdOfTailMessage == null)
+         throw new IllegalArgumentException("messageIdOfTailMessage is null.");
       this.messageIdOfTailMessage = messageIdOfTailMessage;
    }
 
@@ -100,7 +101,12 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
                               Message message = messages.get(i);
                               try {
                                  MessageBlockingQueue.this.put(message);
-                                 messageIdOfTailMessage = message.getMessageId();
+                                 Long messageId = message.getMessageId();
+                                 if (messageId == null) {
+                                    throw new IllegalStateException("the retrived message's messageId is null:"
+                                          + message);
+                                 }
+                                 messageIdOfTailMessage = messageId;
                                  if (LOG.isDebugEnabled()) {
                                     LOG.debug("add message to (topic=" + topicName + ",cid=" + cid + ") queue:"
                                           + message.toString());
@@ -128,18 +134,6 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
             reentrantLock.unlock();
          }
       }
-   }
-
-   public long getLastAccessTime() {
-      return lastAccessTime;
-   }
-
-   public void updateLastAccessTime(long time) {
-      lastAccessTime = time;
-   }
-
-   public void resetLastAccessTime() {
-      lastAccessTime = System.currentTimeMillis();
    }
 
    public MessageRetriever getMessageRetriever() {
