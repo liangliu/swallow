@@ -7,7 +7,11 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
+import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 
+import com.dianping.swallow.common.codec.JsonDecoder;
+import com.dianping.swallow.common.codec.JsonEncoder;
 import com.dianping.swallow.consumer.netty.MessageClientHandler;
 import com.dianping.swallow.consumer.netty.MessageDecoder;
 import com.dianping.swallow.consumer.netty.MessageEncoder;
@@ -31,8 +35,10 @@ public class ConsumerClient {
             @Override  
             public ChannelPipeline getPipeline() throws Exception {  
             ChannelPipeline pipeline = Channels.pipeline();
-            pipeline.addLast("encode", new MessageEncoder());
-            pipeline.addLast("decode", new MessageDecoder());
+            pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
+            pipeline.addLast("jsonDecoder", new JsonDecoder());
+            pipeline.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
+            pipeline.addLast("jsonEncoder", new JsonEncoder());
             pipeline.addLast("handler", handler);
             return pipeline;  
             }  
