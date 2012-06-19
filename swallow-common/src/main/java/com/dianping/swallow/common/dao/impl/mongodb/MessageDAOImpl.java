@@ -9,6 +9,7 @@ import org.bson.types.BSONTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.message.JsonBinder;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.mongodb.BasicDBObjectBuilder;

@@ -5,7 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.common.dao.impl.mongodb.MessageDAO;
+import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.message.SwallowMessage;
 
 public class MongoDBMessageRetriever implements MessageRetriever {

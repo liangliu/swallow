@@ -1,4 +1,4 @@
-package com.dianping.swallow.common.dao.impl.mongodb;
+package com.dianping.swallow.common.dao;
 
 public interface AckDAO<ID> {
 
