@@ -6,21 +6,21 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class SHAGenerater {
+	//根据Object生成SHA-1字符串
 	public static String generateSHA(Object obj){
 		String ret = null;
 		try {
 			ret = generateSHA(objectToByte(obj));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return ret;
 	}
-	
+	//根据String生成SHA-1字符串
 	public static String generateSHA(String str) {
 		return generateSHA(str.getBytes());
 	}
-	
+	//根据bytes生成SHA-1字符串
 	public static String generateSHA(byte[] bytes){
 		String ret = null;
 		try {
@@ -32,7 +32,7 @@ public class SHAGenerater {
 		}
 		return ret;
 	}
-	
+	//将bytes转化为String
 	private static String byteToString(byte[] digest) {
 		String str = "";
 		String tempStr = "";
@@ -46,7 +46,7 @@ public class SHAGenerater {
 		}
 		return str.toLowerCase();
 	}
-	
+	//将object转变为bytes
 	private static byte[] objectToByte(Object obj) throws Exception{
 		if(obj == null) return null;
 		ByteArrayOutputStream bo = new ByteArrayOutputStream();

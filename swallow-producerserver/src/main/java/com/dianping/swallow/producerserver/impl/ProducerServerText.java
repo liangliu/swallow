@@ -15,6 +15,6 @@ public class ProducerServerText {
 		ServerBootstrap bootstrap = new ServerBootstrap(
 				new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
 		bootstrap.setPipelineFactory(new ProducerServerTextPipelineFactory(producerServer));
-		bootstrap.bind(new InetSocketAddress("127.0.0.1", 8000));
+		bootstrap.bind(new InetSocketAddress("127.0.0.1", 5000));
 	}
 }
