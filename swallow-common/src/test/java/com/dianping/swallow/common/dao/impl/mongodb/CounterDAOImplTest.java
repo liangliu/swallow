@@ -20,13 +20,13 @@ public class CounterDAOImplTest {
       //test add
       BSONTimestamp timestamp = new BSONTimestamp();
       System.out.println(timestamp);
-      counterDAOImpl.add("topicA", "consumer3", BSONTimestampUtils.BSONTimestampToLong(timestamp));
+      counterDAOImpl.add("topicB", "consumer3", BSONTimestampUtils.BSONTimestampToLong(timestamp));
    }
 
    @Test
    public void testGetMaxMessageId() {
       //test getMaxMessageId
-      Long messageId = counterDAOImpl.getMaxMessageId("topicA", "consumer3");
+      Long messageId = counterDAOImpl.getMaxMessageId("topicB", "consumer3");
       System.out.println(messageId);
       System.out.println(BSONTimestampUtils.longToBSONTimestamp(messageId).toString());
    }

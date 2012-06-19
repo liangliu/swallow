@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Properties;
 
-public abstract class AbstractMessage<T> implements Message<T>, Serializable {
+public class SwallowMessage implements Serializable, Message {
 
    private static final long serialVersionUID = -7019466307875540596L;
 
@@ -18,7 +18,7 @@ public abstract class AbstractMessage<T> implements Message<T>, Serializable {
 
    private String            version;
 
-   private ContentType       contentType;
+   private String            content;
 
    private String            sha1;
 
@@ -54,20 +54,8 @@ public abstract class AbstractMessage<T> implements Message<T>, Serializable {
       this.version = version;
    }
 
-   public ContentType getContentType() {
-      return contentType;
-   }
-
-   protected void setContentType(ContentType contentType) {
-      this.contentType = contentType;
-   }
-
    public Properties getProperties() {
       return properties;
-   }
-
-   public void setProperties(Properties properties) {
-      this.properties = properties;
    }
 
    public String getSha1() {
@@ -78,42 +66,59 @@ public abstract class AbstractMessage<T> implements Message<T>, Serializable {
       this.sha1 = sha1;
    }
 
-   public abstract void setContent(T content);
+   public <T> T transferContentToBean(Class<T> clazz) {
+      JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+      return jsonBinder.fromJson(content, clazz);
+   }
+
+   public String getContent() {
+      return content;
+   }
+
+   public void setContent(Object content) {
+      if (content instanceof String) {
+         this.content = (String) content;
+      } else {
+         JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+         this.content = jsonBinder.toJson(content);
+      }
+
+   }
 
    @Override
    public String toString() {
-      return String
-            .format(
-                  "%s [generatedTime=%s, messageId=%s, properties=%s, retryCount=%s, version=%s, contentType=%s, content=%s]",
-                  this.getClass().getName(), generatedTime, messageId, properties, retryCount, version, contentType,
-                  getContent());
+      return "SwallowMessage [generatedTime=" + generatedTime + ", messageId=" + messageId + ", properties="
+            + properties + ", retryCount=" + retryCount + ", version=" + version + ", sha1=" + sha1 + ", content="
+            + content + "]";
    }
 
    @Override
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((contentType == null) ? 0 : contentType.hashCode());
+      result = prime * result + ((content == null) ? 0 : content.hashCode());
       result = prime * result + ((generatedTime == null) ? 0 : generatedTime.hashCode());
       result = prime * result + ((messageId == null) ? 0 : messageId.hashCode());
       result = prime * result + ((properties == null) ? 0 : properties.hashCode());
       result = prime * result + retryCount;
+      result = prime * result + ((sha1 == null) ? 0 : sha1.hashCode());
       result = prime * result + ((version == null) ? 0 : version.hashCode());
-      result = prime * result + ((getContent() == null) ? 0 : getContent().hashCode());
       return result;
    }
 
-   @SuppressWarnings("rawtypes")
    @Override
    public boolean equals(Object obj) {
       if (this == obj)
          return true;
       if (obj == null)
          return false;
-      if (!(obj instanceof AbstractMessage))
+      if (!(obj instanceof SwallowMessage))
          return false;
-      AbstractMessage other = (AbstractMessage) obj;
-      if (contentType != other.contentType)
+      SwallowMessage other = (SwallowMessage) obj;
+      if (content == null) {
+         if (other.content != null)
+            return false;
+      } else if (!content.equals(other.content))
          return false;
       if (generatedTime == null) {
          if (other.generatedTime != null)
@@ -132,15 +137,15 @@ public abstract class AbstractMessage<T> implements Message<T>, Serializable {
          return false;
       if (retryCount != other.retryCount)
          return false;
+      if (sha1 == null) {
+         if (other.sha1 != null)
+            return false;
+      } else if (!sha1.equals(other.sha1))
+         return false;
       if (version == null) {
          if (other.version != null)
             return false;
       } else if (!version.equals(other.version))
-         return false;
-      if (getContent() == null) {
-         if (other.getContent() != null)
-            return false;
-      } else if (!getContent().equals(other.getContent()))
          return false;
       return true;
    }

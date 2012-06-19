@@ -15,8 +15,7 @@ public interface MessageRetriever {
     * @return
     * @throws Exception
     */
-   @SuppressWarnings("rawtypes")
-   List<Message> retriveMessage(String topicName, Long cid, Long tailMessageTimeStamp) throws Exception;
+   List<Message> retriveMessage(String topicName, Long tailMessageTimeStamp) throws Exception;
 
    void setFetchSize(int fetchSize);
 

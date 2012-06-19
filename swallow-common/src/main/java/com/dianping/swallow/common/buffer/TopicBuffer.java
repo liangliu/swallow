@@ -8,7 +8,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.dianping.swallow.common.message.Message;
 
-@SuppressWarnings("rawtypes")
 public class TopicBuffer implements Serializable {
 
    private static final long                               serialVersionUID                 = 8764667102499944469L;

@@ -20,9 +20,8 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.dianping.swallow.common.example.message.DemoBean;
-import com.dianping.swallow.common.message.BeanMessage;
-import com.dianping.swallow.common.message.ByteMessage;
-import com.dianping.swallow.common.message.TextMessage;
+import com.dianping.swallow.common.message.Message;
+import com.dianping.swallow.common.message.SwallowMessage;
 
 @SuppressWarnings("unused")
 public class EchoServerHandler extends SimpleChannelUpstreamHandler {
@@ -32,7 +31,7 @@ public class EchoServerHandler extends SimpleChannelUpstreamHandler {
       //服务器发送消息
 
       //1 测试TextMessage
-      TextMessage m = new TextMessage();
+      SwallowMessage m = new SwallowMessage();
       m.setContent("这是一则来自服务器的测试消息。");
 
       //2 测试BeanMessage

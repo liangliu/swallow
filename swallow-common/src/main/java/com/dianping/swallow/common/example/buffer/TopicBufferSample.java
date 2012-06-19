@@ -5,7 +5,6 @@ import java.util.concurrent.BlockingQueue;
 import com.dianping.swallow.common.buffer.TopicBuffer;
 import com.dianping.swallow.common.message.Message;
 
-@SuppressWarnings("rawtypes")
 public class TopicBufferSample {
 
    public static void main(String[] args) throws InterruptedException {

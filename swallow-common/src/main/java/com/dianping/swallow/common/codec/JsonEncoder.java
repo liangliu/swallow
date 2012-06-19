@@ -1,18 +1,3 @@
-/*
- * Copyright 2009 Red Hat, Inc.
- *
- * Red Hat licenses this file to you under the Apache License, version 2.0
- * (the "License"); you may not use this file except in compliance with the
- * License.  You may obtain a copy of the License at:
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
 package com.dianping.swallow.common.codec;
 
 import java.nio.charset.Charset;
@@ -24,7 +9,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 
 import com.dianping.swallow.common.message.JsonBinder;
-import com.dianping.swallow.common.message.Message;
+import com.dianping.swallow.common.message.SwallowMessage;
 
 /**
  * 用法:
@@ -46,16 +31,13 @@ public class JsonEncoder extends OneToOneEncoder {
       super();
    }
 
-   @SuppressWarnings("rawtypes")
    @Override
    protected Object encode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
-      if (msg instanceof Message) {// 对Message进行编码
+      if (msg instanceof SwallowMessage) {// 对Message进行编码
          JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
-         int contentTypeOrdinal = ((Message) msg).getContentType().ordinal();
          String json = jsonBinder.toJson(msg);
          byte[] jsonBytes = json.getBytes(Charset.forName("UTF-8"));
-         ChannelBuffer channelBuffer = ChannelBuffers.buffer(jsonBytes.length + 1);
-         channelBuffer.writeByte(contentTypeOrdinal);
+         ChannelBuffer channelBuffer = ChannelBuffers.buffer(jsonBytes.length);
          channelBuffer.writeBytes(jsonBytes);
          return channelBuffer;
       }
