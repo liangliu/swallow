@@ -10,7 +10,7 @@
 		<property name="services">
 			<map>
 				<!-- key对应serviceName(与客户端配置对应,定位具体service实例), value-ref为该service实例的实现-->
-				<entry key="sendMessage" value-ref="producerServer"/>
+				<entry key="remoteService" value-ref="producerServer"/>
 			</map>
 		</property>
 	</bean>

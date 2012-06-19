@@ -47,12 +47,13 @@ public class AppTest
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-		Producer ps = Producer.getInstance();
+		Producer ps = Producer.getInstance(ProducerType.ONE_WAY_MODE);
 		while(true){
 //			content += i++;
 			System.out.println(ps.sendMessage(Destination.queue("master.slave"), content));
+			System.out.println("Call sendMessage without return succesfully.\n");
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(2000);
 			} catch (Exception e) {
 				// TODO: handle exception
 			}
@@ -61,7 +62,7 @@ public class AppTest
     }
     
     public void doTest(){
-    	for(int i = 0; i < 2; i++){
+    	for(int i = 0; i < 1; i++){
     		String newContent = "NO: " + i;
     		Thread td = new Thread(new task(newContent));
     		td.start();

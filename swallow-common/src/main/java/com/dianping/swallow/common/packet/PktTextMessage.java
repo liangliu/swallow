@@ -24,17 +24,19 @@ import com.dianping.swallow.common.util.Destination;
  * @author tong.song
  *
  */
-public final class PktStringMessage extends Packet implements Message{
+public final class PktTextMessage extends Packet implements Message{
 	private Destination		dest;
 	private String			content;
 	private Date			date;
+	private boolean			isACK;
 
-	public PktStringMessage(Destination dest, String content) {
-		this.setPacketType(PacketType.STRING_MSG);
+	public PktTextMessage(Destination dest, String content, boolean isACK) {
+		this.setPacketType(PacketType.TEXT_MSG);
 		
 		this.setDest(dest);
 		this.setContent(content);
 		this.date = new Date();
+		this.setACK(isACK);
 	}
 	
 	@Override
@@ -67,5 +69,13 @@ public final class PktStringMessage extends Packet implements Message{
 
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public boolean isACK() {
+		return isACK;
+	}
+
+	public void setACK(boolean isACK) {
+		this.isACK = isACK;
 	}
 }

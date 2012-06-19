@@ -24,5 +24,4 @@ public class PktObjectMessage extends Packet implements Message{
 		// TODO Auto-generated method stub
 		return dest;
 	}
-
 }

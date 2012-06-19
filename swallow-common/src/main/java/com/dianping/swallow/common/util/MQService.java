@@ -4,4 +4,5 @@ import com.dianping.swallow.common.packet.Packet;
 
 public interface MQService {
    public Packet sendMessage(Packet pkt);
+   public void sendMessageWithoutReturn(Packet pkt);
 }
