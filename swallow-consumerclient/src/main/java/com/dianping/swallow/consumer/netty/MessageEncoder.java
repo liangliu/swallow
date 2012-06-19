@@ -1,4 +1,4 @@
-package com.dianping.swallow.consumer;
+package com.dianping.swallow.consumer.netty;
 
 
 
