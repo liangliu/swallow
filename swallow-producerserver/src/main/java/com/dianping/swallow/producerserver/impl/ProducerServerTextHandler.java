@@ -9,33 +9,23 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
-import com.dianping.swallow.common.packet.PktStringMessage;
+import com.dianping.swallow.common.packet.PktSwallowPACK;
+import com.dianping.swallow.common.packet.PktTextMessage;
 import com.dianping.swallow.producerserver.util.TextHandler;
 
 public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler{
-	private ProducerServerText producerServerText;
+	private ProducerServer producerServer;
 	
     private static final Logger logger = Logger.getLogger(
     		ProducerServerTextHandler.class);
     
-    public ProducerServerTextHandler(ProducerServerText producerServerText) {
-		// TODO Auto-generated constructor stub
-    	this.producerServerText = producerServerText;
+    public ProducerServerTextHandler(ProducerServer producerServer) {
+    	this.producerServer = producerServer;
 	}
-
-    
-	@Override
-	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)
-			throws Exception {
-		// TODO Auto-generated method stub
-		e.getChannel().write("U R a little pig\r\n");
-	}
-
 
 	@Override
 	public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e)
 			throws Exception {
-		// TODO Auto-generated method stub
     	if (e instanceof ChannelStateEvent) {
     		logger.info(e.toString());
     	}
@@ -45,22 +35,22 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler{
     @Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
 			throws Exception {
-		// TODO Auto-generated method stub
         String request = (String) e.getMessage();
-        PktStringMessage pkt = (PktStringMessage) TextHandler.changeTextToPacket(e.getChannel().getRemoteAddress(), request);
+        PktTextMessage pkt = TextHandler.changeTextToPacket(e.getChannel().getRemoteAddress(), request);
         if(pkt == null){
         	e.getChannel().write("Wrong format!\r\n");
+        	//TODO: log
         }else{
-        	e.getChannel().write("Message is sent!\r\n");
-        	System.out.println(pkt.getContent());
-        	//TODO: DAO
+        	PktSwallowPACK ack = (PktSwallowPACK)producerServer.sendMessage(pkt);
+        	if(pkt.isACK()){
+        		e.getChannel().write(ack.getShaInfo());
+        	}
         }
     }
     
     @Override
 	public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e)
 			throws Exception {
-		// TODO Auto-generated method stub
 		logger.log(Level.WARN, "Unexpected exception from downstream.", e.getCause());
 		e.getChannel().close();
 	}

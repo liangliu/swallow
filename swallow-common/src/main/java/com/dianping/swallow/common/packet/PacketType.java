@@ -25,5 +25,6 @@ public enum PacketType {
 	SWALLOW_P_ACK,
 	STRING_MSG,
 	BINARY_MSG,
-	OBJECT_MSG
+	OBJECT_MSG,
+	TEXT_MSG
 }

@@ -3,9 +3,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 	
-	<bean id="server" class="com.dianping.dpsf.spring.ProxyBeanFactory" init-method="init">
+	<bean id="swallow" class="com.dianping.dpsf.spring.ProxyBeanFactory" init-method="init">
 		<!-- 该远程service在服务端定义的serviceName,需要一一对应上 -->
-		<property name="serviceName" value="sendMessage"/>
+		<property name="serviceName" value="remoteService"/>
 		<!-- 该远程service的接口类, 用于本地生成stub -->
 		<property name="iface" value="com.dianping.swallow.common.util.MQService"/>
 		<!-- 远程通信中使用的序列化协议(支持java, hessian, protobuf, thrift, 推荐使用hessian, 若追求极端性能,则可以考虑使用protobuf或thrift, 但DTO对象维护起来较为繁琐, 每次改动都需要从新生成) -->

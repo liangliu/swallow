@@ -9,10 +9,10 @@ import org.jboss.netty.handler.codec.string.StringDecoder;
 import org.jboss.netty.handler.codec.string.StringEncoder;
 
 public class ProducerServerTextPipelineFactory implements ChannelPipelineFactory{
-	private ProducerServerText producerServerText;
+	private ProducerServer producerServer;
 	
-	public ProducerServerTextPipelineFactory(ProducerServerText producerServerText){
-		this.producerServerText = producerServerText;
+	public ProducerServerTextPipelineFactory(ProducerServer producerServer){
+		this.producerServer = producerServer;
 	}
 	
 	@Override
@@ -23,7 +23,7 @@ public class ProducerServerTextPipelineFactory implements ChannelPipelineFactory
 		pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
 		pipeline.addLast("decoder", new StringDecoder());
 		pipeline.addLast("encoder", new StringEncoder());
-		pipeline.addLast("handler", new ProducerServerTextHandler(producerServerText));
+		pipeline.addLast("handler", new ProducerServerTextHandler(producerServer));
 		
 		return pipeline;
 	}
