@@ -68,7 +68,6 @@ public class MessageDAOImpl implements MessageDAO<Long> {
             JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
             swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, Properties.class));
          }
-         swallowMessage.setRetryCount((Integer) result.get("retryCount"));
          swallowMessage.setSha1((String) result.get("sha1"));
          list.add(swallowMessage);
       }
@@ -97,7 +96,6 @@ public class MessageDAOImpl implements MessageDAO<Long> {
             JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
             swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, Properties.class));
          }
-         swallowMessage.setRetryCount((Integer) result.get("retryCount"));
          swallowMessage.setSha1((String) result.get("sha1"));
          list.add(swallowMessage);
       }
@@ -114,8 +112,7 @@ public class MessageDAOImpl implements MessageDAO<Long> {
       String propertiesJsonStr = jsonBinder.toJson(properties);
       DBObject insert = BasicDBObjectBuilder.start().add("_id", new BSONTimestamp())
             .add("content", message.getContent()).add("generatedTime", message.getGeneratedTime())
-            .add("retryCount", message.getRetryCount()).add("version", message.getVersion())
-            .add("properties", propertiesJsonStr).get();
+            .add("version", message.getVersion()).add("properties", propertiesJsonStr).get();
       collection.insert(insert, WriteConcern.SAFE);
    }
 

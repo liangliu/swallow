@@ -57,7 +57,6 @@ public class TopicDAOImplTest {
       Properties properties = new Properties();
       properties.setProperty("property-key", "property-value");
       message.getProperties().setProperty("property-key", "property-value");
-      message.setRetryCount(1);
       message.setSha1("sha-1 string");
       message.setVersion("0.6.0");
       return message;

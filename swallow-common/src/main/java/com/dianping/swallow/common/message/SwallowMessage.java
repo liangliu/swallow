@@ -14,8 +14,6 @@ public class SwallowMessage implements Serializable, Message {
 
    private Properties        properties       = new Properties();
 
-   private int               retryCount;
-
    private String            version;
 
    private String            content;
@@ -36,14 +34,6 @@ public class SwallowMessage implements Serializable, Message {
 
    public void setMessageId(Long messageId) {
       this.messageId = messageId;
-   }
-
-   public int getRetryCount() {
-      return retryCount;
-   }
-
-   public void setRetryCount(int retryCount) {
-      this.retryCount = retryCount;
    }
 
    public String getVersion() {
@@ -88,8 +78,7 @@ public class SwallowMessage implements Serializable, Message {
    @Override
    public String toString() {
       return "SwallowMessage [generatedTime=" + generatedTime + ", messageId=" + messageId + ", properties="
-            + properties + ", retryCount=" + retryCount + ", version=" + version + ", sha1=" + sha1 + ", content="
-            + content + "]";
+            + properties + ", version=" + version + ", sha1=" + sha1 + ", content=" + content + "]";
    }
 
    @Override
@@ -100,7 +89,6 @@ public class SwallowMessage implements Serializable, Message {
       result = prime * result + ((generatedTime == null) ? 0 : generatedTime.hashCode());
       result = prime * result + ((messageId == null) ? 0 : messageId.hashCode());
       result = prime * result + ((properties == null) ? 0 : properties.hashCode());
-      result = prime * result + retryCount;
       result = prime * result + ((sha1 == null) ? 0 : sha1.hashCode());
       result = prime * result + ((version == null) ? 0 : version.hashCode());
       return result;
@@ -134,8 +122,6 @@ public class SwallowMessage implements Serializable, Message {
          if (other.properties != null)
             return false;
       } else if (!properties.equals(other.properties))
-         return false;
-      if (retryCount != other.retryCount)
          return false;
       if (sha1 == null) {
          if (other.sha1 != null)
