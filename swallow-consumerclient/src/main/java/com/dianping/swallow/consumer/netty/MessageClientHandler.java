@@ -1,4 +1,4 @@
-package com.dianping.swallow.consumer;
+package com.dianping.swallow.consumer.netty;
 
 
 
@@ -12,14 +12,20 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
+import com.dianping.swallow.consumer.ConsumerClient;
+
 @ChannelPipelineCoverage("all")
-public class MessageClientHandlerC extends SimpleChannelUpstreamHandler {
+public class MessageClientHandler extends SimpleChannelUpstreamHandler {
  
     private static final Logger logger = Logger.getLogger(
-            MessageClientHandlerC.class.getName());
+            MessageClientHandler.class.getName());
     private String timeStamp = "0";
     private String consumerId = "001";
     private String topicId = "01";
+    private ConsumerClient cClient;
+    public MessageClientHandler(ConsumerClient cClient){
+    	this.cClient = cClient;
+    }
     @Override
     public void channelConnected(
             ChannelHandlerContext ctx, ChannelStateEvent e) {
