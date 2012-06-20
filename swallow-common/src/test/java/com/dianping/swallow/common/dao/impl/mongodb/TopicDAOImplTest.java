@@ -1,8 +1,8 @@
 package com.dianping.swallow.common.dao.impl.mongodb;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,9 +54,9 @@ public class TopicDAOImplTest {
       SwallowMessage message = new SwallowMessage();
       message.setContent("this is a SwallowMessage");
       message.setGeneratedTime(new Date());
-      Properties properties = new Properties();
-      properties.setProperty("property-key", "property-value");
-      message.getProperties().setProperty("property-key", "property-value");
+      HashMap<String, String> map = new HashMap<String, String>();
+      map.put("property-key", "property-value");
+      message.setProperties(map);
       message.setSha1("sha-1 string");
       message.setVersion("0.6.0");
       return message;

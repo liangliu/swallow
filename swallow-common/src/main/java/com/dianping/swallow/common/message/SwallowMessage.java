@@ -2,23 +2,23 @@ package com.dianping.swallow.common.message;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Properties;
+import java.util.Map;
 
 public class SwallowMessage implements Serializable, Message {
 
-   private static final long serialVersionUID = -7019466307875540596L;
+   private static final long   serialVersionUID = -7019466307875540596L;
 
-   private Date              generatedTime;
+   private Date                generatedTime;
 
-   private Long              messageId;
+   private Long                messageId;
 
-   private Properties        properties       = new Properties();
+   private Map<String, String> properties;
 
-   private String            version;
+   private String              version;
 
-   private String            content;
+   private String              content;
 
-   private String            sha1;
+   private String              sha1;
 
    public Date getGeneratedTime() {
       return generatedTime;
@@ -44,8 +44,12 @@ public class SwallowMessage implements Serializable, Message {
       this.version = version;
    }
 
-   public Properties getProperties() {
+   public Map<String, String> getProperties() {
       return properties;
+   }
+
+   public void setProperties(Map<String, String> properties) {
+      this.properties = properties;
    }
 
    public String getSha1() {

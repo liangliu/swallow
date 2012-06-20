@@ -2,8 +2,9 @@ package com.dianping.swallow.common.dao.impl.mongodb;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import org.bson.types.BSONTimestamp;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ public class MessageDAOImpl implements MessageDAO<Long> {
    /**
     * 记录的格式如：<br>
     */
+   @SuppressWarnings("unchecked")
    @Override
    public List<SwallowMessage> getMessagesGreaterThan(String topicName, Long messageId, int size) {
       DBCollection collection = this.mongoClient.getMessageCollection(topicName);
@@ -67,7 +69,7 @@ public class MessageDAOImpl implements MessageDAO<Long> {
          String propertiesJsonStr = (String) result.get("properties");
          if (propertiesJsonStr != null) {
             JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
-            swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, Properties.class));
+            swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, HashMap.class));
          }
          swallowMessage.setSha1((String) result.get("sha1"));
          list.add(swallowMessage);
@@ -76,6 +78,7 @@ public class MessageDAOImpl implements MessageDAO<Long> {
       return list;
    }
 
+   @SuppressWarnings("unchecked")
    @Override
    public List<SwallowMessage> getMinMessages(String topicName, int size) {
       DBCollection collection = this.mongoClient.getMessageCollection(topicName);
@@ -95,7 +98,7 @@ public class MessageDAOImpl implements MessageDAO<Long> {
          String propertiesJsonStr = (String) result.get("properties");
          if (propertiesJsonStr != null) {
             JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
-            swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, Properties.class));
+            swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, HashMap.class));
          }
          swallowMessage.setSha1((String) result.get("sha1"));
          list.add(swallowMessage);
@@ -108,7 +111,7 @@ public class MessageDAOImpl implements MessageDAO<Long> {
    public void saveMessage(String topicName, SwallowMessage message) {
       DBCollection collection = this.mongoClient.getMessageCollection(topicName);
 
-      Properties properties = message.getProperties();
+      Map<String, String> properties = message.getProperties();
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
       String propertiesJsonStr = jsonBinder.toJson(properties);
       DBObject insert = BasicDBObjectBuilder.start().add("_id", new BSONTimestamp())
