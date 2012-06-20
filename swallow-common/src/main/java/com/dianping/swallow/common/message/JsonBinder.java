@@ -2,7 +2,6 @@ package com.dianping.swallow.common.message;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize.Inclusion;
 import org.slf4j.Logger;
@@ -11,7 +10,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Jackson的简单封装.
  * 
- * @see <a href="http://code.google.com/p/springside/source/browse/springside3/trunk/modules/core/src/main/java/org/springside/modules/utils/mapping/JsonBinder.java?spec=svn1465&r=1465">SpringSide</a>
+ * @see <a
+ *      href="http://code.google.com/p/springside/source/browse/springside3/trunk/modules/core/src/main/java/org/springside/modules/utils/mapping/JsonBinder.java?spec=svn1465&r=1465">SpringSide</a>
  */
 public class JsonBinder {
 
@@ -56,7 +56,7 @@ public class JsonBinder {
     * {});
     */
    public <T> T fromJson(String jsonString, Class<T> clazz) {
-      if (StringUtils.isEmpty(jsonString)) {
+      if (jsonString == null || "".equals(jsonString.trim())) {
          return null;
       }
 

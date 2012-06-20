@@ -13,8 +13,6 @@ import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepend
 import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
 import com.dianping.swallow.consumer.netty.MessageClientHandler;
-import com.dianping.swallow.consumer.netty.MessageDecoder;
-import com.dianping.swallow.consumer.netty.MessageEncoder;
 
 public class ConsumerClient {
 

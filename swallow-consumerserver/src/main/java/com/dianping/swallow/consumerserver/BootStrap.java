@@ -16,8 +16,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
 import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
-import com.dianping.swallow.consumerserver.netty.MessageDecoder;
-import com.dianping.swallow.consumerserver.netty.MessageEncoder;
 import com.dianping.swallow.consumerserver.netty.MessageServerHandler;
 
 public class BootStrap {

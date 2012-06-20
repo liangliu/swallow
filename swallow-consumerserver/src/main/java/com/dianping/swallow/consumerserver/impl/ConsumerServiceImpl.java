@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.bson.types.BSONTimestamp;
 import org.jboss.netty.channel.Channel;
 
-import com.dianping.swallow.common.dao.CounterDAO;
+import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.consumerserver.ConsumerService;
 import com.dianping.swallow.consumerserver.GetMessageThread;
 import com.dianping.swallow.consumerserver.MQThreadFactory;
@@ -46,7 +46,7 @@ public class ConsumerServiceImpl implements ConsumerService{
     
     private Map<String, ArrayBlockingQueue<Channel>> freeChannelQueue = new HashMap<String, ArrayBlockingQueue<Channel>>();
     
-    private CounterDAO dao;
+    private AckDAO dao;
     
     private ArrayBlockingQueue<Channel> freeChannels;
 	   
@@ -163,7 +163,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 					BSONTimestamp maxTStamp = new BSONTimestamp();
 					//更新mongo中最大timeStamp
 					//TODO 受到ack再更新
-					dao.addCounter(topicId, consumerId,maxTStamp);
+//					dao.addCounter(topicId, consumerId,maxTStamp);
 					if(!channel.isConnected()){
 						preparedMesssages.put(consumerId, message);
 					} else{
