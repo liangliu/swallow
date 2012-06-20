@@ -15,8 +15,6 @@
  */
 package com.dianping.swallow.common.packet;
 
-import java.util.Date;
-
 import com.dianping.swallow.common.util.Destination;
 
 /**
@@ -24,58 +22,22 @@ import com.dianping.swallow.common.util.Destination;
  * @author tong.song
  *
  */
-public final class PktTextMessage extends Packet implements Message{
-	private Destination		dest;
-	private String			content;
-	private Date			date;
-	private boolean			isACK;
+public final class PktTextMessage extends Packet{
+	private PktObjectMessage	objMsg;
+	private boolean				isACK;
 
-	public PktTextMessage(Destination dest, String content, boolean isACK) {
+	public PktTextMessage(PktObjectMessage objMsg, boolean isACK) {
 		this.setPacketType(PacketType.TEXT_MSG);
 		
-		this.setDest(dest);
-		this.setContent(content);
-		this.date = new Date();
-		this.setACK(isACK);
+		this.objMsg	= objMsg;
+		this.isACK	= isACK;
 	}
 	
-	@Override
-	public String getContent() {
-		return content;
-	}
-	
-	@Override
-	public Destination getDestination() {
-		return dest;
-	}
-
-	@Override
-	public String toString() {
-		// TODO Auto-generated method stub
-		return getContent();
-	}
-	//Getters && Setters
-	public Date getDate() {
-		return date;
-	}
-
-	public Destination getDest() {
-		return dest;
-	}
-
-	public void setDest(Destination dest) {
-		this.dest = dest;
-	}
-
-	public void setContent(String content) {
-		this.content = content;
-	}
-
 	public boolean isACK() {
 		return isACK;
 	}
 
-	public void setACK(boolean isACK) {
-		this.isACK = isACK;
+	public PktObjectMessage getObjMsg() {
+		return objMsg;
 	}
 }

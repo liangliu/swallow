@@ -47,10 +47,10 @@ public class AppTest
 		@Override
 		public void run() {
 			// TODO Auto-generated method stub
-		Producer ps = Producer.getInstance(ProducerType.ONE_WAY_MODE);
+		Producer ps = Producer.getInstance(ProducerType.SYNCHRO_MODE, Destination.topic("master.slave"));
 		while(true){
 //			content += i++;
-			System.out.println(ps.sendMessage(Destination.queue("master.slave"), content));
+			System.out.println(ps.sendMessage(content));
 			System.out.println("Call sendMessage without return succesfully.\n");
 			try {
 				Thread.sleep(2000);
