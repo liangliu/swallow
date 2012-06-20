@@ -1,9 +1,9 @@
-package com.dianping.swallow.common.example.buffer;
+package com.dianping.swallow.consumerserver.example.buffer;
 
 import java.util.concurrent.BlockingQueue;
 
-import com.dianping.swallow.common.buffer.TopicBuffer;
 import com.dianping.swallow.common.message.Message;
+import com.dianping.swallow.consumerserver.buffer.TopicBuffer;
 
 public class TopicBufferSample {
 

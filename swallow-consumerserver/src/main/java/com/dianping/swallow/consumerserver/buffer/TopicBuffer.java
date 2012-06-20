@@ -1,4 +1,4 @@
-package com.dianping.swallow.common.buffer;
+package com.dianping.swallow.consumerserver.buffer;
 
 import java.io.Serializable;
 import java.lang.ref.Reference;
