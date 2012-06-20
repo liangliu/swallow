@@ -37,10 +37,12 @@ public class ProducerServer implements MQService {
 			pktRet = new PktSwallowPACK(sha1);
 			((SwallowMessage)((PktObjectMessage)pkt).getContent()).setSha1(sha1);
 			
+			//TODO 发生异常如何处理？
 			topicDAO.saveMessage(((PktObjectMessage) pkt).getDestination().getName(), 
 					(SwallowMessage) ((PktObjectMessage) pkt).getContent());
 			break;
 		default:
+			//TODO log it
 			break;
 		}
 		return pktRet;
