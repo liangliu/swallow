@@ -4,8 +4,7 @@ import java.util.HashSet;
 
 import org.jboss.netty.channel.Channel;
 
-import com.dianping.swallow.common.dao.CounterDAO;
-import com.dianping.swallow.common.dao.impl.CounterDAOImpl;
+import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 
 public class GetMessageThread implements Runnable{
@@ -15,7 +14,7 @@ public class GetMessageThread implements Runnable{
 	private String message = null;
 	private Boolean isLive = true;
 	private ConsumerServiceImpl cService;
-	CounterDAO dao = CounterDAOImpl.getCounterDAO();
+	private AckDAO dao;
 	public void setTopicId(String topicId) {
 		this.topicId = topicId;
 	}

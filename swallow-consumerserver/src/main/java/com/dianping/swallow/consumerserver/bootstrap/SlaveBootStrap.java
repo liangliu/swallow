@@ -12,8 +12,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
-import com.dianping.swallow.consumerserver.netty.MessageDecoder;
-import com.dianping.swallow.consumerserver.netty.MessageEncoder;
 import com.dianping.swallow.consumerserver.netty.MessageServerHandler;
 
 public class SlaveBootStrap {
@@ -40,8 +38,6 @@ public class SlaveBootStrap {
             @Override  
             public ChannelPipeline getPipeline() throws Exception {  
             ChannelPipeline pipeline = Channels.pipeline();
-            pipeline.addLast("encode", new MessageEncoder());
-            pipeline.addLast("decode", new MessageDecoder());
             pipeline.addLast("handler", handler);
             return pipeline;  
             }  
