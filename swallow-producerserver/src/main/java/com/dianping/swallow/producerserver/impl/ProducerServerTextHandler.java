@@ -9,6 +9,7 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
+import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.packet.PktTextMessage;
 import com.dianping.swallow.producerserver.util.TextHandler;
@@ -32,17 +33,20 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler{
     	super.handleUpstream(ctx, e);
 	}
 
-    @Override
+	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e)
 			throws Exception {
         String request = (String) e.getMessage();
         PktTextMessage pkt = TextHandler.changeTextToPacket(e.getChannel().getRemoteAddress(), request);
+
         if(pkt == null){
-        	e.getChannel().write("Wrong format!\r\n");
-        	//TODO: log
+        	logger.info("TextMessage { " + e.getChannel().getRemoteAddress() + ": " + request + "} [Wrong format.]");
+        	e.getChannel().write("Wrong format.");
         }else{
-        	PktSwallowPACK ack = (PktSwallowPACK)producerServer.sendMessage(pkt);
+        	PktObjectMessage	objMsg = pkt.getObjMsg();
+        	PktSwallowPACK		ack = (PktSwallowPACK)producerServer.sendMessage(objMsg);
         	if(pkt.isACK()){
+        		//保存成功则返回消息的SHA-1字符串
         		e.getChannel().write(ack.getShaInfo());
         	}
         }

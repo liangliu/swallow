@@ -17,7 +17,6 @@ public class ProducerServerTextPipelineFactory implements ChannelPipelineFactory
 	
 	@Override
 	public ChannelPipeline getPipeline() throws Exception {
-		// TODO Auto-generated method stub
 		ChannelPipeline pipeline = Channels.pipeline();
 		
 		pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
