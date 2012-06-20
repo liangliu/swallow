@@ -1,7 +1,10 @@
 package com.dianping.swallow.producerserver.util;
 
 import java.net.SocketAddress;
+import java.util.Date;
 
+import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.common.packet.PktTextMessage;
 import com.dianping.swallow.common.util.Destination;
 
@@ -41,7 +44,15 @@ public class TextHandler {
 		//topic || content为空，Text报文无效
 		if(topic.equals("") || content.equals(""))	return null;
 		
-		pkt = new PktTextMessage(Destination.topic(topic), content, isACK);
+		SwallowMessage swallowMessage = new SwallowMessage();
+		swallowMessage.setContent(content);
+		swallowMessage.setGeneratedTime(new Date());
+		swallowMessage.setSha1(SHAGenerater.generateSHA(content));
+		
+		PktObjectMessage objMsg = new PktObjectMessage(Destination.topic(topic), swallowMessage);
+		
+		pkt = new PktTextMessage(objMsg, isACK);
+		
 		return pkt;
 	}
 }
