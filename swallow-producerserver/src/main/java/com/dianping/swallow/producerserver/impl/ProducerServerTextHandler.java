@@ -40,7 +40,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler{
         PktTextMessage pkt = TextHandler.changeTextToPacket(e.getChannel().getRemoteAddress(), request);
 
         if(pkt == null){
-        	logger.info("[" + e.getChannel().getRemoteAddress() + "]: [" + request + "]: Wrong format.");
+        	logger.info("TextMessage { " + e.getChannel().getRemoteAddress() + ": " + request + "} [Wrong format.]");
         	e.getChannel().write("Wrong format.");
         }else{
         	PktObjectMessage	objMsg = pkt.getObjMsg();
