@@ -9,8 +9,6 @@ public interface Message {
 
    Date getGeneratedTime();
 
-   int getRetryCount();
-
    String getVersion();
 
    Properties getProperties();

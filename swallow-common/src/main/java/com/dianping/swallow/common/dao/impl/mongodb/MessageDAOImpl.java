@@ -9,24 +9,38 @@ import org.bson.types.BSONTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.message.JsonBinder;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
 
-public class TopicDAOImpl implements TopicDAO<Long> {
+public class MessageDAOImpl implements MessageDAO<Long> {
 
    @SuppressWarnings("unused")
-   private static final Logger LOG = LoggerFactory.getLogger(TopicDAOImpl.class);
+   private static final Logger LOG = LoggerFactory.getLogger(MessageDAOImpl.class);
 
-   private final DB            db;
+   private MongoClient         mongoClient;
 
-   public TopicDAOImpl(DB db) {
-      this.db = db;
+   public void setMongoClient(MongoClient mongoClient) {
+      this.mongoClient = mongoClient;
+   }
+
+   @Override
+   public Long getMaxMessageId(String topicName) {
+
+      DBCollection collection = this.mongoClient.getMessageCollection(topicName);
+
+      DBObject orderBy = BasicDBObjectBuilder.start().add("_id", Integer.valueOf(-1)).get();
+      DBCursor cursor = collection.find().sort(orderBy).limit(1);
+      if (cursor != null) {
+         BSONTimestamp timestamp = (BSONTimestamp) cursor.next().get("_id");
+         return BSONTimestampUtils.BSONTimestampToLong(timestamp);
+      }
+      return null;
    }
 
    /**
@@ -34,7 +48,7 @@ public class TopicDAOImpl implements TopicDAO<Long> {
     */
    @Override
    public List<SwallowMessage> getMessagesGreaterThan(String topicName, Long messageId, int size) {
-      DBCollection collection = this.db.getCollection(topicName);
+      DBCollection collection = this.mongoClient.getMessageCollection(topicName);
 
       DBObject gt = BasicDBObjectBuilder.start().add("$gt", BSONTimestampUtils.longToBSONTimestamp(messageId)).get();
       DBObject query = BasicDBObjectBuilder.start().add("_id", gt).get();
@@ -55,7 +69,6 @@ public class TopicDAOImpl implements TopicDAO<Long> {
             JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
             swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, Properties.class));
          }
-         swallowMessage.setRetryCount((Integer) result.get("retryCount"));
          swallowMessage.setSha1((String) result.get("sha1"));
          list.add(swallowMessage);
       }
@@ -65,7 +78,7 @@ public class TopicDAOImpl implements TopicDAO<Long> {
 
    @Override
    public List<SwallowMessage> getMinMessages(String topicName, int size) {
-      DBCollection collection = this.db.getCollection(topicName);
+      DBCollection collection = this.mongoClient.getMessageCollection(topicName);
 
       DBObject orderBy = BasicDBObjectBuilder.start().add("_id", Integer.valueOf(1)).get();
       DBCursor cursor = collection.find().sort(orderBy).limit(size);
@@ -84,7 +97,6 @@ public class TopicDAOImpl implements TopicDAO<Long> {
             JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
             swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, Properties.class));
          }
-         swallowMessage.setRetryCount((Integer) result.get("retryCount"));
          swallowMessage.setSha1((String) result.get("sha1"));
          list.add(swallowMessage);
       }
@@ -94,14 +106,14 @@ public class TopicDAOImpl implements TopicDAO<Long> {
 
    @Override
    public void saveMessage(String topicName, SwallowMessage message) {
-      DBCollection collection = this.db.getCollection(topicName);
+      DBCollection collection = this.mongoClient.getMessageCollection(topicName);
+
       Properties properties = message.getProperties();
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
       String propertiesJsonStr = jsonBinder.toJson(properties);
       DBObject insert = BasicDBObjectBuilder.start().add("_id", new BSONTimestamp())
             .add("content", message.getContent()).add("generatedTime", message.getGeneratedTime())
-            .add("retryCount", message.getRetryCount()).add("version", message.getVersion())
-            .add("properties", propertiesJsonStr).get();
+            .add("version", message.getVersion()).add("properties", propertiesJsonStr).get();
       collection.insert(insert, WriteConcern.SAFE);
    }
 

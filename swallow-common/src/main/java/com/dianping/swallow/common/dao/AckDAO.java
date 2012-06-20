@@ -1,6 +1,6 @@
-package com.dianping.swallow.common.dao.impl.mongodb;
+package com.dianping.swallow.common.dao;
 
-public interface CounterDAO<ID> {
+public interface AckDAO<ID> {
 
    /**
     * 获取topicName和consumerId对应的最大的messageId
