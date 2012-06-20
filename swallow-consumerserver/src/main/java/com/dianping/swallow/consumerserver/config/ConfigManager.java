@@ -22,6 +22,7 @@ public class ConfigManager {
 
 	private int freeChannelBlockQueueSize = 10;
 	// time related
+	private int heartbeatCheckInterval = 3000;
 	private int heartbeatMaxStopTime = 120000;
 	private int heartbeatUpdateInterval = 10000;
 	private int blockQueueFailoverSleepTime = 1000;
@@ -31,10 +32,23 @@ public class ConfigManager {
 	// db and collection name related
 	private String counterDB = "swallow_counter";
 	private String topicDB = "swallow_topic";
-
+	
+	//Master Ip
+	private String masterIp = "127.0.0.1";
+	
 
 	public int getBlockQueueFailoverSleepTime() {
 		return blockQueueFailoverSleepTime;
+	}
+
+
+	public String getMasterIp() {
+		return masterIp;
+	}
+
+
+	public int getHeartbeatCheckInterval() {
+		return heartbeatCheckInterval;
 	}
 
 

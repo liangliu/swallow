@@ -1,4 +1,4 @@
-package com.dianping.swallow.consumerserver;
+package com.dianping.swallow.consumerserver.bootstrap;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -16,17 +16,20 @@ import com.dianping.swallow.consumerserver.netty.MessageDecoder;
 import com.dianping.swallow.consumerserver.netty.MessageEncoder;
 import com.dianping.swallow.consumerserver.netty.MessageServerHandler;
 
-public class BootStrap {
+public class SlaveBootStrap {
 
 	//TODO 是否lion中
-	private static int port = 8081;
+	private static int port = 8082;
+	
+	private static boolean isSlave = true;
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		
-		ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[]{"applicationContext.xml", "swallow.xml"});
+		ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[]{"applicationContext.xml"});
 		final ConsumerServiceImpl cService = ctx.getBean(ConsumerServiceImpl.class);
+		cService.init(isSlave);
 		// Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(

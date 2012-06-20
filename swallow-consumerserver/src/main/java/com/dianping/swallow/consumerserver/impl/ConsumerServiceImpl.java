@@ -12,10 +12,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.bson.types.BSONTimestamp;
 import org.jboss.netty.channel.Channel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dianping.swallow.common.dao.CounterDAO;
 import com.dianping.swallow.consumerserver.ConsumerService;
 import com.dianping.swallow.consumerserver.GetMessageThread;
+import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.MQThreadFactory;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 import com.dianping.swallow.consumerserver.util.MongoUtil;
@@ -46,9 +48,13 @@ public class ConsumerServiceImpl implements ConsumerService{
     
     private Map<String, ArrayBlockingQueue<Channel>> freeChannelQueue = new HashMap<String, ArrayBlockingQueue<Channel>>();
     
+    @Autowired
     private CounterDAO dao;
     
     private ArrayBlockingQueue<Channel> freeChannels;
+    
+    @Autowired
+    private Heartbeater heartbeater;
 	   
     public Map<String, ArrayBlockingQueue<String>> getMessageQueue() {
 		return messageQueue;
@@ -156,7 +162,8 @@ public class ConsumerServiceImpl implements ConsumerService{
 						message = preparedMesssages.get(consumerId);
 						preparedMesssages.remove(consumerId);
 					} else{					
-						String message = messages.take();
+						//String message = messages.take();
+						message = "假的";
 					}
 					//TODO 从消息中得到maxTStamp
 					//TODO 是否可以自己设置BSongtimestamp
@@ -264,5 +271,42 @@ public class ConsumerServiceImpl implements ConsumerService{
 //			}
 //		}
 		
+	}
+	
+	public void init(boolean isSlave){
+		if (isSlave) {
+			try {
+				// wont throw MongoException
+				heartbeater.waitUntilStopBeating(configManager.getMasterIp(),configManager.getHeartbeatCheckInterval(),configManager.getHeartbeatMaxStopTime());
+			} catch (InterruptedException e) {
+				return;
+			}
+		} else{
+			startHeartbeater(configManager.getMasterIp());
+		}
+		
+	}
+	private void startHeartbeater(final String ip) {
+		
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				while (true) {
+					
+					try {
+						heartbeater.beat(ip);
+						Thread.sleep(configManager.getHeartbeatUpdateInterval());
+					} catch (Exception e) {
+						//log.error("Error update heart beat", e);
+					}
+				}
+			}
+
+		};
+
+		Thread heartbeatThread = threadFactory.newThread(runnable, "heartbeat-");
+		heartbeatThread.setDaemon(true);
+		heartbeatThread.start();
 	}
 }
