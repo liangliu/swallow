@@ -39,9 +39,4 @@ public class AckDAOImplTest extends AbstractDAOImplTest {
       Assert.assertEquals(expectedMessageId, maxMessageId);
    }
 
-   @Override
-   protected String getDBName() {
-      return this.getMongoConfig().getAckDBName();
-   }
-
 }

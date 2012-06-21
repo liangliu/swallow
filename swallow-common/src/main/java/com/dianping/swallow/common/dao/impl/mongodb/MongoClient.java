@@ -29,6 +29,8 @@ public class MongoClient {
    private Map<String, Mongo>  topicnameToMongoMap;
    private MongoConfig         config;
 
+   private Mongo               heartBeatMongo;
+
    /**
     * 从 Lion(配置topicName,serverUrl的列表) 和 MongoConfigManager(配置Mongo参数) 获取配置，创建
     * “topicName -&gt; Mongo实例” 的Map映射。<br>
@@ -72,6 +74,7 @@ public class MongoClient {
       map.put("topicForUnitTest", mongo);
 
       this.topicnameToMongoMap = map;
+      this.heartBeatMongo = mongo;
    }
 
    private MongoOptions getMongoOptions() {
@@ -92,22 +95,32 @@ public class MongoClient {
    }
 
    public DBCollection getMessageCollection(String topicId) {
-      return this.getCollection("msg_", topicId);
+      //根据topicName获取Mongo实例
+      Mongo mongo = this.topicnameToMongoMap.get(topicId);
+      if (mongo == null) {
+         throw new IllegalArgumentException("topicname '" + topicId
+               + "' do not match any Mongo Server, please check your config on Lion.");
+      }
+      return this.getCollection(mongo, "msg_", topicId);
    }
 
    public DBCollection getAckCollection(String topicId) {
-      return this.getCollection("ack_", topicId);
-   }
-
-   private DBCollection getCollection(String dbNamePrefix, String topicname) {
       //根据topicName获取Mongo实例
-      Mongo mongo = this.topicnameToMongoMap.get(topicname);
+      Mongo mongo = this.topicnameToMongoMap.get(topicId);
       if (mongo == null) {
-         throw new IllegalArgumentException("topicname '" + topicname
+         throw new IllegalArgumentException("topicname '" + topicId
                + "' do not match any Mongo Server, please check your config on Lion.");
       }
+      return this.getCollection(mongo, "ack_", topicId);
+   }
+
+   public DBCollection getHeartbeatCollection(String ip) {
+      return this.getCollection(this.heartBeatMongo, "heartbeat_", ip);
+   }
+
+   private DBCollection getCollection(Mongo mongo, String dbNamePrefix, String collectionName) {
       //根据topicname从Mongo实例从获取DB
-      String dbName = dbNamePrefix + topicname;
+      String dbName = dbNamePrefix + collectionName;
       DB db = mongo.getDB(dbName);
       //从DB实例获取Collection(因为只有一个Collection，所以名字均叫做c),如果不存在，则创建)
       DBCollection collection = null;
@@ -147,11 +160,6 @@ public class MongoClient {
       }
    }
 
-   public Mongo getMongo(String topicname) {
-      //根据topicName获取Mongo实例
-      return this.topicnameToMongoMap.get(topicname);
-   }
-
    //   public DBCollection getMessageCollection(String topicname) {
    //      return this.getCollection(this.config.getMessageDBName(), topicname);
    //   }
@@ -181,10 +189,6 @@ public class MongoClient {
          }
       }
       return result;
-   }
-
-   public MongoConfig getConfig() {
-      return config;
    }
 
 }

@@ -10,6 +10,7 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 public abstract class AbstractDAOImplTest extends AbstractJUnit4SpringContextTests {
 
    protected static final String TOPIC_NAME = "topicForUnitTest";
+   protected static final String IP         = "127.0.0.1";
 
    @Autowired
    private MongoClient           mongoClient;
@@ -28,12 +29,7 @@ public abstract class AbstractDAOImplTest extends AbstractJUnit4SpringContextTes
       //删除测试过程创建的Collection
       mongoClient.getMessageCollection(TOPIC_NAME).drop();
       mongoClient.getAckCollection(TOPIC_NAME).drop();
-   }
-
-   protected abstract String getDBName();
-
-   public MongoConfig getMongoConfig() {
-      return this.mongoClient.getConfig();
+      mongoClient.getHeartbeatCollection(IP.replace('.', '_')).drop();
    }
 
 }
