@@ -11,6 +11,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.bson.types.BSONTimestamp;
+import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -312,6 +313,25 @@ public class ConsumerServiceImpl implements ConsumerService{
 		};
 
 		Thread heartbeatThread = threadFactory.newThread(runnable, "heartbeat-");
+		heartbeatThread.setDaemon(true);
+		heartbeatThread.start();
+	}
+	
+	public void checkMasterIsLive(final ServerBootstrap bootStrap){
+		
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {								
+				try {
+					heartbeater.waitUntilBeginBeating(configManager.getMasterIp(), bootStrap, configManager.getHeartbeatCheckInterval(),configManager.getHeartbeatMaxStopTime());
+				} catch (Exception e) {
+					//log.error("Error update heart beat", e);
+				}			
+			}
+		};
+
+		Thread heartbeatThread = threadFactory.newThread(runnable, "checkMasterIsLive-");
 		heartbeatThread.setDaemon(true);
 		heartbeatThread.start();
 	}
