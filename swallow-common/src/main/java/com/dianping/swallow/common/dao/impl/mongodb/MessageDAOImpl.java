@@ -2,8 +2,9 @@ package com.dianping.swallow.common.dao.impl.mongodb;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 
 import org.bson.types.BSONTimestamp;
 import org.slf4j.Logger;
@@ -18,7 +19,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
 
-public class MessageDAOImpl implements MessageDAO<Long> {
+public class MessageDAOImpl implements MessageDAO {
 
    @SuppressWarnings("unused")
    private static final Logger LOG = LoggerFactory.getLogger(MessageDAOImpl.class);
@@ -59,21 +60,27 @@ public class MessageDAOImpl implements MessageDAO<Long> {
       while (cursor.hasNext()) {
          DBObject result = cursor.next();
          SwallowMessage swallowMessage = new SwallowMessage();
-         BSONTimestamp timestamp = (BSONTimestamp) result.get("_id");
-         swallowMessage.setMessageId(BSONTimestampUtils.BSONTimestampToLong(timestamp));
-         swallowMessage.setContent((String) result.get("content"));
-         swallowMessage.setVersion((String) result.get("version"));
-         swallowMessage.setGeneratedTime((Date) result.get("generatedTime"));
-         String propertiesJsonStr = (String) result.get("properties");
-         if (propertiesJsonStr != null) {
-            JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
-            swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, Properties.class));
-         }
-         swallowMessage.setSha1((String) result.get("sha1"));
+         resolve(result, swallowMessage);
          list.add(swallowMessage);
       }
 
       return list;
+   }
+
+   @SuppressWarnings("unchecked")
+   private void resolve(DBObject result, SwallowMessage swallowMessage) {
+      BSONTimestamp timestamp = (BSONTimestamp) result.get("_id");
+      swallowMessage.setMessageId(BSONTimestampUtils.BSONTimestampToLong(timestamp));
+      swallowMessage.setContent((String) result.get("content"));
+      swallowMessage.setVersion((String) result.get("version"));
+      swallowMessage.setGeneratedTime((Date) result.get("generatedTime"));
+      String propertiesJsonStr = (String) result.get("properties");
+      if (propertiesJsonStr != null) {
+         JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+         swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, HashMap.class));
+      }
+      swallowMessage.setSha1((String) result.get("sha1"));
+      swallowMessage.setType((String) result.get("type"));
    }
 
    @Override
@@ -87,17 +94,7 @@ public class MessageDAOImpl implements MessageDAO<Long> {
       while (cursor.hasNext()) {
          DBObject result = cursor.next();
          SwallowMessage swallowMessage = new SwallowMessage();
-         BSONTimestamp timestamp = (BSONTimestamp) result.get("_id");
-         swallowMessage.setMessageId(BSONTimestampUtils.BSONTimestampToLong(timestamp));
-         swallowMessage.setContent((String) result.get("content"));
-         swallowMessage.setVersion((String) result.get("version"));
-         swallowMessage.setGeneratedTime((Date) result.get("generatedTime"));
-         String propertiesJsonStr = (String) result.get("properties");
-         if (propertiesJsonStr != null) {
-            JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
-            swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, Properties.class));
-         }
-         swallowMessage.setSha1((String) result.get("sha1"));
+         resolve(result, swallowMessage);
          list.add(swallowMessage);
       }
 
@@ -108,7 +105,7 @@ public class MessageDAOImpl implements MessageDAO<Long> {
    public void saveMessage(String topicName, SwallowMessage message) {
       DBCollection collection = this.mongoClient.getMessageCollection(topicName);
 
-      Properties properties = message.getProperties();
+      Map<String, String> properties = message.getProperties();
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
       String propertiesJsonStr = jsonBinder.toJson(properties);
       DBObject insert = BasicDBObjectBuilder.start().add("_id", new BSONTimestamp())

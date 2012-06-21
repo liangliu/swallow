@@ -1,0 +1,80 @@
+package com.dianping.swallow.consumerserver.impl;
+
+
+
+import java.util.Date;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.dianping.swallow.common.dao.HeartbeatDAO;
+import com.dianping.swallow.consumerserver.Heartbeater;
+
+public class MongoHeartbeater implements Heartbeater {
+
+	private static Logger log = Logger.getLogger(MongoHeartbeater.class);
+
+	@Autowired
+	private HeartbeatDAO dao;
+
+	@Override
+	public void beat(String ip) {
+		dao.updateLastHeartbeat(ip);
+	}
+
+	@Override
+	public void waitUntilStopBeating(String ip, long checkInterval, long maxStopTime) throws InterruptedException {
+		long startTime = System.currentTimeMillis();
+		long lastBeatTime = startTime;
+		while (true) {
+			Date beat = null;
+			try {
+				beat = dao.findLastHeartbeat(ip);
+			} catch (Exception e) {
+				//如果访问mongo出错，重置startTime，防止failover时间过长
+				log.error("error find last heartbeat", e);
+				startTime = System.currentTimeMillis();
+				Thread.sleep(1000);
+				continue;
+			}
+			if (beat == null) {
+				log.info(ip + " no beat");
+				if (System.currentTimeMillis() - startTime > maxStopTime) {
+					break;
+				}
+			} else {
+				log.info(ip + " beat at " + beat.getTime());
+				long now = System.currentTimeMillis();
+				lastBeatTime = beat.getTime();
+				if (now - lastBeatTime > maxStopTime) {
+					break;
+				}
+			}
+			Thread.sleep(checkInterval);
+		}
+		log.info(ip + " master stop beating, slave start");
+	}
+
+	@Override
+	public void waitUntilBeginBeating(String ip, long checkInterval, long maxStopTime) throws InterruptedException {
+		
+		Date beat = null;
+		while (true) {
+			try {
+				beat = dao.findLastHeartbeat(ip);
+			} catch (Exception e) {
+				//如果访问mongo出错，重置startTime，防止failover时间过长
+				log.error("error find last heartbeat", e);
+				//startTime = System.currentTimeMillis();
+				Thread.sleep(1000);
+				continue;
+			}
+			if(beat != null){
+				
+			}
+		}
+		
+		
+	}
+
+}

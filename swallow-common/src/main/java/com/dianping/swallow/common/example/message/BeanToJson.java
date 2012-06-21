@@ -1,5 +1,7 @@
 package com.dianping.swallow.common.example.message;
 
+import java.util.HashMap;
+
 import com.dianping.swallow.common.message.JsonBinder;
 import com.dianping.swallow.common.message.SwallowMessage;
 
@@ -13,7 +15,9 @@ public class BeanToJson {
 
       SwallowMessage message = new SwallowMessage();
       message.setContent(demoBean);
-      message.getProperties().setProperty("property-key", "property-value");
+      HashMap<String, String> map = new HashMap<String, String>();
+      map.put("property-key", "property-value");
+      message.setProperties(map);
 
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
       String json = jsonBinder.toJson(message);

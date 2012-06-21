@@ -1,19 +1,20 @@
 package com.dianping.swallow.common.dao.impl.mongodb;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.kubek2k.springockito.annotations.SpringockitoContextLoader;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import com.dianping.swallow.common.message.SwallowMessage;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-public class TopicDAOImplTest {
+@ContextConfiguration(loader = SpringockitoContextLoader.class, locations = "classpath:context.xml")
+public class MessageDAOImplTest extends AbstractJUnit4SpringContextTests {
    @Autowired
    private MessageDAOImpl topicDAOImpl;
 
@@ -54,9 +55,9 @@ public class TopicDAOImplTest {
       SwallowMessage message = new SwallowMessage();
       message.setContent("this is a SwallowMessage");
       message.setGeneratedTime(new Date());
-      Properties properties = new Properties();
-      properties.setProperty("property-key", "property-value");
-      message.getProperties().setProperty("property-key", "property-value");
+      HashMap<String, String> map = new HashMap<String, String>();
+      map.put("property-key", "property-value");
+      message.setProperties(map);
       message.setSha1("sha-1 string");
       message.setVersion("0.6.0");
       return message;

@@ -1,7 +1,7 @@
 package com.dianping.swallow.common.message;
 
 import java.util.Date;
-import java.util.Properties;
+import java.util.Map;
 
 public interface Message {
 
@@ -11,7 +11,7 @@ public interface Message {
 
    String getVersion();
 
-   Properties getProperties();
+   Map<String, String> getProperties();
 
    String getContent();
 
