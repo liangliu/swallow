@@ -20,9 +20,11 @@ import com.mongodb.ServerAddress;
 
 public class MongoClient {
 
-   private static final Logger LOG                   = LoggerFactory.getLogger(MongoClient.class);
+   private static final Logger LOG                     = LoggerFactory.getLogger(MongoClient.class);
 
-   private static final String MONGO_CONFIG_FILENAME = "swallow-mongo.properties";
+   private static final String MONGO_CONFIG_FILENAME   = "swallow-mongo.properties";
+
+   private static final String DEFAULT_COLLECTION_NAME = "c";
 
    private Map<String, Mongo>  topicnameToMongoMap;
    private MongoConfig         config;
@@ -67,7 +69,7 @@ public class MongoClient {
       String uri = "mongodb://localhost:27017";
       List<ServerAddress> replicaSetSeeds = parseUri(uri);
       Mongo mongo = new Mongo(replicaSetSeeds, getMongoOptions());
-      map.put("topicForTest", mongo);
+      map.put("topicForUnitTest", mongo);
 
       this.topicnameToMongoMap = map;
    }
@@ -89,38 +91,41 @@ public class MongoClient {
       return options;
    }
 
-   /**
-    * DAO通过这个方法获取DB实例
-    */
-   private DBCollection getCollection(String dbname, String topicname) {
+   public DBCollection getMessageCollection(String topicId) {
+      return this.getCollection("msg_", topicId);
+   }
+
+   public DBCollection getAckCollection(String topicId) {
+      return this.getCollection("ack_", topicId);
+   }
+
+   private DBCollection getCollection(String dbNamePrefix, String topicname) {
       //根据topicName获取Mongo实例
       Mongo mongo = this.topicnameToMongoMap.get(topicname);
       if (mongo == null) {
          throw new IllegalArgumentException("topicname '" + topicname
                + "' do not match any Mongo Server, please check your config on Lion.");
       }
-      //根据dbName从Mongo实例从获取DB
-      DB db = mongo.getDB(dbname);
-      if (db == null) {
-         throw new IllegalArgumentException("DB '" + dbname + "' do not exists on Server:" + mongo.getAddress());
-      }
-      //根据topicName(即Collection名称)从DB实例获取Collection(如果不存在，则创建)
+      //根据topicname从Mongo实例从获取DB
+      String dbName = dbNamePrefix + topicname;
+      DB db = mongo.getDB(dbName);
+      //从DB实例获取Collection(因为只有一个Collection，所以名字均叫做c),如果不存在，则创建)
       DBCollection collection = null;
-      if (!db.collectionExists(topicname)) {
-         synchronized (topicname.intern()) {
-            if (!db.collectionExists(topicname)) {
-               collection = createColletcion(db, topicname);
+      if (!db.collectionExists(DEFAULT_COLLECTION_NAME)) {
+         synchronized (dbName.intern()) {
+            if (!db.collectionExists(DEFAULT_COLLECTION_NAME)) {
+               collection = createColletcion(db, DEFAULT_COLLECTION_NAME);
             }
          }
          if (collection == null)
-            collection = db.getCollection(topicname);
+            collection = db.getCollection(DEFAULT_COLLECTION_NAME);
       } else {
-         collection = db.getCollection(topicname);
+         collection = db.getCollection(DEFAULT_COLLECTION_NAME);
       }
       return collection;
    }
 
-   private DBCollection createColletcion(DB db, String topicname) {
+   private DBCollection createColletcion(DB db, String collectionName) {
       DBObject options = new BasicDBObject();
       options.put("capped", true);
       options.put("size", config.getCappedCollectionSize());//max db file size in bytes
@@ -129,12 +134,12 @@ public class MongoClient {
          options.put("max", config.getCappedCollectionMaxDocNum());//max row count
       }
       try {
-         return db.createCollection(topicname, options);
+         return db.createCollection(collectionName, options);
       } catch (MongoException e) {
          if (e.getMessage() != null && e.getMessage().indexOf("collection already exists") >= 0) {
             //collection already exists
-            LOG.error(e.getMessage() + ":" + topicname);
-            return db.getCollection(topicname);
+            LOG.error(e.getMessage() + ":" + collectionName);
+            return db.getCollection(collectionName);
          } else {
             //other exception, can not connect to mongo etc, should abort
             throw e;
@@ -147,17 +152,17 @@ public class MongoClient {
       return this.topicnameToMongoMap.get(topicname);
    }
 
-   public DBCollection getMessageCollection(String topicname) {
-      return this.getCollection(this.config.getMessageDBName(), topicname);
-   }
-
-   public DBCollection getAckCollection(String topicname) {
-      return this.getCollection(this.config.getAckDBName(), topicname);
-   }
-
-   public DBCollection getHeartbeatCollection(String topicname) {
-      return this.getCollection(this.config.getHeartbeatDBName(), topicname);
-   }
+   //   public DBCollection getMessageCollection(String topicname) {
+   //      return this.getCollection(this.config.getMessageDBName(), topicname);
+   //   }
+   //
+   //   public DBCollection getAckCollection(String topicname) {
+   //      return this.getCollection(this.config.getAckDBName(), topicname);
+   //   }
+   //
+   //   public DBCollection getHeartbeatCollection(String topicname) {
+   //      return this.getCollection(this.config.getHeartbeatDBName(), topicname);
+   //   }
 
    private static List<ServerAddress> parseUri(String uri) {
       uri = uri.trim();
