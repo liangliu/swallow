@@ -6,11 +6,9 @@ import com.dianping.swallow.producerserver.TopicDAO;
 public class TopicDAOImpl implements TopicDAO{
 
 	@Override
-	public boolean saveMessage(String topicName, SwallowMessage msg) {
+	public void saveMessage(String topicName, SwallowMessage msg) {
 		// TODO Auto-generated method stub
-		boolean ret = true;
 		System.out.println(msg.toString());
-		return ret;
 	}
 
 }
