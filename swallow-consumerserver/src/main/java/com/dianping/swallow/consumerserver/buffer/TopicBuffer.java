@@ -13,24 +13,24 @@ import com.dianping.swallow.common.message.Message;
 
 public class TopicBuffer implements Serializable {
 
-   private static final long                                              serialVersionUID                 = 8764667102499944469L;
+   private static final long                                                serialVersionUID                 = 8764667102499944469L;
 
    /**
     * 锁是为了防止相同topicName的TopicBuffer被并发创建，所以相同的topicName对应相同的锁。
     * 锁的个数也决定了最多能有多少创建TopicBuffer的并发操作
     */
-   private static final int                                               LOCK_NUM_FOR_CREATE_TOPIC_BUFFER = 10;
-   private static ReentrantLock[]                                         locksForCreateTopicBuffer        = new ReentrantLock[LOCK_NUM_FOR_CREATE_TOPIC_BUFFER];
+   private static final int                                                 LOCK_NUM_FOR_CREATE_TOPIC_BUFFER = 10;
+   private static ReentrantLock[]                                           locksForCreateTopicBuffer        = new ReentrantLock[LOCK_NUM_FOR_CREATE_TOPIC_BUFFER];
    static {
       for (int i = 0; i < locksForCreateTopicBuffer.length; i++) {
          locksForCreateTopicBuffer[i] = new ReentrantLock();
       }
    }
-   private static final ConcurrentMap<String, TopicBuffer>                topicBuffers                     = new ConcurrentHashMap<String, TopicBuffer>();
+   private static final ConcurrentMap<String, TopicBuffer>                  topicBuffers                     = new ConcurrentHashMap<String, TopicBuffer>();
 
-   private final String                                                   topicName;
+   private final String                                                     topicName;
 
-   private ConcurrentHashMap<Long, SoftReference<BlockingQueue<Message>>> messageQueues                    = new ConcurrentHashMap<Long, SoftReference<BlockingQueue<Message>>>();
+   private ConcurrentHashMap<String, SoftReference<BlockingQueue<Message>>> messageQueues                    = new ConcurrentHashMap<String, SoftReference<BlockingQueue<Message>>>();
 
    private TopicBuffer(String topicName) {
       this.topicName = topicName;
@@ -95,9 +95,10 @@ public class TopicBuffer implements Serializable {
     * @param tailMessageId 从messageId大于messageIdOfTailMessage的消息开始消费
     * @return
     */
-   public BlockingQueue<Message> createMessageQueue(Long cid, Long tailMessageId) {
+   public BlockingQueue<Message> createMessageQueue(String cid, Long tailMessageId) {
       return this.createMessageQueue(cid, tailMessageId, null);
    }
+
    /**
     * 创建一个BlockingQueue
     * 
@@ -105,7 +106,7 @@ public class TopicBuffer implements Serializable {
     * @param tailMessageId 从messageId大于messageIdOfTailMessage的消息开始消费
     * @return
     */
-   public BlockingQueue<Message> createMessageQueue(Long cid, Long tailMessageId, Set<String> messageTypeSet) {
+   public BlockingQueue<Message> createMessageQueue(String cid, Long tailMessageId, Set<String> messageTypeSet) {
       if (cid == null) {
          throw new IllegalArgumentException("cid is null.");
       }
@@ -117,14 +118,12 @@ public class TopicBuffer implements Serializable {
       int threshold = 10;
       int capacity = 100;
       if (capacity > 0 && messageTypeSet != null) {
-         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, capacity,
-               tailMessageId, messageTypeSet);
-      } else if (messageTypeSet != null) {
-         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, tailMessageId,
+         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, capacity, tailMessageId,
                messageTypeSet);
+      } else if (messageTypeSet != null) {
+         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, tailMessageId, messageTypeSet);
       } else {
-         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, capacity,
-               tailMessageId);
+         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, capacity, tailMessageId);
       }
       messageBlockingQueue.setMessageRetriever(new MongoDBMessageRetriever());
       messageQueues.put(cid, new SoftReference<BlockingQueue<Message>>(messageBlockingQueue));

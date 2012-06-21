@@ -9,15 +9,17 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 import com.mongodb.Mongo;
+import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
 public class MongoClient {
 
-   @SuppressWarnings("unused")
    private static final Logger LOG                   = LoggerFactory.getLogger(MongoClient.class);
 
    private static final String MONGO_CONFIG_FILENAME = "swallow-mongo.properties";
@@ -102,13 +104,42 @@ public class MongoClient {
       if (db == null) {
          throw new IllegalArgumentException("DB '" + dbname + "' do not exists on Server:" + mongo.getAddress());
       }
-      //根据topicName(即Collection名称)从DB实例获取Collection
-      DBCollection collection = db.getCollection(topicname);
-      if (collection == null) {
-         throw new IllegalArgumentException("DBCollection '" + topicname + "' do not exists in DB" + dbname
-               + ", on Server " + mongo.getAddress());
+      //根据topicName(即Collection名称)从DB实例获取Collection(如果不存在，则创建)
+      DBCollection collection = null;
+      if (!db.collectionExists(topicname)) {
+         synchronized (topicname.intern()) {
+            if (!db.collectionExists(topicname)) {
+               collection = createColletcion(db, topicname);
+            }
+         }
+         if (collection == null)
+            collection = db.getCollection(topicname);
+      } else {
+         collection = db.getCollection(topicname);
       }
       return collection;
+   }
+
+   private DBCollection createColletcion(DB db, String topicname) {
+      DBObject options = new BasicDBObject();
+      options.put("capped", true);
+      options.put("size", config.getCappedCollectionSize());//max db file size in bytes
+      int cappedCollectionMaxDocNum = config.getCappedCollectionMaxDocNum();
+      if (cappedCollectionMaxDocNum > 0) {
+         options.put("max", config.getCappedCollectionMaxDocNum());//max row count
+      }
+      try {
+         return db.createCollection(topicname, options);
+      } catch (MongoException e) {
+         if (e.getMessage() != null && e.getMessage().indexOf("collection already exists") >= 0) {
+            //collection already exists
+            LOG.error(e.getMessage() + ":" + topicname);
+            return db.getCollection(topicname);
+         } else {
+            //other exception, can not connect to mongo etc, should abort
+            throw e;
+         }
+      }
    }
 
    public Mongo getMongo(String topicname) {
