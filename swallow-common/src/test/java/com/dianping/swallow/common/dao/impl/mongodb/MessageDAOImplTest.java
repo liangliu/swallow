@@ -6,14 +6,15 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.kubek2k.springockito.annotations.SpringockitoContextLoader;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import com.dianping.swallow.common.message.SwallowMessage;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-public class TopicDAOImplTest {
+@ContextConfiguration(loader = SpringockitoContextLoader.class, locations = "classpath:context.xml")
+public class MessageDAOImplTest extends AbstractJUnit4SpringContextTests {
    @Autowired
    private MessageDAOImpl topicDAOImpl;
 

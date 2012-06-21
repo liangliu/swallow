@@ -11,7 +11,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
 
-public class AckDAOImpl implements AckDAO<Long> {
+public class AckDAOImpl implements AckDAO {
 
    @SuppressWarnings("unused")
    private static final Logger LOG = LoggerFactory.getLogger(AckDAOImpl.class);

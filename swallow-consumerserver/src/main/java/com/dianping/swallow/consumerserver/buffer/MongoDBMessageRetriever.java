@@ -13,9 +13,9 @@ public class MongoDBMessageRetriever implements MessageRetriever {
 
    private int                 fetchSize = 20;                                                    //默认20条
 
-   private MessageDAO<Long>    messageDAO;
+   private MessageDAO          messageDAO;
 
-   public void setMessageDAO(MessageDAO<Long> messageDAO) {
+   public void setMessageDAO(MessageDAO messageDAO) {
       this.messageDAO = messageDAO;
    }
 

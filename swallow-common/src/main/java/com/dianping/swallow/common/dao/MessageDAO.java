@@ -4,12 +4,12 @@ import java.util.List;
 
 import com.dianping.swallow.common.message.SwallowMessage;
 
-public interface MessageDAO<ID> {
+public interface MessageDAO {
 
    /**
     * 获取topic数据库的topicName集合/表里，size条messageId字段比messageId参数大的记录
     */
-   List<SwallowMessage> getMessagesGreaterThan(String topicName, ID messageId, int size);
+   List<SwallowMessage> getMessagesGreaterThan(String topicName, Long messageId, int size);
 
    /**
     * 获取topic数据库的topicName集合/表里，messageId字段最小的size条记录

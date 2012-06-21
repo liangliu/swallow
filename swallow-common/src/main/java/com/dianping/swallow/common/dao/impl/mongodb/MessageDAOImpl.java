@@ -19,7 +19,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.WriteConcern;
 
-public class MessageDAOImpl implements MessageDAO<Long> {
+public class MessageDAOImpl implements MessageDAO {
 
    @SuppressWarnings("unused")
    private static final Logger LOG = LoggerFactory.getLogger(MessageDAOImpl.class);
@@ -47,7 +47,6 @@ public class MessageDAOImpl implements MessageDAO<Long> {
    /**
     * 记录的格式如：<br>
     */
-   @SuppressWarnings("unchecked")
    @Override
    public List<SwallowMessage> getMessagesGreaterThan(String topicName, Long messageId, int size) {
       DBCollection collection = this.mongoClient.getMessageCollection(topicName);
@@ -61,17 +60,7 @@ public class MessageDAOImpl implements MessageDAO<Long> {
       while (cursor.hasNext()) {
          DBObject result = cursor.next();
          SwallowMessage swallowMessage = new SwallowMessage();
-         BSONTimestamp timestamp = (BSONTimestamp) result.get("_id");
-         swallowMessage.setMessageId(BSONTimestampUtils.BSONTimestampToLong(timestamp));
-         swallowMessage.setContent((String) result.get("content"));
-         swallowMessage.setVersion((String) result.get("version"));
-         swallowMessage.setGeneratedTime((Date) result.get("generatedTime"));
-         String propertiesJsonStr = (String) result.get("properties");
-         if (propertiesJsonStr != null) {
-            JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
-            swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, HashMap.class));
-         }
-         swallowMessage.setSha1((String) result.get("sha1"));
+         resolve(result, swallowMessage);
          list.add(swallowMessage);
       }
 
@@ -79,6 +68,21 @@ public class MessageDAOImpl implements MessageDAO<Long> {
    }
 
    @SuppressWarnings("unchecked")
+   private void resolve(DBObject result, SwallowMessage swallowMessage) {
+      BSONTimestamp timestamp = (BSONTimestamp) result.get("_id");
+      swallowMessage.setMessageId(BSONTimestampUtils.BSONTimestampToLong(timestamp));
+      swallowMessage.setContent((String) result.get("content"));
+      swallowMessage.setVersion((String) result.get("version"));
+      swallowMessage.setGeneratedTime((Date) result.get("generatedTime"));
+      String propertiesJsonStr = (String) result.get("properties");
+      if (propertiesJsonStr != null) {
+         JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+         swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, HashMap.class));
+      }
+      swallowMessage.setSha1((String) result.get("sha1"));
+      swallowMessage.setType((String) result.get("type"));
+   }
+
    @Override
    public List<SwallowMessage> getMinMessages(String topicName, int size) {
       DBCollection collection = this.mongoClient.getMessageCollection(topicName);
@@ -90,17 +94,7 @@ public class MessageDAOImpl implements MessageDAO<Long> {
       while (cursor.hasNext()) {
          DBObject result = cursor.next();
          SwallowMessage swallowMessage = new SwallowMessage();
-         BSONTimestamp timestamp = (BSONTimestamp) result.get("_id");
-         swallowMessage.setMessageId(BSONTimestampUtils.BSONTimestampToLong(timestamp));
-         swallowMessage.setContent((String) result.get("content"));
-         swallowMessage.setVersion((String) result.get("version"));
-         swallowMessage.setGeneratedTime((Date) result.get("generatedTime"));
-         String propertiesJsonStr = (String) result.get("properties");
-         if (propertiesJsonStr != null) {
-            JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
-            swallowMessage.getProperties().putAll(jsonBinder.fromJson(propertiesJsonStr, HashMap.class));
-         }
-         swallowMessage.setSha1((String) result.get("sha1"));
+         resolve(result, swallowMessage);
          list.add(swallowMessage);
       }
 

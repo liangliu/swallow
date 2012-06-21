@@ -20,6 +20,8 @@ public class SwallowMessage implements Serializable, Message {
 
    private String              sha1;
 
+   private String              type;
+
    public Date getGeneratedTime() {
       return generatedTime;
    }
@@ -76,13 +78,21 @@ public class SwallowMessage implements Serializable, Message {
          JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
          this.content = jsonBinder.toJson(content);
       }
+   }
 
+   public String getType() {
+      return type;
+   }
+
+   public void setType(String type) {
+      this.type = type;
    }
 
    @Override
    public String toString() {
-      return "SwallowMessage [generatedTime=" + generatedTime + ", messageId=" + messageId + ", properties="
-            + properties + ", version=" + version + ", sha1=" + sha1 + ", content=" + content + "]";
+      return String.format(
+            "SwallowMessage [generatedTime=%s, messageId=%s, properties=%s, version=%s, content=%s, sha1=%s, type=%s]",
+            generatedTime, messageId, properties, version, content, sha1, type);
    }
 
    @Override
@@ -94,6 +104,7 @@ public class SwallowMessage implements Serializable, Message {
       result = prime * result + ((messageId == null) ? 0 : messageId.hashCode());
       result = prime * result + ((properties == null) ? 0 : properties.hashCode());
       result = prime * result + ((sha1 == null) ? 0 : sha1.hashCode());
+      result = prime * result + ((type == null) ? 0 : type.hashCode());
       result = prime * result + ((version == null) ? 0 : version.hashCode());
       return result;
    }
@@ -131,6 +142,11 @@ public class SwallowMessage implements Serializable, Message {
          if (other.sha1 != null)
             return false;
       } else if (!sha1.equals(other.sha1))
+         return false;
+      if (type == null) {
+         if (other.type != null)
+            return false;
+      } else if (!type.equals(other.type))
          return false;
       if (version == null) {
          if (other.version != null)

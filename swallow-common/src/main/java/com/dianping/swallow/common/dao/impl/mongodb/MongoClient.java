@@ -20,7 +20,7 @@ public class MongoClient {
    @SuppressWarnings("unused")
    private static final Logger LOG             = LoggerFactory.getLogger(MongoClient.class);
 
-   private static final String CONFIG_FILENAME = null;
+   private static final String MONGO_CONFIG_FILENAME = "swallow-mongo.properties";
 
    private Map<String, Mongo>  topicnameToMongoMap;
    private MongoConfig         config;
@@ -37,7 +37,7 @@ public class MongoClient {
     */
    public MongoClient() {
       //如果存在configFile，则使用configFile
-      InputStream in = MongoClient.class.getClassLoader().getResourceAsStream(CONFIG_FILENAME);
+      InputStream in = MongoClient.class.getClassLoader().getResourceAsStream(MONGO_CONFIG_FILENAME);
       if (in != null) {
          this.config = new MongoConfig(in);
       } else {
@@ -52,14 +52,14 @@ public class MongoClient {
       //      } catch (Exception e) {
       //         throw new RuntimeException(e);
       //      }
-      resetConfig();
+      resetLionConfig();
    }
 
    /**
     * 读取lion配置，初始化<topicName,mongo实例>的Map<br>
     * 当lion配置发现变化时，更新Map
     */
-   public void resetConfig() {
+   public void resetLionConfig() {
       //TODO 使用Lion进行初始化
       HashMap<String, Mongo> map = new HashMap<String, Mongo>();
       String uri = "mongodb://localhost:27017";
@@ -109,6 +109,11 @@ public class MongoClient {
                + ", on Server " + mongo.getAddress());
       }
       return collection;
+   }
+
+   public Mongo getMongo(String topicname) {
+      //根据topicName获取Mongo实例
+      return this.topicnameToMongoMap.get(topicname);
    }
 
    public DBCollection getMessageCollection(String topicname) {

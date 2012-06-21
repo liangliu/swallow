@@ -6,30 +6,31 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MongoConfig {
 
-   private static Logger log                                          = Logger.getLogger(MongoConfig.class);
-
+   private static final Logger LOG                                          = LoggerFactory
+                                                                                  .getLogger(MongoConfig.class);
    // db collection name
-   private String        messageDBName                                = "swallow_message";
-   private String        ackDBName                                    = "swallow_ack";
-   private String        heartbeatDBName                              = "swallow_heartbeat";
+   private String              messageDBName                                = "swallow_message";
+   private String              ackDBName                                    = "swallow_ack";
+   private String              heartbeatDBName                              = "swallow_heartbeat";
 
    // mongo server options
-   private boolean       slaveOk                                      = false;
-   private boolean       socketKeepAlive                              = false;
-   private int           socketTimeout                                = 500;
-   private int           connectionsPerHost                           = 30;
-   private int           threadsAllowedToBlockForConnectionMultiplier = 50;
-   private int           w                                            = 0;
-   private int           wtimeout                                     = 500;
-   private boolean       fsync                                        = false;
-   private int           connectTimeout                               = 500;
-   private int           maxWaitTime                                  = 1000 * 60 * 2;
-   private boolean       autoConnectRetry                             = false;
-   private boolean       safe                                         = false;
+   private boolean             slaveOk                                      = false;
+   private boolean             socketKeepAlive                              = false;
+   private int                 socketTimeout                                = 500;
+   private int                 connectionsPerHost                           = 30;
+   private int                 threadsAllowedToBlockForConnectionMultiplier = 50;
+   private int                 w                                            = 0;
+   private int                 wtimeout                                     = 500;
+   private boolean             fsync                                        = false;
+   private int                 connectTimeout                               = 500;
+   private int                 maxWaitTime                                  = 1000 * 60 * 2;
+   private boolean             autoConnectRetry                             = false;
+   private boolean             safe                                         = false;
 
    public MongoConfig() {
    }
@@ -59,7 +60,7 @@ public class MongoConfig {
          try {
             field = clazz.getDeclaredField(key.trim());
          } catch (Exception e) {
-            log.error("unknow property found: " + key);
+            LOG.error("unknow property found: " + key);
             continue;
          }
          field.setAccessible(true);
@@ -67,41 +68,41 @@ public class MongoConfig {
             try {
                field.set(this, Integer.parseInt(props.getProperty(key).trim()));
             } catch (Exception e) {
-               log.error("cat not parse property " + key, e);
+               LOG.error("cat not parse property " + key, e);
                continue;
             }
          } else if (field.getType().equals(Long.TYPE)) {
             try {
                field.set(this, Long.parseLong(props.getProperty(key).trim()));
             } catch (Exception e) {
-               log.error("cat not set property " + key, e);
+               LOG.error("cat not set property " + key, e);
                continue;
             }
          } else if (field.getType().equals(String.class)) {
             try {
                field.set(this, props.getProperty(key).trim());
             } catch (Exception e) {
-               log.error("cat not set property " + key, e);
+               LOG.error("cat not set property " + key, e);
                continue;
             }
          } else {
             try {
                field.set(this, Boolean.parseBoolean(props.getProperty(key).trim()));
             } catch (Exception e) {
-               log.error("cat not set property " + key, e);
+               LOG.error("cat not set property " + key, e);
                continue;
             }
          }
       }
 
-      if (log.isDebugEnabled()) {
+      if (LOG.isDebugEnabled()) {
          Field[] fields = clazz.getDeclaredFields();
          for (int i = 0; i < fields.length; i++) {
             Field f = fields[i];
             f.setAccessible(true);
             if (!Modifier.isStatic(f.getModifiers())) {
                try {
-                  log.debug(f.getName() + "=" + f.get(this));
+                  LOG.debug(f.getName() + "=" + f.get(this));
                } catch (Exception e) {
                }
             }
