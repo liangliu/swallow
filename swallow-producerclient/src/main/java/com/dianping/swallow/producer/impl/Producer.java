@@ -2,7 +2,6 @@ package com.dianping.swallow.producer.impl;
 
 import java.util.Date;
 import java.util.Properties;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -17,7 +16,7 @@ import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.util.Destination;
 import com.dianping.swallow.common.util.MQService;
 import com.dianping.swallow.producer.HandlerUndeliverable;
-import com.dianping.swallow.producer.ProducerType;
+import com.dianping.swallow.producer.ProducerMode;
 
 public class Producer {
 	//变量定义
@@ -29,16 +28,22 @@ public class Producer {
 	private HandlerOneWayMode		onewayHandler;			//Oneway处理对象
 	private HandlerUndeliverable	undeliverableMessageHandler;
 	//常量定义
-	private	final int				senderNum		= 10;	//异步处理对象的线程池大小
-	private final Logger			log				= Logger.getLogger(Producer.class);
-	private final ProducerType		producerType;
 	private final String			producerVersion = "0.6.0";
-	private final Destination		destination;
+	private final Logger			log				= Logger.getLogger(Producer.class);
+
+	private final ProducerMode		producerMode;			//Producer工作模式
+	private final Destination		destination;			//Producer消息目的
+	private	final int				senderNum;				//异步处理对象的线程池大小
+	
+	private void init(){
+		System.out.println("Inside init() method.");
+	}
 	
 	//构造函数
-	private Producer(ProducerType producerType, Destination destination){
-		this.producerType	= producerType;
+	private Producer(ProducerMode producerType, Destination destination){
+		this.producerMode	= producerType;
 		this.destination	= destination;
+		this.senderNum		= 10;
 		//Producer工作模式
 		switch(producerType){
 		case SYNCHRO_MODE:
@@ -55,12 +60,17 @@ public class Producer {
 		undeliverableMessageHandler = new HandlerUndeliverable() {
 			@Override
 			public void handleUndeliverableMessage(Message msg) {
-				// TODO Auto-generated method stub
 				log.info("[Dest][" + msg.getDestination().getName() + "]" + msg.getContent());
 			}
 		};
 		//向Swallow发送greet
 		swallowAgency.sendMessageWithoutReturn(new PktProducerGreet(producerVersion));
+	}
+	
+	//getInstance首次执行可指定Producer类型，再次指定Producer类型无效
+	public static synchronized Producer getInstance(ProducerMode producerMode, Destination destination){
+		if(instance == null)	instance = new Producer(producerMode, destination);
+		return instance;
 	}
 
 	//发送指定Destination的Object，返回该Object的SHA-1字符串
@@ -82,7 +92,8 @@ public class Producer {
 		
 		//构造packet
 		PktObjectMessage objMsg = new PktObjectMessage(destination, swallowMsg);
-		switch(producerType){
+		//TODO pigeon是否支持同一个连接既有oneway又有sync
+		switch(producerMode){
 		case SYNCHRO_MODE://同步模式
 			ret = ((PktSwallowPACK)syncHandler.doSendMsg(objMsg)).getShaInfo();
 			if(ret == null)	handleUndeliverableMessage(objMsg);
@@ -95,6 +106,7 @@ public class Producer {
 				handleUndeliverableMessage(objMsg);
 			}
 			break;
+		//TODO 不用了
 		case ONE_WAY_MODE://OneWay模式
 			onewayHandler.doSendMsg(objMsg);
 			break;
@@ -112,18 +124,12 @@ public class Producer {
 	}
 	
 	//getters && setters
-	//getInstance首次执行可指定Producer类型，再次指定Producer类型无效
-	public static synchronized Producer getInstance(ProducerType producerType, Destination destination){
-		if(instance == null)	instance = new Producer(producerType, destination);
-		return instance;
-	}
-	
 	public MQService getSwallowAgency() {
 		return swallowAgency;
 	}
 	
-	public ProducerType getProducerType() {
-		return producerType;
+	public ProducerMode getProducerType() {
+		return producerMode;
 	}
 	
 	public String getProducerVersion() {

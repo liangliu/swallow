@@ -12,10 +12,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.bson.types.BSONTimestamp;
 import org.jboss.netty.channel.Channel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.consumerserver.ConsumerService;
 import com.dianping.swallow.consumerserver.GetMessageThread;
+import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.MQThreadFactory;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 import com.dianping.swallow.consumerserver.util.MongoUtil;
@@ -49,6 +51,9 @@ public class ConsumerServiceImpl implements ConsumerService{
     private AckDAO dao;
     
     private ArrayBlockingQueue<Channel> freeChannels;
+    
+    @Autowired
+    private Heartbeater heartbeater;
 	   
     public Map<String, ArrayBlockingQueue<String>> getMessageQueue() {
 		return messageQueue;
@@ -102,6 +107,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 		return options;
 	}
 	public void changeChannelWorkStatue(String consumerId, Channel channel){
+		//TODO 改成status
 		synchronized(channelWorkStatue){
 			if(channelWorkStatue.get(consumerId) == null){
 				HashSet<Channel> channels = new HashSet<Channel>();
@@ -114,7 +120,9 @@ public class ConsumerServiceImpl implements ConsumerService{
 		}    
 	}
 	
-	public void putChannelToBlockQueue(String consumerId, Channel channel){			
+	//TODO 多线程安全
+	public void putChannelToBlockQueue(String consumerId, Channel channel){
+		//freeChannels应该是容量无上限的
 		freeChannels = freeChannelQueue.get(consumerId);
 		if(freeChannels == null){
 			freeChannels = new ArrayBlockingQueue<Channel>(configManager.getFreeChannelBlockQueueSize());
@@ -127,7 +135,8 @@ public class ConsumerServiceImpl implements ConsumerService{
 			e.printStackTrace();
 		}
     }
-		
+	
+	//TODO renaming
 	public void updateThreadWorkStatues(String consumerId, String topicId){
 		synchronized(threads){
 			if(!threads.containsKey(consumerId)){
@@ -137,6 +146,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 				server.setcService(this);
 				Thread t = threadFactory.newThread(server, topicId + consumerId + "-consumer-");
 		    	t.start();
+		    	//TODO change threads to Set
 		    	threads.put(consumerId, Boolean.TRUE);
 			}    
 		}			
@@ -151,12 +161,14 @@ public class ConsumerServiceImpl implements ConsumerService{
 				Channel channel = freeChannels.poll(configManager.getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
 				if(channel == null){
 					break;
+					//TODO 用异常替代isConnected
 				}else if(channel.isConnected()){
 					if(preparedMesssages.get(consumerId) != null){
 						message = preparedMesssages.get(consumerId);
 						preparedMesssages.remove(consumerId);
 					} else{					
-						String message = messages.take();
+						//String message = messages.take();
+						message = "假的";
 					}
 					//TODO 从消息中得到maxTStamp
 					//TODO 是否可以自己设置BSongtimestamp
@@ -167,6 +179,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 					if(!channel.isConnected()){
 						preparedMesssages.put(consumerId, message);
 					} else{
+						//TODO +isWritable?，连接断开后write后是否会抛异常，isWritable()=false的时候retry, when will write() throw exception?
 						channel.write(message);
 					}
 				}
@@ -264,5 +277,42 @@ public class ConsumerServiceImpl implements ConsumerService{
 //			}
 //		}
 		
+	}
+	
+	public void init(boolean isSlave){
+		if (isSlave) {
+			try {
+				// wont throw MongoException
+				heartbeater.waitUntilStopBeating(configManager.getMasterIp(),configManager.getHeartbeatCheckInterval(),configManager.getHeartbeatMaxStopTime());
+			} catch (InterruptedException e) {
+				return;
+			}
+		} else{
+			startHeartbeater(configManager.getMasterIp());
+		}
+		
+	}
+	private void startHeartbeater(final String ip) {
+		
+		Runnable runnable = new Runnable() {
+
+			@Override
+			public void run() {
+				while (true) {
+					
+					try {
+						heartbeater.beat(ip);
+						Thread.sleep(configManager.getHeartbeatUpdateInterval());
+					} catch (Exception e) {
+						//log.error("Error update heart beat", e);
+					}
+				}
+			}
+
+		};
+
+		Thread heartbeatThread = threadFactory.newThread(runnable, "heartbeat-");
+		heartbeatThread.setDaemon(true);
+		heartbeatThread.start();
 	}
 }

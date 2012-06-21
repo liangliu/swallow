@@ -38,6 +38,12 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
             ChannelHandlerContext ctx, MessageEvent e) {
         // Send back the received message to the remote peer.
     	System.out.println("获得消息：" + e.getMessage());
+    	try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
     	e.getChannel().write(topicId + ":" + consumerId + ":" + timeStamp);     
     }
  

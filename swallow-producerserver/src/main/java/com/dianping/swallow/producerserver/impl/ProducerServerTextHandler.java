@@ -40,13 +40,14 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler{
         PktTextMessage pkt = TextHandler.changeTextToPacket(e.getChannel().getRemoteAddress(), request);
 
         if(pkt == null){
-        	logger.info("[" + e.getChannel().getRemoteAddress() + "]: [" + request + "]: Wrong format.");
+        	logger.info("TextMessage { " + e.getChannel().getRemoteAddress() + ": " + request + "} [Wrong format.]");
         	e.getChannel().write("Wrong format.");
         }else{
         	PktObjectMessage	objMsg = pkt.getObjMsg();
         	PktSwallowPACK		ack = (PktSwallowPACK)producerServer.sendMessage(objMsg);
         	if(pkt.isACK()){
         		//保存成功则返回消息的SHA-1字符串
+        		//TODO 返回是否成功等信息，json?
         		e.getChannel().write(ack.getShaInfo());
         	}
         }

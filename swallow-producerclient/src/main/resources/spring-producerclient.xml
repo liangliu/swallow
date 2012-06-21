@@ -2,6 +2,9 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+	<bean id="producer" class="com.dianping.swallow.producer.impl.Producer" init-method="init">
+		<property name="producerMode" value="producerMode" />
+	</bean>
 	
 	<bean id="swallow" class="com.dianping.dpsf.spring.ProxyBeanFactory" init-method="init">
 		<!-- 该远程service在服务端定义的serviceName,需要一一对应上 -->
@@ -21,4 +24,5 @@
 		<!-- 本地配置上述hosts列表各服务端调用的权重, 以逗号间隔,个数需与host个数相同 -->
 		<property name="weight" value="1"/>
 	</bean>
+	<bean id="producerMode" class="com.dianping.swallow.producer.ProducerMode" />
 </beans>
