@@ -26,7 +26,7 @@ import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
-import com.dianping.swallow.common.util.Destination;
+import com.dianping.swallow.common.producer.Destination;
 
 /**
  * TODO Comment of Producer

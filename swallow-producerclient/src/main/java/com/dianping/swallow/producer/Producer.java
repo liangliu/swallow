@@ -15,11 +15,19 @@
  */
 package com.dianping.swallow.producer;
 
+import java.util.Map;
+
 /**
  * TODO Comment of Producer
+ * 
  * @author tong.song
- *
  */
 public interface Producer {
+   public String sendMessage(Object content);
 
+   public String sendMessage(Object content, String messageType);
+
+   public String sendMessage(Object content, Map<String, String> properties);
+
+   public String sendMessage(Object content, Map<String, String> properties, String messageType);
 }

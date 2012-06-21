@@ -1,6 +1,6 @@
 package com.dianping.swallow.common.packet;
 
-import com.dianping.swallow.common.util.Destination;
+import com.dianping.swallow.common.producer.Destination;
 
 public class PktObjectMessage extends Packet implements Message{
 	private Object content;
