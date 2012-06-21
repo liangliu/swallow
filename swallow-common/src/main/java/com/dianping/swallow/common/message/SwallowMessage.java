@@ -156,4 +156,48 @@ public class SwallowMessage implements Serializable, Message {
       return true;
    }
 
+   /**
+    * 在不比较MessageId的情况下，判断消息是否相等。
+    */
+   public boolean equalsWithoutMessageId(Object obj) {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (!(obj instanceof SwallowMessage))
+         return false;
+      SwallowMessage other = (SwallowMessage) obj;
+      if (content == null) {
+         if (other.content != null)
+            return false;
+      } else if (!content.equals(other.content))
+         return false;
+      if (generatedTime == null) {
+         if (other.generatedTime != null)
+            return false;
+      } else if (!generatedTime.equals(other.generatedTime))
+         return false;
+      if (properties == null) {
+         if (other.properties != null)
+            return false;
+      } else if (!properties.equals(other.properties))
+         return false;
+      if (sha1 == null) {
+         if (other.sha1 != null)
+            return false;
+      } else if (!sha1.equals(other.sha1))
+         return false;
+      if (type == null) {
+         if (other.type != null)
+            return false;
+      } else if (!type.equals(other.type))
+         return false;
+      if (version == null) {
+         if (other.version != null)
+            return false;
+      } else if (!version.equals(other.version))
+         return false;
+      return true;
+   }
+
 }

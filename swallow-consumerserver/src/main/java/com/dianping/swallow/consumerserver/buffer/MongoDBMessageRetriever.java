@@ -1,6 +1,7 @@
 package com.dianping.swallow.consumerserver.buffer;
 
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,7 @@ public class MongoDBMessageRetriever implements MessageRetriever {
 
    @SuppressWarnings({ "rawtypes", "unchecked" })
    @Override
-   public List retriveMessage(String topicName, Long messageId) throws Exception {
+   public List retriveMessage(String topicName, Long messageId, Set<String> messageTypeSet) throws Exception {
       //mock db访问
       //      List<Message> list = new ArrayList<Message>();
       //      for (int i = 0; i < fetchSize; i++) {
@@ -40,7 +41,13 @@ public class MongoDBMessageRetriever implements MessageRetriever {
       //      }
       //      Thread.sleep(100L);//睡眠
       //      return list;
-      List<SwallowMessage> messages = messageDAO.getMessagesGreaterThan(topicName, messageId, fetchSize);
+      List<SwallowMessage> messages;
+      if (messageTypeSet != null && !messageTypeSet.isEmpty()) {
+         messages = messageDAO.getMessagesGreaterThan(topicName, messageId, messageTypeSet, fetchSize);
+      } else {
+         messages = messageDAO.getMessagesGreaterThan(topicName, messageId, fetchSize);
+      }
+
       if (LOG.isDebugEnabled()) {
          LOG.debug("fetched messages from mongodb, size:" + messages.size());
          LOG.debug("messages:" + messages);
