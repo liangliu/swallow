@@ -1,5 +1,7 @@
 package com.dianping.swallow.consumerserver;
 
+import org.jboss.netty.bootstrap.ServerBootstrap;
+
 public interface Heartbeater {
 
 	/**
@@ -20,6 +22,6 @@ public interface Heartbeater {
 	 */
 	void waitUntilStopBeating(String ip, long checkInterval, long maxStopTime) throws InterruptedException;
 	
-	void waitUntilBeginBeating(String ip, long checkInterval, long maxStopTime) throws InterruptedException;
+	void waitUntilBeginBeating(String ip, ServerBootstrap bootStrap, long checkInterval, long maxStopTime) throws InterruptedException;
 
 }
