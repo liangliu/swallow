@@ -31,6 +31,8 @@ public class MongoConfig {
    private int                 maxWaitTime                                  = 1000 * 60 * 2;
    private boolean             autoConnectRetry                             = false;
    private boolean             safe                                         = false;
+   private int                 cappedCollectionSize                         = Integer.MAX_VALUE;
+   private int                 cappedCollectionMaxDocNum;
 
    public MongoConfig() {
    }
@@ -228,6 +230,22 @@ public class MongoConfig {
 
    public void setSafe(boolean safe) {
       this.safe = safe;
+   }
+
+   public int getCappedCollectionSize() {
+      return cappedCollectionSize;
+   }
+
+   public void setCappedCollectionSize(int cappedCollectionSize) {
+      this.cappedCollectionSize = cappedCollectionSize;
+   }
+
+   public int getCappedCollectionMaxDocNum() {
+      return cappedCollectionMaxDocNum;
+   }
+
+   public void setCappedCollectionMaxDocNum(int cappedCollectionMaxDocNum) {
+      this.cappedCollectionMaxDocNum = cappedCollectionMaxDocNum;
    }
 
 }

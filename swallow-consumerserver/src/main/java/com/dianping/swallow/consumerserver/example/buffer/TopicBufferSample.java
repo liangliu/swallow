@@ -10,7 +10,7 @@ public class TopicBufferSample {
    public static void main(String[] args) throws InterruptedException {
 
       String topicName = "topicA";
-      Long cid = 1L;
+      String cid = "cid-1";
       TopicBuffer topicBuffer = TopicBuffer.getTopicBuffer(topicName);
       long messageIdOfTailMessage = 1L;
       BlockingQueue<Message> queue = topicBuffer.createMessageQueue(cid, messageIdOfTailMessage);

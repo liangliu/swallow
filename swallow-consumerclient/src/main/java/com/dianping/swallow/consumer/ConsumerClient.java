@@ -1,8 +1,10 @@
 package com.dianping.swallow.consumer;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
@@ -18,10 +20,44 @@ public class ConsumerClient {
 
 	private ClientBootstrap bootstrap;
 	
+	private MessageListener listener;
+	
 	public ClientBootstrap getBootstrap() {
 		return bootstrap;
 	}
 
+	public MessageListener getListener() {
+		return listener;
+	}
+
+	public void setListener(MessageListener listener) {
+		this.listener = listener;
+	}
+
+	/**
+	 * 开始连接服务器，同时把连slave的线程启起来。
+	 * @param address
+	 */
+	public void beginConnect(InetSocketAddress address){
+		init();
+	   	ConSlaveThread slave = new ConSlaveThread();
+    	slave.setBootstrap(bootstrap);
+	   	Thread slaveThread = new Thread(slave);
+	   	slaveThread.start();
+	   	while(true){
+	   		synchronized(bootstrap){
+		   		ChannelFuture future = bootstrap.connect();
+		   		future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞!	
+		   	}
+	   		try {
+				Thread.sleep(1000);//TODO 配置变量
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	   	}	
+	}
+	
 	//连接swollowC，获得ChannelFuture
     public void init(){
     	bootstrap = new ClientBootstrap(

@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
@@ -43,7 +44,9 @@ public class SlaveBootStrap {
             }  
         });  
         // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(port));
+       bootstrap.bind(new InetSocketAddress(port));
+       cService.checkMasterIsLive(bootstrap);
+        
 	}
 
 }

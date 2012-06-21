@@ -7,7 +7,7 @@ import java.util.Date;
 
 public interface HeartbeatDAO {
 	
-	public void updateLastHeartbeat(String ip);
+   public Date updateLastHeartbeat(String ip);
 	
 	public Date findLastHeartbeat(String ip);
 }

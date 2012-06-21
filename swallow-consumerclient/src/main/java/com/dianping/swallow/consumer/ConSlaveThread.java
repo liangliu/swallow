@@ -25,7 +25,7 @@ public class ConSlaveThread implements Runnable {
 			Thread.sleep(1000);//TODO 配置变量		
 			while(true){
 				synchronized(bootstrap){
-			   		ChannelFuture future = bootstrap.connect(new InetSocketAddress(MessageClientC.host, MessageClientC.slavePort));
+			   		ChannelFuture future = bootstrap.connect(new InetSocketAddress(TestConsumer.host, TestConsumer.slavePort));
 			   		future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！	  
 			   	}
 				System.out.println();
