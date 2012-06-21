@@ -4,51 +4,59 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Test;
-import org.kubek2k.springockito.annotations.SpringockitoContextLoader;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import com.dianping.swallow.common.message.SwallowMessage;
 
-@ContextConfiguration(loader = SpringockitoContextLoader.class, locations = "classpath:context.xml")
-public class MessageDAOImplTest extends AbstractJUnit4SpringContextTests {
+public class MessageDAOImplTest extends AbstractDAOImplTest {
+
    @Autowired
-   private MessageDAOImpl topicDAOImpl;
+   private MessageDAOImpl messageDAOImpl;
 
-   @Before
-   public void init() {
-      //      String uri = "mongodb://localhost:27017";
-      //      MongoClient mongoClient = new MongoClient(uri, new MongoConfig());
-      //      topicDAOImpl = new MessageDAOImpl(mongoClient.mongo.getDB("topic"));
-   }
-
-   //   @Test
+   @Test
    public void testSaveMessage() {
-      //插入5条消息
-      int i = 0;
-      while (i++ < 5) {
-         SwallowMessage message = createMessage();
-         topicDAOImpl.saveMessage("topicB", message);
-      }
+      //插入消息
+      SwallowMessage expectedMessage = createMessage();
+      expectedMessage.setContent("content in testSaveMessage");
+      messageDAOImpl.saveMessage(TOPIC_NAME, expectedMessage);
+      //查询消息是否正确
+      SwallowMessage actualMessage = messageDAOImpl.getMaxMessage(TOPIC_NAME);
+      Assert.assertTrue(expectedMessage.equalsWithoutMessageId(actualMessage));
+
    }
 
    @Test
-   public void testGetMinMessages() {
-      //查询messageId最小的消息
-      List<SwallowMessage> minMessages = topicDAOImpl.getMinMessages("topicB", 2);
-      System.out.println(minMessages);
+   public void testGetMessage() {
+      //插入消息
+      SwallowMessage expectedMessage = createMessage();
+      expectedMessage.setContent("content in testGetMessage");
+      messageDAOImpl.saveMessage(TOPIC_NAME, expectedMessage);
+      //查询消息是否正确
+      Long maxMessageId = messageDAOImpl.getMaxMessageId(TOPIC_NAME);
+      SwallowMessage actualMessage = messageDAOImpl.getMessage(TOPIC_NAME, maxMessageId);
+      Assert.assertTrue(expectedMessage.equalsWithoutMessageId(actualMessage));
    }
 
-   //   @Test
+   @Test
    public void testGetMessagesGreaterThan() {
-      //查询messageId比指定id大的按messageId升序排序的5条消息
-      List<SwallowMessage> minMessages = topicDAOImpl.getMinMessages("topicB", 1);
-      Long messageId = minMessages.get(0).getMessageId();
-      List<SwallowMessage> messagesGreaterThan = topicDAOImpl.getMessagesGreaterThan("topicB", messageId, 5);
-      System.out.println(messagesGreaterThan);
+      //插入1条消息
+      SwallowMessage message = createMessage();
+      messageDAOImpl.saveMessage(TOPIC_NAME, message);
+      //获取消息id
+      Long maxMessageId = messageDAOImpl.getMaxMessageId(TOPIC_NAME);
+      //再插入2条消息
+      SwallowMessage expectedMessage1 = createMessage();
+      messageDAOImpl.saveMessage(TOPIC_NAME, expectedMessage1);
+      SwallowMessage expectedMessage2 = createMessage();
+      messageDAOImpl.saveMessage(TOPIC_NAME, expectedMessage2);
+      //查询messageId比指定id大的按messageId升序排序的2条消息
+      List<SwallowMessage> messagesGreaterThan = messageDAOImpl.getMessagesGreaterThan(TOPIC_NAME, maxMessageId, 5);
+      Assert.assertNotNull(messagesGreaterThan);
+      Assert.assertEquals(2, messagesGreaterThan.size());
+      Assert.assertTrue(expectedMessage1.equalsWithoutMessageId(messagesGreaterThan.get(0)));
+      Assert.assertTrue(expectedMessage2.equalsWithoutMessageId(messagesGreaterThan.get(1)));
    }
 
    private static SwallowMessage createMessage() {
@@ -60,8 +68,14 @@ public class MessageDAOImplTest extends AbstractJUnit4SpringContextTests {
       message.setProperties(map);
       message.setSha1("sha-1 string");
       message.setVersion("0.6.0");
+      message.setType("feed");
       return message;
 
+   }
+
+   @Override
+   protected String getDBName() {
+      return this.getMongoConfig().getMessageDBName();
    }
 
 }

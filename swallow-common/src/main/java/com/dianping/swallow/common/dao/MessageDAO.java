@@ -1,10 +1,22 @@
 package com.dianping.swallow.common.dao;
 
 import java.util.List;
+import java.util.Set;
 
 import com.dianping.swallow.common.message.SwallowMessage;
 
 public interface MessageDAO {
+   /**
+    * 往topic数据库的topicName集合/表里，插入一条信息
+    * 
+    * @return
+    */
+   void saveMessage(String topicName, SwallowMessage message);
+
+   /**
+    * 获取topic数据库的topicName集合/表里，对应messageId字段的记录
+    */
+   SwallowMessage getMessage(String topicName, Long messageId);
 
    /**
     * 获取topic数据库的topicName集合/表里，size条messageId字段比messageId参数大的记录
@@ -12,9 +24,11 @@ public interface MessageDAO {
    List<SwallowMessage> getMessagesGreaterThan(String topicName, Long messageId, int size);
 
    /**
-    * 获取topic数据库的topicName集合/表里，messageId字段最小的size条记录
+    * 获取topic数据库的topicName集合/表里，size条messageId字段比messageId参数大，
+    * 且type字段在typeSet参数之内的记录
     */
-   List<SwallowMessage> getMinMessages(String topicName, int size);
+   List<SwallowMessage> getMessagesGreaterThan(String topicName, Long messageId, Set<String> messageTypeSet,
+                                               int fetchSize);
 
    /**
     * 获取topic数据库的topicName集合/表里，最大的messageId字段
@@ -25,8 +39,11 @@ public interface MessageDAO {
    Long getMaxMessageId(String topicName);
 
    /**
-    * 往topic数据库的topicName集合/表里，插入一条信息
+    * 获取topic数据库的topicName集合/表里，messageId字段最大的消息
+    * 
+    * @param topicName
+    * @return
     */
-   void saveMessage(String topicName, SwallowMessage message);
+   SwallowMessage getMaxMessage(String topicName);
 
 }

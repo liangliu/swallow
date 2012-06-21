@@ -1,6 +1,7 @@
 package com.dianping.swallow.consumerserver.buffer;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
@@ -26,8 +27,8 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
 
    private ReentrantLock       reentrantLock     = new ReentrantLock();
 
-   protected volatile Long     messageIdOfTailMessage;
-
+   protected volatile Long     tailMessageId;
+   protected Set<String>       messageTypeSet;
    private volatile Thread     messageRetrieverDemonThread;
 
    public MessageBlockingQueue(Long cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage) {
@@ -40,7 +41,7 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       this.threshold = threshold;
       if (messageIdOfTailMessage == null)
          throw new IllegalArgumentException("messageIdOfTailMessage is null.");
-      this.messageIdOfTailMessage = messageIdOfTailMessage;
+      this.tailMessageId = messageIdOfTailMessage;
    }
 
    public MessageBlockingQueue(Long cid, String topicName, int threshold, Long messageIdOfTailMessage) {
@@ -51,7 +52,7 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       this.threshold = threshold;
       if (messageIdOfTailMessage == null)
          throw new IllegalArgumentException("messageIdOfTailMessage is null.");
-      this.messageIdOfTailMessage = messageIdOfTailMessage;
+      this.tailMessageId = messageIdOfTailMessage;
    }
 
    public MessageBlockingQueue(Long cid, String topicName, Long messageIdOfTailMessage) {
@@ -60,7 +61,45 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       this.threshold = DEFAULT_THRESHOLD;
       if (messageIdOfTailMessage == null)
          throw new IllegalArgumentException("messageIdOfTailMessage is null.");
-      this.messageIdOfTailMessage = messageIdOfTailMessage;
+      this.tailMessageId = messageIdOfTailMessage;
+   }
+
+   public MessageBlockingQueue(Long cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage,
+                               Set<String> messageTypeSet) {
+      super(capacity);
+      //能运行到这里，说明capacity>0
+      this.cid = cid;
+      this.topicName = topicName;
+      if (threshold < 0)
+         throw new IllegalArgumentException("threshold: " + threshold);
+      this.threshold = threshold;
+      if (messageIdOfTailMessage == null)
+         throw new IllegalArgumentException("messageIdOfTailMessage is null.");
+      this.tailMessageId = messageIdOfTailMessage;
+      this.messageTypeSet = messageTypeSet;
+   }
+
+   public MessageBlockingQueue(Long cid, String topicName, int threshold, Long tailMessageId,
+                               Set<String> messageTypeSet) {
+      this.cid = cid;
+      this.topicName = topicName;
+      if (threshold < 0)
+         throw new IllegalArgumentException("threshold: " + threshold);
+      this.threshold = threshold;
+      if (tailMessageId == null)
+         throw new IllegalArgumentException("messageIdOfTailMessage is null.");
+      this.tailMessageId = tailMessageId;
+      this.messageTypeSet = messageTypeSet;
+   }
+
+   public MessageBlockingQueue(Long cid, String topicName, Long messageIdOfTailMessage, Set<String> messageTypeSet) {
+      this.cid = cid;
+      this.topicName = topicName;
+      this.threshold = DEFAULT_THRESHOLD;
+      if (messageIdOfTailMessage == null)
+         throw new IllegalArgumentException("messageIdOfTailMessage is null.");
+      this.tailMessageId = messageIdOfTailMessage;
+      this.messageTypeSet = messageTypeSet;
    }
 
    public Message poll() {
@@ -94,7 +133,8 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
                   public void run() {
                      try {
                         List<Message> messages = messageRetriever.retriveMessage(MessageBlockingQueue.this.topicName,
-                              MessageBlockingQueue.this.messageIdOfTailMessage);
+                              MessageBlockingQueue.this.tailMessageId,
+                              MessageBlockingQueue.this.messageTypeSet);
                         if (messages != null) {
                            int size = messages.size();
                            for (int i = 0; i < size; i++) {
@@ -106,7 +146,7 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
                                     throw new IllegalStateException("the retrived message's messageId is null:"
                                           + message);
                                  }
-                                 messageIdOfTailMessage = messageId;
+                                 tailMessageId = messageId;
                                  if (LOG.isDebugEnabled()) {
                                     LOG.debug("add message to (topic=" + topicName + ",cid=" + cid + ") queue:"
                                           + message.toString());

@@ -18,7 +18,7 @@ import com.mongodb.ServerAddress;
 public class MongoClient {
 
    @SuppressWarnings("unused")
-   private static final Logger LOG             = LoggerFactory.getLogger(MongoClient.class);
+   private static final Logger LOG                   = LoggerFactory.getLogger(MongoClient.class);
 
    private static final String MONGO_CONFIG_FILENAME = "swallow-mongo.properties";
 
@@ -145,6 +145,10 @@ public class MongoClient {
          }
       }
       return result;
+   }
+
+   public MongoConfig getConfig() {
+      return config;
    }
 
 }

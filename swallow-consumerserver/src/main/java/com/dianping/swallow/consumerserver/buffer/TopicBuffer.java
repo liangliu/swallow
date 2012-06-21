@@ -3,6 +3,7 @@ package com.dianping.swallow.consumerserver.buffer;
 import java.io.Serializable;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -91,25 +92,39 @@ public class TopicBuffer implements Serializable {
     * 创建一个BlockingQueue
     * 
     * @param cid
-    * @param messageIdOfTailMessage 从messageId大于messageIdOfTailMessage的消息开始消费
+    * @param tailMessageId 从messageId大于messageIdOfTailMessage的消息开始消费
     * @return
     */
-   public BlockingQueue<Message> createMessageQueue(Long cid, Long messageIdOfTailMessage) {
+   public BlockingQueue<Message> createMessageQueue(Long cid, Long tailMessageId) {
+      return this.createMessageQueue(cid, tailMessageId, null);
+   }
+   /**
+    * 创建一个BlockingQueue
+    * 
+    * @param cid
+    * @param tailMessageId 从messageId大于messageIdOfTailMessage的消息开始消费
+    * @return
+    */
+   public BlockingQueue<Message> createMessageQueue(Long cid, Long tailMessageId, Set<String> messageTypeSet) {
       if (cid == null) {
          throw new IllegalArgumentException("cid is null.");
       }
-      if (messageIdOfTailMessage == null) {
+      if (tailMessageId == null) {
          throw new IllegalArgumentException("messageIdOfTailMessage is null.");
       }
       MessageBlockingQueue messageBlockingQueue;
       //TODO 通过lion获取参数
       int threshold = 10;
       int capacity = 100;
-      if (capacity < 0) {
-         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, messageIdOfTailMessage);
+      if (capacity > 0 && messageTypeSet != null) {
+         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, capacity,
+               tailMessageId, messageTypeSet);
+      } else if (messageTypeSet != null) {
+         messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, tailMessageId,
+               messageTypeSet);
       } else {
          messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, capacity,
-               messageIdOfTailMessage);
+               tailMessageId);
       }
       messageBlockingQueue.setMessageRetriever(new MongoDBMessageRetriever());
       messageQueues.put(cid, new SoftReference<BlockingQueue<Message>>(messageBlockingQueue));
