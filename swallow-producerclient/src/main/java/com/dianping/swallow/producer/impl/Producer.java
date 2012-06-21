@@ -92,6 +92,10 @@ public class Producer {
 		
 		//构造packet
 		PktObjectMessage objMsg = new PktObjectMessage(destination, swallowMsg);
+<<<<<<< HEAD
+=======
+		//TODO pigeon是否支持同一个连接既有oneway又有sync
+>>>>>>> 9d71f321ea4a10c4c2cb5b203f67e35339536135
 		switch(producerMode){
 		case SYNCHRO_MODE://同步模式
 			ret = ((PktSwallowPACK)syncHandler.doSendMsg(objMsg)).getShaInfo();
@@ -105,6 +109,7 @@ public class Producer {
 				handleUndeliverableMessage(objMsg);
 			}
 			break;
+		//TODO 不用了
 		case ONE_WAY_MODE://OneWay模式
 			onewayHandler.doSendMsg(objMsg);
 			break;

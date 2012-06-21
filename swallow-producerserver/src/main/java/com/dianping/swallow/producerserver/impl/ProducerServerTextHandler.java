@@ -47,6 +47,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler{
         	PktSwallowPACK		ack = (PktSwallowPACK)producerServer.sendMessage(objMsg);
         	if(pkt.isACK()){
         		//保存成功则返回消息的SHA-1字符串
+        		//TODO 返回是否成功等信息，json?
         		e.getChannel().write(ack.getShaInfo());
         	}
         }

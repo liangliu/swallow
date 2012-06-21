@@ -48,7 +48,7 @@ public class ConsumerServiceImpl implements ConsumerService{
     
     private Map<String, ArrayBlockingQueue<Channel>> freeChannelQueue = new HashMap<String, ArrayBlockingQueue<Channel>>();
     
-
+    private AckDAO dao;
     
     private ArrayBlockingQueue<Channel> freeChannels;
     
@@ -107,6 +107,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 		return options;
 	}
 	public void changeChannelWorkStatue(String consumerId, Channel channel){
+		//TODO 改成status
 		synchronized(channelWorkStatue){
 			if(channelWorkStatue.get(consumerId) == null){
 				HashSet<Channel> channels = new HashSet<Channel>();
@@ -119,7 +120,9 @@ public class ConsumerServiceImpl implements ConsumerService{
 		}    
 	}
 	
-	public void putChannelToBlockQueue(String consumerId, Channel channel){			
+	//TODO 多线程安全
+	public void putChannelToBlockQueue(String consumerId, Channel channel){
+		//freeChannels应该是容量无上限的
 		freeChannels = freeChannelQueue.get(consumerId);
 		if(freeChannels == null){
 			freeChannels = new ArrayBlockingQueue<Channel>(configManager.getFreeChannelBlockQueueSize());
@@ -132,7 +135,8 @@ public class ConsumerServiceImpl implements ConsumerService{
 			e.printStackTrace();
 		}
     }
-		
+	
+	//TODO renaming
 	public void updateThreadWorkStatues(String consumerId, String topicId){
 		synchronized(threads){
 			if(!threads.containsKey(consumerId)){
@@ -142,6 +146,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 				server.setcService(this);
 				Thread t = threadFactory.newThread(server, topicId + consumerId + "-consumer-");
 		    	t.start();
+		    	//TODO change threads to Set
 		    	threads.put(consumerId, Boolean.TRUE);
 			}    
 		}			
@@ -156,6 +161,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 				Channel channel = freeChannels.poll(configManager.getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
 				if(channel == null){
 					break;
+					//TODO 用异常替代isConnected
 				}else if(channel.isConnected()){
 					if(preparedMesssages.get(consumerId) != null){
 						message = preparedMesssages.get(consumerId);
@@ -173,6 +179,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 					if(!channel.isConnected()){
 						preparedMesssages.put(consumerId, message);
 					} else{
+						//TODO +isWritable?，连接断开后write后是否会抛异常，isWritable()=false的时候retry, when will write() throw exception?
 						channel.write(message);
 					}
 				}

@@ -11,6 +11,7 @@ import com.dianping.swallow.common.util.Destination;
 public class TextHandler {
 	//解析Text，成功返回Packet，失败返回null
 	//可解析的格式为 send:topic=XX;content=XX;
+	//TODO 用json
 	public static PktTextMessage changeTextToPacket(SocketAddress addr, String str){
 		PktTextMessage pkt = null;
 		
