@@ -16,7 +16,7 @@ public class HandlerAsynchroMode {
 	public HandlerAsynchroMode(Producer producer){
 		this.producer	= producer;
 		messageQueue	= new DefaultFileQueueImpl<Packet>("filequeue.properties", producer.getDestination().getName());//filequeue
-		senders			= Executors.newFixedThreadPool(producer.getSenderNum());
+		senders			= Executors.newFixedThreadPool(producer.getThreadPoolSize());
 		this.start();
 	}
 	//对外的接口//异步处理只需将pkt放入filequeue即可，放入失败抛出异常
@@ -26,7 +26,7 @@ public class HandlerAsynchroMode {
 	//启动处理线程
 	private void start(){
 		int idx;
-		for(idx = 0; idx < producer.getSenderNum(); idx++){
+		for(idx = 0; idx < producer.getThreadPoolSize(); idx++){
 			senders.execute(new TskGetAndSend());
 		}
 	}
@@ -36,7 +36,7 @@ public class HandlerAsynchroMode {
 		public void run() {
 			while(true){
 				//如果filequeue无元素则阻塞，否则发送
-				producer.getSwallowAgency().sendMessage(messageQueue.get());
+				producer.getRemoteService().sendMessage(messageQueue.get());
 			}
 		}
 	}

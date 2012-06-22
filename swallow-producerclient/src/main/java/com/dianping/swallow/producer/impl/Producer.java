@@ -1,7 +1,7 @@
 package com.dianping.swallow.producer.impl;
 
 import java.util.Date;
-import java.util.Properties;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -12,38 +12,46 @@ import com.dianping.swallow.common.packet.Message;
 import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.common.packet.PktProducerGreet;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
-import com.dianping.swallow.common.util.Destination;
-import com.dianping.swallow.common.util.MQService;
+import com.dianping.swallow.common.producer.Destination;
+import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.producer.HandlerUndeliverable;
 import com.dianping.swallow.producer.ProducerMode;
 
 public class Producer {
    //变量定义
-   private static Producer      instance;                                          //Producer实例
-   private MQService            remoteService;                                     //远程调用对象
+   private static Producer           instance;                                             //Producer实例
+   private MQService                 remoteService;                                        //远程调用对象
 
-   private HandlerAsynchroMode  asyncHandler;                                      //异步处理对象
-   private HandlerSynchroMode   syncHandler;                                       //同步处理对象
+   private HandlerAsynchroMode       asyncHandler;                                         //异步处理对象
+   private HandlerSynchroMode        syncHandler;                                          //同步处理对象
 
-   private HandlerUndeliverable undeliverableMessageHandler;
+   private HandlerUndeliverable      undeliverableMessageHandler;
    //常量定义
-   private final String         producerVersion = "0.6.0";
-   private final Logger         log             = Logger.getLogger(Producer.class);
+   private final String              producerVersion    = "0.6.0";
+   private final Logger              log                = Logger.getLogger(Producer.class);
 
-   //TODO 设置or构造函数？
-   private final ProducerMode   producerMode;                                      //Producer工作模式
-   private final Destination    destination;                                       //Producer消息目的
-   private final int            threadPoolSize;                                    //异步处理对象的线程池大小
+
+   //TODO 配置文件
+   private ProducerMode              producerMode;                                         //Producer工作模式
+   private Destination               destination;                                          //Producer消息目的
+   private int                       threadPoolSize;                                       //异步处理对象的线程池大小
+   private int                       asyncSendTimeout   = 5000;
 
    @SuppressWarnings("rawtypes")
-   private final ProxyFactory   pigeon          = new ProxyFactory();
+   private final ProxyFactory        pigeon             = new ProxyFactory();
 
+   /**
+    * 初始化远程调用服务，如果远程服务端连接失败，抛出异常
+    * 
+    * @return 远程调用服务的借口
+    * @throws Exception 远程调用服务失败
+    */
    private MQService initRemoteService() throws Exception {
       pigeon.setServiceName("remoteService");
       pigeon.setIface(MQService.class);
       pigeon.setSerialize("hessian");
       pigeon.setCallMethod("sync");
-      pigeon.setTimeout(5000);
+      pigeon.setTimeout(asyncSendTimeout);
 
       //TODO 配置Lion支持
       pigeon.setUseLion(false);
@@ -63,10 +71,10 @@ public class Producer {
       this.threadPoolSize = 10;
       //Producer工作模式
       switch (producerType) {
-         case SYNCHRO_MODE:
+         case SYNC_MODE:
             syncHandler = new HandlerSynchroMode(this);
             break;
-         case ASYNCHRO_MODE:
+         case ASYNC_MODE:
             asyncHandler = new HandlerAsynchroMode(this);
             break;
       }
@@ -78,7 +86,7 @@ public class Producer {
          }
       };
       //向Swallow发送greet
-      remoteService.sendMessageWithoutReturn(new PktProducerGreet(producerVersion));
+      remoteService.sendMessage(new PktProducerGreet(producerVersion));
    }
 
    /**
@@ -102,28 +110,62 @@ public class Producer {
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
     */
    public String sendMessage(Object content) {
-      return sendMessage(content, null);
+      return sendMessage(content, null, null);
    }
-   public String sendMessage(Object content, Properties properties) {
-      String ret = null;
 
+   /**
+    * 将Object类型的content发送到指定的Destination
+    * 
+    * @param content 待发送的消息内容
+    * @param messageType 消息类型，用于消息过滤
+    * @return 异步模式返回null，同步模式返回content的SHA-1字符串
+    */
+   public String sendMessage(Object content, String messageType) {
+      return sendMessage(content, null, messageType);
+   }
+
+   /**
+    * 将Object类型的content发送到指定的Destination
+    * 
+    * @param content 待发送的消息内容
+    * @param properties 消息属性，留作后用
+    * @return 异步模式返回null，同步模式返回content的SHA-1字符串
+    */
+   public String sendMessage(Object content, Map<String, String> properties) {
+      return sendMessage(content, properties, null);
+   }
+
+   /**
+    * 将Object类型的content发送到指定的Destination
+    * 
+    * @param content 待发送的消息内容
+    * @param properties 消息属性，留作后用
+    * @param messageType 消息类型，用于消息过滤
+    * @return 异步模式返回null，同步模式返回content的SHA-1字符串
+    */
+   public String sendMessage(Object content, Map<String, String> properties, String messageType) {
+
+      String ret = null;
       //根据content生成SwallowMessage
       SwallowMessage swallowMsg = new SwallowMessage();
 
       swallowMsg.setContent(content);
       swallowMsg.setVersion(producerVersion);
       swallowMsg.setGeneratedTime(new Date());
-      //		if(properties != null)	swallowMsg.setProperties(properties);
+      if (properties != null)
+         swallowMsg.setProperties(properties);
+      if (messageType != null)
+         swallowMsg.setType(messageType);
 
       //构造packet
       PktObjectMessage objMsg = new PktObjectMessage(destination, swallowMsg);
       switch (producerMode) {
-         case SYNCHRO_MODE://同步模式
+         case SYNC_MODE://同步模式
             ret = ((PktSwallowPACK) syncHandler.doSendMsg(objMsg)).getShaInfo();
             if (ret == null)
                handleUndeliverableMessage(objMsg);
             break;
-         case ASYNCHRO_MODE://异步模式
+         case ASYNC_MODE://异步模式
             try {
                asyncHandler.doSendMsg(objMsg);
             } catch (FileQueueClosedException fqce) {
@@ -144,25 +186,38 @@ public class Producer {
       }
    }
 
-   //getters && setters
-   public MQService getSwallowAgency() {
+   /**
+    * @return 返回远程调用接口
+    */
+   public MQService getRemoteService() {
       return remoteService;
    }
 
+   /**
+    * @return 返回Producer工作模式
+    */
    public ProducerMode getProducerType() {
       return producerMode;
    }
 
+   /**
+    * @return返回Producer版本号
+    */
    public String getProducerVersion() {
       return producerVersion;
    }
 
+   /**
+    * @return 返回producer消息目的地
+    */
    public Destination getDestination() {
       return destination;
    }
 
-   public int getSenderNum() {
+   /**
+    * @return 返回异步模式时线程池大小
+    */
+   public int getThreadPoolSize() {
       return threadPoolSize;
    }
-
 }

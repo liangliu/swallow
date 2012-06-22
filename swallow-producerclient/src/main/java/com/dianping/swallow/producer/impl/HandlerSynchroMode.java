@@ -9,6 +9,6 @@ public class HandlerSynchroMode {
 	}
 	//对外接口
 	public Packet doSendMsg(Packet pkt){
-		return producer.getSwallowAgency().sendMessage(pkt);
+		return producer.getRemoteService().sendMessage(pkt);
 	}
 }
