@@ -27,10 +27,10 @@ public class MongoClient {
    private static final Logger LOG                     = LoggerFactory.getLogger(MongoClient.class);
 
    private static final String MONGO_CONFIG_FILENAME   = "swallow-mongo.properties";
-
    private static final String DEFAULT_COLLECTION_NAME = "c";
-
    private static final String TOPICNAME_HEARTBEAT     = "heartbeat";
+   private static final String TOPICNAME_DEFAULT       = "default";
+   private static final String LION_KEY_MONGO_URI      = "swallow.mongo.ServerURI";
 
    private Map<String, Mongo>  topicnameToMongoMap;
    private MongoOptions        mongoOptions;
@@ -58,7 +58,7 @@ public class MongoClient {
       mongoOptions = this.getMongoOptions(config);
       //读取Lion配置
       ConfigCache cc = ConfigCache.getInstance(EnvZooKeeperConfig.getZKAddress());
-      String topicURI = cc.getProperty("swallow.mongo.topicURI");
+      String topicURI = cc.getProperty(LION_KEY_MONGO_URI);
       //构造Mongo实例
       this.topicnameToMongoMap = parseTopicURI(topicURI);
       //设置Lion事件响应
@@ -66,8 +66,7 @@ public class MongoClient {
          @Override
          public void onChange(String key, String value) {
             try {
-               if ("swallow.mongo.topicURI".equals(key)) {
-                  //TODO MongoURI对应的Mongo实例若已经存在，则重复使用；字符串使用常量；
+               if (LION_KEY_MONGO_URI.equals(key)) {
                   MongoClient.this.topicnameToMongoMap = parseTopicURI(value);
                }
             } catch (Exception e) {
@@ -107,7 +106,7 @@ public class MongoClient {
          }
       }
       //default是必须存在的topicName
-      if (!map.containsKey("default")) {
+      if (!map.containsKey(TOPICNAME_DEFAULT)) {
          throw new IllegalArgumentException("The swallow.mongo.topicURI value must contain 'default' topicName!");
       }
       return map;
@@ -145,7 +144,7 @@ public class MongoClient {
          if (LOG.isInfoEnabled()) {
             LOG.info("topicname '" + topicName + "' do not match any Mongo Server, use default.");
          }
-         mongo = this.topicnameToMongoMap.get("default");
+         mongo = this.topicnameToMongoMap.get(TOPICNAME_DEFAULT);
       }
       return this.getCollection(mongo, "msg_", topicName);
    }
@@ -157,7 +156,7 @@ public class MongoClient {
          if (LOG.isInfoEnabled()) {
             LOG.info("topicname '" + topicName + "' do not match any Mongo Server, use default.");
          }
-         mongo = this.topicnameToMongoMap.get("default");
+         mongo = this.topicnameToMongoMap.get(TOPICNAME_DEFAULT);
       }
       return this.getCollection(mongo, "ack_", topicName);
    }
@@ -169,7 +168,7 @@ public class MongoClient {
          if (LOG.isInfoEnabled()) {
             LOG.info("topicname '" + TOPICNAME_HEARTBEAT + "' do not match any Mongo Server, use default.");
          }
-         mongo = this.topicnameToMongoMap.get("default");
+         mongo = this.topicnameToMongoMap.get(TOPICNAME_DEFAULT);
       }
       return this.getCollection(mongo, "heartbeat_", ip);
    }
