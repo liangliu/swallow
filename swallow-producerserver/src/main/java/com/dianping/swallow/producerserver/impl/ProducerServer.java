@@ -5,6 +5,8 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import com.dianping.dpsf.api.ServiceRegistry;
 import com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl;
 import com.dianping.swallow.common.message.SwallowMessage;
@@ -18,6 +20,7 @@ public class ProducerServer implements MQService {
 
    private static ProducerServer instance;
    private MessageDAOImpl        messageDAO = new MessageDAOImpl();
+   private final Logger          logger     = Logger.getLogger(this.getClass());
 
    private ProducerServer(int portForText) {
       new ProducerServerText(this).start(portForText);

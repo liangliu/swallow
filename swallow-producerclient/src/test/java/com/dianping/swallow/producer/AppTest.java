@@ -4,8 +4,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import com.dianping.swallow.common.producer.Destination;
-import com.dianping.swallow.producer.impl.Producer;
+import com.dianping.swallow.producer.impl.ProducerImpl;
 import com.dianping.swallow.producer.impl.ProducerConfigure;
 
 /**
@@ -45,9 +44,9 @@ public class AppTest extends TestCase {
       @Override
       public void run() {
          // TODO Auto-generated method stub
-         Producer ps;
+         ProducerImpl ps;
          try {
-            ps = Producer.getInstance(ProducerMode.SYNC_MODE, Destination.topic("master.slave"));
+            ps = ProducerImpl.getInstance();
             while (true) {
                //			content += i++;
                System.out.println(ps.sendMessage(content));
@@ -72,12 +71,12 @@ public class AppTest extends TestCase {
    }
 
    public static void main(String[] args) {
-      new AppTest("111").doTest();
-//      ProducerConfigure pc = new ProducerConfigure("producer.properties");
-//      System.out.println(pc.getRemoteServiceTimeout());
-//      System.out.println(pc.getThreadPoolSize());
-//      System.out.println(pc.getDestination().getName());
-//      System.out.println(pc.getProducerMode());
-//      System.out.println(pc.isContinueSend());
+//      new AppTest("111").doTest();
+      ProducerConfigure pc = new ProducerConfigure("producer.properties");
+      System.out.println(pc.getRemoteServiceTimeout());
+      System.out.println(pc.getThreadPoolSize());
+      System.out.println(pc.getDestinationName());
+      System.out.println(pc.getProducerModeStr());
+      System.out.println(pc.isContinueSend());
    }
 }

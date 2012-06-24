@@ -1,6 +1,5 @@
 package com.dianping.swallow.producer.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -9,15 +8,9 @@ import java.util.Properties;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import com.dianping.swallow.common.producer.Destination;
-import com.dianping.swallow.producer.ProducerMode;
-
 public final class ProducerConfigure {
 
    private static final Logger logger               = Logger.getLogger(ProducerConfigure.class);
-
-   private ProducerMode        producerMode;
-   private Destination         destination;
 
    //以下为配置文件内容
    private String              producerModeStr      = "sync";
@@ -27,40 +20,33 @@ public final class ProducerConfigure {
    private boolean             continueSend         = false;
 
    /**
-    * 从producerModeStr及destinationName初始化producerMode及destination
-    */
-   private void initParams() {
-      setProducerMode((producerModeStr == "async") ? ProducerMode.ASYNC_MODE : ProducerMode.SYNC_MODE);
-      setDestination(Destination.topic(destinationName));
-   }
-
-   /**
     * 加载默认producer配置
     */
    public ProducerConfigure() {
-      initParams();
    }
 
    /**
     * 根据配置文件加载producer配置
-    * @param configFile producer配置文件目录及文件名
+    * 
+    * @param configFile producer配置文件目录及文件名，如果加载失败，则加载默认配置
     */
    @SuppressWarnings("rawtypes")
    public ProducerConfigure(String configFile) {
       Properties props = new Properties();
       Class clazz = this.getClass();
       InputStream in = null;
+      
       in = ProducerConfigure.class.getClassLoader().getResourceAsStream(configFile);
-
+      
       try {
          props.load(in);
-      } catch (IOException e) {
+      } catch (Exception e) {
          logger.log(Level.ERROR, "Load property file failed.", e.getCause());
       } finally {
          if (in != null) {
             try {
                in.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                logger.log(Level.ERROR, "Close inputstream failed", e.getCause());
             }
          }
@@ -112,38 +98,34 @@ public final class ProducerConfigure {
             }
          }
       }
-
-      initParams();
    }
 
    /**
-    * @return producer工作模式
+    * @return producer工作模式字符串
     */
-   public ProducerMode getProducerMode() {
-      return producerMode;
+   public String getProducerModeStr() {
+      return producerModeStr;
    }
 
    /**
-    * @param producerMode
-    *           设置producer工作模式（同步：ProducerMode.SYNC，异步：ProducerMode.ASYNC）
+    * @param producerMode 设置producer工作模式字符串（同步：sync，异步：async）
     */
-   public void setProducerMode(ProducerMode producerMode) {
-      this.producerMode = producerMode;
+   public void setProducerModeStr(String producerModeStr) {
+      this.producerModeStr = producerModeStr;
    }
 
    /**
-    * @return producer发送消息的目的地
+    * @return producer发送消息的目的地TopicName
     */
-   public Destination getDestination() {
-      return destination;
+   public String getDestinationName() {
+      return destinationName;
    }
 
    /**
-    * @param destination producer发送消息的目的地（Destination.topic(String
-    *           destinationName)）
+    * @param destination producer发送消息的目的地TopicName
     */
-   public void setDestination(Destination destination) {
-      this.destination = destination;
+   public void setDestinationName(String destinationName) {
+      this.destinationName = destinationName;
    }
 
    /**
@@ -187,5 +169,4 @@ public final class ProducerConfigure {
    public void setContinueSend(boolean continueSend) {
       this.continueSend = continueSend;
    }
-
 }

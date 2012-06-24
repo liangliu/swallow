@@ -15,30 +15,31 @@ import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.Destination;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.producer.HandlerUndeliverable;
+import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerMode;
 
-public class Producer {
+public class ProducerImpl implements Producer {
    //变量定义
-   private static Producer           instance;                                             //Producer实例
-   private MQService                 remoteService;                                        //远程调用对象
+   private static ProducerImpl  instance;                                              //Producer实例
+   private MQService            remoteService;                                         //远程调用对象
 
-   private HandlerAsynchroMode       asyncHandler;                                         //异步处理对象
-   private HandlerSynchroMode        syncHandler;                                          //同步处理对象
+   private HandlerAsynchroMode  asyncHandler;                                          //异步处理对象
+   private HandlerSynchroMode   syncHandler;                                           //同步处理对象
 
-   private HandlerUndeliverable      undeliverableMessageHandler;
+   private HandlerUndeliverable undeliverableMessageHandler;
    //常量定义
-   private final String              producerVersion    = "0.6.0";
-   private final Logger              log                = Logger.getLogger(Producer.class);
+   private final String         producerVersion = "0.6.0";
+   private final Logger         logger          = Logger.getLogger(ProducerImpl.class);
 
-
-   //TODO 配置文件
-   private ProducerMode              producerMode;                                         //Producer工作模式
-   private Destination               destination;                                          //Producer消息目的
-   private int                       threadPoolSize;                                       //异步处理对象的线程池大小
-   private int                       asyncSendTimeout   = 5000;
+   //和配置文件对应的变量
+   private final ProducerMode   producerMode;                                          //Producer工作模式
+   private final Destination    destination;                                           //Producer消息目的
+   private final int            threadPoolSize;                                        //异步处理对象的线程池大小
+   private final int            remoteServiceTimeout;                                  //远程调用超时
+   private final boolean        continueSend;                                          //异步模式是否允许续传
 
    @SuppressWarnings("rawtypes")
-   private final ProxyFactory        pigeon             = new ProxyFactory();
+   private final ProxyFactory   pigeon          = new ProxyFactory();
 
    /**
     * 初始化远程调用服务，如果远程服务端连接失败，抛出异常
@@ -51,7 +52,7 @@ public class Producer {
       pigeon.setIface(MQService.class);
       pigeon.setSerialize("hessian");
       pigeon.setCallMethod("sync");
-      pigeon.setTimeout(asyncSendTimeout);
+      pigeon.setTimeout(getRemoteServiceTimeout());
 
       //TODO 配置Lion支持
       pigeon.setUseLion(false);
@@ -63,14 +64,24 @@ public class Producer {
       return (MQService) pigeon.getProxy();
    }
 
-   //构造函数
-   private Producer(ProducerMode producerType, Destination destination) throws Exception {
+   /**
+    * Producer构造函数
+    * 
+    * @param producerConfigure Producer配置类
+    * @throws Exception
+    */
+   private ProducerImpl(ProducerConfigure producerConfigure) throws Exception {
+      //读取配置文件
+      this.producerMode = (producerConfigure.getProducerModeStr().equals("async")) ? ProducerMode.ASYNC_MODE
+            : ProducerMode.SYNC_MODE;
+      this.destination = Destination.topic(producerConfigure.getDestinationName());
+      this.threadPoolSize = producerConfigure.getThreadPoolSize();
+      this.remoteServiceTimeout = producerConfigure.getRemoteServiceTimeout();
+      this.continueSend = producerConfigure.isContinueSend();
+      //初始化远程调用
       remoteService = initRemoteService();
-      this.producerMode = producerType;
-      this.destination = destination;
-      this.threadPoolSize = 10;
       //Producer工作模式
-      switch (producerType) {
+      switch (producerMode) {
          case SYNC_MODE:
             syncHandler = new HandlerSynchroMode(this);
             break;
@@ -82,7 +93,7 @@ public class Producer {
       undeliverableMessageHandler = new HandlerUndeliverable() {
          @Override
          public void handleUndeliverableMessage(Message msg) {
-            log.info("[Dest][" + msg.getDestination().getName() + "]" + msg.getContent());
+            logger.info("[Dest][" + msg.getDestination().getName() + "]" + msg.getContent());
          }
       };
       //向Swallow发送greet
@@ -90,16 +101,40 @@ public class Producer {
    }
 
    /**
-    * 获取Producer单例，首次执行可指定Producer类型，再次指定Producer类型无效
+    * 获得默认配置的Producer单例，无参数
     * 
-    * @param producerMode producer工作模式
-    * @param destination producer发送消息时的目的地
-    * @return Producer全局单例
+    * @return Producer单例
     * @throws Exception
     */
-   public static synchronized Producer getInstance(ProducerMode producerMode, Destination destination) throws Exception {
-      if (instance == null)
-         instance = new Producer(producerMode, destination);
+   public static ProducerImpl getInstance() throws Exception {
+      return doGetInstance(null);
+   }
+
+   /**
+    * 获得指定配置文件的Producer单例，如果配置文件格式错误或无法加载，则返回默认配置的Producer
+    * 
+    * @param configFile Producer的配置文件
+    * @return Producer单例
+    * @throws Exception
+    */
+   public static ProducerImpl getInstance(String configFile) throws Exception {
+      return doGetInstance(configFile);
+   }
+
+   /**
+    * 实际产生Producer单例的函数
+    * 
+    * @param configFile Producer配置文件名，可以为null
+    * @return Producer单例
+    * @throws Exception
+    */
+   private synchronized static ProducerImpl doGetInstance(String configFile) throws Exception {
+      if (instance == null) {
+         if (configFile == null)
+            instance = new ProducerImpl(new ProducerConfigure());
+         else
+            instance = new ProducerImpl(new ProducerConfigure(configFile));
+      }
       return instance;
    }
 
@@ -109,6 +144,7 @@ public class Producer {
     * @param content 待发送的消息内容
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
     */
+   @Override
    public String sendMessage(Object content) {
       return sendMessage(content, null, null);
    }
@@ -120,6 +156,7 @@ public class Producer {
     * @param messageType 消息类型，用于消息过滤
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
     */
+   @Override
    public String sendMessage(Object content, String messageType) {
       return sendMessage(content, null, messageType);
    }
@@ -131,6 +168,7 @@ public class Producer {
     * @param properties 消息属性，留作后用
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
     */
+   @Override
    public String sendMessage(Object content, Map<String, String> properties) {
       return sendMessage(content, properties, null);
    }
@@ -143,6 +181,7 @@ public class Producer {
     * @param messageType 消息类型，用于消息过滤
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
     */
+   @Override
    public String sendMessage(Object content, Map<String, String> properties, String messageType) {
 
       String ret = null;
@@ -169,7 +208,7 @@ public class Producer {
             try {
                asyncHandler.doSendMsg(objMsg);
             } catch (FileQueueClosedException fqce) {
-               log.info(fqce.toString());
+               logger.info(fqce.toString());
                handleUndeliverableMessage(objMsg);
             }
             break;
@@ -182,7 +221,7 @@ public class Producer {
       try {
          undeliverableMessageHandler.handleUndeliverableMessage(msg);
       } catch (Exception e) {
-         log.error("error processing undeliverable message", e);
+         logger.error("error processing undeliverable message", e);
       }
    }
 
@@ -196,7 +235,7 @@ public class Producer {
    /**
     * @return 返回Producer工作模式
     */
-   public ProducerMode getProducerType() {
+   public ProducerMode getProducerMode() {
       return producerMode;
    }
 
@@ -220,4 +259,19 @@ public class Producer {
    public int getThreadPoolSize() {
       return threadPoolSize;
    }
+
+   /**
+    * @return 返回远程调用超时
+    */
+   public int getRemoteServiceTimeout() {
+      return remoteServiceTimeout;
+   }
+
+   /**
+    * @return 返回异步模式是否续传
+    */
+   public boolean isContinueSend() {
+      return continueSend;
+   }
+
 }
