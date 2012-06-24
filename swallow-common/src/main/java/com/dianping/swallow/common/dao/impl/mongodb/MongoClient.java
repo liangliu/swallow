@@ -9,6 +9,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.lion.EnvZooKeeperConfig;
+import com.dianping.lion.client.ConfigCache;
+import com.dianping.lion.client.ConfigChange;
+import com.dianping.lion.client.LionException;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -26,10 +30,11 @@ public class MongoClient {
 
    private static final String DEFAULT_COLLECTION_NAME = "c";
 
-   private Map<String, Mongo>  topicnameToMongoMap;
-   private MongoConfig         config;
+   private static final String TOPICNAME_HEARTBEAT     = "heartbeat";
 
-   private Mongo               heartBeatMongo;
+   private Map<String, Mongo>  topicnameToMongoMap;
+   private MongoOptions        mongoOptions;
+   private MongoConfig         config;
 
    /**
     * 从 Lion(配置topicName,serverUrl的列表) 和 MongoConfigManager(配置Mongo参数) 获取配置，创建
@@ -40,44 +45,83 @@ public class MongoClient {
     * 
     * @param uri
     * @param config
+    * @throws LionException
     */
-   public MongoClient() {
-      //如果存在configFile，则使用configFile
+   public MongoClient() throws LionException {
+      //读取properties配置(如果存在configFile，则使用configFile)
       InputStream in = MongoClient.class.getClassLoader().getResourceAsStream(MONGO_CONFIG_FILENAME);
       if (in != null) {
-         this.config = new MongoConfig(in);
+         config = new MongoConfig(in);
       } else {
-         this.config = new MongoConfig();
+         config = new MongoConfig();
       }
+      mongoOptions = this.getMongoOptions(config);
+      //读取Lion配置
+      ConfigCache cc = ConfigCache.getInstance(EnvZooKeeperConfig.getZKAddress());
+      String topicURI = cc.getProperty("swallow.mongo.topicURI");
+      //构造Mongo实例
+      this.topicnameToMongoMap = parseTopicURI(topicURI);
+      //设置Lion事件响应
+      cc.addChange(new ConfigChange() {
+         @Override
+         public void onChange(String key, String value) {
+            try {
+               if ("swallow.mongo.topicURI".equals(key)) {
+                  //TODO MongoURI对应的Mongo实例若已经存在，则重复使用；字符串使用常量；
+                  MongoClient.this.topicnameToMongoMap = parseTopicURI(value);
+               }
+            } catch (Exception e) {
+               LOG.error("Error occour when reset config from Lion:" + e.getMessage(), e);
+            }
+         }
+      });
 
-      //      try {
-      //         // mongo = new Mongo(new
-      //         // MongoURI("mongodb://192.168.32.111:27017,192.168.32.111:27018"));
-      //         List<ServerAddress> replicaSetSeeds = parseUri(uri);
-      //         mongo = new Mongo(replicaSetSeeds, getMongoOptions());
-      //      } catch (Exception e) {
-      //         throw new RuntimeException(e);
-      //      }
-      resetLionConfig();
    }
 
    /**
-    * 读取lion配置，初始化<topicName,mongo实例>的Map<br>
-    * 当lion配置发现变化时，更新Map
+    * <pre>
+    * <MongoURI>=<heartbeat>,<topicName>,<topicName>;<MongoURI>=<topicName>
+    * </pre>
     */
-   public void resetLionConfig() {
-      //TODO 使用Lion进行初始化
-      HashMap<String, Mongo> map = new HashMap<String, Mongo>();
-      String uri = "mongodb://localhost:27017";
-      List<ServerAddress> replicaSetSeeds = parseUri(uri);
-      Mongo mongo = new Mongo(replicaSetSeeds, getMongoOptions());
-      map.put("topicForUnitTest", mongo);
-
-      this.topicnameToMongoMap = map;
-      this.heartBeatMongo = mongo;
+   private Map<String, Mongo> parseTopicURI(String topicURI) {
+      Map<String, Mongo> map = new HashMap<String, Mongo>();
+      for (String uriToTopicName : topicURI.split(";")) {
+         String[] splits = uriToTopicName.split("=");
+         String mongoURI = splits[0];
+         List<ServerAddress> replicaSetSeeds = parseUri(mongoURI);
+         Mongo mongo = null;
+         if (this.topicnameToMongoMap != null) {//如果已有的map中已经存在该Mongo实例，则重复使用
+            for (Mongo m : this.topicnameToMongoMap.values()) {
+               if (equalsOutOfOrder(m.getAllAddress(), replicaSetSeeds)) {
+                  mongo = m;
+                  break;
+               }
+            }
+         }
+         if (mongo == null) {//创建mongo实例
+            mongo = new Mongo(replicaSetSeeds, this.mongoOptions);
+         }
+         String topicNameStr = splits[1];
+         for (String topicName : topicNameStr.split(",")) {
+            map.put(topicName, mongo);
+         }
+      }
+      //default是必须存在的topicName
+      if (!map.containsKey("default")) {
+         throw new IllegalArgumentException("The swallow.mongo.topicURI value must contain 'default' topicName!");
+      }
+      return map;
    }
 
-   private MongoOptions getMongoOptions() {
+   @SuppressWarnings({ "rawtypes", "unchecked" })
+   private boolean equalsOutOfOrder(List list1, List list2) {
+      if (list1 == null || list2 == null) {
+         return false;
+      }
+      return list1.containsAll(list2) && list2.containsAll(list1);
+   }
+
+   private MongoOptions getMongoOptions(MongoConfig config) {
       MongoOptions options = new MongoOptions();
       options.slaveOk = config.isSlaveOk();
       options.socketKeepAlive = config.isSocketKeepAlive();
@@ -94,28 +138,40 @@ public class MongoClient {
       return options;
    }
 
-   public DBCollection getMessageCollection(String topicId) {
+   public DBCollection getMessageCollection(String topicName) {
       //根据topicName获取Mongo实例
-      Mongo mongo = this.topicnameToMongoMap.get(topicId);
+      Mongo mongo = this.topicnameToMongoMap.get(topicName);
       if (mongo == null) {
-         throw new IllegalArgumentException("topicname '" + topicId
-               + "' do not match any Mongo Server, please check your config on Lion.");
+         if (LOG.isInfoEnabled()) {
+            LOG.info("topicname '" + topicName + "' do not match any Mongo Server, use default.");
+         }
+         mongo = this.topicnameToMongoMap.get("default");
       }
-      return this.getCollection(mongo, "msg_", topicId);
+      return this.getCollection(mongo, "msg_", topicName);
    }
 
-   public DBCollection getAckCollection(String topicId) {
+   public DBCollection getAckCollection(String topicName) {
       //根据topicName获取Mongo实例
-      Mongo mongo = this.topicnameToMongoMap.get(topicId);
+      Mongo mongo = this.topicnameToMongoMap.get(topicName);
       if (mongo == null) {
-         throw new IllegalArgumentException("topicname '" + topicId
-               + "' do not match any Mongo Server, please check your config on Lion.");
+         if (LOG.isInfoEnabled()) {
+            LOG.info("topicname '" + topicName + "' do not match any Mongo Server, use default.");
+         }
+         mongo = this.topicnameToMongoMap.get("default");
       }
-      return this.getCollection(mongo, "ack_", topicId);
+      return this.getCollection(mongo, "ack_", topicName);
    }
 
    public DBCollection getHeartbeatCollection(String ip) {
-      return this.getCollection(this.heartBeatMongo, "heartbeat_", ip);
+      //根据topicName获取Mongo实例
+      Mongo mongo = this.topicnameToMongoMap.get(TOPICNAME_HEARTBEAT);
+      if (mongo == null) {
+         if (LOG.isInfoEnabled()) {
+            LOG.info("topicname '" + TOPICNAME_HEARTBEAT + "' do not match any Mongo Server, use default.");
+         }
+         mongo = this.topicnameToMongoMap.get("default");
+      }
+      return this.getCollection(mongo, "heartbeat_", ip);
    }
 
    private DBCollection getCollection(Mongo mongo, String dbNamePrefix, String collectionName) {
@@ -159,18 +215,6 @@ public class MongoClient {
          }
       }
    }
-
-   //   public DBCollection getMessageCollection(String topicname) {
-   //      return this.getCollection(this.config.getMessageDBName(), topicname);
-   //   }
-   //
-   //   public DBCollection getAckCollection(String topicname) {
-   //      return this.getCollection(this.config.getAckDBName(), topicname);
-   //   }
-   //
-   //   public DBCollection getHeartbeatCollection(String topicname) {
-   //      return this.getCollection(this.config.getHeartbeatDBName(), topicname);
-   //   }
 
    private static List<ServerAddress> parseUri(String uri) {
       uri = uri.trim();
