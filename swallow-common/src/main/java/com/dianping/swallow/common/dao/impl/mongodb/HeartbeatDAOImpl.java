@@ -13,7 +13,9 @@ import com.mongodb.DBObject;
 
 public class HeartbeatDAOImpl implements HeartbeatDAO {
    @SuppressWarnings("unused")
-   private static final Logger LOG = LoggerFactory.getLogger(HeartbeatDAOImpl.class);
+   private static final Logger LOG  = LoggerFactory.getLogger(HeartbeatDAOImpl.class);
+
+   public static final String  TICK = "t";
 
    private MongoClient         mongoClient;
 
@@ -26,7 +28,7 @@ public class HeartbeatDAOImpl implements HeartbeatDAO {
       DBCollection collection = this.mongoClient.getHeartbeatCollection(ip.replace('.', '_'));
 
       Date curTime = new Date();
-      DBObject insert = BasicDBObjectBuilder.start().add("t", curTime).get();
+      DBObject insert = BasicDBObjectBuilder.start().add(TICK, curTime).get();
       collection.insert(insert);
       return curTime;
    }
@@ -35,12 +37,12 @@ public class HeartbeatDAOImpl implements HeartbeatDAO {
    public Date findLastHeartbeat(String ip) {
       DBCollection collection = this.mongoClient.getHeartbeatCollection(ip.replace('.', '_'));
 
-      DBObject fields = BasicDBObjectBuilder.start().add("t", Integer.valueOf(1)).get();
-      DBObject orderBy = BasicDBObjectBuilder.start().add("t", Integer.valueOf(-1)).get();
+      DBObject fields = BasicDBObjectBuilder.start().add(TICK, Integer.valueOf(1)).get();
+      DBObject orderBy = BasicDBObjectBuilder.start().add(TICK, Integer.valueOf(-1)).get();
       DBCursor cursor = collection.find(null, fields).sort(orderBy).limit(1);
       while (cursor != null) {
          DBObject result = cursor.next();
-         return (Date) result.get("t");
+         return (Date) result.get(TICK);
       }
       return null;
    }

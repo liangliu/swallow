@@ -22,6 +22,7 @@ import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
+//TODO 将server的客户端连接和topic情况，连接的mongo地址，通过cat或hawk反映出来。
 public class MongoClient {
 
    private static final Logger LOG                     = LoggerFactory.getLogger(MongoClient.class);
@@ -30,7 +31,10 @@ public class MongoClient {
    private static final String DEFAULT_COLLECTION_NAME = "c";
    private static final String TOPICNAME_HEARTBEAT     = "heartbeat";
    private static final String TOPICNAME_DEFAULT       = "default";
-   private static final String LION_KEY_MONGO_URI      = "swallow.mongo.ServerURI";
+
+   private static final String LION_KEY_MONGO_URI      = "swallow.mongo.serverURI";
+
+   private String              mongoServerURI;
 
    private Map<String, Mongo>  topicnameToMongoMap;
    private MongoOptions        mongoOptions;
@@ -41,7 +45,7 @@ public class MongoClient {
     * “topicName -&gt; Mongo实例” 的Map映射。<br>
     * <br>
     * 当 Lion 配置发现变化时，“topicName -&gt; Mongo实例” 的Map映射;<br>
-    * 将 MongoClient 实例注入到DAO：dao通过调用MongoClient.getCo
+    * 将 MongoClient 实例注入到DAO：dao通过调用MongoClient.getXXCollectiond得到Collection。
     * 
     * @param uri
     * @param config
@@ -56,28 +60,36 @@ public class MongoClient {
          config = new MongoConfig();
       }
       mongoOptions = this.getMongoOptions(config);
-      //读取Lion配置
-      ConfigCache cc = ConfigCache.getInstance(EnvZooKeeperConfig.getZKAddress());
-      String topicURI = cc.getProperty(LION_KEY_MONGO_URI);
-      //构造Mongo实例
-      this.topicnameToMongoMap = parseTopicURI(topicURI);
-      //设置Lion事件响应
-      cc.addChange(new ConfigChange() {
-         @Override
-         public void onChange(String key, String value) {
-            try {
-               if (LION_KEY_MONGO_URI.equals(key)) {
-                  MongoClient.this.topicnameToMongoMap = parseTopicURI(value);
+   }
+
+   public void init() throws LionException {
+      //如果mongoServerURI不为null，说明是通过Spring中配置了mongoServerURI,即使用了Lion-spring模式，故不需要手动调用Lion<br>
+      //否则，如果mongoServerURI为null，则需要使用Lion-api模式。
+      if (this.mongoServerURI == null) {
+         ConfigCache cc = ConfigCache.getInstance(EnvZooKeeperConfig.getZKAddress());
+         this.mongoServerURI = cc.getProperty(LION_KEY_MONGO_URI);
+         //构造Mongo实例
+         this.topicnameToMongoMap = parseTopicURI(mongoServerURI);
+         //设置Lion事件响应
+         cc.addChange(new ConfigChange() {
+            @Override
+            public void onChange(String key, String value) {
+               try {
+                  if (LION_KEY_MONGO_URI.equals(key)) {
+                     MongoClient.this.topicnameToMongoMap = parseTopicURI(value);
+                  }
+               } catch (Exception e) {
+                  LOG.error("Error occour when reset config from Lion:" + e.getMessage(), e);
                }
-            } catch (Exception e) {
-               LOG.error("Error occour when reset config from Lion:" + e.getMessage(), e);
             }
-         }
-      });
+         });
+      }
 
    }
 
    /**
+    * URI格式：
+    * 
     * <pre>
     * <MongoURI>=<heartbeat>,<topicName>,<topicName>;<MongoURI>=<topicName>
     * </pre>
@@ -107,7 +119,8 @@ public class MongoClient {
       }
       //default是必须存在的topicName
       if (!map.containsKey(TOPICNAME_DEFAULT)) {
-         throw new IllegalArgumentException("The swallow.mongo.topicURI value must contain 'default' topicName!");
+         throw new IllegalArgumentException("The '" + LION_KEY_MONGO_URI
+               + "' property must contain 'default' topicName!");
       }
       return map;
    }
@@ -206,7 +219,7 @@ public class MongoClient {
       } catch (MongoException e) {
          if (e.getMessage() != null && e.getMessage().indexOf("collection already exists") >= 0) {
             //collection already exists
-            LOG.error(e.getMessage() + ":" + collectionName);
+            LOG.error(e.getMessage() + ":the collectionName is " + collectionName);
             return db.getCollection(collectionName);
          } else {
             //other exception, can not connect to mongo etc, should abort
@@ -228,10 +241,29 @@ public class MongoClient {
          try {
             result.add(new ServerAddress(pair[0].trim(), Integer.parseInt(pair[1].trim())));
          } catch (Exception e) {
-            throw new IllegalArgumentException("Bad format of mongo uri", e);
+            throw new IllegalArgumentException("Bad format of mongo uri：" + e.getMessage(), e);
          }
       }
       return result;
+   }
+
+   public String getMongoServerURI() {
+      return mongoServerURI;
+   }
+
+   public void setMongoServerURI(String mongoServerURI) {
+      this.mongoServerURI = mongoServerURI;
+      try {
+         this.topicnameToMongoMap = parseTopicURI(mongoServerURI);
+         if (LOG.isInfoEnabled())
+            LOG.info("Reset config from Lion, the property 'topicnameToMongoMap' is changed.");
+      } catch (Exception e) {
+         if (this.topicnameToMongoMap == null) {
+            throw new IllegalArgumentException("Error occour when reset config from Lion:" + e.getMessage(), e);
+         } else {
+            LOG.error("Error occour when reset config from Lion:" + e.getMessage(), e);
+         }
+      }
    }
 
 }

@@ -19,8 +19,8 @@ public class AckDAOImplTest extends AbstractDAOImplTest {
       int time = (int) (System.currentTimeMillis() / 1000);
       int inc = 1;
       BSONTimestamp timestamp = new BSONTimestamp(time, inc);
-      Long expectedMessageId = BSONTimestampUtils.BSONTimestampToLong(timestamp);
-      ackDAOImpl.add(TOPIC_NAME, consumerId, BSONTimestampUtils.BSONTimestampToLong(timestamp));
+      Long expectedMessageId = MongoUtils.BSONTimestampToLong(timestamp);
+      ackDAOImpl.add(TOPIC_NAME, consumerId, MongoUtils.BSONTimestampToLong(timestamp));
       //测试
       Long maxMessageId = ackDAOImpl.getMaxMessageId(TOPIC_NAME, consumerId);
       Assert.assertEquals(expectedMessageId, maxMessageId);
@@ -32,8 +32,8 @@ public class AckDAOImplTest extends AbstractDAOImplTest {
       int time = (int) (System.currentTimeMillis() / 1000);
       int inc = 1;
       BSONTimestamp timestamp = new BSONTimestamp(time, inc);
-      Long expectedMessageId = BSONTimestampUtils.BSONTimestampToLong(timestamp);
-      ackDAOImpl.add(TOPIC_NAME, consumerId, BSONTimestampUtils.BSONTimestampToLong(timestamp));
+      Long expectedMessageId = MongoUtils.BSONTimestampToLong(timestamp);
+      ackDAOImpl.add(TOPIC_NAME, consumerId, MongoUtils.BSONTimestampToLong(timestamp));
       //测试
       Long maxMessageId = ackDAOImpl.getMaxMessageId(TOPIC_NAME, consumerId);
       Assert.assertEquals(expectedMessageId, maxMessageId);
