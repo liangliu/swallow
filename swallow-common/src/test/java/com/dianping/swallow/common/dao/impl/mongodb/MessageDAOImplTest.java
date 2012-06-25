@@ -73,9 +73,4 @@ public class MessageDAOImplTest extends AbstractDAOImplTest {
 
    }
 
-   @Override
-   protected String getDBName() {
-      return this.getMongoConfig().getMessageDBName();
-   }
-
 }

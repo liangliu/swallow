@@ -1,6 +1,6 @@
 package com.dianping.swallow.common.packet;
 
-import com.dianping.swallow.common.util.Destination;
+import com.dianping.swallow.common.producer.Destination;
 
 public interface Message {
 	public Object getContent();

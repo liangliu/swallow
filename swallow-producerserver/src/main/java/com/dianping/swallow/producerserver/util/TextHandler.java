@@ -6,7 +6,7 @@ import java.util.Date;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.common.packet.PktTextMessage;
-import com.dianping.swallow.common.util.Destination;
+import com.dianping.swallow.common.producer.Destination;
 
 public class TextHandler {
 	//解析Text，成功返回Packet，失败返回null

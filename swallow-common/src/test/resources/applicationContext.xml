@@ -14,6 +14,11 @@
 		class="com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl">
 	</bean>
 
+	<bean id="heartbeatDAOImpl"
+		class="com.dianping.swallow.common.dao.impl.mongodb.HeartbeatDAOImpl">
+	</bean>
+
+
 	<bean id="mongoClient"
 		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient">
 	</bean>
