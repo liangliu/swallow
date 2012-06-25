@@ -14,6 +14,7 @@ import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepend
 
 import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
+import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.consumer.netty.MessageClientHandler;
 
@@ -27,6 +28,16 @@ public class ConsumerClient {
 	
 	private MessageListener listener;
 	
+	private ConsumerType consumerType;
+		
+	public ConsumerType getConsumerType() {
+		return consumerType;
+	}
+
+	public void setConsumerType(ConsumerType consumerType) {
+		this.consumerType = consumerType;
+	}
+
 	public ClientBootstrap getBootstrap() {
 		return bootstrap;
 	}

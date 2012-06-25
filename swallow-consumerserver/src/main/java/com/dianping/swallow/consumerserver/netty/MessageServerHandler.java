@@ -11,15 +11,16 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
+import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.packet.PktConsumerACK;
-import com.dianping.swallow.consumerserver.ConsumerService;
+import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 
 
 
 @ChannelPipelineCoverage("all")
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
-	private ConsumerService cService;
-	public MessageServerHandler(ConsumerService cService){
+	private ConsumerServiceImpl cService;
+	public MessageServerHandler(ConsumerServiceImpl cService){
 		this.cService = cService;
 	}
 	//TODO log4j
@@ -39,7 +40,15 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     	PktConsumerACK consumerACKPacket = (PktConsumerACK)e.getMessage();
     	String topicName = consumerACKPacket.getDest().getName();
     	String consumerId = consumerACKPacket.getConsumerId();
+    	ConsumerType consumerType = consumerACKPacket.getConsumerType();
+    	//TODO 记录日志
     	Long messageId = consumerACKPacket.getMessageId();
+    	if(cService.getConsumerTypes().get(consumerId) == null){
+    		cService.getConsumerTypes().put(consumerId, consumerType);
+    	}
+    	if(messageId != null && ConsumerType.UPDATE_AFTER_ACK.equals(cService.getConsumerTypes().get(consumerId))){
+    		cService.updateMaxMessageId(topicName, consumerId, messageId);
+    	}
     	cService.putChannelToBlockQueue(consumerId, channel);
     	cService.addThread(consumerId, topicName);
     }

@@ -15,6 +15,7 @@
  */
 package com.dianping.swallow.common.packet;
 
+import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Destination;
 
 
@@ -26,13 +27,26 @@ import com.dianping.swallow.common.message.Destination;
  */
 public final class PktConsumerACK extends Packet {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8966695130892127961L;
+
 	private Destination dest;
 	
 	private String consumerId;
 	
 	private Long messageId;
 	
+	private ConsumerType consumerType;
+	
 
+	public ConsumerType getConsumerType() {
+		return consumerType;
+	}
+	public void setConsumerType(ConsumerType consumerType) {
+		this.consumerType = consumerType;
+	}
 	public Destination getDest() {
 		return dest;
 	}
@@ -52,11 +66,12 @@ public final class PktConsumerACK extends Packet {
 	public void setMessageId(Long messageId) {
 		this.messageId = messageId;
 	}
-	public PktConsumerACK(String consumerId, Destination dest, Long messageId){
+	public PktConsumerACK(String consumerId, Destination dest, ConsumerType consumerType, Long messageId){
 		this.setPacketType(PacketType.CONSUMER_ACK);
 		this.dest = dest;
 		this.consumerId = consumerId;
 		this.messageId = messageId;
+		this.consumerType = consumerType;
 	}
 	
 }

@@ -2,6 +2,7 @@ package com.dianping.swallow.consumer;
 
 import java.net.InetSocketAddress;
 
+import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.SwallowMessage;
 
@@ -15,13 +16,15 @@ public class TestConsumer {
 	public static int slavePort = 8082;
 	public static String cid = "zhangyu";
 	public static Destination dest;
+	public static ConsumerType consumerType = ConsumerType.UPDATE_BEFORE_ACK;
     public static void main(String[] args) throws Exception {
     	
     	
     	//System.out.println(Integer.MAX_VALUE / (3600*24*365));
     	
     	
-    	ConsumerClient cClient = new ConsumerClient(cid, dest);  
+    	ConsumerClient cClient = new ConsumerClient(cid, dest);
+    	cClient.setConsumerType(consumerType);
     	cClient.setListener(new MessageListener() {
 
 			@Override

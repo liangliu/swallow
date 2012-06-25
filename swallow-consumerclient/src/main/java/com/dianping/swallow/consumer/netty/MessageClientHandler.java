@@ -34,7 +34,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void channelConnected(
             ChannelHandlerContext ctx, ChannelStateEvent e) {
-    	consumerACKPacket = new PktConsumerACK(cClient.getConsumerId(), cClient.getDest(), null);
+    	consumerACKPacket = new PktConsumerACK(cClient.getConsumerId(), cClient.getDest(), cClient.getConsumerType(), null);
     	e.getChannel().write(consumerACKPacket);   
     	
     }
@@ -46,9 +46,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     	Long messageId = swallowMessage.getMessageId();
     	consumerACKPacket.setMessageId(messageId);
     	cClient.getListener().onMessage(swallowMessage);
-    	//TODO 收到Packet，得到SwallowMessage，处理SwallowMessage(调用cClient.getListener().onMessage)
-    	//TODO 构造Packet（PktConsumerACK），发送出去
-    	e.getChannel().write(consumerACKPacket);     
+    	e.getChannel().write(consumerACKPacket);
     }
  
     @Override
