@@ -57,7 +57,7 @@ public final class ProducerConfigure {
          try {
             field = clazz.getDeclaredField(key.trim());
          } catch (Exception e) {
-            logger.log(Level.WARN, "Unknow property found in" + configFile + ": " + key + ".", e.getCause());
+            logger.log(Level.WARN, "[ProducerConfigure]:[Unknow property found in" + configFile + ": " + key + ".]", e.getCause());
             continue;
          }
          field.setAccessible(true);
@@ -66,21 +66,21 @@ public final class ProducerConfigure {
             try {
                field.set(this, Integer.parseInt(props.getProperty(key).trim()));
             } catch (Exception e) {
-               logger.log(Level.ERROR, "Can not parse property" + key, e.getCause());
+               logger.log(Level.ERROR, "[ProducerConfigure]:[Can not parse property" + key + ".]", e.getCause());
                continue;
             }
          } else if (field.getType().equals(Boolean.TYPE)) {
             try {
                field.set(this, Boolean.parseBoolean(props.getProperty(key).trim()));
             } catch (Exception e) {
-               logger.log(Level.ERROR, "Can not parse property" + key, e.getCause());
+               logger.log(Level.ERROR, "[ProducerConfigure]:[Can not parse property" + key + ".]", e.getCause());
                continue;
             }
          } else if (field.getType().equals(String.class)) {
             try {
                field.set(this, props.getProperty(key).trim());
             } catch (Exception e) {
-               logger.log(Level.ERROR, "Can not set property" + key, e.getCause());
+               logger.log(Level.ERROR, "[ProducerConfigure]:[Can not set property" + key + ".]", e.getCause());
                continue;
             }
          }

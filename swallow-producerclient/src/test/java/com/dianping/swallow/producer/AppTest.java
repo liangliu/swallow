@@ -46,7 +46,7 @@ public class AppTest extends TestCase {
          // TODO Auto-generated method stub
          ProducerImpl ps;
          try {
-            ps = ProducerImpl.getInstance();
+            ps = ProducerImpl.getDefaultInstance();
             while (true) {
                //			content += i++;
                System.out.println(ps.sendMessage(content));
