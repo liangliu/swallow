@@ -141,14 +141,14 @@ public class ConsumerServiceImpl implements ConsumerService{
     }
 	
 	//TODO renaming
-	public void updateThreadWorkStatues(String consumerId, String topicId){
+	public void updateThreadWorkStatues(String consumerId, String topicName){
 		synchronized(threads){
 			if(!threads.containsKey(consumerId)){
 				GetMessageThread server = new GetMessageThread();
 				server.setConsumerId(consumerId);
-				server.setTopicId(topicId);
+				server.setTopicName(topicName);
 				server.setcService(this);
-				Thread t = threadFactory.newThread(server, topicId + consumerId + "-consumer-");
+				Thread t = threadFactory.newThread(server, topicName + consumerId + "-consumer-");
 		    	t.start();
 		    	//TODO change threads to Set
 		    	threads.put(consumerId, Boolean.TRUE);
@@ -156,12 +156,12 @@ public class ConsumerServiceImpl implements ConsumerService{
 		}			
     }
 	
-	public void ergodicChannelByCId(String consumerId,String topicId){
+	public void ergodicChannelByCId(String consumerId,String topicName){
 		
 		freeChannels = freeChannelQueue.get(consumerId);
 		
-		TopicBuffer topicBuffer = TopicBuffer.getTopicBuffer(topicId);
-		long messageIdOfTailMessage = getMessageIdOfTailMessage(topicId, consumerId);
+		TopicBuffer topicBuffer = TopicBuffer.getTopicBuffer(topicName);
+		long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerId);
 	    BlockingQueue<Message> messages = topicBuffer.createMessageQueue(consumerId, messageIdOfTailMessage);
 		
 //		ArrayBlockingQueue<String> messages = queue.get(consumerId);

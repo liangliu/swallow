@@ -20,10 +20,10 @@ public interface ConsumerService {
 	
 	/**
 	 * @param consumerId
-	 * @param topicId
+	 * @param topicName
 	 * 有新的channel连接时，对于存在同consumerId的线程，不做处理；否则新增线程。
 	 */	
-	public void updateThreadWorkStatues(String consumerId, String topicId);
+	public void updateThreadWorkStatues(String consumerId, String topicName);
 	
 	/**
 	 * 遍历一遍同consumerId下所有的channel
