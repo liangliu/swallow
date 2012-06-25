@@ -19,6 +19,7 @@ import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.dao.impl.mongodb.BSONTimestampUtils;
 import com.dianping.swallow.common.message.Message;
+import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.consumerserver.ConsumerService;
 import com.dianping.swallow.consumerserver.GetMessageThread;
 import com.dianping.swallow.consumerserver.Heartbeater;
@@ -36,13 +37,11 @@ public class ConsumerServiceImpl implements ConsumerService{
 	
 	private Mongo mongo;
 
-	private Map<String, HashSet<Channel>> channelWorkStatue;	//channel是否存在的状态
+	private Map<String, HashSet<Channel>> channelWorkStatus;	//channel是否存在的状态
     
-    //private Map<String, Semaphore> freeChannelNums = new HashMap<String, Semaphore>();
+    private Map<String, SwallowMessage> preparedMesssages = new HashMap<String, SwallowMessage>();
     
-    private Map<String, String> preparedMesssages = new HashMap<String, String>();
-    
-    private String message = null;
+    private SwallowMessage message = null;
     
     //一个consumerId对应一个thread，这是对各thread的状态的管理
     private Map<String, Boolean> threads = new HashMap<String, Boolean>();
@@ -77,7 +76,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 	
 	
 	public Map<String, HashSet<Channel>> getChannelWorkStatue() {
-		return channelWorkStatue;
+		return channelWorkStatus;
 	}
 
 	public Map<String, Boolean> getThreads() {
@@ -85,7 +84,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 	}
 	
 	public ConsumerServiceImpl(String uri){    	
-    	this.channelWorkStatue = new HashMap<String, HashSet<Channel>>();
+    	this.channelWorkStatus = new HashMap<String, HashSet<Channel>>();
     	this.configManager = ConfigManager.getInstance();
     	this.threadFactory = new MQThreadFactory();
     	List<ServerAddress> replicaSetSeeds = MongoUtil.parseUri(uri);
@@ -110,15 +109,14 @@ public class ConsumerServiceImpl implements ConsumerService{
 //		options.safe = config.isMongoSafe();
 		return options;
 	}
-	public void changeChannelWorkStatue(String consumerId, Channel channel){
-		//TODO 改成status
-		synchronized(channelWorkStatue){
-			if(channelWorkStatue.get(consumerId) == null){
+	public void changeChannelWorkStatus(String consumerId, Channel channel){
+		synchronized(channelWorkStatus){
+			if(channelWorkStatus.get(consumerId) == null){
 				HashSet<Channel> channels = new HashSet<Channel>();
 				channels.add(channel);
-				channelWorkStatue.put(consumerId, channels);
+				channelWorkStatus.put(consumerId, channels);
 			} else{
-				HashSet<Channel> channels = channelWorkStatue.get(consumerId);
+				HashSet<Channel> channels = channelWorkStatus.get(consumerId);
 				channels.add(channel);
 			}
 		}    
@@ -141,7 +139,7 @@ public class ConsumerServiceImpl implements ConsumerService{
     }
 	
 	//TODO renaming
-	public void updateThreadWorkStatues(String consumerId, String topicName){
+	public void updateThreadWorkStatus(String consumerId, String topicName){
 		synchronized(threads){
 			if(!threads.containsKey(consumerId)){
 				GetMessageThread server = new GetMessageThread();
@@ -158,13 +156,11 @@ public class ConsumerServiceImpl implements ConsumerService{
 	
 	public void ergodicChannelByCId(String consumerId,String topicName){
 		
-		freeChannels = freeChannelQueue.get(consumerId);
-		
+		freeChannels = freeChannelQueue.get(consumerId);		
 		TopicBuffer topicBuffer = TopicBuffer.getTopicBuffer(topicName);
 		long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerId);
 	    BlockingQueue<Message> messages = topicBuffer.createMessageQueue(consumerId, messageIdOfTailMessage);
 		
-//		ArrayBlockingQueue<String> messages = queue.get(consumerId);
 		try {
 			while(true){
 				Channel channel = freeChannels.poll(configManager.getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
@@ -176,15 +172,12 @@ public class ConsumerServiceImpl implements ConsumerService{
 						message = preparedMesssages.get(consumerId);
 						preparedMesssages.remove(consumerId);
 					} else{					
-						Message message = messages.take();
-						//message = "假的";
+						message = (SwallowMessage)messages.take();
 					}
-					//TODO 从消息中得到maxTStamp
-					//TODO 是否可以自己设置BSongtimestamp
-					BSONTimestamp maxTStamp = new BSONTimestamp();
-					//更新mongo中最大timeStamp
+					 Long messageId = message.getMessageId();
+					//更新mongo中最大messageId
 					//TODO 受到ack再更新
-//					dao.addCounter(topicId, consumerId,maxTStamp);
+					 ackDao.add(topicName, consumerId, messageId);
 					if(!channel.isConnected()){
 						preparedMesssages.put(consumerId, message);
 					} else{
@@ -274,8 +267,8 @@ public class ConsumerServiceImpl implements ConsumerService{
 		
 //		String cId = null;
 		HashSet<Channel> channels = null;
-		synchronized(channelWorkStatue){
-			Iterator<Map.Entry<String,HashSet<Channel>>> iterator = channelWorkStatue.entrySet().iterator();
+		synchronized(channelWorkStatus){
+			Iterator<Map.Entry<String,HashSet<Channel>>> iterator = channelWorkStatus.entrySet().iterator();
 			while(iterator.hasNext()){
 				Entry<String, HashSet<Channel>> entry = iterator.next();
 				channels = entry.getValue();

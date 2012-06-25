@@ -43,7 +43,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     	cService.putChannelToBlockQueue(consumerId, channel);
     	//对应consumerID的线程不存在,应该是可以用threadslist代替。
     	//线程安全
-    	cService.updateThreadWorkStatues(consumerId, topicName);
+    	cService.updateThreadWorkStatus(consumerId, topicName);
     }
  
     @Override

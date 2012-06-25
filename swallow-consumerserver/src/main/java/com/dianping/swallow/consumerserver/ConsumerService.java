@@ -12,18 +12,18 @@ public interface ConsumerService {
 	public void putChannelToBlockQueue(String consumerId, Channel channel);
 	
 	/**
-	 * 有新消息到的时候，更新ChannelWorkStatue
+	 * 有新消息到的时候，更新ChannelWorkStatus
 	 * @param consumerId
 	 * @param channel
 	 */
-	public void changeChannelWorkStatue(String consumerId, Channel channel);
+	public void changeChannelWorkStatus(String consumerId, Channel channel);
 	
 	/**
 	 * @param consumerId
 	 * @param topicName
 	 * 有新的channel连接时，对于存在同consumerId的线程，不做处理；否则新增线程。
 	 */	
-	public void updateThreadWorkStatues(String consumerId, String topicName);
+	public void updateThreadWorkStatus(String consumerId, String topicName);
 	
 	/**
 	 * 遍历一遍同consumerId下所有的channel
