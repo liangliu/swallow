@@ -18,14 +18,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
-import com.dianping.swallow.common.dao.impl.mongodb.BSONTimestampUtils;
+import com.dianping.swallow.common.dao.impl.mongodb.MongoUtils;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.consumerserver.ConsumerService;
 import com.dianping.swallow.consumerserver.GetMessageThread;
 import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.MQThreadFactory;
-import com.dianping.swallow.consumerserver.buffer.TopicBuffer;
+import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 import com.dianping.swallow.consumerserver.util.MongoUtil;
 import com.mongodb.Mongo;
@@ -43,6 +43,9 @@ public class ConsumerServiceImpl implements ConsumerService{
     private Map<String, SwallowMessage> preparedMesssages = new HashMap<String, SwallowMessage>();
     
     private SwallowMessage message = null;
+    
+    @Autowired
+    private SwallowBuffer swallowBuffer;
     
     //一个consumerId对应一个thread，这是对各thread的状态的管理
     private Set<String> threads = new HashSet<String>();
@@ -159,9 +162,8 @@ public class ConsumerServiceImpl implements ConsumerService{
 		BlockingQueue<Message> messages = null;
 		//线程刚起，第一次调用的时候，需要先去mongo中获取maxMessageId
 		if(messages == null){
-			TopicBuffer topicBuffer = TopicBuffer.getTopicBuffer(topicName);
 			long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerId);
-		    messages = topicBuffer.createMessageQueue(consumerId, messageIdOfTailMessage);
+		    messages = swallowBuffer.createMessageQueue(topicName, consumerId, messageIdOfTailMessage);
 			freeChannels = freeChannelQueue.get(consumerId);
 		}
 	
@@ -266,7 +268,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 		if(maxMessageId == null){
 			int time = (int)(System.currentTimeMillis() / 1000);
 			BSONTimestamp bst = new BSONTimestamp(time, 1);
-			maxMessageId = BSONTimestampUtils.BSONTimestampToLong(bst);
+			maxMessageId = MongoUtils.BSONTimestampToLong(bst);
 		}
 		return maxMessageId;
 	}
@@ -342,4 +344,5 @@ public class ConsumerServiceImpl implements ConsumerService{
 		heartbeatThread.setDaemon(true);
 		heartbeatThread.start();
 	}
+
 }

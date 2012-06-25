@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.dianping.swallow.common.example.codec;
+package com.dianping.swallow.example.codec;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;

@@ -23,6 +23,13 @@
 		class="com.dianping.swallow.common.dao.impl.mongodb.HeartbeatDAOImpl">
 	</bean>
 
+	<bean id="messageRetriever"
+		class="com.dianping.swallow.consumerserver.buffer.MongoDBMessageRetriever">
+	</bean>
+
+	<bean id="swallowBuffer"
+		class="com.dianping.swallow.consumerserver.buffer.SwallowBuffer">
+	</bean>
 
 	<bean id="mongoClient"
 		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient">
