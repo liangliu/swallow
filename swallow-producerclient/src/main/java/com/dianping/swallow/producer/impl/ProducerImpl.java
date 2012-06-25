@@ -3,16 +3,17 @@ package com.dianping.swallow.producer.impl;
 import java.util.Date;
 import java.util.Map;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.dianping.dpsf.api.ProxyFactory;
 import com.dianping.filequeue.FileQueueClosedException;
+import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.Message;
 import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.common.packet.PktProducerGreet;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
-import com.dianping.swallow.common.producer.Destination;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.producer.HandlerUndeliverable;
 import com.dianping.swallow.producer.Producer;
@@ -27,9 +28,10 @@ public class ProducerImpl implements Producer {
    private HandlerSynchroMode   syncHandler;                                           //同步处理对象
 
    private HandlerUndeliverable undeliverableMessageHandler;
+
    //常量定义
    private final String         producerVersion = "0.6.0";
-   private final Logger         logger          = Logger.getLogger(ProducerImpl.class);
+   private static final Logger  logger          = Logger.getLogger(ProducerImpl.class);
 
    //和配置文件对应的变量
    private final ProducerMode   producerMode;                                          //Producer工作模式
@@ -68,7 +70,7 @@ public class ProducerImpl implements Producer {
     * Producer构造函数
     * 
     * @param producerConfigure Producer配置类
-    * @throws Exception
+    * @throws Exception 初始化远程服务失败，抛出异常
     */
    private ProducerImpl(ProducerConfigure producerConfigure) throws Exception {
       //读取配置文件
@@ -78,8 +80,15 @@ public class ProducerImpl implements Producer {
       this.threadPoolSize = producerConfigure.getThreadPoolSize();
       this.remoteServiceTimeout = producerConfigure.getRemoteServiceTimeout();
       this.continueSend = producerConfigure.isContinueSend();
+
       //初始化远程调用
-      remoteService = initRemoteService();
+      try {
+         remoteService = initRemoteService();
+      } catch (Exception e) {
+         logger.log(Level.ERROR, "[Producer]:[Init remote service failed.]", e.getCause());
+         throw e;
+      }
+
       //Producer工作模式
       switch (producerMode) {
          case SYNC_MODE:
@@ -93,7 +102,7 @@ public class ProducerImpl implements Producer {
       undeliverableMessageHandler = new HandlerUndeliverable() {
          @Override
          public void handleUndeliverableMessage(Message msg) {
-            logger.info("[Dest][" + msg.getDestination().getName() + "]" + msg.getContent());
+            logger.info("[Destination]:[" + msg.getDestination().getName() + "]" + msg.getContent());
          }
       };
       //向Swallow发送greet
@@ -104,9 +113,9 @@ public class ProducerImpl implements Producer {
     * 获得默认配置的Producer单例，无参数
     * 
     * @return Producer单例
-    * @throws Exception
+    * @throws Exception 初始化远程调用失败，抛出异常
     */
-   public static ProducerImpl getInstance() throws Exception {
+   public static ProducerImpl getDefaultInstance() throws Exception {
       return doGetInstance(null);
    }
 
@@ -115,7 +124,7 @@ public class ProducerImpl implements Producer {
     * 
     * @param configFile Producer的配置文件
     * @return Producer单例
-    * @throws Exception
+    * @throws Exception 初始化远程调用失败，抛出异常
     */
    public static ProducerImpl getInstance(String configFile) throws Exception {
       return doGetInstance(configFile);
@@ -126,7 +135,7 @@ public class ProducerImpl implements Producer {
     * 
     * @param configFile Producer配置文件名，可以为null
     * @return Producer单例
-    * @throws Exception
+    * @throws Exception 初始化远程调用失败，抛出异常
     */
    private synchronized static ProducerImpl doGetInstance(String configFile) throws Exception {
       if (instance == null) {
@@ -143,9 +152,10 @@ public class ProducerImpl implements Producer {
     * 
     * @param content 待发送的消息内容
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
+    * @throws Exception 同步模式下，消息发送失败，抛出异常；异步模式下，加入FileQueue失败，抛出异常
     */
    @Override
-   public String sendMessage(Object content) {
+   public String sendMessage(Object content) throws Exception {
       return sendMessage(content, null, null);
    }
 
@@ -155,9 +165,10 @@ public class ProducerImpl implements Producer {
     * @param content 待发送的消息内容
     * @param messageType 消息类型，用于消息过滤
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
+    * @throws Exception 同步模式下，消息发送失败，抛出异常；异步模式下，加入FileQueue失败，抛出异常
     */
    @Override
-   public String sendMessage(Object content, String messageType) {
+   public String sendMessage(Object content, String messageType) throws Exception {
       return sendMessage(content, null, messageType);
    }
 
@@ -167,9 +178,10 @@ public class ProducerImpl implements Producer {
     * @param content 待发送的消息内容
     * @param properties 消息属性，留作后用
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
+    * @throws Exception 同步模式下，消息发送失败，抛出异常；异步模式下，加入FileQueue失败，抛出异常
     */
    @Override
-   public String sendMessage(Object content, Map<String, String> properties) {
+   public String sendMessage(Object content, Map<String, String> properties) throws Exception {
       return sendMessage(content, properties, null);
    }
 
@@ -180,9 +192,10 @@ public class ProducerImpl implements Producer {
     * @param properties 消息属性，留作后用
     * @param messageType 消息类型，用于消息过滤
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
+    * @throws Exception 同步模式下，消息发送失败，抛出异常；异步模式下，加入FileQueue失败，抛出异常
     */
    @Override
-   public String sendMessage(Object content, Map<String, String> properties, String messageType) {
+   public String sendMessage(Object content, Map<String, String> properties, String messageType) throws Exception {
 
       String ret = null;
       //根据content生成SwallowMessage
@@ -200,7 +213,12 @@ public class ProducerImpl implements Producer {
       PktObjectMessage objMsg = new PktObjectMessage(destination, swallowMsg);
       switch (producerMode) {
          case SYNC_MODE://同步模式
-            ret = ((PktSwallowPACK) syncHandler.doSendMsg(objMsg)).getShaInfo();
+            try {
+               ret = ((PktSwallowPACK) syncHandler.doSendMsg(objMsg)).getShaInfo();
+            } catch (Exception e) {
+               logger.log(Level.ERROR, "[SendMessage]:[Message sent failed.]", e.getCause());
+               throw e;
+            }
             if (ret == null)
                handleUndeliverableMessage(objMsg);
             break;

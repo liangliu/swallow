@@ -23,11 +23,11 @@ import java.util.Map;
  * @author tong.song
  */
 public interface Producer {
-   public String sendMessage(Object content);
+   public String sendMessage(Object content) throws Exception;
 
-   public String sendMessage(Object content, String messageType);
+   public String sendMessage(Object content, String messageType) throws Exception;
 
-   public String sendMessage(Object content, Map<String, String> properties);
+   public String sendMessage(Object content, Map<String, String> properties) throws Exception;
 
-   public String sendMessage(Object content, Map<String, String> properties, String messageType);
+   public String sendMessage(Object content, Map<String, String> properties, String messageType) throws Exception;
 }
