@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -44,7 +45,7 @@ public class ConsumerServiceImpl implements ConsumerService{
     private SwallowMessage message = null;
     
     //一个consumerId对应一个thread，这是对各thread的状态的管理
-    private Map<String, Boolean> threads = new HashMap<String, Boolean>();
+    private Set<String> threads = new HashSet<String>();
     
     private MQThreadFactory threadFactory;
     
@@ -79,7 +80,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 		return channelWorkStatus;
 	}
 
-	public Map<String, Boolean> getThreads() {
+	public Set<String> getThreads() {
 		return threads;
 	}
 	
@@ -122,39 +123,38 @@ public class ConsumerServiceImpl implements ConsumerService{
 		}    
 	}
 	
-	//TODO 多线程安全
 	public void putChannelToBlockQueue(String consumerId, Channel channel){
 		//freeChannels应该是容量无上限的
 		freeChannels = freeChannelQueue.get(consumerId);
-		if(freeChannels == null){
-			freeChannels = new ArrayBlockingQueue<Channel>(configManager.getFreeChannelBlockQueueSize());
-			freeChannelQueue.put(consumerId, freeChannels);
-		}
-		try {
-			freeChannels.put(channel);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		synchronized(freeChannels){
+			if(freeChannels == null){
+				freeChannels = new ArrayBlockingQueue<Channel>(configManager.getFreeChannelBlockQueueSize());
+				freeChannelQueue.put(consumerId, freeChannels);
+			}
+			try {
+				freeChannels.put(channel);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}		
     }
 	
-	//TODO renaming
-	public void updateThreadWorkStatus(String consumerId, String topicName){
+	public void addThread(String consumerId, String topicName){
 		synchronized(threads){
-			if(!threads.containsKey(consumerId)){
+			if(!threads.contains(consumerId)){
 				GetMessageThread server = new GetMessageThread();
 				server.setConsumerId(consumerId);
 				server.setTopicName(topicName);
 				server.setcService(this);
 				Thread t = threadFactory.newThread(server, topicName + consumerId + "-consumer-");
 		    	t.start();
-		    	//TODO change threads to Set
-		    	threads.put(consumerId, Boolean.TRUE);
+		    	threads.add(consumerId);
 			}    
 		}			
     }
 	
-	public void ergodicChannelByCId(String consumerId,String topicName){
+	public void pollFreeChannelsByCId(String consumerId,String topicName){
 		
 		freeChannels = freeChannelQueue.get(consumerId);		
 		TopicBuffer topicBuffer = TopicBuffer.getTopicBuffer(topicName);
@@ -163,7 +163,11 @@ public class ConsumerServiceImpl implements ConsumerService{
 		
 		try {
 			while(true){
-				Channel channel = freeChannels.poll(configManager.getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
+				Channel channel = null;
+				synchronized(freeChannels){
+					channel = freeChannels.poll(configManager.getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
+				}
+				
 				if(channel == null){
 					break;
 					//TODO 用异常替代isConnected
@@ -265,7 +269,6 @@ public class ConsumerServiceImpl implements ConsumerService{
 
 	public void changeStatuesWhenChannelBreak(Channel channel){
 		
-//		String cId = null;
 		HashSet<Channel> channels = null;
 		synchronized(channelWorkStatus){
 			Iterator<Map.Entry<String,HashSet<Channel>>> iterator = channelWorkStatus.entrySet().iterator();
@@ -278,23 +281,6 @@ public class ConsumerServiceImpl implements ConsumerService{
 				}
 			}
 		}
-		
-//		channels = channelWorkStatue.get(cId);
-//		if("done".equals(channels.get(channel))){
-//			try {
-//				freeChannelNums.get(cId).acquire();
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
-//		channels.remove(cId);
-//		synchronized(threads){
-//			if(channels.isEmpty()){
-//				threads.remove(cId);						
-//			}
-//		}
-		
 	}
 	
 	public void init(boolean isSlave){

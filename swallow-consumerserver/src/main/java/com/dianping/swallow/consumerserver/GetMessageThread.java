@@ -31,7 +31,7 @@ public class GetMessageThread implements Runnable{
 	public void run() {
 		//TODO 获取mongo中最大的timeStamp，然后blockingQueue去获取！
 		while(isLive){
-			cService.ergodicChannelByCId(consumerId, topicName);
+			cService.pollFreeChannelsByCId(consumerId, topicName);
 			synchronized(cService.getThreads()){
 				HashSet<Channel> channels = cService.getChannelWorkStatue().get(consumerId);
 				//TODO 貌似是不需要同步！

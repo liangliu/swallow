@@ -23,14 +23,14 @@ public interface ConsumerService {
 	 * @param topicName
 	 * 有新的channel连接时，对于存在同consumerId的线程，不做处理；否则新增线程。
 	 */	
-	public void updateThreadWorkStatus(String consumerId, String topicName);
+	public void addThread(String consumerId, String topicName);
 	
 	/**
-	 * 遍历一遍同consumerId下所有的channel
+	 * 轮询对应consumerId的blockQueue中的channel
 	 * @param consumerId
 	 * @param topicId
 	 */
-	public void ergodicChannelByCId(String consumerId,String topicId);
+	public void pollFreeChannelsByCId(String consumerId,String topicId);
 	
 	/**
 	 * 当channel断开时做的处理
