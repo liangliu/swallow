@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class AckDAOImplTest extends AbstractDAOImplTest {
 
    @Autowired
-   private AckDAOImpl ackDAOImpl;
+   private AckDAOImpl ackDAO;
 
    private String     consumerId = "consumer1";
 
@@ -20,9 +20,9 @@ public class AckDAOImplTest extends AbstractDAOImplTest {
       int inc = 1;
       BSONTimestamp timestamp = new BSONTimestamp(time, inc);
       Long expectedMessageId = MongoUtils.BSONTimestampToLong(timestamp);
-      ackDAOImpl.add(TOPIC_NAME, consumerId, MongoUtils.BSONTimestampToLong(timestamp));
+      ackDAO.add(TOPIC_NAME, consumerId, MongoUtils.BSONTimestampToLong(timestamp));
       //测试
-      Long maxMessageId = ackDAOImpl.getMaxMessageId(TOPIC_NAME, consumerId);
+      Long maxMessageId = ackDAO.getMaxMessageId(TOPIC_NAME, consumerId);
       Assert.assertEquals(expectedMessageId, maxMessageId);
    }
 
@@ -33,9 +33,9 @@ public class AckDAOImplTest extends AbstractDAOImplTest {
       int inc = 1;
       BSONTimestamp timestamp = new BSONTimestamp(time, inc);
       Long expectedMessageId = MongoUtils.BSONTimestampToLong(timestamp);
-      ackDAOImpl.add(TOPIC_NAME, consumerId, MongoUtils.BSONTimestampToLong(timestamp));
+      ackDAO.add(TOPIC_NAME, consumerId, MongoUtils.BSONTimestampToLong(timestamp));
       //测试
-      Long maxMessageId = ackDAOImpl.getMaxMessageId(TOPIC_NAME, consumerId);
+      Long maxMessageId = ackDAO.getMaxMessageId(TOPIC_NAME, consumerId);
       Assert.assertEquals(expectedMessageId, maxMessageId);
    }
 

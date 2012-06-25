@@ -13,16 +13,16 @@ import com.dianping.swallow.common.message.SwallowMessage;
 public class MessageDAOImplTest extends AbstractDAOImplTest {
 
    @Autowired
-   private MessageDAOImpl messageDAOImpl;
+   private MessageDAOImpl messageDAO;
 
    @Test
    public void testSaveMessage() {
       //插入消息
       SwallowMessage expectedMessage = createMessage();
       expectedMessage.setContent("content in testSaveMessage");
-      messageDAOImpl.saveMessage(TOPIC_NAME, expectedMessage);
+      messageDAO.saveMessage(TOPIC_NAME, expectedMessage);
       //查询消息是否正确
-      SwallowMessage actualMessage = messageDAOImpl.getMaxMessage(TOPIC_NAME);
+      SwallowMessage actualMessage = messageDAO.getMaxMessage(TOPIC_NAME);
       Assert.assertTrue(expectedMessage.equalsWithoutMessageId(actualMessage));
 
    }
@@ -32,10 +32,10 @@ public class MessageDAOImplTest extends AbstractDAOImplTest {
       //插入消息
       SwallowMessage expectedMessage = createMessage();
       expectedMessage.setContent("content in testGetMessage");
-      messageDAOImpl.saveMessage(TOPIC_NAME, expectedMessage);
+      messageDAO.saveMessage(TOPIC_NAME, expectedMessage);
       //查询消息是否正确
-      Long maxMessageId = messageDAOImpl.getMaxMessageId(TOPIC_NAME);
-      SwallowMessage actualMessage = messageDAOImpl.getMessage(TOPIC_NAME, maxMessageId);
+      Long maxMessageId = messageDAO.getMaxMessageId(TOPIC_NAME);
+      SwallowMessage actualMessage = messageDAO.getMessage(TOPIC_NAME, maxMessageId);
       Assert.assertTrue(expectedMessage.equalsWithoutMessageId(actualMessage));
    }
 
@@ -43,16 +43,16 @@ public class MessageDAOImplTest extends AbstractDAOImplTest {
    public void testGetMessagesGreaterThan() {
       //插入1条消息
       SwallowMessage message = createMessage();
-      messageDAOImpl.saveMessage(TOPIC_NAME, message);
+      messageDAO.saveMessage(TOPIC_NAME, message);
       //获取消息id
-      Long maxMessageId = messageDAOImpl.getMaxMessageId(TOPIC_NAME);
+      Long maxMessageId = messageDAO.getMaxMessageId(TOPIC_NAME);
       //再插入2条消息
       SwallowMessage expectedMessage1 = createMessage();
-      messageDAOImpl.saveMessage(TOPIC_NAME, expectedMessage1);
+      messageDAO.saveMessage(TOPIC_NAME, expectedMessage1);
       SwallowMessage expectedMessage2 = createMessage();
-      messageDAOImpl.saveMessage(TOPIC_NAME, expectedMessage2);
+      messageDAO.saveMessage(TOPIC_NAME, expectedMessage2);
       //查询messageId比指定id大的按messageId升序排序的2条消息
-      List<SwallowMessage> messagesGreaterThan = messageDAOImpl.getMessagesGreaterThan(TOPIC_NAME, maxMessageId, 5);
+      List<SwallowMessage> messagesGreaterThan = messageDAO.getMessagesGreaterThan(TOPIC_NAME, maxMessageId, 5);
       Assert.assertNotNull(messagesGreaterThan);
       Assert.assertEquals(2, messagesGreaterThan.size());
       Assert.assertTrue(expectedMessage1.equalsWithoutMessageId(messagesGreaterThan.get(0)));

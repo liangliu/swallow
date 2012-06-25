@@ -70,6 +70,13 @@ public class MongoClient {
          this.mongoServerURI = cc.getProperty(LION_KEY_MONGO_URI);
          //构造Mongo实例
          this.topicnameToMongoMap = parseTopicURI(mongoServerURI);
+         if (LOG.isInfoEnabled()) {
+            if (this.topicnameToMongoMap != null) {
+               LOG.info("Reset config from Lion, the property 'topicnameToMongoMap' is changed.");
+            } else {
+               LOG.info("init config from Lion, the property 'topicnameToMongoMap' is inited.");
+            }
+         }
          //设置Lion事件响应
          cc.addChange(new ConfigChange() {
             @Override
@@ -254,9 +261,15 @@ public class MongoClient {
    public void setMongoServerURI(String mongoServerURI) {
       this.mongoServerURI = mongoServerURI;
       try {
-         this.topicnameToMongoMap = parseTopicURI(mongoServerURI);
-         if (LOG.isInfoEnabled())
-            LOG.info("Reset config from Lion, the property 'topicnameToMongoMap' is changed.");
+         Map<String, Mongo> map = parseTopicURI(mongoServerURI);
+         if (LOG.isInfoEnabled()) {
+            if (this.topicnameToMongoMap != null) {
+               LOG.info("Reset config from Lion, the property 'topicnameToMongoMap' is changed.");
+            } else {
+               LOG.info("init config from Lion, the property 'topicnameToMongoMap' is inited.");
+            }
+         }
+         this.topicnameToMongoMap = map;
       } catch (Exception e) {
          if (this.topicnameToMongoMap == null) {
             throw new IllegalArgumentException("Error occour when reset config from Lion:" + e.getMessage(), e);
