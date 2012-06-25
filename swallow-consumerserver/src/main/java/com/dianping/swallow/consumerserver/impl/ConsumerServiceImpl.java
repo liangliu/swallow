@@ -16,6 +16,7 @@ import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.dao.impl.mongodb.BSONTimestampUtils;
@@ -49,6 +50,7 @@ public class ConsumerServiceImpl implements ConsumerService{
     
     private MQThreadFactory threadFactory;
     
+    private Map<String, ConsumerType> ConsumerTypes = new HashMap<String, ConsumerType>();;
     
     private Map<String, ArrayBlockingQueue<Channel>> freeChannelQueue = new HashMap<String, ArrayBlockingQueue<Channel>>();
     
@@ -65,6 +67,10 @@ public class ConsumerServiceImpl implements ConsumerService{
     
 	public Map<String, ArrayBlockingQueue<Channel>> getFreeChannelQueue() {
 		return freeChannelQueue;
+	}
+
+	public Map<String, ConsumerType> getConsumerTypes() {
+		return ConsumerTypes;
 	}
 
 	public Mongo getMongo() {
@@ -163,15 +169,13 @@ public class ConsumerServiceImpl implements ConsumerService{
 			long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerId);
 		    messages = topicBuffer.createMessageQueue(consumerId, messageIdOfTailMessage);
 			freeChannels = freeChannelQueue.get(consumerId);
-		}
-	
+		}	
 		try {
 			while(true){
 				Channel channel = null;
 				synchronized(freeChannels){
 					channel = freeChannels.poll(configManager.getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
-				}
-				
+				}			
 				if(channel == null){
 					break;
 					//TODO 用异常替代isConnected
@@ -183,9 +187,10 @@ public class ConsumerServiceImpl implements ConsumerService{
 						message = (SwallowMessage)messages.take();
 					}
 					 Long messageId = message.getMessageId();
-					//更新mongo中最大messageId
-					//TODO 受到ack再更新
-					 ackDao.add(topicName, consumerId, messageId);
+					//如果consumer是收到ACK之前更新messageId的类型
+					 if(ConsumerType.UPDATE_BEFORE_ACK.equals(ConsumerTypes.get(consumerId))){
+						 updateMaxMessageId(topicName, consumerId, messageId);
+					 }					 
 					if(!channel.isConnected()){
 						preparedMesssages.put(consumerId, message);
 					} else{
@@ -256,7 +261,9 @@ public class ConsumerServiceImpl implements ConsumerService{
 //			}
 //		}		
 	}
-	
+	public void updateMaxMessageId(String topicName, String consumerId, Long messageId){		
+		ackDao.add(topicName, consumerId, messageId);		
+	}
 	private long getMessageIdOfTailMessage(String topicName, String consumerId) {
 		
 		Long maxMessageId = ackDao.getMaxMessageId(topicName, consumerId);
