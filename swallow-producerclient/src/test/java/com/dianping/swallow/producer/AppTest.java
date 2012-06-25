@@ -1,11 +1,15 @@
 package com.dianping.swallow.producer;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import com.dianping.swallow.producer.impl.ProducerImpl;
 import com.dianping.swallow.producer.impl.ProducerConfigure;
+import com.dianping.swallow.producer.impl.ProducerFactory;
+import com.dianping.swallow.producer.impl.ProducerImpl;
 
 /**
  * Unit test for simple App.
@@ -44,9 +48,25 @@ public class AppTest extends TestCase {
       @Override
       public void run() {
          // TODO Auto-generated method stub
-         ProducerImpl ps;
+         ProducerFactory pf = null;
          try {
-            ps = ProducerImpl.getDefaultInstance();
+            pf = ProducerFactory.getInstance(5000);
+         } catch (Exception e3) {
+            System.out.println(e3.toString());
+         }
+         Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
+         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
+         pOptions.put(ProducerOptionKey.THREAD_POOL_SIZE, 5);
+         pOptions.put(ProducerOptionKey.IS_CONTINUE_SEND, true);
+         
+         ProducerImpl ps = null;
+         
+         try {
+            ps = pf.getProducer("master.slave", pOptions);
+         } catch (Exception e2) {
+            System.out.println(e2.toString());
+         }
+         try {
             while (true) {
                //			content += i++;
                System.out.println(ps.sendMessage(content));
@@ -71,12 +91,12 @@ public class AppTest extends TestCase {
    }
 
    public static void main(String[] args) {
-//      new AppTest("111").doTest();
-      ProducerConfigure pc = new ProducerConfigure("producer.properties");
-      System.out.println(pc.getRemoteServiceTimeout());
-      System.out.println(pc.getThreadPoolSize());
-      System.out.println(pc.getDestinationName());
-      System.out.println(pc.getProducerModeStr());
-      System.out.println(pc.isContinueSend());
+      new AppTest("111").doTest();
+//      ProducerConfigure pc = new ProducerConfigure("producer.properties");
+//      System.out.println(pc.getRemoteServiceTimeout());
+//      System.out.println(pc.getThreadPoolSize());
+//      System.out.println(pc.getDestinationName());
+//      System.out.println(pc.getProducerModeStr());
+//      System.out.println(pc.isContinueSend());
    }
 }
