@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.bson.types.BSONTimestamp;
@@ -16,10 +16,14 @@ import org.jboss.netty.channel.Channel;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dianping.swallow.common.dao.AckDAO;
+import com.dianping.swallow.common.dao.MessageDAO;
+import com.dianping.swallow.common.dao.impl.mongodb.BSONTimestampUtils;
+import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.consumerserver.ConsumerService;
 import com.dianping.swallow.consumerserver.GetMessageThread;
 import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.MQThreadFactory;
+import com.dianping.swallow.consumerserver.buffer.TopicBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 import com.dianping.swallow.consumerserver.util.MongoUtil;
 import com.mongodb.Mongo;
@@ -34,7 +38,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 
 	private Map<String, HashSet<Channel>> channelWorkStatue;	//channel是否存在的状态
     
-    private Map<String, Semaphore> freeChannelNums = new HashMap<String, Semaphore>();
+    //private Map<String, Semaphore> freeChannelNums = new HashMap<String, Semaphore>();
     
     private Map<String, String> preparedMesssages = new HashMap<String, String>();
     
@@ -45,20 +49,19 @@ public class ConsumerServiceImpl implements ConsumerService{
     
     private MQThreadFactory threadFactory;
     
-    private Map<String, ArrayBlockingQueue<String>> messageQueue = new HashMap<String, ArrayBlockingQueue<String>>();
     
     private Map<String, ArrayBlockingQueue<Channel>> freeChannelQueue = new HashMap<String, ArrayBlockingQueue<Channel>>();
     
-    private AckDAO dao;
+    @Autowired
+    private AckDAO ackDao;
     
+    @Autowired
+    private MessageDAO messageDao;
+       
     private ArrayBlockingQueue<Channel> freeChannels;
     
     @Autowired
     private Heartbeater heartbeater;
-	   
-    public Map<String, ArrayBlockingQueue<String>> getMessageQueue() {
-		return messageQueue;
-	}
     
 	public Map<String, ArrayBlockingQueue<Channel>> getFreeChannelQueue() {
 		return freeChannelQueue;
@@ -156,7 +159,12 @@ public class ConsumerServiceImpl implements ConsumerService{
 	public void ergodicChannelByCId(String consumerId,String topicId){
 		
 		freeChannels = freeChannelQueue.get(consumerId);
-		ArrayBlockingQueue<String> messages = messageQueue.get(consumerId);
+		
+		TopicBuffer topicBuffer = TopicBuffer.getTopicBuffer(topicId);
+		long messageIdOfTailMessage = getMessageIdOfTailMessage(topicId, consumerId);
+	    BlockingQueue<Message> messages = topicBuffer.createMessageQueue(consumerId, messageIdOfTailMessage);
+		
+//		ArrayBlockingQueue<String> messages = queue.get(consumerId);
 		try {
 			while(true){
 				Channel channel = freeChannels.poll(configManager.getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
@@ -168,8 +176,8 @@ public class ConsumerServiceImpl implements ConsumerService{
 						message = preparedMesssages.get(consumerId);
 						preparedMesssages.remove(consumerId);
 					} else{					
-						//String message = messages.take();
-						message = "假的";
+						Message message = messages.take();
+						//message = "假的";
 					}
 					//TODO 从消息中得到maxTStamp
 					//TODO 是否可以自己设置BSongtimestamp
@@ -182,6 +190,8 @@ public class ConsumerServiceImpl implements ConsumerService{
 					} else{
 						//TODO +isWritable?，连接断开后write后是否会抛异常，isWritable()=false的时候retry, when will write() throw exception?
 						channel.write(message);
+						//TODO 将SwallowMessage构造成Packet(PktObjectMessage objMsg = new PktObjectMessage(destination, swallowMsg);)
+						//TODO 发送：channel.write(PktObjectMessage);
 					}
 				}
 			}
@@ -246,6 +256,20 @@ public class ConsumerServiceImpl implements ConsumerService{
 //		}		
 	}
 	
+	private long getMessageIdOfTailMessage(String topicName, String consumerId) {
+		
+		Long maxMessageId = ackDao.getMaxMessageId(topicName, consumerId);
+		if(maxMessageId == null){
+			maxMessageId = messageDao.getMaxMessageId(topicName);
+		}
+		if(maxMessageId == null){
+			int time = (int)(System.currentTimeMillis() / 1000);
+			BSONTimestamp bst = new BSONTimestamp(time, 1);
+			maxMessageId = BSONTimestampUtils.BSONTimestampToLong(bst);
+		}
+		return maxMessageId;
+	}
+
 	public void changeStatuesWhenChannelBreak(Channel channel){
 		
 //		String cId = null;

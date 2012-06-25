@@ -11,6 +11,8 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
+import com.dianping.swallow.common.packet.PktConsumerACK;
+import com.dianping.swallow.common.util.Destination;
 import com.dianping.swallow.consumerserver.ConsumerService;
 
 
@@ -27,21 +29,22 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     @Override  
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)  
         throws Exception {     
-    	e.getChannel().write("come on baby");
+    	//e.getChannel().write("come on baby");
     }
  
     @Override
     public void messageReceived(
             ChannelHandlerContext ctx, MessageEvent e) {
+    	//收到PktConsumerACK，按照原流程解析
     	Channel channel = e.getChannel();
-    	String message = (String)e.getMessage();
-    	String topicId = message.split(":")[0];
-    	String consumerId = message.split(":")[1];
-    	String timeStamp = message.split(":")[2];
+    	PktConsumerACK consumerACKPacket = (PktConsumerACK)e.getMessage();
+    	String topicName = consumerACKPacket.getDest().getName();
+    	String consumerId = consumerACKPacket.getConsumerId();
+    	Long messageId = consumerACKPacket.getMessageId();
     	cService.putChannelToBlockQueue(consumerId, channel);
     	//对应consumerID的线程不存在,应该是可以用threadslist代替。
     	//线程安全
-    	cService.updateThreadWorkStatues(consumerId, topicId);
+    	cService.updateThreadWorkStatues(consumerId, topicName);
     }
  
     @Override
