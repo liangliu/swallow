@@ -12,7 +12,6 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.dianping.swallow.common.packet.PktConsumerACK;
-import com.dianping.swallow.common.util.Destination;
 import com.dianping.swallow.consumerserver.ConsumerService;
 
 

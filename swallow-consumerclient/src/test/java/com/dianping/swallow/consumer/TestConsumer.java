@@ -2,8 +2,8 @@ package com.dianping.swallow.consumer;
 
 import java.net.InetSocketAddress;
 
+import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.util.Destination;
 
 
 
