@@ -15,7 +15,7 @@
  */
 package com.dianping.swallow.common.packet;
 
-import com.dianping.swallow.common.producer.Destination;
+import com.dianping.swallow.common.message.Destination;
 
 /**
  * TODO Comment of PktMessage

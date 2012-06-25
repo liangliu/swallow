@@ -3,10 +3,11 @@ package com.dianping.swallow.producerserver.impl;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
-import org.jboss.netty.handler.codec.frame.DelimiterBasedFrameDecoder;
-import org.jboss.netty.handler.codec.frame.Delimiters;
-import org.jboss.netty.handler.codec.string.StringDecoder;
-import org.jboss.netty.handler.codec.string.StringEncoder;
+import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
+import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
+
+import com.dianping.swallow.common.codec.JsonDecoder;
+import com.dianping.swallow.common.codec.JsonEncoder;
 
 public class ProducerServerTextPipelineFactory implements ChannelPipelineFactory{
 	private ProducerServer producerServer;
@@ -18,10 +19,11 @@ public class ProducerServerTextPipelineFactory implements ChannelPipelineFactory
 	@Override
 	public ChannelPipeline getPipeline() throws Exception {
 		ChannelPipeline pipeline = Channels.pipeline();
-		//TODO 使用克柱的encoder,decoder
-		pipeline.addLast("framer", new DelimiterBasedFrameDecoder(8192, Delimiters.lineDelimiter()));
-		pipeline.addLast("decoder", new StringDecoder());
-		pipeline.addLast("encoder", new StringEncoder());
+
+		pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
+		
+		pipeline.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
+		
 		pipeline.addLast("handler", new ProducerServerTextHandler(producerServer));
 		
 		return pipeline;
