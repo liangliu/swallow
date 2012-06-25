@@ -33,5 +33,10 @@
 			<artifactId>${swallow-common.aid}</artifactId>
 			<version>${swallow-common.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>2.6.3</version>
+		</dependency>
 	</dependencies>
 </project>

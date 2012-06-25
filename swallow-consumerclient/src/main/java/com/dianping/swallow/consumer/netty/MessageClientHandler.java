@@ -11,7 +11,11 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.bson.types.BSONTimestamp;
 
+import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.packet.PktConsumerACK;
+import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.consumer.ConsumerClient;
 
 @ChannelPipelineCoverage("all")
@@ -19,26 +23,32 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
  
     private static final Logger logger = Logger.getLogger(
             MessageClientHandler.class.getName());
-    private String timeStamp = "0";
-    private String consumerId = "001";
-    private String topicId = "01";
+    
     private ConsumerClient cClient;
+    
+    private PktConsumerACK consumerACKPacket;
+    
     public MessageClientHandler(ConsumerClient cClient){
     	this.cClient = cClient;
     }
     @Override
     public void channelConnected(
             ChannelHandlerContext ctx, ChannelStateEvent e) {
-    	//String优化问题暂不考虑哈
+    	consumerACKPacket = new PktConsumerACK(cClient.getConsumerId(), cClient.getDest(), null);
+    	e.getChannel().write(consumerACKPacket);   
     	
     }
  
     @Override
     public void messageReceived(
             ChannelHandlerContext ctx, MessageEvent e) {
-        // Send back the received message to the remote peer.
-    	cClient.getListener().onMessage((String)e.getMessage());
-    	e.getChannel().write(topicId + ":" + consumerId + ":" + timeStamp);     
+    	SwallowMessage swallowMessage = (SwallowMessage)((PktObjectMessage)e.getMessage()).getContent();
+    	Long messageId = swallowMessage.getMessageId();
+    	consumerACKPacket.setMessageId(messageId);
+    	cClient.getListener().onMessage(swallowMessage);
+    	//TODO 收到Packet，得到SwallowMessage，处理SwallowMessage(调用cClient.getListener().onMessage)
+    	//TODO 构造Packet（PktConsumerACK），发送出去
+    	e.getChannel().write(consumerACKPacket);     
     }
  
     @Override
