@@ -5,6 +5,9 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
 import com.dianping.dpsf.api.ServiceRegistry;
 import com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl;
 import com.dianping.swallow.common.message.SwallowMessage;
@@ -16,6 +19,7 @@ import com.dianping.swallow.producerserver.util.SHAGenerater;
 
 public class ProducerServer implements MQService {
 
+   private static final Logger   logger     = Logger.getLogger(ProducerServer.class);
    private static ProducerServer instance;
    private MessageDAOImpl        messageDAO = new MessageDAOImpl();
 
@@ -24,46 +28,52 @@ public class ProducerServer implements MQService {
    }
 
    public static void startAt(int portForClient, int portForText) throws Exception {
+      ServiceRegistry remoteService = null;
+
       if (instance != null) {
+         logger.log(Level.ERROR, "Already exist a ProducerServer instance.");
          throw new Exception("Exist another ProducerServer instance, please turn off it before start a new one.");
       }
-
       instance = new ProducerServer(portForText);
-      ServiceRegistry remoteService = new ServiceRegistry(portForClient);
-      Map<String, Object> services = new HashMap<String, Object>();
-      services.put("remoteService", instance);
-      remoteService.setServices(services);
-      remoteService.init();
+      try {
+         remoteService = new ServiceRegistry(portForClient);
+         Map<String, Object> services = new HashMap<String, Object>();
+         services.put("remoteService", instance);
+         remoteService.setServices(services);
+         remoteService.init();
+      } catch (Exception e) {
+         logger.log(Level.ERROR, "[ProducerServer]:[Initialize remote service failed.]", e.getCause());
+         throw e;
+      }
    }
 
    @Override
-   public Packet sendMessage(Packet pkt) {
+   public Packet sendMessage(Packet pkt) throws Exception {
       Packet pktRet = null;
       switch (pkt.getPacketType()) {
          case PRODUCER_GREET:
             try {
+               //返回ProducerServer地址
                pktRet = new PktSwallowPACK(InetAddress.getLocalHost().toString());
             } catch (UnknownHostException uhe) {
                pktRet = new PktSwallowPACK(uhe.toString());
             }
             break;
          case OBJECT_MSG:
-            String sha1 = SHAGenerater.generateSHA(((SwallowMessage) ((PktObjectMessage) pkt).getContent())
-                  .getContent());
+            String sha1 = SHAGenerater.generateSHA(((SwallowMessage) ((PktObjectMessage) pkt).getContent()).getContent());
             pktRet = new PktSwallowPACK(sha1);
             ((SwallowMessage) ((PktObjectMessage) pkt).getContent()).setSha1(sha1);
 
-            //TODO 发生异常如何处理？
             try {
                messageDAO.saveMessage(((PktObjectMessage) pkt).getDestination().getName(),
                      (SwallowMessage) ((PktObjectMessage) pkt).getContent());
             } catch (Exception e) {
-               System.out.println("Message saved failed.");
+               logger.log(Level.ERROR, "[ProducerServer]:[Message saved failed.]");
+               throw e;
             }
             break;
          default:
-            //TODO log it
-            System.out.println("Received unrecognized packet.");
+            logger.log(Level.WARN, "[ProducerServer]:[Received unrecognized packet.]");
             break;
       }
       return pktRet;

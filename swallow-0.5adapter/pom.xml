@@ -10,12 +10,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.dianping.swallow</groupId>
-
-	<artifactId>${swallow-consumerclient.aid}</artifactId>
-	<version>${swallow-consumerclient.version}</version>
+	<artifactId>${swallow-0.5adapter.aid}</artifactId>
+	<name>${swallow-0.5adapter.name}</name>
+	<version>${swallow-0.5adapter.version}</version>
 	<packaging>jar</packaging>
 
-	<name>${swallow-consumerclient.name}</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -23,20 +22,23 @@
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.jboss.netty</groupId>
-			<artifactId>netty</artifactId>
-			<version>3.2.7.Final</version>
-		</dependency>
+		
 		<dependency>
 			<groupId>com.dianping.swallow</groupId>
 			<artifactId>${swallow-common.aid}</artifactId>
 			<version>${swallow-common.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongo-java-driver</artifactId>
-			<version>2.6.3</version>
+			<groupId>com.dianping.swallow</groupId>
+			<artifactId>${swallow-consumerclient.aid}</artifactId>
+			<version>${swallow-consumerclient.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.dianping.swallow</groupId>
+			<artifactId>${swallow-producerclient.aid}</artifactId>
+			<version>${swallow-producerclient.version}</version>
+		</dependency>
+		
+
 	</dependencies>
 </project>

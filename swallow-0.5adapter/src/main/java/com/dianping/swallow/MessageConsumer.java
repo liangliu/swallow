@@ -1,10 +1,10 @@
 /**
- * Project: swallow-client
+ * Project: ${swallow-client.aid}
  * 
- * File Created at 2012-5-25
+ * File Created at 2011-7-29
  * $Id$
  * 
- * Copyright 2010 dianping.com.
+ * Copyright 2011 dianping.com.
  * All rights reserved.
  *
  * This software is the confidential and proprietary information of
@@ -13,19 +13,17 @@
  * accordance with the terms of the license agreement you entered into
  * with dianping.com.
  */
-package com.dianping.swallow.common.packet;
+package com.dianping.swallow;
 
-/**
- * TODO Comment of PacketType
- * @author tong.song
- *
- */
-public enum PacketType {
-	PRODUCER_GREET,
-	SWALLOW_P_ACK,
-	CONSUMER_ACK,
-	STRING_MSG,
-	BINARY_MSG,
-	OBJECT_MSG,
-	TEXT_MSG
+public interface MessageConsumer {
+
+	/**
+	 * 设置消息listener
+	 * 
+	 * @param listener
+	 */
+	void setMessageListener(MessageListener listener);
+	
+	void close();
+
 }
