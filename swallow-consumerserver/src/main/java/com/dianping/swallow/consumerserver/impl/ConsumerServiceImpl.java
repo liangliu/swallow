@@ -156,11 +156,15 @@ public class ConsumerServiceImpl implements ConsumerService{
 	
 	public void pollFreeChannelsByCId(String consumerId,String topicName){
 		
-		freeChannels = freeChannelQueue.get(consumerId);		
-		TopicBuffer topicBuffer = TopicBuffer.getTopicBuffer(topicName);
-		long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerId);
-	    BlockingQueue<Message> messages = topicBuffer.createMessageQueue(consumerId, messageIdOfTailMessage);
-		
+		BlockingQueue<Message> messages = null;
+		//线程刚起，第一次调用的时候，需要先去mongo中获取maxMessageId
+		if(messages == null){
+			TopicBuffer topicBuffer = TopicBuffer.getTopicBuffer(topicName);
+			long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerId);
+		    messages = topicBuffer.createMessageQueue(consumerId, messageIdOfTailMessage);
+			freeChannels = freeChannelQueue.get(consumerId);
+		}
+	
 		try {
 			while(true){
 				Channel channel = null;
