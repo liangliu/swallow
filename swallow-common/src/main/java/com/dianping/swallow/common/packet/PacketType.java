@@ -23,6 +23,7 @@ package com.dianping.swallow.common.packet;
 public enum PacketType {
 	PRODUCER_GREET,
 	SWALLOW_P_ACK,
+	CONSUMER_ACK,
 	STRING_MSG,
 	BINARY_MSG,
 	OBJECT_MSG,
