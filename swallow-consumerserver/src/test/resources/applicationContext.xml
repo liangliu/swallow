@@ -23,6 +23,15 @@
 		class="com.dianping.swallow.common.dao.impl.mongodb.HeartbeatDAOImpl">
 	</bean>
 
+	<bean id="messageRetriever"
+		class="com.dianping.swallow.consumerserver.buffer.MongoDBMessageRetriever">
+		<property name="fetchSize" value="5" />
+	</bean>
+
+	<bean id="swallowBuffer"
+		class="com.dianping.swallow.consumerserver.buffer.SwallowBuffer">
+		<property name="threshold" value="2" />
+	</bean>
 
 	<bean id="mongoClient"
 		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient">

@@ -1,4 +1,4 @@
-package com.dianping.swallow.common.example.message;
+package com.dianping.swallow.example.message;
 
 import java.util.HashMap;
 

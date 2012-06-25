@@ -23,24 +23,6 @@ public class MongoDBMessageRetriever implements MessageRetriever {
    @SuppressWarnings({ "rawtypes", "unchecked" })
    @Override
    public List retriveMessage(String topicName, Long messageId, Set<String> messageTypeSet) throws Exception {
-      //mock db访问
-      //      List<Message> list = new ArrayList<Message>();
-      //      for (int i = 0; i < fetchSize; i++) {
-      //         SwallowMessage message = new SwallowMessage();
-      //         message.setMessageId(i + 1L);
-      //         message.setContent("this is a SwallowMessage");
-      //         message.setGeneratedTime(new Date());
-      //         message.getProperties().setProperty("property-key", "property-value");
-      //         message.setSha1("sha-1 string");
-      //         message.setVersion("0.6.0");
-      //         list.add(message);
-      //         if (LOG.isDebugEnabled()) {
-      //            LOG.debug("fetch message from mongodb:" + message.toString());
-      //         }
-      //         Thread.sleep(50L);//睡眠
-      //      }
-      //      Thread.sleep(100L);//睡眠
-      //      return list;
       List<SwallowMessage> messages;
       if (messageTypeSet != null && !messageTypeSet.isEmpty()) {
          messages = messageDAO.getMessagesGreaterThan(topicName, messageId, messageTypeSet, fetchSize);

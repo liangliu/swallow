@@ -1,24 +1,25 @@
 package com.dianping.swallow.common.codec;
 
-import java.io.ByteArrayOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 
-import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.buffer.ChannelBuffer;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.caucho.hessian.io.Hessian2Output;
+import com.caucho.hessian.io.Hessian2Input;
 import com.caucho.hessian.io.SerializerFactory;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
 
-public class HessianDecoderTest {
+public class HessianEncoderTest {
 
    private SerializerFactory factory = new SerializerFactory();
 
    @Test
-   public void testDecode() throws Exception {
+   public void testEncode1() throws Exception {
       //构造序列化后的hessian字节码
       SwallowMessage msg = new SwallowMessage();
       msg.setGeneratedTime(new Date());
@@ -26,25 +27,23 @@ public class HessianDecoderTest {
       HashMap<String, String> map = new HashMap<String, String>();
       map.put("property-key", "property-value");
       msg.setContent("content");
-      ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
-      Hessian2Output h2o = new Hessian2Output(bos);
-      h2o.setSerializerFactory(factory);
-      h2o.writeObject(msg);
-      h2o.flush();
-      h2o.close();
-      byte[] content = bos.toByteArray();
-      //使用HessianDecoder解码
-      HessianDecoder hessianDecoder = new HessianDecoder();
-      Message actualMsg = (Message) hessianDecoder.decode(null, null, ChannelBuffers.wrappedBuffer(content));
+      HessianEncoder hessianEncoder = new HessianEncoder();
+      ChannelBuffer channelBuffer = (ChannelBuffer)hessianEncoder.encode(null, null, msg);
+      //解码
+      InputStream is = new ByteArrayInputStream(channelBuffer.toByteBuffer().array());
+      Hessian2Input h2i = new Hessian2Input(is);
+      h2i.setSerializerFactory(factory);
+      Message actualMsg = (Message) h2i.readObject();
+      h2i.close();
       //assert
       Assert.assertEquals(msg, actualMsg);
    }
-
+   
    @Test
    public void testEncode2() throws Exception {
       Object o = new Object();
-      HessianDecoder hessianDecoder = new HessianDecoder();
-      Assert.assertEquals(o, hessianDecoder.decode(null, null, o));
+      HessianEncoder hessianEncoder = new HessianEncoder();
+      Assert.assertEquals(o,hessianEncoder.encode(null, null, o));
    }
 
 }

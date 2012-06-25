@@ -2,7 +2,7 @@ package com.dianping.swallow.common.dao.impl.mongodb;
 
 import org.bson.types.BSONTimestamp;
 
-public class BSONTimestampUtils {
+public class MongoUtils {
 
    public static BSONTimestamp longToBSONTimestamp(Long messageId) {
       int time = (int) (messageId >>> 32);

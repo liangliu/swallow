@@ -1,5 +1,7 @@
 package com.dianping.swallow.consumer;
 
+import com.dianping.swallow.common.message.SwallowMessage;
+
 
 
 public interface MessageListener {
@@ -9,6 +11,6 @@ public interface MessageListener {
 	 * 
 	 * @param msg
 	 */
-	void onMessage(String msg);
+	void onMessage(SwallowMessage msg);
 
 }

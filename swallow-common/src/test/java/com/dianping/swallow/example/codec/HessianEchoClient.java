@@ -1,19 +1,4 @@
-/*
- * Copyright 2009 Red Hat, Inc.
- *
- * Red Hat licenses this file to you under the Apache License, version 2.0
- * (the "License"); you may not use this file except in compliance with the
- * License.  You may obtain a copy of the License at:
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-package com.dianping.swallow.common.example.codec;
+package com.dianping.swallow.example.codec;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
@@ -26,13 +11,13 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 
-import com.dianping.swallow.common.codec.JsonDecoder;
+import com.dianping.swallow.common.codec.HessianDecoder;
 
 /**
- * 连接到服务器之后，会收到服务器发送的经过ProtobufVarint32LengthFieldPrepender和JsonEncoder编码后的消息 ，
- * 收到消息后ProtobufVarint32FrameDecoder和JsonDecoder解码，使用然后打印消息.
+ * 连接到服务器之后，会收到服务器发送的经过ProtobufVarint32LengthFieldPrepender和HessianEncoder编码后的消息
+ * ， 收到消息后ProtobufVarint32FrameDecoder和HessianDecoder解码，使用然后打印消息.
  */
-public class JsonEchoClient {
+public class HessianEchoClient {
 
    public static void main(String[] args) throws Exception {
 
@@ -49,7 +34,7 @@ public class JsonEchoClient {
          public ChannelPipeline getPipeline() throws Exception {
             ChannelPipeline p = Channels.pipeline();
             p.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
-            p.addLast("jsonDecoder", new JsonDecoder());
+            p.addLast("hessianDecoder", new HessianDecoder());
             p.addLast("handler", new EchoClientHandler());
             return p;
          }

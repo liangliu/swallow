@@ -6,8 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.bson.types.BSONTimestamp;
@@ -15,11 +16,17 @@ import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.dao.AckDAO;
+import com.dianping.swallow.common.dao.MessageDAO;
+import com.dianping.swallow.common.dao.impl.mongodb.MongoUtils;
+import com.dianping.swallow.common.message.Message;
+import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.consumerserver.ConsumerService;
 import com.dianping.swallow.consumerserver.GetMessageThread;
 import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.MQThreadFactory;
+import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 import com.dianping.swallow.consumerserver.util.MongoUtil;
 import com.mongodb.Mongo;
@@ -32,36 +39,41 @@ public class ConsumerServiceImpl implements ConsumerService{
 	
 	private Mongo mongo;
 
-	private Map<String, HashSet<Channel>> channelWorkStatue;	//channel是否存在的状态
+	private Map<String, HashSet<Channel>> channelWorkStatus;	//channel是否存在的状态
     
-    private Map<String, Semaphore> freeChannelNums = new HashMap<String, Semaphore>();
+    private Map<String, SwallowMessage> preparedMesssages = new HashMap<String, SwallowMessage>();
     
-    private Map<String, String> preparedMesssages = new HashMap<String, String>();
+    private SwallowMessage message = null;
     
-    private String message = null;
+    @Autowired
+    private SwallowBuffer swallowBuffer;
     
     //一个consumerId对应一个thread，这是对各thread的状态的管理
-    private Map<String, Boolean> threads = new HashMap<String, Boolean>();
+    private Set<String> threads = new HashSet<String>();
     
     private MQThreadFactory threadFactory;
     
-    private Map<String, ArrayBlockingQueue<String>> messageQueue = new HashMap<String, ArrayBlockingQueue<String>>();
+    private Map<String, ConsumerType> ConsumerTypes = new HashMap<String, ConsumerType>();;
     
     private Map<String, ArrayBlockingQueue<Channel>> freeChannelQueue = new HashMap<String, ArrayBlockingQueue<Channel>>();
     
-    private AckDAO dao;
+    @Autowired
+    private AckDAO ackDao;
     
+    @Autowired
+    private MessageDAO messageDao;
+       
     private ArrayBlockingQueue<Channel> freeChannels;
     
     @Autowired
     private Heartbeater heartbeater;
-	   
-    public Map<String, ArrayBlockingQueue<String>> getMessageQueue() {
-		return messageQueue;
-	}
     
 	public Map<String, ArrayBlockingQueue<Channel>> getFreeChannelQueue() {
 		return freeChannelQueue;
+	}
+
+	public Map<String, ConsumerType> getConsumerTypes() {
+		return ConsumerTypes;
 	}
 
 	public Mongo getMongo() {
@@ -74,15 +86,15 @@ public class ConsumerServiceImpl implements ConsumerService{
 	
 	
 	public Map<String, HashSet<Channel>> getChannelWorkStatue() {
-		return channelWorkStatue;
+		return channelWorkStatus;
 	}
 
-	public Map<String, Boolean> getThreads() {
+	public Set<String> getThreads() {
 		return threads;
 	}
 	
 	public ConsumerServiceImpl(String uri){    	
-    	this.channelWorkStatue = new HashMap<String, HashSet<Channel>>();
+    	this.channelWorkStatus = new HashMap<String, HashSet<Channel>>();
     	this.configManager = ConfigManager.getInstance();
     	this.threadFactory = new MQThreadFactory();
     	List<ServerAddress> replicaSetSeeds = MongoUtil.parseUri(uri);
@@ -107,59 +119,65 @@ public class ConsumerServiceImpl implements ConsumerService{
 //		options.safe = config.isMongoSafe();
 		return options;
 	}
-	public void changeChannelWorkStatue(String consumerId, Channel channel){
-		//TODO 改成status
-		synchronized(channelWorkStatue){
-			if(channelWorkStatue.get(consumerId) == null){
+	public void changeChannelWorkStatus(String consumerId, Channel channel){
+		synchronized(channelWorkStatus){
+			if(channelWorkStatus.get(consumerId) == null){
 				HashSet<Channel> channels = new HashSet<Channel>();
 				channels.add(channel);
-				channelWorkStatue.put(consumerId, channels);
+				channelWorkStatus.put(consumerId, channels);
 			} else{
-				HashSet<Channel> channels = channelWorkStatue.get(consumerId);
+				HashSet<Channel> channels = channelWorkStatus.get(consumerId);
 				channels.add(channel);
 			}
 		}    
 	}
 	
-	//TODO 多线程安全
 	public void putChannelToBlockQueue(String consumerId, Channel channel){
 		//freeChannels应该是容量无上限的
 		freeChannels = freeChannelQueue.get(consumerId);
-		if(freeChannels == null){
-			freeChannels = new ArrayBlockingQueue<Channel>(configManager.getFreeChannelBlockQueueSize());
-			freeChannelQueue.put(consumerId, freeChannels);
-		}
-		try {
-			freeChannels.put(channel);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		synchronized(freeChannels){
+			if(freeChannels == null){
+				freeChannels = new ArrayBlockingQueue<Channel>(configManager.getFreeChannelBlockQueueSize());
+				freeChannelQueue.put(consumerId, freeChannels);
+			}
+			try {
+				freeChannels.put(channel);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}		
     }
 	
-	//TODO renaming
-	public void updateThreadWorkStatues(String consumerId, String topicId){
+	public void addThread(String consumerId, String topicName){
 		synchronized(threads){
-			if(!threads.containsKey(consumerId)){
+			if(!threads.contains(consumerId)){
 				GetMessageThread server = new GetMessageThread();
 				server.setConsumerId(consumerId);
-				server.setTopicId(topicId);
+				server.setTopicName(topicName);
 				server.setcService(this);
-				Thread t = threadFactory.newThread(server, topicId + consumerId + "-consumer-");
+				Thread t = threadFactory.newThread(server, topicName + consumerId + "-consumer-");
 		    	t.start();
-		    	//TODO change threads to Set
-		    	threads.put(consumerId, Boolean.TRUE);
+		    	threads.add(consumerId);
 			}    
 		}			
     }
 	
-	public void ergodicChannelByCId(String consumerId,String topicId){
+	public void pollFreeChannelsByCId(String consumerId,String topicName){
 		
-		freeChannels = freeChannelQueue.get(consumerId);
-		ArrayBlockingQueue<String> messages = messageQueue.get(consumerId);
+		BlockingQueue<Message> messages = null;
+		//线程刚起，第一次调用的时候，需要先去mongo中获取maxMessageId
+		if(messages == null){
+			long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerId);
+		    messages = swallowBuffer.createMessageQueue(topicName, consumerId, messageIdOfTailMessage);
+			freeChannels = freeChannelQueue.get(consumerId);
+		}	
 		try {
 			while(true){
-				Channel channel = freeChannels.poll(configManager.getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
+				Channel channel = null;
+				synchronized(freeChannels){
+					channel = freeChannels.poll(configManager.getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
+				}			
 				if(channel == null){
 					break;
 					//TODO 用异常替代isConnected
@@ -168,20 +186,20 @@ public class ConsumerServiceImpl implements ConsumerService{
 						message = preparedMesssages.get(consumerId);
 						preparedMesssages.remove(consumerId);
 					} else{					
-						//String message = messages.take();
-						message = "假的";
+						message = (SwallowMessage)messages.take();
 					}
-					//TODO 从消息中得到maxTStamp
-					//TODO 是否可以自己设置BSongtimestamp
-					BSONTimestamp maxTStamp = new BSONTimestamp();
-					//更新mongo中最大timeStamp
-					//TODO 受到ack再更新
-//					dao.addCounter(topicId, consumerId,maxTStamp);
+					 Long messageId = message.getMessageId();
+					//如果consumer是收到ACK之前更新messageId的类型
+					 if(ConsumerType.UPDATE_BEFORE_ACK.equals(ConsumerTypes.get(consumerId))){
+						 updateMaxMessageId(topicName, consumerId, messageId);
+					 }					 
 					if(!channel.isConnected()){
 						preparedMesssages.put(consumerId, message);
 					} else{
 						//TODO +isWritable?，连接断开后write后是否会抛异常，isWritable()=false的时候retry, when will write() throw exception?
 						channel.write(message);
+						//TODO 将SwallowMessage构造成Packet(PktObjectMessage objMsg = new PktObjectMessage(destination, swallowMsg);)
+						//TODO 发送：channel.write(PktObjectMessage);
 					}
 				}
 			}
@@ -245,13 +263,28 @@ public class ConsumerServiceImpl implements ConsumerService{
 //			}
 //		}		
 	}
-	
+	public void updateMaxMessageId(String topicName, String consumerId, Long messageId){		
+		ackDao.add(topicName, consumerId, messageId);		
+	}
+	private long getMessageIdOfTailMessage(String topicName, String consumerId) {
+		
+		Long maxMessageId = ackDao.getMaxMessageId(topicName, consumerId);
+		if(maxMessageId == null){
+			maxMessageId = messageDao.getMaxMessageId(topicName);
+		}
+		if(maxMessageId == null){
+			int time = (int)(System.currentTimeMillis() / 1000);
+			BSONTimestamp bst = new BSONTimestamp(time, 1);
+			maxMessageId = MongoUtils.BSONTimestampToLong(bst);
+		}
+		return maxMessageId;
+	}
+
 	public void changeStatuesWhenChannelBreak(Channel channel){
 		
-//		String cId = null;
 		HashSet<Channel> channels = null;
-		synchronized(channelWorkStatue){
-			Iterator<Map.Entry<String,HashSet<Channel>>> iterator = channelWorkStatue.entrySet().iterator();
+		synchronized(channelWorkStatus){
+			Iterator<Map.Entry<String,HashSet<Channel>>> iterator = channelWorkStatus.entrySet().iterator();
 			while(iterator.hasNext()){
 				Entry<String, HashSet<Channel>> entry = iterator.next();
 				channels = entry.getValue();
@@ -261,23 +294,6 @@ public class ConsumerServiceImpl implements ConsumerService{
 				}
 			}
 		}
-		
-//		channels = channelWorkStatue.get(cId);
-//		if("done".equals(channels.get(channel))){
-//			try {
-//				freeChannelNums.get(cId).acquire();
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
-//		channels.remove(cId);
-//		synchronized(threads){
-//			if(channels.isEmpty()){
-//				threads.remove(cId);						
-//			}
-//		}
-		
 	}
 	
 	public void init(boolean isSlave){
@@ -335,4 +351,5 @@ public class ConsumerServiceImpl implements ConsumerService{
 		heartbeatThread.setDaemon(true);
 		heartbeatThread.start();
 	}
+
 }

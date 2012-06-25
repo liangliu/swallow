@@ -8,15 +8,15 @@ import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 
 public class GetMessageThread implements Runnable{
-	private String topicId;
+	private String topicName;
 	private String consumerId;
 	private String preparedMes = null;
 	private String message = null;
 	private Boolean isLive = true;
 	private ConsumerServiceImpl cService;
 	private AckDAO dao;
-	public void setTopicId(String topicId) {
-		this.topicId = topicId;
+	public void setTopicName(String topicName) {
+		this.topicName = topicName;
 	}
 
 	public void setConsumerId(String consumerId) {
@@ -31,7 +31,7 @@ public class GetMessageThread implements Runnable{
 	public void run() {
 		//TODO 获取mongo中最大的timeStamp，然后blockingQueue去获取！
 		while(isLive){
-			cService.ergodicChannelByCId(consumerId, topicId);
+			cService.pollFreeChannelsByCId(consumerId, topicName);
 			synchronized(cService.getThreads()){
 				HashSet<Channel> channels = cService.getChannelWorkStatue().get(consumerId);
 				//TODO 貌似是不需要同步！
