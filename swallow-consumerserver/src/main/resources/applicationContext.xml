@@ -38,7 +38,8 @@
 	</bean>
 
 	<bean id="mongoClient"
-		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient">
+		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient"
+		init-method="init">
 	</bean>
 
 </beans>

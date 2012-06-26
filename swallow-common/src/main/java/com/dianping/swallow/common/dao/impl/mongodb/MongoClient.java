@@ -25,20 +25,20 @@ import com.mongodb.ServerAddress;
 //TODO 将server的客户端连接和topic情况，连接的mongo地址，通过cat或hawk反映出来。
 public class MongoClient {
 
-   private static final Logger LOG                     = LoggerFactory.getLogger(MongoClient.class);
+   private static final Logger         LOG                     = LoggerFactory.getLogger(MongoClient.class);
 
-   private static final String MONGO_CONFIG_FILENAME   = "swallow-mongo.properties";
-   private static final String DEFAULT_COLLECTION_NAME = "c";
-   private static final String TOPICNAME_HEARTBEAT     = "heartbeat";
-   private static final String TOPICNAME_DEFAULT       = "default";
+   private static final String         MONGO_CONFIG_FILENAME   = "swallow-mongo.properties";
+   private static final String         DEFAULT_COLLECTION_NAME = "c";
+   private static final String         TOPICNAME_HEARTBEAT     = "heartbeat";
+   private static final String         TOPICNAME_DEFAULT       = "default";
 
-   private static final String LION_KEY_MONGO_URI      = "swallow.mongo.serverURI";
+   private static final String         LION_KEY_MONGO_URI      = "swallow.mongo.serverURI";
 
-   private String              mongoServerURI;
+   private String                      mongoServerURI;
 
-   private Map<String, Mongo>  topicnameToMongoMap;
-   private MongoOptions        mongoOptions;
-   private MongoConfig         config;
+   private volatile Map<String, Mongo> topicnameToMongoMap;
+   private MongoOptions                mongoOptions;
+   private MongoConfig                 config;
 
    /**
     * 从 Lion(配置topicName,serverUrl的列表) 和 MongoConfigManager(配置Mongo参数) 获取配置，创建
@@ -83,7 +83,8 @@ public class MongoClient {
             public void onChange(String key, String value) {
                try {
                   if (LION_KEY_MONGO_URI.equals(key)) {
-                     MongoClient.this.topicnameToMongoMap = parseTopicURI(value);
+                     MongoClient.this.mongoServerURI = value;
+                     MongoClient.this.topicnameToMongoMap = parseTopicURI(MongoClient.this.mongoServerURI);
                   }
                } catch (Exception e) {
                   LOG.error("Error occour when reset config from Lion:" + e.getMessage(), e);
