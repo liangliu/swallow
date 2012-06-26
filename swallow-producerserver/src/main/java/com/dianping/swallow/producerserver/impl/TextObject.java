@@ -15,16 +15,15 @@
  */
 package com.dianping.swallow.producerserver.impl;
 
-
 /**
  * TODO Comment of TextObject
  * 
  * @author tong.song
  */
 public class TextObject {
-   private String  topic;
-   private String  content;
-   private boolean isACK;
+   private String  topic;  //TextMessage的TopicName
+   private String  content; //TextMessage的内容
+   private boolean isACK;  //是否需要ACK
 
    public String getTopic() {
       return topic;
@@ -52,6 +51,6 @@ public class TextObject {
 
    @Override
    public String toString() {
-      return getTopic() + "\t" + getContent() + "\t" + isACK;
+      return "topic=" + getTopic() + ";\tcontent=" + getContent() + ";\tisACK=" + isACK() + ";";
    }
 }

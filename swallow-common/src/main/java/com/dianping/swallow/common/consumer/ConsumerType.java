@@ -7,6 +7,7 @@ package com.dianping.swallow.common.consumer;
  */
 public enum ConsumerType {
 
+	//TODO rename, at most/least once
 	UPDATE_BEFORE_ACK,
 	UPDATE_AFTER_ACK
 	

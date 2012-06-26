@@ -21,31 +21,27 @@ package com.dianping.swallow.producerserver.impl;
  * @author tong.song
  */
 public class TextACK {
-   private boolean isOK;
-   private String  sha1;
-   private String  reason;
+   private int    status; //状态代码
+   private String info;  //详细信息
 
-   public boolean isOK() {
-      return isOK;
+   @Override
+   public String toString() {
+      return "status=" + getStatus() + "; info=" + getInfo();
    }
 
-   public void setOK(boolean isOK) {
-      this.isOK = isOK;
+   public int getStatus() {
+      return status;
    }
 
-   public String getSha1() {
-      return sha1;
+   public void setStatus(int status) {
+      this.status = status;
    }
 
-   public void setSha1(String sha1) {
-      this.sha1 = sha1;
+   public String getInfo() {
+      return info;
    }
 
-   public String getReason() {
-      return reason;
-   }
-
-   public void setReason(String reason) {
-      this.reason = reason;
+   public void setInfo(String info) {
+      this.info = info;
    }
 }

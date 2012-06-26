@@ -16,9 +16,19 @@ import com.dianping.swallow.producerserver.util.TextHandler;
 
 public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    private final MessageDAOImpl messageDAO;
+   
+   //TextHandler状态代码
+   private static final int     OK           = 250;
+   private static final int     WRONG_FORMAT = 251;
+   private static final int     SAVE_FAILED  = 252;
 
-   private static final Logger  logger = Logger.getLogger(ProducerServerTextHandler.class);
+   private static final Logger  logger       = Logger.getLogger(ProducerServerTextHandler.class);
 
+   /**
+    * 构造函数
+    * 
+    * @param messageDAO
+    */
    public ProducerServerTextHandler(MessageDAOImpl messageDAO) {
       this.messageDAO = messageDAO;
    }
@@ -33,29 +43,45 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
 
    @Override
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+      //获取json字符串
       String jsonStr = (String) e.getMessage();
+      //处理json字符串，转换为PktTextMessage类，包含SwallowMessage、TopicName以及是否需要ACK等信息
       PktTextMessage pkt = TextHandler.changeTextToPacket(e.getChannel().getRemoteAddress(), jsonStr);
+      //初始化json的ObjectMapper及ACK对象
       ObjectMapper mapper = new ObjectMapper();
       TextACK textAck = new TextACK();
-      textAck.setOK(true);
+      textAck.setStatus(OK);
+      //如果解析json字符串失败，返回失败ACK，reason是“Wrong json string”
       if (pkt == null) {
-         logger.error("TextMessage { " + e.getChannel().getRemoteAddress() + ": " + jsonStr + "} [Wrong format.]");
-         textAck.setOK(false);
-         textAck.setReason("Wrong json string.");
+         logger.log(Level.ERROR, "[TextHandler]:[" + e.getChannel().getRemoteAddress() + ": " + jsonStr
+               + "]:[Wrong format.]");
+         textAck.setStatus(WRONG_FORMAT);
+         textAck.setInfo("Wrong json format.");
          jsonStr = mapper.writeValueAsString(textAck);
+         //返回ACK
          e.getChannel().write(jsonStr);
       } else {
-         if (!pkt.isACK())
-            return;
+         //调用DAO层将SwallowMessage存入DB
          try {
             messageDAO.saveMessage(pkt.getTopicName(), pkt.getMessage());
          } catch (Exception e1) {
-            logger.log(Level.ERROR, "[TextHandler]:[Save Message Failed.]");
-            textAck.setOK(false);
-            textAck.setReason("Can not save message.");
+            //记录异常，返回失败ACK，reason是“Can not save message”
+            logger.log(Level.ERROR, "[TextHandler]:[Save Message Failed.]", e1.getCause());
+            textAck.setStatus(SAVE_FAILED);
+            textAck.setInfo("Can not save message.");
          }
-         textAck.setSha1(pkt.getMessage().getSha1());
-         jsonStr = mapper.writeValueAsString(textAck);
+         //如果不要ACK，立刻返回
+         if (!pkt.isACK())
+            return;
+
+         textAck.setInfo(pkt.getMessage().getSha1());
+         try {
+            jsonStr = mapper.writeValueAsString(textAck);
+         } catch (Exception e1) {
+            logger.log(Level.WARN, "[TextHandler]:[Json convert failed.]", e1.getCause());
+            return;
+         }
+         //返回ACK的json字符串
          e.getChannel().write(jsonStr);
       }
    }

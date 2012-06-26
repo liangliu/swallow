@@ -31,6 +31,8 @@ public final class PktConsumerACK extends Packet {
 	 * 
 	 */
 	private static final long serialVersionUID = -8966695130892127961L;
+	
+	//TODO 增加一个greetMessage, ack只需要messageId，channel状态在swallowC保存
 
 	private Destination dest;
 	

@@ -21,6 +21,8 @@ public class SwallowMessage implements Serializable, Message {
    private String              sha1;
 
    private String              type;
+   
+   //TODO add source ip
 
    public Date getGeneratedTime() {
       return generatedTime;

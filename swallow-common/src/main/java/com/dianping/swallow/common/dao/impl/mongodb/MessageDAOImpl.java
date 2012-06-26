@@ -39,6 +39,7 @@ public class MessageDAOImpl implements MessageDAO {
 
    @Override
    public SwallowMessage getMessage(String topicName, Long messageId) {
+	   //TODO bu yong le?
       DBCollection collection = this.mongoClient.getMessageCollection(topicName);
 
       DBObject query = BasicDBObjectBuilder.start().add("_id", MongoUtils.longToBSONTimestamp(messageId)).get();
@@ -107,6 +108,7 @@ public class MessageDAOImpl implements MessageDAO {
 
       DBObject gt = BasicDBObjectBuilder.start().add("$gt", MongoUtils.longToBSONTimestamp(messageId)).get();
       BasicDBObjectBuilder queryBuilder = BasicDBObjectBuilder.start().add("_id", gt);
+      //TODO 取回消息再过滤
       if (!messageTypeSet.isEmpty()) {
          DBObject in = BasicDBObjectBuilder.start().add("$in", messageTypeSet).get();
          queryBuilder.add(TYPE, in);
@@ -128,6 +130,7 @@ public class MessageDAOImpl implements MessageDAO {
 
    @SuppressWarnings("unchecked")
    private void convert(DBObject result, SwallowMessage swallowMessage) {
+	   //TODO result=null?
       BSONTimestamp timestamp = (BSONTimestamp) result.get("_id");
       swallowMessage.setMessageId(MongoUtils.BSONTimestampToLong(timestamp));
       swallowMessage.setContent((String) result.get(CONTENT));//content
@@ -148,6 +151,7 @@ public class MessageDAOImpl implements MessageDAO {
 
       Map<String, String> properties = message.getProperties();
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+      //TODO 直接存properties就可以
       String propertiesJsonStr = jsonBinder.toJson(properties);
       DBObject insert = BasicDBObjectBuilder.start().add("_id", new BSONTimestamp()).add(CONTENT, message.getContent())
             .add(GENERATED_TIME, message.getGeneratedTime()).add(VERSION, message.getVersion())

@@ -33,6 +33,7 @@ public class AckDAOImpl implements AckDAO {
       DBObject fields = BasicDBObjectBuilder.start().add(MSG_ID, Integer.valueOf(1)).get();
       DBObject orderBy = BasicDBObjectBuilder.start().add(MSG_ID, Integer.valueOf(-1)).get();
       DBCursor cursor = collection.find(query, fields).sort(orderBy).limit(1);
+      //TODO cursor.hasNext(), cursor.close()
       while (cursor != null) {
          DBObject result = cursor.next();
          BSONTimestamp timestamp = (BSONTimestamp) result.get(MSG_ID);
@@ -47,6 +48,7 @@ public class AckDAOImpl implements AckDAO {
 
       BSONTimestamp timestamp = MongoUtils.longToBSONTimestamp(messageId);
       DBObject add = BasicDBObjectBuilder.start().add(CONSUMER_ID, consumerId).add(MSG_ID, timestamp).get();
+      //TODO remove  WriteConcern.SAFE
       collection.insert(add, WriteConcern.SAFE);
    }
 

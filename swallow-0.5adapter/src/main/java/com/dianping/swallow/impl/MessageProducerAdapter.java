@@ -10,20 +10,11 @@ import com.dianping.swallow.MessageProducer;
 import com.dianping.swallow.StringMessage;
 import com.dianping.swallow.UndeliverableMessageHandler;
 import com.dianping.swallow.MQService.ProducerOptionKey;
-import com.dianping.swallow.producer.Producer;
-import com.dianping.swallow.producer.impl.ProducerImpl;
 
 public class MessageProducerAdapter implements MessageProducer {
 	
-	Producer targetP;
 
 	public MessageProducerAdapter(Destination dest, Map<ProducerOptionKey, Object> options) {
-		try {
-			targetP = ProducerImpl.getInstance();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	@Override
