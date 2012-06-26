@@ -230,7 +230,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 								 preparedMesssages.put(consumerId, pktMsg);
 								 break;
 							 }								
-							} else{
+						 } else{
 								//TODO +isWritable?，连接断开后write后是否会抛异常，isWritable()=false的时候retry, when will write() throw exception?						
 								channel.write(pktMsg);
 							}
