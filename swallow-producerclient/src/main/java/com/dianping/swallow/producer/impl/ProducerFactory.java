@@ -128,7 +128,7 @@ public class ProducerFactory implements ProducerFactoryIface {
     * @throws Exception Producer选项有误，不能生成Producer对象，则抛出异常
     */
    @Override
-   public ProducerImpl getProducer(String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception {
-      return new ProducerImpl(remoteService, topicName, pOptions);
+   public Producer getProducer(String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception {
+      return new Producer(remoteService, topicName, pOptions);
    }
 }

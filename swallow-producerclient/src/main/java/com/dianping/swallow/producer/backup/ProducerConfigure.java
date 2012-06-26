@@ -1,4 +1,4 @@
-package com.dianping.swallow.producer.impl;
+package com.dianping.swallow.producer.backup;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;

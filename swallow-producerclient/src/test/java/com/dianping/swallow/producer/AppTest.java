@@ -7,9 +7,9 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import com.dianping.swallow.producer.impl.ProducerConfigure;
+import com.dianping.swallow.producer.backup.ProducerConfigure;
 import com.dianping.swallow.producer.impl.ProducerFactory;
-import com.dianping.swallow.producer.impl.ProducerImpl;
+import com.dianping.swallow.producer.impl.Producer;
 
 /**
  * Unit test for simple App.
@@ -59,7 +59,7 @@ public class AppTest extends TestCase {
          pOptions.put(ProducerOptionKey.THREAD_POOL_SIZE, 5);
          pOptions.put(ProducerOptionKey.IS_CONTINUE_SEND, true);
          
-         ProducerImpl ps = null;
+         Producer ps = null;
          
          try {
             ps = pf.getProducer("master.slave", pOptions);

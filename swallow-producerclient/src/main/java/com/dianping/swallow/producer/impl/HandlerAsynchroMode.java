@@ -12,13 +12,13 @@ import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.packet.Packet;
 
 public class HandlerAsynchroMode {
-   private Logger            logger = Logger.getLogger(ProducerImpl.class);
-   private ProducerImpl      producer;
+   private Logger            logger = Logger.getLogger(Producer.class);
+   private Producer      producer;
    private ExecutorService   senders;                                      //filequeue处理线程池
    private FileQueue<Packet> messageQueue;                                 //filequeue
 
    //构造函数
-   public HandlerAsynchroMode(ProducerImpl producer) {
+   public HandlerAsynchroMode(Producer producer) {
       this.producer = producer;
       messageQueue = new DefaultFileQueueImpl<Packet>("filequeue.properties", producer.getDestination().getName());//filequeue
       senders = Executors.newFixedThreadPool(producer.getThreadPoolSize());

@@ -17,7 +17,7 @@ package com.dianping.swallow.producer;
 
 import java.util.Map;
 
-import com.dianping.swallow.producer.impl.ProducerImpl;
+import com.dianping.swallow.producer.impl.Producer;
 
 /**
  * TODO Comment of ProducerFactoryIface
@@ -25,5 +25,5 @@ import com.dianping.swallow.producer.impl.ProducerImpl;
  *
  */
 public interface ProducerFactoryIface {
-   public ProducerImpl getProducer(String TopicName, Map<ProducerOptionKey, Object> pOptions) throws Exception;
+   public Producer getProducer(String TopicName, Map<ProducerOptionKey, Object> pOptions) throws Exception;
 }
