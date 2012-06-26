@@ -34,6 +34,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void channelConnected(
             ChannelHandlerContext ctx, ChannelStateEvent e) {
+    	
     	consumerACKPacket = new PktConsumerACK(cClient.getConsumerId(), cClient.getDest(), cClient.getConsumerType(), null);
     	e.getChannel().write(consumerACKPacket);   
     	
@@ -42,11 +43,13 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     @Override
     public void messageReceived(
             ChannelHandlerContext ctx, MessageEvent e) {
+    	
     	SwallowMessage swallowMessage = (SwallowMessage)((PktObjectMessage)e.getMessage()).getContent();
     	Long messageId = swallowMessage.getMessageId();
     	consumerACKPacket.setMessageId(messageId);
     	cClient.getListener().onMessage(swallowMessage);
     	e.getChannel().write(consumerACKPacket);
+    	
     }
  
     @Override

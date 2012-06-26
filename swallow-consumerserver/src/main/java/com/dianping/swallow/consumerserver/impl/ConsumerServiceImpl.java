@@ -54,9 +54,7 @@ public class ConsumerServiceImpl implements ConsumerService{
     private Set<String> threads = new HashSet<String>();
     
     private MQThreadFactory threadFactory;
-    
-    private Map<String, ArrayBlockingQueue<Long>> ackMessageIds = new HashMap<String, ArrayBlockingQueue<Long>>();
-    
+   
     private Map<String, ConsumerType> consumerTypes = new HashMap<String, ConsumerType>();;
     
     private Map<String, ArrayBlockingQueue<Channel>> freeChannels = new HashMap<String, ArrayBlockingQueue<Channel>>();
@@ -68,7 +66,6 @@ public class ConsumerServiceImpl implements ConsumerService{
     private MessageDAO messageDao;
        
     private ArrayBlockingQueue<Channel> freeChannelQueue;
-    private ArrayBlockingQueue<Long>  ackMessageIdQueue;
     
     @Autowired
     private Heartbeater heartbeater;
@@ -96,7 +93,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 	}
 	
 	
-	public Map<String, HashSet<Channel>> getChannelWorkStatue() {
+	public Map<String, HashSet<Channel>> getChannelWorkStatus() {
 		return channelWorkStatus;
 	}
 
@@ -160,20 +157,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 		}		
     }
 	
-	public void updateMaxMessageId(String consumerId, String topicName, Long messageId){
-//		ackMessageIdQueue = ackMessageIds.get(consumerId);
-//		synchronized(ackMessageIdQueue){
-//			if(ackMessageIdQueue == null){
-//				ackMessageIdQueue = new ArrayBlockingQueue<Long>(configManager.getFreeChannelBlockQueueSize());
-//				ackMessageIds.put(consumerId, ackMessageIdQueue);
-//			}
-//			try {
-//				ackMessageIdQueue.put(messageId);
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}		
+	private void updateMaxMessageId(String consumerId, String topicName, Long messageId){	
 		if(messageId != null && ConsumerType.UPDATE_AFTER_ACK.equals(consumerTypes.get(consumerId))){
 			ackDao.add(topicName, consumerId, messageId);
 		}
@@ -205,8 +189,8 @@ public class ConsumerServiceImpl implements ConsumerService{
 			long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerId);
 		    messages = swallowBuffer.createMessageQueue(topicName, consumerId, messageIdOfTailMessage);
 			freeChannelQueue = freeChannels.get(consumerId);
-
 		}	
+		
 		try {
 			while(true){
 				Channel channel = null;
@@ -399,12 +383,12 @@ public class ConsumerServiceImpl implements ConsumerService{
     	if(getAckWorker == null){
     		getAckWorker = new ArrayBlockingQueue<Runnable>(10);//TODO 
     	}
-    	getAckWorker.add(new Runnable() {			
+    	getAckWorker.add(new Runnable() {
 			@Override
 			public void run() {
 				updateMaxMessageId(consumerId, topicName, messageId);
 				putChannelToBlockQueue(consumerId, channel);
-		    	changeChannelWorkStatus(consumerId, channel);		    			    	
+		    	changeChannelWorkStatus(consumerId, channel);
 			}
 		});
     	
