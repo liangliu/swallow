@@ -6,11 +6,13 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 
-public class ProducerServerTextPipelineFactory implements ChannelPipelineFactory {
-   private ProducerServer producerServer;
+import com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl;
 
-   public ProducerServerTextPipelineFactory(ProducerServer producerServer) {
-      this.producerServer = producerServer;
+public class ProducerServerTextPipelineFactory implements ChannelPipelineFactory {
+   private MessageDAOImpl messageDAO;
+
+   public ProducerServerTextPipelineFactory(MessageDAOImpl messageDAO) {
+      this.messageDAO = messageDAO;
    }
 
    @Override
@@ -21,7 +23,7 @@ public class ProducerServerTextPipelineFactory implements ChannelPipelineFactory
 
       pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
 
-      pipeline.addLast("handler", new ProducerServerTextHandler(producerServer));
+      pipeline.addLast("handler", new ProducerServerTextHandler(messageDAO));
 
       return pipeline;
    }

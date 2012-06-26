@@ -32,7 +32,7 @@ import com.dianping.swallow.producer.ProducerOptionKey;
  */
 public class ProducerFactory implements ProducerFactoryIface {
 
-   Logger                         logger          = Logger.getLogger(ProducerFactory.class);
+   private final Logger           logger          = Logger.getLogger(ProducerFactory.class);
    private static ProducerFactory instance;                                                 //Producer工厂类单例
    //远程调用相关设置
    private final int              remoteServiceTimeout;                                     //远程调用超时
@@ -119,12 +119,12 @@ public class ProducerFactory implements ProducerFactoryIface {
       }
       return instance;
    }
+
    /**
-    * 获取Producer实现类对象，通过Map指定Producer的选项，未指定的项使用Producer默认配置，
-    * Producer默认配置如下：
-    *    producerMode:ProducerMode.SYNC_MODE;
-    *    threadPoolSize:10;
-    *    continueSend:false;
+    * 获取Producer实现类对象，通过Map指定Producer的选项，未指定的项使用Producer默认配置， Producer默认配置如下：
+    * producerMode:ProducerMode.SYNC_MODE; threadPoolSize:10;
+    * continueSend:false;
+    * 
     * @throws Exception Producer选项有误，不能生成Producer对象，则抛出异常
     */
    @Override

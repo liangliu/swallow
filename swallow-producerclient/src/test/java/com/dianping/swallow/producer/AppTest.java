@@ -7,14 +7,15 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import com.dianping.swallow.producer.backup.ProducerConfigure;
-import com.dianping.swallow.producer.impl.ProducerFactory;
 import com.dianping.swallow.producer.impl.Producer;
+import com.dianping.swallow.producer.impl.ProducerFactory;
 
 /**
  * Unit test for simple App.
  */
 public class AppTest extends TestCase {
+   ProducerFactory pf = null;
+
    /**
     * Create the test case
     * 
@@ -22,6 +23,11 @@ public class AppTest extends TestCase {
     */
    public AppTest(String testName) {
       super(testName);
+      try {
+         pf = ProducerFactory.getInstance(5000);
+      } catch (Exception e3) {
+         System.out.println(e3.toString());
+      }
    }
 
    /**
@@ -48,21 +54,15 @@ public class AppTest extends TestCase {
       @Override
       public void run() {
          // TODO Auto-generated method stub
-         ProducerFactory pf = null;
-         try {
-            pf = ProducerFactory.getInstance(5000);
-         } catch (Exception e3) {
-            System.out.println(e3.toString());
-         }
          Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
-         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
+         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
          pOptions.put(ProducerOptionKey.THREAD_POOL_SIZE, 5);
          pOptions.put(ProducerOptionKey.IS_CONTINUE_SEND, true);
          
          Producer ps = null;
          
          try {
-            ps = pf.getProducer("master.slave", pOptions);
+            ps = pf.getProducer(content, pOptions);
          } catch (Exception e2) {
             System.out.println(e2.toString());
          }
@@ -83,8 +83,8 @@ public class AppTest extends TestCase {
    }
 
    public void doTest() {
-      for (int i = 0; i < 1; i++) {
-         String newContent = "NO: " + i;
+      for (int i = 0; i < 3; i++) {
+         String newContent = "NO:" + i;
          Thread td = new Thread(new task(newContent));
          td.start();
       }

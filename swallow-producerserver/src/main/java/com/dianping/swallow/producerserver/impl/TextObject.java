@@ -15,43 +15,43 @@
  */
 package com.dianping.swallow.producerserver.impl;
 
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.ObjectReader;
 
 /**
  * TODO Comment of TextObject
+ * 
  * @author tong.song
- *
  */
 public class TextObject {
-   private String topic;
-   private String content;
+   private String  topic;
+   private String  content;
    private boolean isACK;
-   
+
    public String getTopic() {
       return topic;
    }
+
    public void setTopic(String topic) {
       this.topic = topic;
    }
+
    public String getContent() {
       return content;
    }
+
    public void setContent(String content) {
       this.content = content;
    }
+
    public boolean isACK() {
       return isACK;
    }
+
    public void setACK(boolean isACK) {
       this.isACK = isACK;
    }
-   public static void main(String[] args) {
-      TextObject test = new TextObject();
-      test.setACK(false);
-      test.setContent("U R a big pig.");
-      test.setTopic("master.slave");
-      ObjectMapper mapper = new ObjectMapper();
-      ObjectReader reader = mapper.reader(TextObject.class);
+
+   @Override
+   public String toString() {
+      return getTopic() + "\t" + getContent() + "\t" + isACK;
    }
 }

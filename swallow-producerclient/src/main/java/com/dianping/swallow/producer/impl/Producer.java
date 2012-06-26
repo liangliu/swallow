@@ -214,5 +214,4 @@ public class Producer implements ProducerIface {
    public boolean isContinueSend() {
       return continueSend;
    }
-
 }

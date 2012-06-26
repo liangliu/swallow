@@ -32,7 +32,7 @@ public class ProducerServer implements MQService {
     */
    private ProducerServer(int portForText) {
       //启动文本流处理
-      new ProducerServerText(this).start(portForText);
+      new ProducerServerText(messageDAO).start(portForText);
    }
 
    /**

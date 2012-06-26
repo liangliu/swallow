@@ -12,7 +12,6 @@ public class HandlerSynchroMode {
    //对外接口
    public Packet doSendMsg(Packet pkt) throws Exception {
       Packet pktRet = null;
-      System.out.println("in dosend");
       pktRet = producer.getRemoteService().sendMessage(pkt);
       return pktRet;
    }

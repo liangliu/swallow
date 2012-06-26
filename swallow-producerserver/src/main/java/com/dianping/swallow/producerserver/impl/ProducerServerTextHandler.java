@@ -2,6 +2,7 @@ package com.dianping.swallow.producerserver.impl;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -9,18 +10,17 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
-import com.dianping.swallow.common.packet.PktObjectMessage;
-import com.dianping.swallow.common.packet.PktSwallowPACK;
+import com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl;
 import com.dianping.swallow.common.packet.PktTextMessage;
 import com.dianping.swallow.producerserver.util.TextHandler;
 
 public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
-   private ProducerServer      producerServer;
+   private final MessageDAOImpl messageDAO;
 
-   private static final Logger logger = Logger.getLogger(ProducerServerTextHandler.class);
+   private static final Logger  logger = Logger.getLogger(ProducerServerTextHandler.class);
 
-   public ProducerServerTextHandler(ProducerServer producerServer) {
-      this.producerServer = producerServer;
+   public ProducerServerTextHandler(MessageDAOImpl messageDAO) {
+      this.messageDAO = messageDAO;
    }
 
    @Override
@@ -33,20 +33,30 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
 
    @Override
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-      String request = (String) e.getMessage();
-      PktTextMessage pkt = TextHandler.changeTextToPacket(e.getChannel().getRemoteAddress(), request);
-
+      String jsonStr = (String) e.getMessage();
+      PktTextMessage pkt = TextHandler.changeTextToPacket(e.getChannel().getRemoteAddress(), jsonStr);
+      ObjectMapper mapper = new ObjectMapper();
+      TextACK textAck = new TextACK();
+      textAck.setOK(true);
       if (pkt == null) {
-         logger.info("TextMessage { " + e.getChannel().getRemoteAddress() + ": " + request + "} [Wrong format.]");
-         e.getChannel().write("Wrong format.");
+         logger.error("TextMessage { " + e.getChannel().getRemoteAddress() + ": " + jsonStr + "} [Wrong format.]");
+         textAck.setOK(false);
+         textAck.setReason("Wrong json string.");
+         jsonStr = mapper.writeValueAsString(textAck);
+         e.getChannel().write(jsonStr);
       } else {
-         PktObjectMessage objMsg = pkt.getObjMsg();
-         PktSwallowPACK ack = (PktSwallowPACK) producerServer.sendMessage(objMsg);
-         if (pkt.isACK()) {
-            //保存成功则返回消息的SHA-1字符串
-            //TODO 返回是否成功等信息，json?
-            e.getChannel().write(ack.getShaInfo());
+         if (!pkt.isACK())
+            return;
+         try {
+            messageDAO.saveMessage(pkt.getTopicName(), pkt.getMessage());
+         } catch (Exception e1) {
+            logger.log(Level.ERROR, "[TextHandler]:[Save Message Failed.]");
+            textAck.setOK(false);
+            textAck.setReason("Can not save message.");
          }
+         textAck.setSha1(pkt.getMessage().getSha1());
+         jsonStr = mapper.writeValueAsString(textAck);
+         e.getChannel().write(jsonStr);
       }
    }
 

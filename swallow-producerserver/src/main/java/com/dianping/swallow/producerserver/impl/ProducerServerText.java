@@ -6,17 +6,19 @@ import java.util.concurrent.Executors;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
-public class ProducerServerText {
-   private ProducerServer producerServer;
+import com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl;
 
-   public ProducerServerText(ProducerServer producerServer) {
-      this.producerServer = producerServer;
+public class ProducerServerText {
+   private MessageDAOImpl messageDAO;
+
+   public ProducerServerText(MessageDAOImpl messageDAO) {
+      this.messageDAO = messageDAO;
    }
 
    public void start(int portForText) {
       ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
             Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
-      bootstrap.setPipelineFactory(new ProducerServerTextPipelineFactory(producerServer));
+      bootstrap.setPipelineFactory(new ProducerServerTextPipelineFactory(messageDAO));
       bootstrap.bind(new InetSocketAddress("127.0.0.1", portForText));
    }
 }
