@@ -1,5 +1,6 @@
 package com.dianping.swallow.consumerserver.impl;
 
+import java.nio.channels.NotYetConnectedException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,9 +21,11 @@ import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.dao.impl.mongodb.MongoUtils;
+import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.PktConsumerACK;
+import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.consumerserver.ConsumerService;
 import com.dianping.swallow.consumerserver.GetMessageThread;
 import com.dianping.swallow.consumerserver.HandleACKThread;
@@ -43,9 +46,11 @@ public class ConsumerServiceImpl implements ConsumerService{
 
 	private Map<String, HashSet<Channel>> channelWorkStatus;	//channel是否存在的状态
     
-    private Map<String, SwallowMessage> preparedMesssages = new HashMap<String, SwallowMessage>();
+    private Map<String, PktObjectMessage> preparedMesssages = new HashMap<String, PktObjectMessage>();
     
     private SwallowMessage message = null;
+    
+    private PktObjectMessage pktMsg = null;
     
     @Autowired
     private SwallowBuffer swallowBuffer;
@@ -205,24 +210,32 @@ public class ConsumerServiceImpl implements ConsumerService{
 					//TODO 用异常替代isConnected
 				}else if(channel.isConnected()){
 					if(preparedMesssages.get(consumerId) != null){
-						message = preparedMesssages.get(consumerId);
+						pktMsg = preparedMesssages.get(consumerId);
 						preparedMesssages.remove(consumerId);
 					} else{					
 						message = (SwallowMessage)messages.take();
+						pktMsg = new PktObjectMessage(Destination.topic(topicName), message);
 					}
 					 Long messageId = message.getMessageId();
 					//如果consumer是收到ACK之前更新messageId的类型
 					 if(ConsumerType.UPDATE_BEFORE_ACK.equals(consumerTypes.get(consumerId))){
 						 ackDao.add(topicName, consumerId, messageId);
-					 }					 
-					if(!channel.isConnected()){
-						preparedMesssages.put(consumerId, message);
-					} else{
-						//TODO +isWritable?，连接断开后write后是否会抛异常，isWritable()=false的时候retry, when will write() throw exception?
-						channel.write(message);
-						//TODO 将SwallowMessage构造成Packet(PktObjectMessage objMsg = new PktObjectMessage(destination, swallowMsg);)
-						//TODO 发送：channel.write(PktObjectMessage);
-					}
+					 }						 
+					 while(true){
+						 if(!channel.isWritable()){
+							 if(channel.isConnected()){
+								 Thread.sleep(1000);
+								 continue;
+							 } else {
+								 preparedMesssages.put(consumerId, pktMsg);
+								 break;
+							 }								
+							} else{
+								//TODO +isWritable?，连接断开后write后是否会抛异常，isWritable()=false的时候retry, when will write() throw exception?						
+								channel.write(pktMsg);
+							}
+					 }
+					
 				}
 			}
 		} catch (InterruptedException e) {
