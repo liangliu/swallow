@@ -29,6 +29,11 @@ public class ConsumerClient {
 	private MessageListener listener;
 	
 	private ConsumerType consumerType;
+	
+	private InetSocketAddress masterAddress;
+	
+	private InetSocketAddress slaveAddress;
+	
 		
 	public ConsumerType getConsumerType() {
 		return consumerType;
@@ -66,23 +71,26 @@ public class ConsumerClient {
 		this.listener = listener;
 	}
 
-	public ConsumerClient(String cid, Destination dest){
+	public ConsumerClient(String cid, Destination dest, InetSocketAddress masterAddress, InetSocketAddress slaveAddress){
 		this.consumerId = cid;
 		this.dest = dest;
+		this.masterAddress = masterAddress;
+		this.slaveAddress = slaveAddress;
 	}
+	
 	/**
 	 * 开始连接服务器，同时把连slave的线程启起来。
-	 * @param address
 	 */
-	public void beginConnect(InetSocketAddress address){
+	public void beginConnect(){
 		init();
 	   	ConSlaveThread slave = new ConSlaveThread();
     	slave.setBootstrap(bootstrap);
+    	slave.setSlaveAddress(slaveAddress);
 	   	Thread slaveThread = new Thread(slave);
 	   	slaveThread.start();
 	   	while(true){
 	   		synchronized(bootstrap){
-		   		ChannelFuture future = bootstrap.connect();
+		   		ChannelFuture future = bootstrap.connect(masterAddress);
 		   		future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞!	
 		   	}
 	   		try {

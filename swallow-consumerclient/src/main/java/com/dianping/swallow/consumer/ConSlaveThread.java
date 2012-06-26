@@ -11,6 +11,8 @@ public class ConSlaveThread implements Runnable {
 
 	private ClientBootstrap bootstrap;
 	
+	private InetSocketAddress slaveAddress;
+	
 	public ClientBootstrap getBootstrap() {
 		return bootstrap;
 	}
@@ -19,13 +21,17 @@ public class ConSlaveThread implements Runnable {
 		this.bootstrap = bootstrap;
 	}
 
+	public void setSlaveAddress(InetSocketAddress slaveAddress) {
+		this.slaveAddress = slaveAddress;
+	}
+
 	@Override
 	public void run() {
 		try {
-			Thread.sleep(1000);//TODO 配置变量		
+			Thread.sleep(1000);//TODO 配置变量
 			while(true){
 				synchronized(bootstrap){
-			   		ChannelFuture future = bootstrap.connect(new InetSocketAddress(TestConsumer.host, TestConsumer.slavePort));
+			   		ChannelFuture future = bootstrap.connect(slaveAddress);
 			   		future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！	  
 			   	}
 				System.out.println();
