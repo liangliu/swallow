@@ -22,8 +22,10 @@ import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.dao.impl.mongodb.MongoUtils;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.packet.PktConsumerACK;
 import com.dianping.swallow.consumerserver.ConsumerService;
 import com.dianping.swallow.consumerserver.GetMessageThread;
+import com.dianping.swallow.consumerserver.HandleACKThread;
 import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.MQThreadFactory;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
@@ -53,9 +55,11 @@ public class ConsumerServiceImpl implements ConsumerService{
     
     private MQThreadFactory threadFactory;
     
-    private Map<String, ConsumerType> ConsumerTypes = new HashMap<String, ConsumerType>();;
+    private Map<String, ArrayBlockingQueue<Long>> ackMessageIds = new HashMap<String, ArrayBlockingQueue<Long>>();
     
-    private Map<String, ArrayBlockingQueue<Channel>> freeChannelQueue = new HashMap<String, ArrayBlockingQueue<Channel>>();
+    private Map<String, ConsumerType> consumerTypes = new HashMap<String, ConsumerType>();;
+    
+    private Map<String, ArrayBlockingQueue<Channel>> freeChannels = new HashMap<String, ArrayBlockingQueue<Channel>>();
     
     @Autowired
     private AckDAO ackDao;
@@ -63,17 +67,24 @@ public class ConsumerServiceImpl implements ConsumerService{
     @Autowired
     private MessageDAO messageDao;
        
-    private ArrayBlockingQueue<Channel> freeChannels;
+    private ArrayBlockingQueue<Channel> freeChannelQueue;
+    private ArrayBlockingQueue<Long>  ackMessageIdQueue;
     
     @Autowired
     private Heartbeater heartbeater;
     
-	public Map<String, ArrayBlockingQueue<Channel>> getFreeChannelQueue() {
-		return freeChannelQueue;
+    private Map<String, ArrayBlockingQueue<Runnable>> getAckWorkers = new HashMap<String, ArrayBlockingQueue<Runnable>>();
+	
+	public Map<String, ArrayBlockingQueue<Runnable>> getGetAckWorkers() {
+		return getAckWorkers;
+	}
+    
+	public Map<String, ArrayBlockingQueue<Channel>> getFreeChannels() {
+		return freeChannels;
 	}
 
 	public Map<String, ConsumerType> getConsumerTypes() {
-		return ConsumerTypes;
+		return consumerTypes;
 	}
 
 	public Mongo getMongo() {
@@ -134,14 +145,14 @@ public class ConsumerServiceImpl implements ConsumerService{
 	
 	public void putChannelToBlockQueue(String consumerId, Channel channel){
 		//freeChannels应该是容量无上限的
-		freeChannels = freeChannelQueue.get(consumerId);
-		synchronized(freeChannels){
-			if(freeChannels == null){
-				freeChannels = new ArrayBlockingQueue<Channel>(configManager.getFreeChannelBlockQueueSize());
-				freeChannelQueue.put(consumerId, freeChannels);
+		freeChannelQueue = freeChannels.get(consumerId);
+		synchronized(freeChannelQueue){
+			if(freeChannelQueue == null){
+				freeChannelQueue = new ArrayBlockingQueue<Channel>(configManager.getFreeChannelBlockQueueSize());
+				freeChannels.put(consumerId, freeChannelQueue);
 			}
 			try {
-				freeChannels.put(channel);
+				freeChannelQueue.put(channel);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -149,18 +160,41 @@ public class ConsumerServiceImpl implements ConsumerService{
 		}		
     }
 	
-	public void addThread(String consumerId, String topicName){
-		synchronized(threads){
-			if(!threads.contains(consumerId)){
-				GetMessageThread server = new GetMessageThread();
-				server.setConsumerId(consumerId);
-				server.setTopicName(topicName);
-				server.setcService(this);
-				Thread t = threadFactory.newThread(server, topicName + consumerId + "-consumer-");
-		    	t.start();
-		    	threads.add(consumerId);
-			}    
-		}			
+	public void updateMaxMessageId(String consumerId, String topicName, Long messageId){
+//		ackMessageIdQueue = ackMessageIds.get(consumerId);
+//		synchronized(ackMessageIdQueue){
+//			if(ackMessageIdQueue == null){
+//				ackMessageIdQueue = new ArrayBlockingQueue<Long>(configManager.getFreeChannelBlockQueueSize());
+//				ackMessageIds.put(consumerId, ackMessageIdQueue);
+//			}
+//			try {
+//				ackMessageIdQueue.put(messageId);
+//			} catch (InterruptedException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}		
+		if(messageId != null && ConsumerType.UPDATE_AFTER_ACK.equals(consumerTypes.get(consumerId))){
+			ackDao.add(topicName, consumerId, messageId);
+		}
+    }
+	
+	@Override
+	public void addThread(String consumerId, String topicName, ArrayBlockingQueue<Runnable> getAckWorker){
+		
+		GetMessageThread getMessageThread = new GetMessageThread();
+		getMessageThread.setConsumerId(consumerId);
+		getMessageThread.setTopicName(topicName);
+		getMessageThread.setcService(this);
+		Thread thread1 = threadFactory.newThread(getMessageThread, topicName + consumerId + "-getMessageThread-");
+		thread1.start();
+    	
+    	HandleACKThread handleACKThread = new HandleACKThread();
+    	handleACKThread.setGetAckWorker(getAckWorker);
+    	handleACKThread.setConsumerId(consumerId);
+    	handleACKThread.setcService(this);
+    	Thread thread2 = threadFactory.newThread(handleACKThread, topicName + consumerId + "-handleACKThread-");
+    	thread2.start();	
     }
 	
 	public void pollFreeChannelsByCId(String consumerId,String topicName){
@@ -170,13 +204,17 @@ public class ConsumerServiceImpl implements ConsumerService{
 		if(messages == null){
 			long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerId);
 		    messages = swallowBuffer.createMessageQueue(topicName, consumerId, messageIdOfTailMessage);
-			freeChannels = freeChannelQueue.get(consumerId);
+			freeChannelQueue = freeChannels.get(consumerId);
+
 		}	
 		try {
 			while(true){
 				Channel channel = null;
-				synchronized(freeChannels){
-					channel = freeChannels.poll(configManager.getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
+				synchronized(freeChannelQueue){
+					if(freeChannelQueue == null){
+						break;
+					}
+					channel = freeChannelQueue.poll(configManager.getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
 				}			
 				if(channel == null){
 					break;
@@ -190,8 +228,8 @@ public class ConsumerServiceImpl implements ConsumerService{
 					}
 					 Long messageId = message.getMessageId();
 					//如果consumer是收到ACK之前更新messageId的类型
-					 if(ConsumerType.UPDATE_BEFORE_ACK.equals(ConsumerTypes.get(consumerId))){
-						 updateMaxMessageId(topicName, consumerId, messageId);
+					 if(ConsumerType.UPDATE_BEFORE_ACK.equals(consumerTypes.get(consumerId))){
+						 ackDao.add(topicName, consumerId, messageId);
 					 }					 
 					if(!channel.isConnected()){
 						preparedMesssages.put(consumerId, message);
@@ -262,9 +300,6 @@ public class ConsumerServiceImpl implements ConsumerService{
 //				}
 //			}
 //		}		
-	}
-	public void updateMaxMessageId(String topicName, String consumerId, Long messageId){		
-		ackDao.add(topicName, consumerId, messageId);		
 	}
 	private long getMessageIdOfTailMessage(String topicName, String consumerId) {
 		
@@ -351,5 +386,33 @@ public class ConsumerServiceImpl implements ConsumerService{
 		heartbeatThread.setDaemon(true);
 		heartbeatThread.start();
 	}
-
+	
+	public void handleACK(final Channel channel, PktConsumerACK consumerACKPacket){
+		
+		final String topicName = consumerACKPacket.getDest().getName();
+    	final String consumerId = consumerACKPacket.getConsumerId();
+    	ConsumerType consumerType = consumerACKPacket.getConsumerType();
+    	//TODO 记录日志
+    	final Long messageId = consumerACKPacket.getMessageId();  	
+    	   	
+    	ArrayBlockingQueue<Runnable> getAckWorker = getAckWorkers.get(consumerId);
+    	if(getAckWorker == null){
+    		getAckWorker = new ArrayBlockingQueue<Runnable>(10);//TODO 
+    	}
+    	getAckWorker.add(new Runnable() {			
+			@Override
+			public void run() {
+				updateMaxMessageId(consumerId, topicName, messageId);
+				putChannelToBlockQueue(consumerId, channel);
+		    	changeChannelWorkStatus(consumerId, channel);		    			    	
+			}
+		});
+    	
+    	synchronized(consumerTypes){
+    		if(consumerTypes.get(consumerId) == null){
+        		consumerTypes.put(consumerId, consumerType);   		
+    	    	addThread(consumerId, topicName,getAckWorker);
+        	}
+    	}
+	}
 }

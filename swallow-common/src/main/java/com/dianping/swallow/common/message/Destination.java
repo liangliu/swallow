@@ -19,54 +19,59 @@ import java.io.Serializable;
 
 /***
  * 消息地址
+ * 
  * @author qing.gu
- *
  */
-public class Destination implements Serializable{
+public class Destination implements Serializable {
 
-	private String name;
-	private Type type;
+   private static final long serialVersionUID = 3571573051999434062L;
 
-	private enum Type {
-		QUEUE, TOPIC
-	};
+   private String            name;
+   private Type              type;
 
-	private Destination() {
-	}
+   private enum Type {
+      QUEUE,
+      TOPIC
+   };
 
-	private Destination(String name, Type type) {
-		this.name = name;
-		this.type = type;
-	}
+   private Destination() {
+   }
 
-	/***
-	 * 创建Queue类型地址
-	 * @param name Queue名称
-	 * @return
-	 */
-	public static Destination queue(String name) {
-		return new Destination(name, Type.QUEUE);
-	}
+   private Destination(String name, Type type) {
+      this.name = name;
+      this.type = type;
+   }
 
-	/***
-	 * 创建Topic类型地址
-	 * @param name Topic名称
-	 * @return
-	 */
-	public static Destination topic(String name) {
-		return new Destination(name, Type.TOPIC);
-	}
+   /***
+    * 创建Queue类型地址
+    * 
+    * @param name Queue名称
+    * @return
+    */
+   public static Destination queue(String name) {
+      return new Destination(name, Type.QUEUE);
+   }
 
-	public String getName() {
-		return name;
-	}
+   /***
+    * 创建Topic类型地址
+    * 
+    * @param name Topic名称
+    * @return
+    */
+   public static Destination topic(String name) {
+      return new Destination(name, Type.TOPIC);
+   }
 
-	public boolean isQueue() {
-		return type == Type.QUEUE;
-	}
+   public String getName() {
+      return name;
+   }
 
-	public boolean isTopic() {
-		return type == Type.TOPIC;
-	}
+   public boolean isQueue() {
+      return type == Type.QUEUE;
+   }
+
+   public boolean isTopic() {
+      return type == Type.TOPIC;
+   }
 
 }
