@@ -1,7 +1,7 @@
 /**
- * Project: swallow-client
+ * Project: swallow-producerclient
  * 
- * File Created at 2012-5-25
+ * File Created at 2012-6-25
  * $Id$
  * 
  * Copyright 2010 dianping.com.
@@ -13,21 +13,17 @@
  * accordance with the terms of the license agreement you entered into
  * with dianping.com.
  */
-package com.dianping.swallow.producer.backup;
+package com.dianping.swallow.producer;
 
-import java.io.Serializable;
+import java.util.Map;
+
+import com.dianping.swallow.producer.impl.Producer;
 
 /**
- * TODO Comment of Packet
+ * TODO Comment of ProducerFactoryIface
  * @author tong.song
  *
  */
-public abstract class Package implements Serializable{
-	private PackageType packageType;
-	public void setPackageType(PackageType packetType){
-		this.packageType = packetType;
-	}
-	public PackageType getPackageType(){
-		return packageType;
-	}
+public interface ProducerFactoryIface {
+   public Producer getProducer(String TopicName, Map<ProducerOptionKey, Object> pOptions) throws Exception;
 }

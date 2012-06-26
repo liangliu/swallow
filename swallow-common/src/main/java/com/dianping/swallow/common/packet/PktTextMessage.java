@@ -15,29 +15,37 @@
  */
 package com.dianping.swallow.common.packet;
 
-import com.dianping.swallow.common.message.Destination;
+import com.dianping.swallow.common.message.SwallowMessage;
 
 /**
  * TODO Comment of PktMessage
+ * 
  * @author tong.song
- *
  */
-public final class PktTextMessage extends Packet{
-	private PktObjectMessage	objMsg;
-	private boolean				isACK;
+@SuppressWarnings("serial")
+public final class PktTextMessage extends Packet {
+   private SwallowMessage message;
+   private boolean        isACK;
+   private String         topicName;
 
-	public PktTextMessage(PktObjectMessage objMsg, boolean isACK) {
-		this.setPacketType(PacketType.TEXT_MSG);
-		
-		this.objMsg	= objMsg;
-		this.isACK	= isACK;
-	}
-	
-	public boolean isACK() {
-		return isACK;
-	}
+   public PktTextMessage(String topicName, SwallowMessage message, boolean isACK) {
+      this.setPacketType(PacketType.TEXT_MSG);
+      this.topicName = topicName;
+      this.message = message;
+      this.isACK = isACK;
+   }
 
-	public PktObjectMessage getObjMsg() {
-		return objMsg;
-	}
+   public boolean isACK() {
+      return isACK;
+   }
+
+   public SwallowMessage getMessage() {
+      return message;
+   }
+
+   public String getTopicName() {
+      return topicName;
+   }
+
+
 }

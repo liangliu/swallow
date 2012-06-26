@@ -6,7 +6,6 @@ import java.util.Map;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import com.dianping.dpsf.api.ProxyFactory;
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.SwallowMessage;
@@ -16,80 +15,49 @@ import com.dianping.swallow.common.packet.PktProducerGreet;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.producer.HandlerUndeliverable;
-import com.dianping.swallow.producer.Producer;
+import com.dianping.swallow.producer.ProducerIface;
 import com.dianping.swallow.producer.ProducerMode;
+import com.dianping.swallow.producer.ProducerOptionKey;
 
-public class ProducerImpl implements Producer {
+public class Producer implements ProducerIface {
    //变量定义
-   private static ProducerImpl  instance;                                              //Producer实例
-   private MQService            remoteService;                                         //远程调用对象
+   private MQService                 remoteService;                                                  //远程调用对象
 
-   private HandlerAsynchroMode  asyncHandler;                                          //异步处理对象
-   private HandlerSynchroMode   syncHandler;                                           //同步处理对象
+   private HandlerAsynchroMode       asyncHandler;                                                   //异步处理对象
+   private HandlerSynchroMode        syncHandler;                                                    //同步处理对象
 
-   private HandlerUndeliverable undeliverableMessageHandler;
+   private HandlerUndeliverable      undeliverableMessageHandler;
 
    //常量定义
-   private final String         producerVersion = "0.6.0";
-   private static final Logger  logger          = Logger.getLogger(ProducerImpl.class);
+   private final String              producerVersion          = "0.6.0";
+   private static final Logger       logger                   = Logger.getLogger(Producer.class);
 
    //和配置文件对应的变量
-   private final ProducerMode   producerMode;                                          //Producer工作模式
-   private final Destination    destination;                                           //Producer消息目的
-   private final int            threadPoolSize;                                        //异步处理对象的线程池大小
-   private final int            remoteServiceTimeout;                                  //远程调用超时
-   private final boolean        continueSend;                                          //异步模式是否允许续传
+   private final ProducerMode        producerMode;                                                   //Producer工作模式
+   private final Destination         destination;                                                    //Producer消息目的
+   private final int                 threadPoolSize;                                                 //异步处理对象的线程池大小
+   private final boolean             continueSend;                                                   //异步模式是否允许续传
 
-   @SuppressWarnings("rawtypes")
-   private final ProxyFactory   pigeon          = new ProxyFactory();
+   private static final ProducerMode DEFAULT_PRODUCER_MODE    = ProducerMode.SYNC_MODE;
+   private static final int          DEFAULT_THREAD_POOL_SIZE = 10;
+   private static final boolean      DEFAULT_CONTINUE_SEND    = false;
 
-   /**
-    * 初始化远程调用服务，如果远程服务端连接失败，抛出异常
-    * 
-    * @return 远程调用服务的借口
-    * @throws Exception 远程调用服务失败
-    */
-   private MQService initRemoteService() throws Exception {
-      pigeon.setServiceName("remoteService");
-      pigeon.setIface(MQService.class);
-      pigeon.setSerialize("hessian");
-      pigeon.setCallMethod("sync");
-      pigeon.setTimeout(getRemoteServiceTimeout());
-
-      //TODO 配置Lion支持
-      pigeon.setUseLion(false);
-      pigeon.setHosts("127.0.0.1:4000");
-      pigeon.setWeight("1");
-
-      pigeon.init();
-
-      return (MQService) pigeon.getProxy();
-   }
-
-   /**
-    * Producer构造函数
-    * 
-    * @param producerConfigure Producer配置类
-    * @throws Exception 初始化远程服务失败，抛出异常
-    */
-   private ProducerImpl(ProducerConfigure producerConfigure) throws Exception {
-      //读取配置文件
-      this.producerMode = (producerConfigure.getProducerModeStr().equals("async")) ? ProducerMode.ASYNC_MODE
-            : ProducerMode.SYNC_MODE;
-      this.destination = Destination.topic(producerConfigure.getDestinationName());
-      this.threadPoolSize = producerConfigure.getThreadPoolSize();
-      this.remoteServiceTimeout = producerConfigure.getRemoteServiceTimeout();
-      this.continueSend = producerConfigure.isContinueSend();
-
+   public Producer(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions)
+         throws Exception {
+      //初始化Producer参数
+      if (topicName == null)
+         throw new Exception("Topic name can not be null.");
+      destination = Destination.topic(topicName);
+      producerMode = pOptions.containsKey(ProducerOptionKey.PRODUCER_MODE) ? ((ProducerMode) pOptions
+            .get(ProducerOptionKey.PRODUCER_MODE) == ProducerMode.ASYNC_MODE ? ProducerMode.ASYNC_MODE
+            : DEFAULT_PRODUCER_MODE) : DEFAULT_PRODUCER_MODE;
+      threadPoolSize = pOptions.containsKey(ProducerOptionKey.THREAD_POOL_SIZE) ? (Integer) pOptions
+            .get(ProducerOptionKey.THREAD_POOL_SIZE) : DEFAULT_THREAD_POOL_SIZE;
+      continueSend = pOptions.containsKey(ProducerOptionKey.IS_CONTINUE_SEND) ? (Boolean) pOptions
+            .get(ProducerOptionKey.IS_CONTINUE_SEND) : DEFAULT_CONTINUE_SEND;
       //初始化远程调用
-      try {
-         remoteService = initRemoteService();
-      } catch (Exception e) {
-         logger.log(Level.ERROR, "[Producer]:[Init remote service failed.]", e.getCause());
-         throw e;
-      }
-
-      //Producer工作模式
+      this.remoteService = remoteService;
+      //设置Producer工作模式
       switch (producerMode) {
          case SYNC_MODE:
             syncHandler = new HandlerSynchroMode(this);
@@ -98,7 +66,7 @@ public class ProducerImpl implements Producer {
             asyncHandler = new HandlerAsynchroMode(this);
             break;
       }
-      //Message发送出错处理类
+      //Message发送出错处理对象
       undeliverableMessageHandler = new HandlerUndeliverable() {
          @Override
          public void handleUndeliverableMessage(Message msg) {
@@ -107,44 +75,6 @@ public class ProducerImpl implements Producer {
       };
       //向Swallow发送greet
       remoteService.sendMessage(new PktProducerGreet(producerVersion));
-   }
-
-   /**
-    * 获得默认配置的Producer单例，无参数
-    * 
-    * @return Producer单例
-    * @throws Exception 初始化远程调用失败，抛出异常
-    */
-   public static ProducerImpl getDefaultInstance() throws Exception {
-      return doGetInstance(null);
-   }
-
-   /**
-    * 获得指定配置文件的Producer单例，如果配置文件格式错误或无法加载，则返回默认配置的Producer
-    * 
-    * @param configFile Producer的配置文件
-    * @return Producer单例
-    * @throws Exception 初始化远程调用失败，抛出异常
-    */
-   public static ProducerImpl getInstance(String configFile) throws Exception {
-      return doGetInstance(configFile);
-   }
-
-   /**
-    * 实际产生Producer单例的函数
-    * 
-    * @param configFile Producer配置文件名，可以为null
-    * @return Producer单例
-    * @throws Exception 初始化远程调用失败，抛出异常
-    */
-   private synchronized static ProducerImpl doGetInstance(String configFile) throws Exception {
-      if (instance == null) {
-         if (configFile == null)
-            instance = new ProducerImpl(new ProducerConfigure());
-         else
-            instance = new ProducerImpl(new ProducerConfigure(configFile));
-      }
-      return instance;
    }
 
    /**
@@ -258,7 +188,7 @@ public class ProducerImpl implements Producer {
    }
 
    /**
-    * @return返回Producer版本号
+    * @return 返回Producer版本号
     */
    public String getProducerVersion() {
       return producerVersion;
@@ -279,17 +209,9 @@ public class ProducerImpl implements Producer {
    }
 
    /**
-    * @return 返回远程调用超时
-    */
-   public int getRemoteServiceTimeout() {
-      return remoteServiceTimeout;
-   }
-
-   /**
     * @return 返回异步模式是否续传
     */
    public boolean isContinueSend() {
       return continueSend;
    }
-
 }

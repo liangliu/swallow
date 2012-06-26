@@ -1,7 +1,7 @@
 /**
- * Project: swallow-client
+ * Project: swallow-producerclient
  * 
- * File Created at 2012-5-25
+ * File Created at 2012-6-25
  * $Id$
  * 
  * Copyright 2010 dianping.com.
@@ -13,24 +13,15 @@
  * accordance with the terms of the license agreement you entered into
  * with dianping.com.
  */
-package com.dianping.swallow.producer.backup;
+package com.dianping.swallow.producer;
 
 /**
- * TODO Comment of PktSwallowPACK
+ * TODO Comment of ProducerOptionKey
  * @author tong.song
  *
  */
-public final class PkgSwallowPACK extends Package {
-	private int SEQ;
-
-	public void setSEQ(int SEQ) {
-		this.SEQ = SEQ;
-	}
-	public int getSEQ() {
-		return SEQ;
-	}
-	public PkgSwallowPACK(int SEQ){
-		this.setPackageType(PackageType.SWALLOW_P_ACK);
-		this.SEQ = SEQ;
-	}
+public enum ProducerOptionKey {
+   PRODUCER_MODE,
+   THREAD_POOL_SIZE,
+   IS_CONTINUE_SEND
 }
