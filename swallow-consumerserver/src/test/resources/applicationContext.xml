@@ -25,12 +25,13 @@
 
 	<bean id="messageRetriever"
 		class="com.dianping.swallow.consumerserver.buffer.MongoDBMessageRetriever">
-		<property name="fetchSize" value="5" />
+		<property name="fetchSize" value="20" />
 	</bean>
 
 	<bean id="swallowBuffer"
 		class="com.dianping.swallow.consumerserver.buffer.SwallowBuffer">
 		<property name="threshold" value="2" />
+		<property name="capacity" value="1024" />
 	</bean>
 
 	<bean id="mongoClient"

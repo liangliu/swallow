@@ -13,10 +13,6 @@ public class MongoConfig {
 
    private static final Logger LOG                                          = LoggerFactory
                                                                                   .getLogger(MongoConfig.class);
-   // db collection name
-   private String              messageDBName                                = "swallow_message";
-   private String              ackDBName                                    = "swallow_ack";
-   private String              heartbeatDBName                              = "swallow_heartbeat";
 
    // mongo server options
    private boolean             slaveOk                                      = false;
@@ -110,30 +106,6 @@ public class MongoConfig {
             }
          }
       }
-   }
-
-   public String getMessageDBName() {
-      return messageDBName;
-   }
-
-   public void setMessageDBName(String messageDBName) {
-      this.messageDBName = messageDBName;
-   }
-
-   public String getAckDBName() {
-      return ackDBName;
-   }
-
-   public void setAckDBName(String ackDBName) {
-      this.ackDBName = ackDBName;
-   }
-
-   public String getHeartbeatDBName() {
-      return heartbeatDBName;
-   }
-
-   public void setHeartbeatDBName(String heartbeatDBName) {
-      this.heartbeatDBName = heartbeatDBName;
    }
 
    public boolean isSlaveOk() {

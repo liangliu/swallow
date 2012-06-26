@@ -2,15 +2,17 @@ package com.dianping.swallow.consumerserver.buffer;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import junit.framework.Assert;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.kubek2k.springockito.annotations.SpringockitoContextLoader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
@@ -22,8 +24,8 @@ import com.dianping.swallow.common.message.SwallowMessage;
 
 @ContextConfiguration(loader = SpringockitoContextLoader.class, locations = "classpath:applicationContext.xml")
 public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {
-   private static final Logger   LOG        = LoggerFactory.getLogger(SwallowBufferTest.class);
    protected static final String TOPIC_NAME = "topicForUnitTest";
+   protected static final String TYPE       = "feed";
 
    @Autowired
    private SwallowBuffer         swallowBuffer;
@@ -38,15 +40,16 @@ public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {
 
    @Before
    public void setUp() throws Exception {
+      mongoClient.getMessageCollection(TOPIC_NAME).drop();
       //插入1条消息
       SwallowMessage firstMsg = createMessage();
       firstMsg.setContent("content1");
       messageDAO.saveMessage(TOPIC_NAME, firstMsg);
       //初始化tailMessageId
       tailMessageId = messageDAO.getMaxMessageId(TOPIC_NAME);
-      //添加20条Message
+      //添加9条Message
       int i = 2;
-      while (i < 20) {
+      while (i <= 10) {
          //插入消息
          SwallowMessage msg = createMessage();
          msg.setContent("content" + i++);
@@ -61,18 +64,65 @@ public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {
    }
 
    @Test
-   public void createMessageQueue() throws InterruptedException {
+   public void testCreateMessageQueue1() throws InterruptedException {
       BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId);
 
-      int i = 0;
-      while (true) {
-         Message m = queue.poll(2, TimeUnit.SECONDS);
-         if (m != null) {
-            LOG.info("poll message " + (++i) + ":" + m);
-            LOG.info("queue size:" + queue.size());
-         }
-
+      Message m = queue.take();
+      if (m != null) {
+         Assert.assertEquals("content2", m.getContent());
       }
+   }
+
+   @Test
+   public void testCreateMessageQueue2() throws InterruptedException {
+      Set<String> messageTypeSet = new HashSet<String>();
+      messageTypeSet.add(TYPE);
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
+
+      Message m = queue.take();
+      if (m != null) {
+         Assert.assertEquals("content2", m.getContent());
+      }
+   }
+
+   @Test
+   public void testGetMessageQueue() throws InterruptedException {
+      Set<String> messageTypeSet = new HashSet<String>();
+      messageTypeSet.add(TYPE);
+
+      swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
+      BlockingQueue<Message> queue = swallowBuffer.getMessageQueue(TOPIC_NAME, cid);
+      queue.take();
+      Message m = queue.take();
+      if (m != null) {
+         Assert.assertEquals("content3", m.getContent());
+      }
+   }
+
+   @Test
+   public void testPoll1() throws InterruptedException {
+      Set<String> messageTypeSet = new HashSet<String>();
+      messageTypeSet.add(TYPE);
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
+
+      Message m = queue.poll();
+      while (m == null) {
+         m = queue.poll();
+      }
+      Assert.assertEquals("content2", m.getContent());
+   }
+
+   @Test
+   public void testPoll2() throws InterruptedException {
+      Set<String> messageTypeSet = new HashSet<String>();
+      messageTypeSet.add(TYPE);
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
+
+      Message m = queue.poll(500, TimeUnit.MILLISECONDS);
+      while (m == null) {
+         m = queue.poll(500, TimeUnit.MILLISECONDS);
+      }
+      Assert.assertEquals("content2", m.getContent());
    }
 
    private static SwallowMessage createMessage() {
@@ -84,7 +134,7 @@ public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {
       message.setProperties(map);
       message.setSha1("sha-1 string");
       message.setVersion("0.6.0");
-      message.setType("feed");
+      message.setType(TYPE);
       return message;
 
    }

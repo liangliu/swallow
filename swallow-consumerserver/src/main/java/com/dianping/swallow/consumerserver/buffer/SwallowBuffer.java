@@ -24,8 +24,8 @@ public class SwallowBuffer {
    }
    private final ConcurrentMap<String, TopicBuffer> topicBuffers                     = new ConcurrentHashMap<String, TopicBuffer>();
    private MessageRetriever                         messageRetriever;
-   private int                                      capacity                         = Integer.MAX_VALUE;
-   private int                                      threshold                        = 100;
+   private int                                      capacityOfQueue                         = Integer.MAX_VALUE;
+   private int                                      thresholdOfQueue                        = 100;
 
    /**
     * 根据topicName，获取topicName对应的TopicBuffer。<br>
@@ -60,7 +60,7 @@ public class SwallowBuffer {
     * @param cid 消费者id
     * @return 返回消费者id对应的消息队列
     */
-   public BlockingQueue<Message> getMessageQueue(String topicName, Long cid) {
+   public BlockingQueue<Message> getMessageQueue(String topicName, String cid) {
       return this.getTopicBuffer(topicName).getMessageQueue(cid);
    }
 
@@ -93,24 +93,12 @@ public class SwallowBuffer {
       return hashcode % LOCK_NUM_FOR_CREATE_TOPIC_BUFFER;
    }
 
-   public int getCapacity() {
-      return capacity;
-   }
-
    public void setCapacity(int capacity) {
-      this.capacity = capacity;
-   }
-
-   public int getThreshold() {
-      return threshold;
+      this.capacityOfQueue = capacity;
    }
 
    public void setThreshold(int threshold) {
-      this.threshold = threshold;
-   }
-
-   public MessageRetriever getMessageRetriever() {
-      return messageRetriever;
+      this.thresholdOfQueue = threshold;
    }
 
    public void setMessageRetriever(MessageRetriever messageRetriever) {
@@ -134,7 +122,7 @@ public class SwallowBuffer {
        * @param cid 消费者id
        * @return 返回消费者id对应的消息队列
        */
-      public BlockingQueue<Message> getMessageQueue(Long cid) {
+      public BlockingQueue<Message> getMessageQueue(String cid) {
          if (cid == null) {
             throw new IllegalArgumentException("cid is null.");
          }
@@ -171,14 +159,11 @@ public class SwallowBuffer {
             throw new IllegalArgumentException("messageIdOfTailMessage is null.");
          }
          MessageBlockingQueue messageBlockingQueue;
-         if (capacity > 0 && messageTypeSet != null) {
-            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, capacity, tailMessageId,
-                  messageTypeSet);
-         } else if (messageTypeSet != null) {
-            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, tailMessageId,
+         if (messageTypeSet != null) {
+            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue, tailMessageId,
                   messageTypeSet);
          } else {
-            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, threshold, capacity, tailMessageId);
+            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue, tailMessageId);
          }
          messageBlockingQueue.setMessageRetriever(messageRetriever);
          messageQueues.put(cid, new SoftReference<BlockingQueue<Message>>(messageBlockingQueue));

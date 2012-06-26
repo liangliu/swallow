@@ -108,7 +108,8 @@ public class MessageDAOImpl implements MessageDAO {
       DBObject gt = BasicDBObjectBuilder.start().add("$gt", MongoUtils.longToBSONTimestamp(messageId)).get();
       BasicDBObjectBuilder queryBuilder = BasicDBObjectBuilder.start().add("_id", gt);
       if (!messageTypeSet.isEmpty()) {
-         queryBuilder.add("$in", messageTypeSet);
+         DBObject in = BasicDBObjectBuilder.start().add("$in", messageTypeSet).get();
+         queryBuilder.add(TYPE, in);
       }
       DBObject query = queryBuilder.get();
       DBObject orderBy = BasicDBObjectBuilder.start().add("_id", Integer.valueOf(1)).get();

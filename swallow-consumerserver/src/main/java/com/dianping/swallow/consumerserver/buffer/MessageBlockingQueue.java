@@ -13,9 +13,8 @@ import com.dianping.swallow.common.message.Message;
 
 public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
 
-   private static final long   serialVersionUID  = -633276713494338593L;
-   private static final Logger LOG               = LoggerFactory.getLogger(MessageBlockingQueue.class);
-   private static final int    DEFAULT_THRESHOLD = 50;
+   private static final long   serialVersionUID = -633276713494338593L;
+   private static final Logger LOG              = LoggerFactory.getLogger(MessageBlockingQueue.class);
 
    private final String        cid;
    private final String        topicId;
@@ -25,7 +24,7 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
 
    protected MessageRetriever  messageRetriever;
 
-   private ReentrantLock       reentrantLock     = new ReentrantLock();
+   private ReentrantLock       reentrantLock    = new ReentrantLock();
 
    protected volatile Long     tailMessageId;
    protected Set<String>       messageTypeSet;
@@ -39,26 +38,6 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       if (threshold < 0)
          throw new IllegalArgumentException("threshold: " + threshold);
       this.threshold = threshold;
-      if (messageIdOfTailMessage == null)
-         throw new IllegalArgumentException("messageIdOfTailMessage is null.");
-      this.tailMessageId = messageIdOfTailMessage;
-   }
-
-   public MessageBlockingQueue(String cid, String topicId, int threshold, Long messageIdOfTailMessage) {
-      this.cid = cid;
-      this.topicId = topicId;
-      if (threshold < 0)
-         throw new IllegalArgumentException("threshold: " + threshold);
-      this.threshold = threshold;
-      if (messageIdOfTailMessage == null)
-         throw new IllegalArgumentException("messageIdOfTailMessage is null.");
-      this.tailMessageId = messageIdOfTailMessage;
-   }
-
-   public MessageBlockingQueue(String cid, String topicId, Long messageIdOfTailMessage) {
-      this.cid = cid;
-      this.topicId = topicId;
-      this.threshold = DEFAULT_THRESHOLD;
       if (messageIdOfTailMessage == null)
          throw new IllegalArgumentException("messageIdOfTailMessage is null.");
       this.tailMessageId = messageIdOfTailMessage;
@@ -79,26 +58,12 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       this.messageTypeSet = messageTypeSet;
    }
 
-   public MessageBlockingQueue(String cid, String topicId, int threshold, Long tailMessageId, Set<String> messageTypeSet) {
-      this.cid = cid;
-      this.topicId = topicId;
-      if (threshold < 0)
-         throw new IllegalArgumentException("threshold: " + threshold);
-      this.threshold = threshold;
-      if (tailMessageId == null)
-         throw new IllegalArgumentException("messageIdOfTailMessage is null.");
-      this.tailMessageId = tailMessageId;
-      this.messageTypeSet = messageTypeSet;
-   }
-
-   public MessageBlockingQueue(String cid, String topicId, Long messageIdOfTailMessage, Set<String> messageTypeSet) {
-      this.cid = cid;
-      this.topicId = topicId;
-      this.threshold = DEFAULT_THRESHOLD;
-      if (messageIdOfTailMessage == null)
-         throw new IllegalArgumentException("messageIdOfTailMessage is null.");
-      this.tailMessageId = messageIdOfTailMessage;
-      this.messageTypeSet = messageTypeSet;
+   public Message take() throws InterruptedException {
+      //如果剩余元素数量小于最低限制值threshold，就启动一个“获取DB数据的后台线程”去DB获取数据，并添加到Queue的尾部
+      if (super.size() < threshold) {
+         ensureLeftMessage();
+      }
+      return super.take();
    }
 
    public Message poll() {
@@ -172,10 +137,6 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
             reentrantLock.unlock();
          }
       }
-   }
-
-   public MessageRetriever getMessageRetriever() {
-      return messageRetriever;
    }
 
    public void setMessageRetriever(MessageRetriever messageRetriever) {
