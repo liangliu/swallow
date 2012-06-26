@@ -19,6 +19,8 @@ public class TestConsumer {
 	public static ConsumerType consumerType = ConsumerType.UPDATE_BEFORE_ACK;
     public static void main(String[] args) throws Exception {
 
+    	//TODO 通过spring使用的example
+    	//TODO new ConsumerClient(cid, dest, "1.1.1.1:8000,1.1.1.2:8000")
     	ConsumerClient cClient = new ConsumerClient(cid, dest, new InetSocketAddress(host, marsterPort), new InetSocketAddress(host, slavePort));
     	cClient.setConsumerType(consumerType);
     	cClient.setListener(new MessageListener() {
