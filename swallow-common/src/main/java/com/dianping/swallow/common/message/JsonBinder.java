@@ -36,20 +36,6 @@ public class JsonBinder {
    }
 
    /**
-    * 创建只输出非空属性到Json字符串的Binder.
-    */
-   public static JsonBinder buildNonNullBinder() {
-      return new JsonBinder(Inclusion.NON_NULL);
-   }
-
-   /**
-    * 创建只输出初始值被改变的属性到Json字符串的Binder.
-    */
-   public static JsonBinder buildNonDefaultBinder() {
-      return new JsonBinder(Inclusion.NON_DEFAULT);
-   }
-
-   /**
     * 如果JSON字符串为Null或"null"字符串,返回Null. 如果JSON字符串为"[]",返回空集合.
     * 如需读取集合如List/Map,且不是List<String>这种简单类型时使用如下语句: List<MyBean> beanList =
     * binder.getMapper().readValue(listString, new TypeReference<List<MyBean>>()
@@ -63,7 +49,7 @@ public class JsonBinder {
       try {
          return mapper.readValue(jsonString, clazz);
       } catch (IOException e) {
-         logger.warn("parse json string error:" + jsonString, e);
+         logger.warn("parse json string error:" + jsonString + ", " + e.getMessage());
          return null;
       }
    }
@@ -76,7 +62,7 @@ public class JsonBinder {
       try {
          return mapper.writeValueAsString(object);
       } catch (IOException e) {
-         logger.warn("write to json string error:" + object, e);
+         logger.warn("write to json string error:" + object + ", " + e.getMessage());
          return null;
       }
    }

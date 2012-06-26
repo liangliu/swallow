@@ -21,9 +21,9 @@ package com.dianping.swallow.producerserver.impl;
  * @author tong.song
  */
 public class TextACK {
-   private boolean isOK;
-   private String  sha1;
-   private String  reason;
+   private boolean isOK;  //是否需要ACK
+   private String  sha1;  //Message内容的sha1签名
+   private String  reason; //保存失败的原因
 
    public boolean isOK() {
       return isOK;
@@ -47,5 +47,10 @@ public class TextACK {
 
    public void setReason(String reason) {
       this.reason = reason;
+   }
+
+   @Override
+   public String toString() {
+      return "isOK=" + isOK + ";\tSHA-1=" + sha1 + ";\treason=" + reason + ";";
    }
 }
