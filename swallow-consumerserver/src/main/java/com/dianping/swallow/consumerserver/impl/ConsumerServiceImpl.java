@@ -365,7 +365,6 @@ public class ConsumerServiceImpl implements ConsumerService{
 				}			
 			}
 		};
-
 		Thread heartbeatThread = threadFactory.newThread(runnable, "checkMasterIsLive-");
 		heartbeatThread.setDaemon(true);
 		heartbeatThread.start();

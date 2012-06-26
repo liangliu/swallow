@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dianping.swallow.common.dao.HeartbeatDAO;
 import com.dianping.swallow.consumerserver.Heartbeater;
+import com.dianping.swallow.consumerserver.bootstrap.SlaveBootStrap;
 
 public class MongoHeartbeater implements Heartbeater {
 
@@ -58,15 +59,12 @@ public class MongoHeartbeater implements Heartbeater {
 
 	@Override
 	public void waitUntilBeginBeating(String ip, ServerBootstrap bootStrap, long checkInterval, long maxStopTime) throws InterruptedException {
-		
 		Date beat = null;
 		while (true) {
 			try {
 				beat = dao.findLastHeartbeat(ip);
 			} catch (Exception e) {
-				//如果访问mongo出错，重置startTime，防止failover时间过长
 				log.error("error find last heartbeat", e);
-				//startTime = System.currentTimeMillis();
 				Thread.sleep(1000);
 				continue;
 			}
@@ -75,6 +73,7 @@ public class MongoHeartbeater implements Heartbeater {
 				long now = System.currentTimeMillis();
 				if (now - lastBeatTime < maxStopTime) {
 					bootStrap.releaseExternalResources();
+					SlaveBootStrap.slaveShouldLive = Boolean.FALSE;
 					break;
 				}				
 			}
