@@ -32,6 +32,12 @@ public class MasterBootStrap {
 		ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[]{"applicationContext.xml"});
 		final ConsumerServiceImpl cService = ctx.getBean(ConsumerServiceImpl.class);
 		cService.init(isSlave);
+		try {
+			Thread.sleep(20000);//TODO 主机启动的时候睡眠一会，给时间给slave关闭。
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(

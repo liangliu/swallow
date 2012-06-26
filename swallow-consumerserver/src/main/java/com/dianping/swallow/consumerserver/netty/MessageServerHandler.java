@@ -1,8 +1,5 @@
 package com.dianping.swallow.consumerserver.netty;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,18 +11,15 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
-import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.packet.PktConsumerACK;
-import com.dianping.swallow.consumerserver.HandleACKThread;
 import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 
 
 
 @ChannelPipelineCoverage("all")
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
+	
 	private ConsumerServiceImpl cService;
-	
-	
 
 	public MessageServerHandler(ConsumerServiceImpl cService){
 		this.cService = cService;
@@ -36,17 +30,17 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     @Override  
     public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e)  
         throws Exception {     
-    	//e.getChannel().write("come on baby");
+
     }
  
     @Override
     public void messageReceived(
             ChannelHandlerContext ctx, MessageEvent e) {
+    	
     	//收到PktConsumerACK，按照原流程解析
-    	final Channel channel = e.getChannel();
-    	
+    	Channel channel = e.getChannel();    	
     	PktConsumerACK consumerACKPacket = (PktConsumerACK)e.getMessage();
-    	
+    	cService.handleACK(channel, consumerACKPacket);
     }
  
     @Override

@@ -1,5 +1,6 @@
 package com.dianping.swallow.consumerserver.impl;
 
+import java.nio.channels.NotYetConnectedException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -20,9 +21,11 @@ import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.dao.impl.mongodb.MongoUtils;
+import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.PktConsumerACK;
+import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.consumerserver.ConsumerService;
 import com.dianping.swallow.consumerserver.GetMessageThread;
 import com.dianping.swallow.consumerserver.HandleACKThread;
@@ -43,9 +46,11 @@ public class ConsumerServiceImpl implements ConsumerService{
 
 	private Map<String, HashSet<Channel>> channelWorkStatus;	//channel是否存在的状态
     
-    private Map<String, SwallowMessage> preparedMesssages = new HashMap<String, SwallowMessage>();
+    private Map<String, PktObjectMessage> preparedMesssages = new HashMap<String, PktObjectMessage>();
     
     private SwallowMessage message = null;
+    
+    private PktObjectMessage pktMsg = null;
     
     @Autowired
     private SwallowBuffer swallowBuffer;
@@ -54,9 +59,7 @@ public class ConsumerServiceImpl implements ConsumerService{
     private Set<String> threads = new HashSet<String>();
     
     private MQThreadFactory threadFactory;
-    
-    private Map<String, ArrayBlockingQueue<Long>> ackMessageIds = new HashMap<String, ArrayBlockingQueue<Long>>();
-    
+   
     private Map<String, ConsumerType> consumerTypes = new HashMap<String, ConsumerType>();;
     
     private Map<String, ArrayBlockingQueue<Channel>> freeChannels = new HashMap<String, ArrayBlockingQueue<Channel>>();
@@ -68,7 +71,6 @@ public class ConsumerServiceImpl implements ConsumerService{
     private MessageDAO messageDao;
        
     private ArrayBlockingQueue<Channel> freeChannelQueue;
-    private ArrayBlockingQueue<Long>  ackMessageIdQueue;
     
     @Autowired
     private Heartbeater heartbeater;
@@ -96,7 +98,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 	}
 	
 	
-	public Map<String, HashSet<Channel>> getChannelWorkStatue() {
+	public Map<String, HashSet<Channel>> getChannelWorkStatus() {
 		return channelWorkStatus;
 	}
 
@@ -160,20 +162,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 		}		
     }
 	
-	public void updateMaxMessageId(String consumerId, String topicName, Long messageId){
-//		ackMessageIdQueue = ackMessageIds.get(consumerId);
-//		synchronized(ackMessageIdQueue){
-//			if(ackMessageIdQueue == null){
-//				ackMessageIdQueue = new ArrayBlockingQueue<Long>(configManager.getFreeChannelBlockQueueSize());
-//				ackMessageIds.put(consumerId, ackMessageIdQueue);
-//			}
-//			try {
-//				ackMessageIdQueue.put(messageId);
-//			} catch (InterruptedException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}		
+	private void updateMaxMessageId(String consumerId, String topicName, Long messageId){	
 		if(messageId != null && ConsumerType.UPDATE_AFTER_ACK.equals(consumerTypes.get(consumerId))){
 			ackDao.add(topicName, consumerId, messageId);
 		}
@@ -205,8 +194,8 @@ public class ConsumerServiceImpl implements ConsumerService{
 			long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerId);
 		    messages = swallowBuffer.createMessageQueue(topicName, consumerId, messageIdOfTailMessage);
 			freeChannelQueue = freeChannels.get(consumerId);
-
 		}	
+		
 		try {
 			while(true){
 				Channel channel = null;
@@ -221,24 +210,32 @@ public class ConsumerServiceImpl implements ConsumerService{
 					//TODO 用异常替代isConnected
 				}else if(channel.isConnected()){
 					if(preparedMesssages.get(consumerId) != null){
-						message = preparedMesssages.get(consumerId);
+						pktMsg = preparedMesssages.get(consumerId);
 						preparedMesssages.remove(consumerId);
 					} else{					
 						message = (SwallowMessage)messages.take();
+						pktMsg = new PktObjectMessage(Destination.topic(topicName), message);
 					}
 					 Long messageId = message.getMessageId();
 					//如果consumer是收到ACK之前更新messageId的类型
 					 if(ConsumerType.UPDATE_BEFORE_ACK.equals(consumerTypes.get(consumerId))){
 						 ackDao.add(topicName, consumerId, messageId);
-					 }					 
-					if(!channel.isConnected()){
-						preparedMesssages.put(consumerId, message);
-					} else{
-						//TODO +isWritable?，连接断开后write后是否会抛异常，isWritable()=false的时候retry, when will write() throw exception?
-						channel.write(message);
-						//TODO 将SwallowMessage构造成Packet(PktObjectMessage objMsg = new PktObjectMessage(destination, swallowMsg);)
-						//TODO 发送：channel.write(PktObjectMessage);
-					}
+					 }						 
+					 while(true){
+						 if(!channel.isWritable()){
+							 if(channel.isConnected()){
+								 Thread.sleep(1000);
+								 continue;
+							 } else {
+								 preparedMesssages.put(consumerId, pktMsg);
+								 break;
+							 }								
+							} else{
+								//TODO +isWritable?，连接断开后write后是否会抛异常，isWritable()=false的时候retry, when will write() throw exception?						
+								channel.write(pktMsg);
+							}
+					 }
+					
 				}
 			}
 		} catch (InterruptedException e) {
@@ -381,7 +378,6 @@ public class ConsumerServiceImpl implements ConsumerService{
 				}			
 			}
 		};
-
 		Thread heartbeatThread = threadFactory.newThread(runnable, "checkMasterIsLive-");
 		heartbeatThread.setDaemon(true);
 		heartbeatThread.start();
@@ -399,12 +395,12 @@ public class ConsumerServiceImpl implements ConsumerService{
     	if(getAckWorker == null){
     		getAckWorker = new ArrayBlockingQueue<Runnable>(10);//TODO 
     	}
-    	getAckWorker.add(new Runnable() {			
+    	getAckWorker.add(new Runnable() {
 			@Override
 			public void run() {
 				updateMaxMessageId(consumerId, topicName, messageId);
 				putChannelToBlockQueue(consumerId, channel);
-		    	changeChannelWorkStatus(consumerId, channel);		    			    	
+		    	changeChannelWorkStatus(consumerId, channel);
 			}
 		});
     	

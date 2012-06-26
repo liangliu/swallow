@@ -10,9 +10,6 @@ import com.dianping.swallow.common.packet.PktTextMessage;
 import com.dianping.swallow.producerserver.impl.TextObject;
 
 public class TextHandler {
-   //解析Text，成功返回Packet，失败返回null
-   //可解析的格式为 send:topic=XX;content=XX;
-   //TODO 用json
    @SuppressWarnings("null")
    public static PktTextMessage changeTextToPacket(SocketAddress addr, String jsonStr) {
 
