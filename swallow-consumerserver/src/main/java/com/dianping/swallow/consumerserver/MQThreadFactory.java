@@ -12,9 +12,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 
-import com.dianping.hawk.jmx.HawkJMXUtil;
-//import com.dianping.swallow.monitor.thread.SwallowThreadStatusBean;
-
 /**
  * 管理所有swallow线程，提供jmx监控
  * @author qing.gu

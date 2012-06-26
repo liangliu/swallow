@@ -24,36 +24,45 @@ public class SlaveBootStrap {
 	private static int port = 8082;
 	
 	private static boolean isSlave = true;
+	public static Boolean slaveShouldLive = Boolean.TRUE;
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		
-		ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[]{"applicationContext.xml"});
-		final ConsumerServiceImpl cService = ctx.getBean(ConsumerServiceImpl.class);
-		cService.init(isSlave);
-		// Configure the server.
-        ServerBootstrap bootstrap = new ServerBootstrap(
-                new NioServerSocketChannelFactory(
-                        Executors.newCachedThreadPool(),
-                        Executors.newCachedThreadPool()));
-        final MessageServerHandler handler = new MessageServerHandler(cService);
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {  
-            @Override  
-            public ChannelPipeline getPipeline() throws Exception {  
-            ChannelPipeline pipeline = Channels.pipeline();
-            pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
-            pipeline.addLast("jsonDecoder", new JsonDecoder());
-            pipeline.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
-            pipeline.addLast("jsonEncoder", new JsonEncoder());
-            pipeline.addLast("handler", handler);
-            return pipeline;  
-            }  
-        });  
-        // Bind and start to accept incoming connections.
-       bootstrap.bind(new InetSocketAddress(port));
-       cService.checkMasterIsLive(bootstrap);
-        
+		while(true){
+			ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[]{"applicationContext.xml"});
+			final ConsumerServiceImpl cService = ctx.getBean(ConsumerServiceImpl.class);
+			cService.init(isSlave);
+			// Configure the server.
+	        ServerBootstrap bootstrap = new ServerBootstrap(
+	                new NioServerSocketChannelFactory(
+	                        Executors.newCachedThreadPool(),
+	                        Executors.newCachedThreadPool()));
+	        final MessageServerHandler handler = new MessageServerHandler(cService);
+	        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {  
+	            @Override  
+	            public ChannelPipeline getPipeline() throws Exception {  
+	            ChannelPipeline pipeline = Channels.pipeline();
+	            pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
+	            pipeline.addLast("jsonDecoder", new JsonDecoder());
+	            pipeline.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
+	            pipeline.addLast("jsonEncoder", new JsonEncoder());
+	            pipeline.addLast("handler", handler);
+	            return pipeline;  
+	            }  
+	        });  
+	        // Bind and start to accept incoming connections.
+	       bootstrap.bind(new InetSocketAddress(port));
+	       cService.checkMasterIsLive(bootstrap);
+	       while(slaveShouldLive){
+	    	   try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	       }
+		} 
 	}
 
 }

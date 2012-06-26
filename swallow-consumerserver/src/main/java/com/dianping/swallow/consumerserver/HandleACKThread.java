@@ -35,14 +35,21 @@ public class HandleACKThread implements Runnable{
 		while(isLive){
 			Runnable worker = null;
 			try {
-				worker = getAckWorker.poll(cService.getConfigManager().getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
+				while(true){
+					worker = getAckWorker.poll(cService.getConfigManager().getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
+					if(worker != null){
+						worker.run();
+					} else{
+						break;
+					}
+				}
+				
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
-			worker.run();
+			}			
 			synchronized(cService.getConsumerTypes()){
-				HashSet<Channel> channels = cService.getChannelWorkStatue().get(consumerId);
+				HashSet<Channel> channels = cService.getChannelWorkStatus().get(consumerId);
 				if(channels.isEmpty()){
 					cService.getConsumerTypes().remove(consumerId);
 					isLive = false;
