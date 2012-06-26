@@ -99,9 +99,11 @@ public class MongoClient {
     * URI格式：
     * 
     * <pre>
-    * <MongoURI>=<heartbeat>,<topicName>,<topicName>;<MongoURI>=<topicName>
+    * <MongoURI>=<topicName>,<topicName>;<MongoURI>=<topicName>
+    * MongoURI=default;mongodb://10.1.1.1:27017=feed
     * </pre>
     */
+   //TODO heartbeat使用单独的配置名称
    private Map<String, Mongo> parseTopicURI(String topicURI) {
       Map<String, Mongo> map = new HashMap<String, Mongo>();
       for (String uriToTopicName : topicURI.split(";")) {
@@ -126,6 +128,7 @@ public class MongoClient {
          }
       }
       //default是必须存在的topicName
+      //TODO 提前检查?
       if (!map.containsKey(TOPICNAME_DEFAULT)) {
          throw new IllegalArgumentException("The '" + LION_KEY_MONGO_URI
                + "' property must contain 'default' topicName!");
@@ -217,6 +220,7 @@ public class MongoClient {
    private DBCollection createColletcion(DB db, String collectionName) {
       DBObject options = new BasicDBObject();
       options.put("capped", true);
+      //TODO 给不同类型collection和topicname提供size和max值配置
       options.put("size", config.getCappedCollectionSize());//max db file size in bytes
       int cappedCollectionMaxDocNum = config.getCappedCollectionMaxDocNum();
       if (cappedCollectionMaxDocNum > 0) {

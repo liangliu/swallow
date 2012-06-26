@@ -18,6 +18,7 @@ import com.dianping.swallow.common.packet.PktConsumerACK;
 import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.consumer.ConsumerClient;
 
+//TODO delete ?
 @ChannelPipelineCoverage("all")
 public class MessageClientHandler extends SimpleChannelUpstreamHandler {
  
@@ -47,6 +48,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     	SwallowMessage swallowMessage = (SwallowMessage)((PktObjectMessage)e.getMessage()).getContent();
     	Long messageId = swallowMessage.getMessageId();
     	consumerACKPacket.setMessageId(messageId);
+    	//TODO 异常处理
     	cClient.getListener().onMessage(swallowMessage);
     	e.getChannel().write(consumerACKPacket);
     	
