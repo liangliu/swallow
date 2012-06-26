@@ -1,5 +1,8 @@
 package com.dianping.swallow.consumerserver.netty;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,6 +16,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.packet.PktConsumerACK;
+import com.dianping.swallow.consumerserver.HandleACKThread;
 import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 
 
@@ -20,6 +24,9 @@ import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 @ChannelPipelineCoverage("all")
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 	private ConsumerServiceImpl cService;
+	
+	
+
 	public MessageServerHandler(ConsumerServiceImpl cService){
 		this.cService = cService;
 	}
@@ -36,21 +43,10 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     public void messageReceived(
             ChannelHandlerContext ctx, MessageEvent e) {
     	//收到PktConsumerACK，按照原流程解析
-    	Channel channel = e.getChannel();
+    	final Channel channel = e.getChannel();
+    	
     	PktConsumerACK consumerACKPacket = (PktConsumerACK)e.getMessage();
-    	String topicName = consumerACKPacket.getDest().getName();
-    	String consumerId = consumerACKPacket.getConsumerId();
-    	ConsumerType consumerType = consumerACKPacket.getConsumerType();
-    	//TODO 记录日志
-    	Long messageId = consumerACKPacket.getMessageId();
-    	if(cService.getConsumerTypes().get(consumerId) == null){
-    		cService.getConsumerTypes().put(consumerId, consumerType);
-    	}
-    	if(messageId != null && ConsumerType.UPDATE_AFTER_ACK.equals(cService.getConsumerTypes().get(consumerId))){
-    		cService.updateMaxMessageId(topicName, consumerId, messageId);
-    	}
-    	cService.putChannelToBlockQueue(consumerId, channel);
-    	cService.addThread(consumerId, topicName);
+    	
     }
  
     @Override

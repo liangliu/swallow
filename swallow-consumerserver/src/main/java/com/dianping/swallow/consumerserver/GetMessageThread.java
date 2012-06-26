@@ -29,14 +29,19 @@ public class GetMessageThread implements Runnable{
 
 	@Override
 	public void run() {
+		try {
+			Thread.sleep(1000);//TODO
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		//TODO 获取mongo中最大的timeStamp，然后blockingQueue去获取！
 		while(isLive){
 			cService.pollFreeChannelsByCId(consumerId, topicName);
-			synchronized(cService.getThreads()){
+			synchronized(cService.getConsumerTypes()){
 				HashSet<Channel> channels = cService.getChannelWorkStatue().get(consumerId);
-				//TODO 貌似是不需要同步！
 				if(channels.isEmpty()){
-					cService.getThreads().remove(consumerId);
+					cService.getConsumerTypes().remove(consumerId);
 					isLive = false;
 				}
 			}
