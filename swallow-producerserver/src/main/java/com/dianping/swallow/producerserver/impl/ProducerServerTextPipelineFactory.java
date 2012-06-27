@@ -8,12 +8,12 @@ import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 
 import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
-import com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl;
+import com.dianping.swallow.common.dao.MessageDAO;
 
 public class ProducerServerTextPipelineFactory implements ChannelPipelineFactory {
-   private MessageDAOImpl messageDAO;
+   private MessageDAO messageDAO;
 
-   public ProducerServerTextPipelineFactory(MessageDAOImpl messageDAO) {
+   public ProducerServerTextPipelineFactory(MessageDAO messageDAO) {
       this.messageDAO = messageDAO;
    }
 

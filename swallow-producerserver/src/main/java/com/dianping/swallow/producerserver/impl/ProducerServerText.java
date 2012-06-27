@@ -5,20 +5,28 @@ import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl;
+import com.dianping.swallow.common.dao.MessageDAO;
 
 public class ProducerServerText {
-   private MessageDAOImpl messageDAO;
+   private static final int DEFAULT_PORT = 8000;
+   private int port = DEFAULT_PORT;
+   
+   @Autowired
+   private MessageDAO messageDAO;
 
-   public ProducerServerText(MessageDAOImpl messageDAO) {
-      this.messageDAO = messageDAO;
+   public void start() {
+      ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
+      bootstrap.setPipelineFactory(new ProducerServerTextPipelineFactory(messageDAO));
+      bootstrap.bind(new InetSocketAddress(getPort()));
    }
 
-   public void start(int portForText) {
-      ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
-            Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
-      bootstrap.setPipelineFactory(new ProducerServerTextPipelineFactory(messageDAO));
-      bootstrap.bind(new InetSocketAddress(portForText));
+   public int getPort() {
+      return port;
+   }
+
+   public void setPort(int port) {
+      this.port = port;
    }
 }
