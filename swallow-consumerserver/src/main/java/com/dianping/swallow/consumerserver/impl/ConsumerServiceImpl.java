@@ -356,6 +356,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 			    	changeChannelWorkStatus(consumerId, channel);		    	
 					putChannelToBlockQueue(consumerId, channel);
 					synchronized(getMessageThreadStatus){
+						//TODO 不同topic的consumerId可以相同
 						if(!getMessageThreadStatus.contains(consumerId)){
 							addGetMessageThread(consumerId, dest.getName());
 						}
