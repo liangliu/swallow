@@ -14,6 +14,7 @@ import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.dianping.swallow.common.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
@@ -47,6 +48,8 @@ public class ConsumerServiceImpl implements ConsumerService{
     private Map<String, PktObjectMessage> preparedMesssages = new HashMap<String, PktObjectMessage>();
     
     private SwallowMessage message = null;
+    
+    private long getMessageInterval = 1000;
     
     private PktObjectMessage pktMsg = null;
     
@@ -220,8 +223,18 @@ public class ConsumerServiceImpl implements ConsumerService{
 					if(preparedMesssages.get(consumerId) != null){
 						pktMsg = preparedMesssages.get(consumerId);
 						preparedMesssages.remove(consumerId);
-					} else{					
-						message = (SwallowMessage)messages.take();
+					} else{			
+						while(true){
+							//获得
+							message = (SwallowMessage)messages.poll(getMessageInterval, TimeUnit.MILLISECONDS);
+							if(message == null){
+								getMessageInterval*=2;
+							}else {
+								getMessageInterval = 1000;
+								break;
+							}
+						}
+						
 						pktMsg = new PktObjectMessage(Destination.topic(topicName), message);
 					}
 					 Long messageId = message.getMessageId();
@@ -332,16 +345,16 @@ public class ConsumerServiceImpl implements ConsumerService{
 		heartbeatThread.start();
 	}
 	
-	public void handlePacket(final Channel channel, final Object consumerPacket){
+	public void handlePacket(final Channel channel, final PktConsumerMessage consumerPacket){
 		final String consumerId;
 		final Destination  dest;
 		final ConsumerType consumerType;
 		ArrayBlockingQueue<Runnable> getAckWorker;
 		//接收的包为greet信息时
-		if(consumerPacket instanceof PktConsumerMessage){
-			consumerId = ((PktConsumerMessage) consumerPacket).getConsumerId();
-			dest = ((PktConsumerMessage) consumerPacket).getDest();
-	    	consumerType = ((PktConsumerMessage) consumerPacket).getConsumerType();
+		if(ConsumerMessageType.GREET.equals(consumerPacket.getType())){
+			consumerId = consumerPacket.getConsumerId();
+			dest = consumerPacket.getDest();
+	    	consumerType = consumerPacket.getConsumerType();
 	    	getAckWorker = getAckWorkers.get(consumerId);
 	    	if(getAckWorker == null){
 	    		getAckWorker = new ArrayBlockingQueue<Runnable>(10);//TODO 

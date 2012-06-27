@@ -41,7 +41,12 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     	Channel channel = e.getChannel();    	
     	//PktConsumerGreet consumerACKPacket = (PktConsumerGreet)e.getMessage();
     	//TODO 判断e.getMessage的类型
-    	cService.handlePacket(channel, e.getMessage());
+    	if(e.getMessage() instanceof PktConsumerMessage){
+    		cService.handlePacket(channel, (PktConsumerMessage)e.getMessage());
+    	} else{
+    		//TODO 记日志
+    	}
+    	
     }
  
     @Override
