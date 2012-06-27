@@ -14,7 +14,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.bson.types.BSONTimestamp;
 
 import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.packet.PktConsumerACK;
+import com.dianping.swallow.common.packet.PktConsumerGreet;
 import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.consumer.ConsumerClient;
 
@@ -27,7 +27,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     
     private ConsumerClient cClient;
     
-    private PktConsumerACK consumerACKPacket;
+    private PktConsumerGreet consumerACKPacket;
     
     public MessageClientHandler(ConsumerClient cClient){
     	this.cClient = cClient;
@@ -36,7 +36,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     public void channelConnected(
             ChannelHandlerContext ctx, ChannelStateEvent e) {
     	
-    	consumerACKPacket = new PktConsumerACK(cClient.getConsumerId(), cClient.getDest(), cClient.getConsumerType(), null);
+    	consumerACKPacket = new PktConsumerGreet(cClient.getConsumerId(), cClient.getDest(), cClient.getConsumerType(), null);
     	e.getChannel().write(consumerACKPacket);   
     	
     }
