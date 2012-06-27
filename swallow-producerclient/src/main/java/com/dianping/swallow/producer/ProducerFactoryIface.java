@@ -20,7 +20,7 @@ import java.util.Map;
 import com.dianping.swallow.producer.impl.Producer;
 
 /**
- * TODO Comment of ProducerFactoryIface
+ * Producer工厂类接口
  * @author tong.song
  *
  */

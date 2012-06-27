@@ -18,7 +18,7 @@ package com.dianping.swallow.producer;
 import java.util.Map;
 
 /**
- * TODO Comment of Producer
+ * Producer接口
  * 
  * @author tong.song
  */

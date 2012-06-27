@@ -21,10 +21,10 @@ import com.dianping.swallow.producer.ProducerOptionKey;
 
 public class Producer implements ProducerIface {
    //变量定义
-   private MQService                 remoteService;                                                  //远程调用对象
+   private MQService                 remoteService;                                              //远程调用对象
 
-   private HandlerAsynchroMode       asyncHandler;                                                   //异步处理对象
-   private HandlerSynchroMode        syncHandler;                                                    //同步处理对象
+   private HandlerAsynchroMode       asyncHandler;                                               //异步处理对象
+   private HandlerSynchroMode        syncHandler;                                                //同步处理对象
 
    private HandlerUndeliverable      undeliverableMessageHandler;
 
@@ -33,17 +33,16 @@ public class Producer implements ProducerIface {
    private static final Logger       logger                   = Logger.getLogger(Producer.class);
 
    //和配置文件对应的变量
-   private final ProducerMode        producerMode;                                                   //Producer工作模式
-   private final Destination         destination;                                                    //Producer消息目的
-   private final int                 threadPoolSize;                                                 //异步处理对象的线程池大小
-   private final boolean             continueSend;                                                   //异步模式是否允许续传
+   private final ProducerMode        producerMode;                                               //Producer工作模式
+   private final Destination         destination;                                                //Producer消息目的
+   private final int                 threadPoolSize;                                             //异步处理对象的线程池大小
+   private final boolean             continueSend;                                               //异步模式是否允许续传
 
    private static final ProducerMode DEFAULT_PRODUCER_MODE    = ProducerMode.SYNC_MODE;
    private static final int          DEFAULT_THREAD_POOL_SIZE = 10;
    private static final boolean      DEFAULT_CONTINUE_SEND    = false;
 
-   public Producer(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions)
-         throws Exception {
+   public Producer(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception {
       //初始化Producer参数
       if (topicName == null)
          throw new Exception("Topic name can not be null.");
@@ -156,7 +155,7 @@ public class Producer implements ProducerIface {
             try {
                asyncHandler.doSendMsg(objMsg);
             } catch (FileQueueClosedException fqce) {
-               logger.info(fqce.toString());
+               logger.log(Level.ERROR, "[SendMessage]:[Message sent failed.]", fqce.getCause());
                handleUndeliverableMessage(objMsg);
             }
             break;

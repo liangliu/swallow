@@ -26,7 +26,7 @@ import com.dianping.swallow.producer.ProducerFactoryIface;
 import com.dianping.swallow.producer.ProducerOptionKey;
 
 /**
- * TODO Comment of ProducerFactory
+ * Producer工厂类
  * 
  * @author tong.song
  */

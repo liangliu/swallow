@@ -16,7 +16,7 @@
 package com.dianping.swallow.producer;
 
 /**
- * TODO Comment of ProducerOptionKey
+ * Producer选项
  * @author tong.song
  *
  */

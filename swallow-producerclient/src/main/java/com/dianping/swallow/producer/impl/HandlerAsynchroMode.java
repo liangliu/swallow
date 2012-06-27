@@ -13,9 +13,9 @@ import com.dianping.swallow.common.packet.Packet;
 
 public class HandlerAsynchroMode {
    private Logger            logger = Logger.getLogger(Producer.class);
-   private Producer      producer;
-   private ExecutorService   senders;                                      //filequeue处理线程池
-   private FileQueue<Packet> messageQueue;                                 //filequeue
+   private Producer          producer;
+   private ExecutorService   senders;                                  //filequeue处理线程池
+   private FileQueue<Packet> messageQueue;                             //filequeue
 
    //构造函数
    public HandlerAsynchroMode(Producer producer) {
