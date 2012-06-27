@@ -18,8 +18,8 @@ package com.dianping.swallow.producerserver.bootstrap;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.dianping.swallow.producerserver.impl.ProducerServerClient;
-import com.dianping.swallow.producerserver.impl.ProducerServerText;
+import com.dianping.swallow.producerserver.impl.ProducerServerForClient;
+import com.dianping.swallow.producerserver.impl.ProducerServerForText;
 
 /**
  * TODO Comment of ProducerServerBootstrap
@@ -27,13 +27,13 @@ import com.dianping.swallow.producerserver.impl.ProducerServerText;
  *
  */
 public class ProducerServerBootstrap {
-   private ProducerServerClient producerServerClient;
-   private ProducerServerText producerServerText;
+   private ProducerServerForClient producerServerClient;
+   private ProducerServerForText producerServerText;
    
    private ProducerServerBootstrap(){
       ApplicationContext ctx = new ClassPathXmlApplicationContext("producerServer.xml");
-      producerServerClient = ctx.getBean("producerServerClient", ProducerServerClient.class);
-      producerServerText = ctx.getBean("producerServerText", ProducerServerText.class);
+      producerServerClient = ctx.getBean("producerServerForClient", ProducerServerForClient.class);
+      producerServerText = ctx.getBean("producerServerForText", ProducerServerForText.class);
    }
    
    public void start() throws Exception{

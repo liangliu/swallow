@@ -18,9 +18,9 @@ import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.producerserver.util.SHAGenerater;
 
-public class ProducerServerClient implements MQService {
+public class ProducerServerForClient implements MQService {
 
-   private static final Logger logger       = Logger.getLogger(ProducerServerClient.class);
+   private static final Logger logger       = Logger.getLogger(ProducerServerForClient.class);
    private static final int    DEFAULT_PORT = 4000;
    private int                 port         = DEFAULT_PORT;
 

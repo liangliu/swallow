@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dianping.swallow.common.dao.MessageDAO;
 
-public class ProducerServerText {
+public class ProducerServerForText {
    private static final int DEFAULT_PORT = 8000;
    private int port = DEFAULT_PORT;
    
