@@ -22,25 +22,24 @@ import com.dianping.swallow.producer.ProducerOptionKey;
 public class Producer implements ProducerIface {
    //变量定义
    private MQService                 remoteService;                                              //远程调用对象
-
    private HandlerAsynchroMode       asyncHandler;                                               //异步处理对象
    private HandlerSynchroMode        syncHandler;                                                //同步处理对象
-
-   private HandlerUndeliverable      undeliverableMessageHandler;
+   private HandlerUndeliverable      undeliverableMessageHandler;                                //消息发送失败处理对象
 
    //常量定义
-   private final String              producerVersion          = "0.6.0";
-   private static final Logger       logger                   = Logger.getLogger(Producer.class);
+   private final String              producerVersion          = "0.6.0";                         //Producer版本号
+   private static final Logger       logger                   = Logger.getLogger(Producer.class); //日志
 
-   //和配置文件对应的变量
+   //Producer配置默认值
+   private static final ProducerMode DEFAULT_PRODUCER_MODE    = ProducerMode.SYNC_MODE;
+   private static final int          DEFAULT_THREAD_POOL_SIZE = 10;
+   private static final boolean      DEFAULT_CONTINUE_SEND    = false;
+
+   //Producer配置变量
    private final ProducerMode        producerMode;                                               //Producer工作模式
    private final Destination         destination;                                                //Producer消息目的
    private final int                 threadPoolSize;                                             //异步处理对象的线程池大小
    private final boolean             continueSend;                                               //异步模式是否允许续传
-
-   private static final ProducerMode DEFAULT_PRODUCER_MODE    = ProducerMode.SYNC_MODE;
-   private static final int          DEFAULT_THREAD_POOL_SIZE = 10;
-   private static final boolean      DEFAULT_CONTINUE_SEND    = false;
 
    public Producer(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception {
       //初始化Producer参数
