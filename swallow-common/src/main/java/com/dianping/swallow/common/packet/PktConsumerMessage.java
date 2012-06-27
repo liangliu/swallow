@@ -15,6 +15,7 @@
  */
 package com.dianping.swallow.common.packet;
 
+import com.dianping.swallow.common.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Destination;
 
@@ -25,7 +26,7 @@ import com.dianping.swallow.common.message.Destination;
  * @author yu.zhang
  *
  */
-public final class PktConsumerGreet extends Packet {
+public final class PktConsumerMessage extends Packet {
 	
 	/**
 	 * 
@@ -34,6 +35,8 @@ public final class PktConsumerGreet extends Packet {
 	
 	//TODO 增加一个greetMessage, ack只需要messageId，channel状态在swallowC保存
 
+	private ConsumerMessageType type;
+	
 	private Destination dest;
 	
 	private String consumerId;
@@ -68,8 +71,17 @@ public final class PktConsumerGreet extends Packet {
 	public void setMessageId(Long messageId) {
 		this.messageId = messageId;
 	}
-	public PktConsumerGreet(String consumerId, Destination dest, ConsumerType consumerType, Long messageId){
+	
+	public ConsumerMessageType getType() {
+		return type;
+	}
+	public void setType(ConsumerMessageType type) {
+		this.type = type;
+	}
+	
+	public PktConsumerMessage(ConsumerMessageType type, String consumerId, Destination dest, ConsumerType consumerType, Long messageId){
 		this.setPacketType(PacketType.CONSUMER_GREET);
+		this.type = type;
 		this.dest = dest;
 		this.consumerId = consumerId;
 		this.messageId = messageId;

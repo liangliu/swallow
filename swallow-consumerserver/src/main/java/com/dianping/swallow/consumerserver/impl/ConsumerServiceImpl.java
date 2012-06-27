@@ -21,8 +21,7 @@ import com.dianping.swallow.common.dao.impl.mongodb.MongoUtils;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.packet.PktConsumerACK;
-import com.dianping.swallow.common.packet.PktConsumerGreet;
+import com.dianping.swallow.common.packet.PktConsumerMessage;
 import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.consumerserver.ChannelInformation;
 import com.dianping.swallow.consumerserver.ConsumerService;
@@ -339,10 +338,10 @@ public class ConsumerServiceImpl implements ConsumerService{
 		final ConsumerType consumerType;
 		ArrayBlockingQueue<Runnable> getAckWorker;
 		//接收的包为greet信息时
-		if(consumerPacket instanceof PktConsumerGreet){
-			consumerId = ((PktConsumerGreet) consumerPacket).getConsumerId();
-			dest = ((PktConsumerGreet) consumerPacket).getDest();
-	    	consumerType = ((PktConsumerGreet) consumerPacket).getConsumerType();
+		if(consumerPacket instanceof PktConsumerMessage){
+			consumerId = ((PktConsumerMessage) consumerPacket).getConsumerId();
+			dest = ((PktConsumerMessage) consumerPacket).getDest();
+	    	consumerType = ((PktConsumerMessage) consumerPacket).getConsumerType();
 	    	getAckWorker = getAckWorkers.get(consumerId);
 	    	if(getAckWorker == null){
 	    		getAckWorker = new ArrayBlockingQueue<Runnable>(10);//TODO 
@@ -380,7 +379,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 				consumerId = channelInfo.getConsumerId();
 				dest = channelInfo.getDest();
 			}			
-			final Long messageId = ((PktConsumerACK)consumerPacket).getMessageId();
+			final Long messageId = null;//((PktConsumerACK)consumerPacket).getMessageId();
 			getAckWorker = getAckWorkers.get(consumerId);
 			getAckWorker.add(new Runnable() {
 				@Override

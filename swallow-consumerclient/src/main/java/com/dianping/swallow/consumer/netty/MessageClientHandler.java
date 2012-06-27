@@ -11,11 +11,10 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.bson.types.BSONTimestamp;
 
+import com.dianping.swallow.common.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.packet.PktConsumerACK;
-import com.dianping.swallow.common.packet.PktConsumerGreet;
+import com.dianping.swallow.common.packet.PktConsumerMessage;
 import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.consumer.ConsumerClient;
 
@@ -28,9 +27,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     
     private ConsumerClient cClient;
     
-    private PktConsumerACK consumerACK;
-    
-    private PktConsumerGreet consumerGreet;
+    private PktConsumerMessage consumermessage;
     
     public MessageClientHandler(ConsumerClient cClient){
     	this.cClient = cClient;
@@ -39,8 +36,8 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     public void channelConnected(
             ChannelHandlerContext ctx, ChannelStateEvent e) {
     	
-    	consumerGreet = new PktConsumerGreet(cClient.getConsumerId(), cClient.getDest(), cClient.getConsumerType(), null);
-    	e.getChannel().write(consumerGreet);   
+    	consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET, cClient.getConsumerId(), cClient.getDest(), cClient.getConsumerType(), null);
+    	e.getChannel().write(consumermessage);   
     	
     }
  
@@ -50,10 +47,10 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     	
     	SwallowMessage swallowMessage = (SwallowMessage)((PktObjectMessage)e.getMessage()).getContent();
     	Long messageId = swallowMessage.getMessageId();    	
-    	consumerACK = new PktConsumerACK(messageId);
+    	consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET,null,null,null,messageId);
     	//TODO 异常处理
     	cClient.getListener().onMessage(swallowMessage);
-    	e.getChannel().write(consumerACK);
+    	e.getChannel().write(consumermessage);
     	
     }
  

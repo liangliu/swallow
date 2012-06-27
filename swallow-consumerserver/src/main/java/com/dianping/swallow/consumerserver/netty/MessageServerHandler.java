@@ -11,7 +11,7 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
-import com.dianping.swallow.common.packet.PktConsumerGreet;
+import com.dianping.swallow.common.packet.PktConsumerMessage;
 import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 
 
