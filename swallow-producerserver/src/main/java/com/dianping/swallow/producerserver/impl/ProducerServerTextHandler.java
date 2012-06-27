@@ -10,12 +10,12 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
-import com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl;
+import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.packet.PktTextMessage;
 import com.dianping.swallow.producerserver.util.TextHandler;
 
 public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
-   private final MessageDAOImpl messageDAO;
+   private final MessageDAO messageDAO;
    
    //TextHandler状态代码
    private static final int     OK           = 250;
@@ -29,7 +29,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
     * 
     * @param messageDAO
     */
-   public ProducerServerTextHandler(MessageDAOImpl messageDAO) {
+   public ProducerServerTextHandler(MessageDAO messageDAO) {
       this.messageDAO = messageDAO;
    }
 
