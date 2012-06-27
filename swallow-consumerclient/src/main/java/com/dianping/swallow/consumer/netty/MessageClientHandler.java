@@ -14,6 +14,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.bson.types.BSONTimestamp;
 
 import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.packet.PktConsumerACK;
 import com.dianping.swallow.common.packet.PktConsumerGreet;
 import com.dianping.swallow.common.packet.PktObjectMessage;
 import com.dianping.swallow.consumer.ConsumerClient;
@@ -27,7 +28,9 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     
     private ConsumerClient cClient;
     
-    private PktConsumerGreet consumerACKPacket;
+    private PktConsumerACK consumerACK;
+    
+    private PktConsumerGreet consumerGreet;
     
     public MessageClientHandler(ConsumerClient cClient){
     	this.cClient = cClient;
@@ -36,8 +39,8 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     public void channelConnected(
             ChannelHandlerContext ctx, ChannelStateEvent e) {
     	
-    	consumerACKPacket = new PktConsumerGreet(cClient.getConsumerId(), cClient.getDest(), cClient.getConsumerType(), null);
-    	e.getChannel().write(consumerACKPacket);   
+    	consumerGreet = new PktConsumerGreet(cClient.getConsumerId(), cClient.getDest(), cClient.getConsumerType(), null);
+    	e.getChannel().write(consumerGreet);   
     	
     }
  
@@ -46,11 +49,11 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
             ChannelHandlerContext ctx, MessageEvent e) {
     	
     	SwallowMessage swallowMessage = (SwallowMessage)((PktObjectMessage)e.getMessage()).getContent();
-    	Long messageId = swallowMessage.getMessageId();
-    	consumerACKPacket.setMessageId(messageId);
+    	Long messageId = swallowMessage.getMessageId();    	
+    	consumerACK = new PktConsumerACK(messageId);
     	//TODO 异常处理
     	cClient.getListener().onMessage(swallowMessage);
-    	e.getChannel().write(consumerACKPacket);
+    	e.getChannel().write(consumerACK);
     	
     }
  

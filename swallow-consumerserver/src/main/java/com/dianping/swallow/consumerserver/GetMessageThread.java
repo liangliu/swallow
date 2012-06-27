@@ -31,10 +31,10 @@ public class GetMessageThread implements Runnable{
 		}
 		while(isLive){
 			cService.pollFreeChannelsByCId(consumerId, topicName);
-			synchronized(cService.getConsumerTypes()){
+			synchronized(cService.getGetMessageThreadStatus()){
 				HashSet<Channel> channels = cService.getChannelWorkStatus().get(consumerId);
 				if(channels.isEmpty()){
-					cService.getConsumerTypes().remove(consumerId);
+					cService.getGetMessageThreadStatus().remove(consumerId);
 					isLive = false;
 				}
 			}

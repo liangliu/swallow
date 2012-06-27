@@ -11,7 +11,7 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
-import com.dianping.swallow.common.packet.PktConsumerACK;
+import com.dianping.swallow.common.packet.PktConsumerGreet;
 import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 
 
@@ -39,8 +39,8 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     	
     	//收到PktConsumerACK，按照原流程解析
     	Channel channel = e.getChannel();    	
-    	PktConsumerACK consumerACKPacket = (PktConsumerACK)e.getMessage();
-    	cService.handleACK(channel, consumerACKPacket);
+    	//PktConsumerGreet consumerACKPacket = (PktConsumerGreet)e.getMessage();
+    	cService.handlePacket(channel, e.getMessage());
     }
  
     @Override

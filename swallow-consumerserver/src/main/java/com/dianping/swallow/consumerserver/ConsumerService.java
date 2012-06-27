@@ -26,7 +26,7 @@ public interface ConsumerService {
 	 * @param getAckWorker
 	 * 有新的channel连接时，对于存在同consumerId的线程，不做处理；否则新增线程。
 	 */	
-	public void addThread(String consumerId, String topicName, ArrayBlockingQueue<Runnable> getAckWorker);
+	//public void addThread(String consumerId, String topicName, ArrayBlockingQueue<Runnable> getAckWorker);
 	
 	/**
 	 * 轮询对应consumerId的blockQueue中的channel
