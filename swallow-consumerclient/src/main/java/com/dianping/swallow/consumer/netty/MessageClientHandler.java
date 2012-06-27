@@ -15,7 +15,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import com.dianping.swallow.common.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
-import com.dianping.swallow.common.packet.PktObjectMessage;
+import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.consumer.ConsumerClient;
 
 //TODO delete ?
@@ -45,7 +45,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     public void messageReceived(
             ChannelHandlerContext ctx, MessageEvent e) {
     	
-    	SwallowMessage swallowMessage = (SwallowMessage)((PktObjectMessage)e.getMessage()).getContent();
+    	SwallowMessage swallowMessage = (SwallowMessage)((PktMessage)e.getMessage()).getContent();
     	Long messageId = swallowMessage.getMessageId();    	
     	consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET,null,null,null,messageId);
     	//TODO 异常处理

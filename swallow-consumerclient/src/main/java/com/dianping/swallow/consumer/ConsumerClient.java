@@ -17,7 +17,7 @@ import com.dianping.swallow.common.codec.JsonEncoder;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
-import com.dianping.swallow.common.packet.PktObjectMessage;
+import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.consumer.netty.MessageClientHandler;
 
 public class ConsumerClient {
@@ -116,7 +116,7 @@ public class ConsumerClient {
             public ChannelPipeline getPipeline() throws Exception {  
             ChannelPipeline pipeline = Channels.pipeline();
             pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
-            pipeline.addLast("jsonDecoder", new JsonDecoder(PktObjectMessage.class));
+            pipeline.addLast("jsonDecoder", new JsonDecoder(PktMessage.class));
             pipeline.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
             pipeline.addLast("jsonEncoder", new JsonEncoder(PktConsumerMessage.class));
             pipeline.addLast("handler", handler);

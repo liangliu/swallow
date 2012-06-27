@@ -16,7 +16,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
-import com.dianping.swallow.common.packet.PktObjectMessage;
+import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 import com.dianping.swallow.consumerserver.netty.MessageServerHandler;
 
@@ -53,7 +53,7 @@ public class MasterBootStrap {
             pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
             pipeline.addLast("jsonDecoder", new JsonDecoder(PktConsumerMessage.class));
             pipeline.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
-            pipeline.addLast("jsonEncoder", new JsonEncoder(PktObjectMessage.class));
+            pipeline.addLast("jsonEncoder", new JsonEncoder(PktMessage.class));
             pipeline.addLast("handler", handler);
             return pipeline;  
             }  

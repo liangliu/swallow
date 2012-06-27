@@ -13,7 +13,7 @@ import com.dianping.dpsf.api.ServiceRegistry;
 import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.Packet;
-import com.dianping.swallow.common.packet.PktObjectMessage;
+import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.producerserver.util.SHAGenerater;
@@ -64,17 +64,17 @@ public class ProducerServerForClient implements MQService {
             }
             break;
          case OBJECT_MSG:
-            String sha1 = SHAGenerater.generateSHA(((SwallowMessage) ((PktObjectMessage) pkt).getContent())
+            String sha1 = SHAGenerater.generateSHA(((SwallowMessage) ((PktMessage) pkt).getContent())
                   .getContent());
             pktRet = new PktSwallowPACK(sha1);
 
-            //设置swallowMessage的sha-1
-            ((SwallowMessage) ((PktObjectMessage) pkt).getContent()).setSha1(sha1);
+            //设置swallowMessage的sha-1//TODO 设置swallowMessage的IP地址
+            ((SwallowMessage) ((PktMessage) pkt).getContent()).setSha1(sha1);
 
             //将swallowMessage保存到mongodb
             try {
-               messageDAO.saveMessage(((PktObjectMessage) pkt).getDestination().getName(),
-                     (SwallowMessage) ((PktObjectMessage) pkt).getContent());
+               messageDAO.saveMessage(((PktMessage) pkt).getDestination().getName(),
+                     (SwallowMessage) ((PktMessage) pkt).getContent());
             } catch (Exception e) {
                logger.error("[ProducerServer]:[Message saved failed.]", e);
                throw e;

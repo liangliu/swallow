@@ -1,8 +1,9 @@
 package com.dianping.swallow.producerserver.impl;
 
+import java.util.Date;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -11,18 +12,19 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.dianping.swallow.common.dao.MessageDAO;
-import com.dianping.swallow.common.packet.PktTextMessage;
-import com.dianping.swallow.producerserver.util.TextHandler;
+import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.producer.ProducerUtils;
+import com.dianping.swallow.producerserver.util.SHAGenerater;
 
 public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
-   private final MessageDAO messageDAO;
-   
-   //TextHandler状态代码
-   private static final int     OK           = 250;
-   private static final int     WRONG_FORMAT = 251;
-   private static final int     SAVE_FAILED  = 252;
+   private final MessageDAO    messageDAO;
 
-   private static final Logger  logger       = Logger.getLogger(ProducerServerTextHandler.class);
+   //TextHandler状态代码
+   private static final int    OK                = 250;
+   private static final int    INVALID_TOPICNAME = 251;
+   private static final int    SAVE_FAILED       = 252;
+
+   private static final Logger logger            = Logger.getLogger(ProducerServerTextHandler.class);
 
    /**
     * 构造函数
@@ -43,27 +45,28 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
 
    @Override
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-      //获取json字符串
-      String jsonStr = (String) e.getMessage();
-      //处理json字符串，转换为PktTextMessage类，包含SwallowMessage、TopicName以及是否需要ACK等信息
-      PktTextMessage pkt = TextHandler.changeTextToPacket(e.getChannel().getRemoteAddress(), jsonStr);
-      //初始化json的ObjectMapper及ACK对象
-      ObjectMapper mapper = new ObjectMapper();
+      //获取TextObject
+      TextObject textObject = (TextObject) e.getMessage();
+      //生成SwallowMessage//TODO 增加swallowMessage的IP信息
+      SwallowMessage swallowMessage = new SwallowMessage();
+      swallowMessage.setContent(textObject.getContent());
+      swallowMessage.setGeneratedTime(new Date());
+      swallowMessage.setSha1(SHAGenerater.generateSHA(swallowMessage.getContent()));
+      //初始化ACK对象
       TextACK textAck = new TextACK();
       textAck.setStatus(OK);
-      //如果解析json字符串失败，返回失败ACK，reason是“Wrong json string”
-      if (pkt == null) {
-         logger.log(Level.ERROR, "[TextHandler]:[" + e.getChannel().getRemoteAddress() + ": " + jsonStr
+      //TopicName非法，返回失败ACK，reason是"TopicName is not valid."
+      if (!ProducerUtils.isTopicNameValid(textObject.getTopic())) {
+         logger.log(Level.ERROR, "[TextHandler]:[" + e.getChannel().getRemoteAddress() + ": " + textObject
                + "]:[Wrong format.]");
-         textAck.setStatus(WRONG_FORMAT);
-         textAck.setInfo("Wrong json format.");
-         jsonStr = mapper.writeValueAsString(textAck);
+         textAck.setStatus(INVALID_TOPICNAME);
+         textAck.setInfo("TopicName is not valid.");
          //返回ACK
-         e.getChannel().write(jsonStr);
+         e.getChannel().write(textAck);
       } else {
          //调用DAO层将SwallowMessage存入DB
          try {
-            messageDAO.saveMessage(pkt.getTopicName(), pkt.getMessage());
+            messageDAO.saveMessage(textObject.getTopic(), swallowMessage);
          } catch (Exception e1) {
             //记录异常，返回失败ACK，reason是“Can not save message”
             logger.log(Level.ERROR, "[TextHandler]:[Save Message Failed.]", e1.getCause());
@@ -71,18 +74,12 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
             textAck.setInfo("Can not save message.");
          }
          //如果不要ACK，立刻返回
-         if (!pkt.isACK())
+         if (!textObject.isACK())
             return;
 
-         textAck.setInfo(pkt.getMessage().getSha1());
-         try {
-            jsonStr = mapper.writeValueAsString(textAck);
-         } catch (Exception e1) {
-            logger.log(Level.WARN, "[TextHandler]:[Json convert failed.]", e1.getCause());
-            return;
-         }
-         //返回ACK的json字符串
-         e.getChannel().write(jsonStr);
+         textAck.setInfo(swallowMessage.getSha1());
+         //返回ACK
+         e.getChannel().write(textAck);
       }
    }
 

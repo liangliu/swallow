@@ -23,7 +23,7 @@ import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
-import com.dianping.swallow.common.packet.PktObjectMessage;
+import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.consumerserver.CId2Topic;
 import com.dianping.swallow.consumerserver.ChannelInformation;
 import com.dianping.swallow.consumerserver.ConsumerService;
@@ -46,13 +46,13 @@ public class ConsumerServiceImpl implements ConsumerService{
 
 	private Map<CId2Topic, HashSet<Channel>> channelWorkStatus;	//channel是否存在的状态
     
-    private Map<CId2Topic, PktObjectMessage> preparedMesssages = new HashMap<CId2Topic, PktObjectMessage>();
+    private Map<CId2Topic, PktMessage> preparedMesssages = new HashMap<CId2Topic, PktMessage>();
     
     private SwallowMessage message = null;
     
     private long getMessageInterval = 1000;
     
-    private PktObjectMessage pktMsg = null;
+    private PktMessage pktMsg = null;
     
     @Autowired
     private SwallowBuffer swallowBuffer;
@@ -235,7 +235,7 @@ public class ConsumerServiceImpl implements ConsumerService{
 							}
 						}
 						
-						pktMsg = new PktObjectMessage(Destination.topic(cId2Topic.getTopicName()), message);
+						pktMsg = new PktMessage(Destination.topic(cId2Topic.getTopicName()), message);
 					}
 					 Long messageId = message.getMessageId();
 					//如果consumer是收到ACK之前更新messageId的类型
