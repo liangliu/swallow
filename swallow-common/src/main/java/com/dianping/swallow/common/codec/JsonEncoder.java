@@ -9,7 +9,6 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 
 import com.dianping.swallow.common.message.JsonBinder;
-import com.dianping.swallow.common.message.SwallowMessage;
 
 /**
  * 用法:
@@ -25,15 +24,18 @@ import com.dianping.swallow.common.message.SwallowMessage;
  * p.addLast(&quot;handler&quot;, new XXClientHandler());
  * </pre>
  */
+@SuppressWarnings("rawtypes")
 public class JsonEncoder extends OneToOneEncoder {
+   private Class clazz;
 
-   public JsonEncoder() {
+   public JsonEncoder(Class clazz) {
       super();
+      this.clazz = clazz;
    }
 
    @Override
    protected Object encode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
-      if (msg instanceof SwallowMessage) {// 对Message进行编码
+      if (msg.getClass() == clazz) {// 对Message进行编码
          JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
          String json = jsonBinder.toJson(msg);
          byte[] jsonBytes = json.getBytes(Charset.forName("UTF-8"));
@@ -43,4 +45,5 @@ public class JsonEncoder extends OneToOneEncoder {
       }
       return msg;
    }
+
 }

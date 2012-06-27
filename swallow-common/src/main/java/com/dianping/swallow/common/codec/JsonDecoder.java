@@ -24,12 +24,17 @@ import com.dianping.swallow.common.message.SwallowMessage;
  * p.addLast(&quot;handler&quot;, new XXClientHandler());
  * </pre>
  */
+@SuppressWarnings("rawtypes")
 public class JsonDecoder extends OneToOneDecoder {
 
-   public JsonDecoder() {
+   private Class clazz;
+   
+   public JsonDecoder( Class clazz) {
       super();
+      this.clazz = clazz;
    }
 
+   @SuppressWarnings("unchecked")
    @Override
    protected Object decode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
       if (!(msg instanceof ChannelBuffer)) {
@@ -39,8 +44,7 @@ public class JsonDecoder extends OneToOneDecoder {
       ChannelBuffer buf = (ChannelBuffer) msg;
       String json = buf.toString(Charset.forName("UTF-8"));
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
-      SwallowMessage message = jsonBinder.fromJson(json, SwallowMessage.class);
-      return message;
+      return jsonBinder.fromJson(json, clazz);
    }
 
 }
