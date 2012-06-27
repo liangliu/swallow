@@ -15,11 +15,7 @@
  */
 package com.dianping.swallow.producerserver.bootstrap;
 
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import com.dianping.swallow.producerserver.impl.ProducerServerForClient;
-import com.dianping.swallow.producerserver.impl.ProducerServerForText;
 
 /**
  * TODO Comment of ProducerServerBootstrap
@@ -27,23 +23,9 @@ import com.dianping.swallow.producerserver.impl.ProducerServerForText;
  *
  */
 public class ProducerServerBootstrap {
-   private ProducerServerForClient producerServerClient;
-   private ProducerServerForText producerServerText;
-   
-   private ProducerServerBootstrap(){
-      ApplicationContext ctx = new ClassPathXmlApplicationContext("producerServer.xml");
-      producerServerClient = ctx.getBean("producerServerForClient", ProducerServerForClient.class);
-      producerServerText = ctx.getBean("producerServerForText", ProducerServerForText.class);
-   }
-   
-   public void start() throws Exception{
-      producerServerClient.start();
-      producerServerText.start();
-   }
-   
    public static void main(String[] args) {
       try {
-         new ProducerServerBootstrap().start();
+         new ClassPathXmlApplicationContext("producerServer.xml");
       } catch (Exception e) {
          System.out.println(e.toString());
       }

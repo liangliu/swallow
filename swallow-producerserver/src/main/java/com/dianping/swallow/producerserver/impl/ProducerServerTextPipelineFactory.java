@@ -22,10 +22,10 @@ public class ProducerServerTextPipelineFactory implements ChannelPipelineFactory
       ChannelPipeline pipeline = Channels.pipeline();
       
       pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
-      pipeline.addLast("jsonDecoder", new JsonDecoder());
+      pipeline.addLast("jsonDecoder", new JsonDecoder(String.class));
 
       pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
-      pipeline.addLast("jsonEncoder", new JsonEncoder());
+      pipeline.addLast("jsonEncoder", new JsonEncoder(String.class));
 
       pipeline.addLast("handler", new ProducerServerTextHandler(messageDAO));
 
