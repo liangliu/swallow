@@ -11,14 +11,14 @@ public interface ConsumerService {
 	 * @param consumerId
 	 * @param channel
 	 */	
-	public void putChannelToBlockQueue(String consumerId, Channel channel);
+	//public void putChannelToBlockQueue(String consumerId, Channel channel);
 	
 	/**
 	 * 有新消息到的时候，更新ChannelWorkStatus
 	 * @param consumerId
 	 * @param channel
 	 */
-	public void changeChannelWorkStatus(String consumerId, Channel channel);
+	//public void changeChannelWorkStatus(String consumerId, Channel channel);
 	
 	/**
 	 * @param consumerId
@@ -33,11 +33,11 @@ public interface ConsumerService {
 	 * @param consumerId
 	 * @param topicId
 	 */
-	public void pollFreeChannelsByCId(String consumerId,String topicId);
+	//public void pollFreeChannelsByCId(String consumerId,String topicId);
 	
 	/**
 	 * 当channel断开时做的处理
 	 * @param channel
 	 */
-	public void changeStatuesWhenChannelBreak(Channel channel);
+	//public void changeStatuesWhenChannelBreak(Channel channel);
 }
