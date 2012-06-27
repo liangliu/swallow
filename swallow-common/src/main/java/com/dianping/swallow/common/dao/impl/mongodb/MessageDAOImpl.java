@@ -39,15 +39,16 @@ public class MessageDAOImpl implements MessageDAO {
 
    @Override
    public SwallowMessage getMessage(String topicName, Long messageId) {
-	   //TODO bu yong le?
       DBCollection collection = this.mongoClient.getMessageCollection(topicName);
 
       DBObject query = BasicDBObjectBuilder.start().add("_id", MongoUtils.longToBSONTimestamp(messageId)).get();
       DBObject result = collection.findOne(query);
-      SwallowMessage swallowMessage = new SwallowMessage();
-      convert(result, swallowMessage);
-
-      return swallowMessage;
+      if (result != null) {
+         SwallowMessage swallowMessage = new SwallowMessage();
+         convert(result, swallowMessage);
+         return swallowMessage;
+      }
+      return null;
    }
 
    @Override
@@ -58,9 +59,13 @@ public class MessageDAOImpl implements MessageDAO {
       DBObject fields = BasicDBObjectBuilder.start().add("_id", 1).get();
       DBObject orderBy = BasicDBObjectBuilder.start().add("_id", Integer.valueOf(-1)).get();
       DBCursor cursor = collection.find(null, fields).sort(orderBy).limit(1);
-      if (cursor.hasNext()) {
-         BSONTimestamp timestamp = (BSONTimestamp) cursor.next().get("_id");
-         return MongoUtils.BSONTimestampToLong(timestamp);
+      try {
+         if (cursor.hasNext()) {
+            BSONTimestamp timestamp = (BSONTimestamp) cursor.next().get("_id");
+            return MongoUtils.BSONTimestampToLong(timestamp);
+         }
+      } finally {
+         cursor.close();
       }
       return null;
    }
@@ -72,11 +77,15 @@ public class MessageDAOImpl implements MessageDAO {
 
       DBObject orderBy = BasicDBObjectBuilder.start().add("_id", Integer.valueOf(-1)).get();
       DBCursor cursor = collection.find().sort(orderBy).limit(1);
-      if (cursor.hasNext()) {
-         DBObject result = cursor.next();
-         SwallowMessage swallowMessage = new SwallowMessage();
-         convert(result, swallowMessage);
-         return swallowMessage;
+      try {
+         if (cursor.hasNext()) {
+            DBObject result = cursor.next();
+            SwallowMessage swallowMessage = new SwallowMessage();
+            convert(result, swallowMessage);
+            return swallowMessage;
+         }
+      } finally {
+         cursor.close();
       }
       return null;
    }
@@ -91,13 +100,16 @@ public class MessageDAOImpl implements MessageDAO {
       DBCursor cursor = collection.find(query).sort(orderBy).limit(size);
 
       List<SwallowMessage> list = new ArrayList<SwallowMessage>();
-      while (cursor.hasNext()) {
-         DBObject result = cursor.next();
-         SwallowMessage swallowMessage = new SwallowMessage();
-         convert(result, swallowMessage);
-         list.add(swallowMessage);
+      try {
+         while (cursor.hasNext()) {
+            DBObject result = cursor.next();
+            SwallowMessage swallowMessage = new SwallowMessage();
+            convert(result, swallowMessage);
+            list.add(swallowMessage);
+         }
+      } finally {
+         cursor.close();
       }
-
       return list;
    }
 
@@ -118,19 +130,21 @@ public class MessageDAOImpl implements MessageDAO {
       DBCursor cursor = collection.find(query).sort(orderBy).limit(size);
 
       List<SwallowMessage> list = new ArrayList<SwallowMessage>();
-      while (cursor.hasNext()) {
-         DBObject result = cursor.next();
-         SwallowMessage swallowMessage = new SwallowMessage();
-         convert(result, swallowMessage);
-         list.add(swallowMessage);
+      try {
+         while (cursor.hasNext()) {
+            DBObject result = cursor.next();
+            SwallowMessage swallowMessage = new SwallowMessage();
+            convert(result, swallowMessage);
+            list.add(swallowMessage);
+         }
+      } finally {
+         cursor.close();
       }
-
       return list;
    }
 
    @SuppressWarnings("unchecked")
    private void convert(DBObject result, SwallowMessage swallowMessage) {
-	   //TODO result=null?
       BSONTimestamp timestamp = (BSONTimestamp) result.get("_id");
       swallowMessage.setMessageId(MongoUtils.BSONTimestampToLong(timestamp));
       swallowMessage.setContent((String) result.get(CONTENT));//content

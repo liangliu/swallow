@@ -9,12 +9,17 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 负责载入Mongo本地配置
+ * 
+ * @author wukezhu
+ */
 public class MongoConfig {
 
    private static final Logger LOG                                          = LoggerFactory
                                                                                   .getLogger(MongoConfig.class);
 
-   // mongo server options
+   // local config(mongo server options)
    private boolean             slaveOk                                      = false;
    private boolean             socketKeepAlive                              = false;
    private int                 socketTimeout                                = 500;
@@ -27,23 +32,16 @@ public class MongoConfig {
    private int                 maxWaitTime                                  = 1000 * 60 * 2;
    private boolean             autoConnectRetry                             = false;
    private boolean             safe                                         = false;
-   private int                 cappedCollectionSize                         = Integer.MAX_VALUE;
-   private int                 cappedCollectionMaxDocNum;
 
    public MongoConfig() {
    }
 
    public MongoConfig(InputStream in) {
-      init(in);
-   }
-
-   public MongoConfig(String configFileName) {
-      InputStream in = MongoConfig.class.getClassLoader().getResourceAsStream(configFileName);
-      init(in);
+      loadLocalConfig(in);
    }
 
    @SuppressWarnings("rawtypes")
-   private void init(InputStream in) {
+   private void loadLocalConfig(InputStream in) {
       Properties props = new Properties();
       try {
          props.load(in);
@@ -112,112 +110,48 @@ public class MongoConfig {
       return slaveOk;
    }
 
-   public void setSlaveOk(boolean slaveOk) {
-      this.slaveOk = slaveOk;
-   }
-
    public boolean isSocketKeepAlive() {
       return socketKeepAlive;
-   }
-
-   public void setSocketKeepAlive(boolean socketKeepAlive) {
-      this.socketKeepAlive = socketKeepAlive;
    }
 
    public int getSocketTimeout() {
       return socketTimeout;
    }
 
-   public void setSocketTimeout(int socketTimeout) {
-      this.socketTimeout = socketTimeout;
-   }
-
    public int getConnectionsPerHost() {
       return connectionsPerHost;
-   }
-
-   public void setConnectionsPerHost(int connectionsPerHost) {
-      this.connectionsPerHost = connectionsPerHost;
    }
 
    public int getThreadsAllowedToBlockForConnectionMultiplier() {
       return threadsAllowedToBlockForConnectionMultiplier;
    }
 
-   public void setThreadsAllowedToBlockForConnectionMultiplier(int threadsAllowedToBlockForConnectionMultiplier) {
-      this.threadsAllowedToBlockForConnectionMultiplier = threadsAllowedToBlockForConnectionMultiplier;
-   }
-
    public int getW() {
       return w;
-   }
-
-   public void setW(int w) {
-      this.w = w;
    }
 
    public int getWtimeout() {
       return wtimeout;
    }
 
-   public void setWtimeout(int wtimeout) {
-      this.wtimeout = wtimeout;
-   }
-
    public boolean isFsync() {
       return fsync;
-   }
-
-   public void setFsync(boolean fsync) {
-      this.fsync = fsync;
    }
 
    public int getConnectTimeout() {
       return connectTimeout;
    }
 
-   public void setConnectTimeout(int connectTimeout) {
-      this.connectTimeout = connectTimeout;
-   }
-
    public int getMaxWaitTime() {
       return maxWaitTime;
-   }
-
-   public void setMaxWaitTime(int maxWaitTime) {
-      this.maxWaitTime = maxWaitTime;
    }
 
    public boolean isAutoConnectRetry() {
       return autoConnectRetry;
    }
 
-   public void setAutoConnectRetry(boolean autoConnectRetry) {
-      this.autoConnectRetry = autoConnectRetry;
-   }
-
    public boolean isSafe() {
       return safe;
-   }
-
-   public void setSafe(boolean safe) {
-      this.safe = safe;
-   }
-
-   public int getCappedCollectionSize() {
-      return cappedCollectionSize;
-   }
-
-   public void setCappedCollectionSize(int cappedCollectionSize) {
-      this.cappedCollectionSize = cappedCollectionSize;
-   }
-
-   public int getCappedCollectionMaxDocNum() {
-      return cappedCollectionMaxDocNum;
-   }
-
-   public void setCappedCollectionMaxDocNum(int cappedCollectionMaxDocNum) {
-      this.cappedCollectionMaxDocNum = cappedCollectionMaxDocNum;
    }
 
 }

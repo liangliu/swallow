@@ -30,13 +30,4 @@
 		<property value="${swallow.mongo.serverURI}" name="mongoServerURI" />
 	</bean>
 
-	<bean id="producerServerClient" class="com.dianping.swallow.producerserver.impl.ProducerServerClient" init-method="start">
-		<property name="port" value="4000" /> 
-	</bean>
-		
-	<bean id="producerServerText" class="com.dianping.swallow.producerserver.impl.ProducerServerText" init-method="start" >
-		<property name="port" value="8000" />
-	</bean>
-
-
 </beans>

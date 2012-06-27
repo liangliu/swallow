@@ -59,11 +59,8 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
    }
 
    public Message take() throws InterruptedException {
-      //如果剩余元素数量小于最低限制值threshold，就启动一个“获取DB数据的后台线程”去DB获取数据，并添加到Queue的尾部
-      if (super.size() < threshold) {
-         ensureLeftMessage();
-      }
-      return super.take();
+      throw new UnsupportedOperationException(
+            "Don't call this operation, call 'poll(long timeout, TimeUnit unit)' instead.");
    }
 
    public Message poll() {

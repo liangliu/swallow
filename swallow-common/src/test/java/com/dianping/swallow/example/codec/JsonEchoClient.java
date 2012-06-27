@@ -12,6 +12,7 @@ import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 
 import com.dianping.swallow.common.codec.JsonDecoder;
+import com.dianping.swallow.common.message.SwallowMessage;
 
 /**
  * 连接到服务器之后，会收到服务器发送的经过ProtobufVarint32LengthFieldPrepender和JsonEncoder编码后的消息 ，
@@ -34,7 +35,7 @@ public class JsonEchoClient {
          public ChannelPipeline getPipeline() throws Exception {
             ChannelPipeline p = Channels.pipeline();
             p.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
-            p.addLast("jsonDecoder", new JsonDecoder());
+            p.addLast("jsonDecoder", new JsonDecoder(SwallowMessage.class));
             p.addLast("handler", new EchoClientHandler());
             return p;
          }
