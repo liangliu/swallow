@@ -12,6 +12,7 @@ public class ProducerServerForText {
    private static final int DEFAULT_PORT = 8000;
    private int              port         = DEFAULT_PORT;
    private MessageDAO       messageDAO;
+   
 
    public void start() {
       ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
@@ -29,7 +30,7 @@ public class ProducerServerForText {
    }
 
    public void setMessageDAO(MessageDAO messageDAO) {
-      this.messageDAO = messageDAO;
+	  this.messageDAO = messageDAO;
    }
-
+   
 }

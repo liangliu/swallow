@@ -43,7 +43,7 @@ public class MongoClient implements ConfigChange {
    private static final String         LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE        = "swallow.mongo.heartbeatCappedCollectionSize";
    private static final String         LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM = "swallow.mongo.heartbeatCappedCollectionMaxDocNum";
    //serverURI的名字可通过setter方法配置(consumer和producer在Lion上的名字是不同的)
-   private String                      severURILionKey                                  = "swallow.mongo.consumerServerURI";                 //默认值
+   private String                      severURILionKey;
 
    //lion config
    private Map<String, Integer>        msgTopicNameToSizes;
@@ -70,7 +70,8 @@ public class MongoClient implements ConfigChange {
     * @throws LionException
     * @throws IOException
     */
-   public MongoClient() {
+   public MongoClient(String severURILionKey) {
+      this.severURILionKey = severURILionKey;
       if (LOG.isDebugEnabled()) {
          LOG.debug("MongoClient() - start.");
       }
@@ -476,10 +477,6 @@ public class MongoClient implements ConfigChange {
          }
       }
       return result;
-   }
-
-   public void setSeverURILionKey(String severURILionKey) {
-      this.severURILionKey = severURILionKey;
    }
 
 }

@@ -38,8 +38,10 @@
 	</bean>
 
 	<bean id="mongoClient"
-		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient"
-		init-method="init">
+		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient">
+		<constructor-arg>
+			<value>swallow.mongo.consumerServerURI</value>
+		</constructor-arg>
 	</bean>
 
 </beans>
