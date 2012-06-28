@@ -47,6 +47,9 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e){
       //获取TextObject
       TextObject textObject = (TextObject) e.getMessage();
+      if(logger.isDebugEnabled()) {
+		   logger.debug("receving: " + textObject);
+	   }
       //生成SwallowMessage//TODO 增加swallowMessage的IP信息
       SwallowMessage swallowMessage = new SwallowMessage();
       swallowMessage.setContent(textObject.getContent());
