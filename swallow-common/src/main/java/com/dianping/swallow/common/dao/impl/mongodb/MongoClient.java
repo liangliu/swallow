@@ -73,7 +73,7 @@ public class MongoClient implements ConfigChange {
    public MongoClient(String severURILionKey) {
       this.severURILionKey = severURILionKey;
       if (LOG.isDebugEnabled()) {
-         LOG.debug("MongoClient() - start.");
+         LOG.debug("Init MongoClient - start.");
       }
       //读取properties配置(如果存在configFile，则使用configFile)
       InputStream in = MongoClient.class.getClassLoader().getResourceAsStream(MONGO_CONFIG_FILENAME);
@@ -86,7 +86,7 @@ public class MongoClient implements ConfigChange {
       mongoOptions = this.getMongoOptions(config);
       loadLionConfig();
       if (LOG.isDebugEnabled()) {
-         LOG.debug("MongoClient() - done.");
+         LOG.debug("Init MongoClient - done.");
       }
    }
 

@@ -1,5 +1,6 @@
 package com.dianping.swallow.consumerserver.bootstrap;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
@@ -19,13 +20,13 @@ import com.dianping.swallow.common.monitor.CloseMonitor;
 import com.dianping.swallow.common.monitor.CloseMonitor.CloseHook;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
 import com.dianping.swallow.common.packet.PktMessage;
-import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 import com.dianping.swallow.consumerserver.netty.MessageServerHandler;
+import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
 public class MasterBootStrap {
 
 	//TODO 是否lion中
-	private static int port = 8081;
+	private static int slavePort = 8081;
 	
 	private static boolean isSlave = false;
 	/**
@@ -34,8 +35,8 @@ public class MasterBootStrap {
 	public static void main(String[] args) {
 		
 		ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[]{"applicationContext.xml"});
-		final ConsumerServiceImpl cService = ctx.getBean(ConsumerServiceImpl.class);
-		cService.init(isSlave);
+		final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
+		consumerWorkerManager.init(isSlave);
 		try {
 			Thread.sleep(20000);//TODO 主机启动的时候睡眠一会，给时间给slave关闭。
 		} catch (InterruptedException e) {
@@ -49,7 +50,12 @@ public class MasterBootStrap {
 			
 			@Override
 			public void onClose() {
-				cService.close();
+				try {
+					consumerWorkerManager.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
 		});
@@ -62,7 +68,7 @@ public class MasterBootStrap {
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {  
             @Override  
             public ChannelPipeline getPipeline() throws Exception {  
-            MessageServerHandler handler = new MessageServerHandler(cService);
+            MessageServerHandler handler = new MessageServerHandler(consumerWorkerManager);
             ChannelPipeline pipeline = Channels.pipeline();
             pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
             pipeline.addLast("jsonDecoder", new JsonDecoder(PktConsumerMessage.class));
@@ -73,7 +79,7 @@ public class MasterBootStrap {
             }  
         });  
         // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(port));
+        bootstrap.bind(new InetSocketAddress(slavePort));
         
 	}
 
