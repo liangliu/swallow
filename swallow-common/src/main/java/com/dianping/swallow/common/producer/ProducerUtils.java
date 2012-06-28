@@ -22,10 +22,8 @@ package com.dianping.swallow.common.producer;
  */
 public class ProducerUtils {
    public static boolean isTopicNameValid(String topicName) {
-      if (topicName == null)
-         return false;
-      if (topicName == "")
-         return false;
-      return true;
+      if (topicName.matches("[a-z | A-Z | _ | . | 0-9]+"))
+         return true;
+      return false;
    }
 }

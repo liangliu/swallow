@@ -21,12 +21,24 @@ package com.dianping.swallow.common.packet;
  *
  */
 public enum PacketType {
+   /**
+    * Producer向Swallow发送的greet报文
+    */
 	PRODUCER_GREET,
+	/**
+	 * Swallow向Producer发送的消息保存成功确认报文
+	 */
 	SWALLOW_P_ACK,
+	/**
+	 * Consumer向Swallow发送的收到推送消息确认报文
+	 */
 	CONSUMER_ACK,
+	/**
+	 * Consumer向Swallow发送的greet报文
+	 */
 	CONSUMER_GREET,
-	STRING_MSG,
-	BINARY_MSG,
+	/**
+	 * 承载SwallowMessage对象的消息报文
+	 */
 	OBJECT_MSG,
-	TEXT_MSG
 }

@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 
 import com.dianping.dpsf.api.ProxyFactory;
 import com.dianping.swallow.common.producer.MQService;
-import com.dianping.swallow.producer.ProducerFactoryIface;
+import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerOptionKey;
 
 /**
@@ -30,10 +30,10 @@ import com.dianping.swallow.producer.ProducerOptionKey;
  * 
  * @author tong.song
  */
-public class ProducerFactory implements ProducerFactoryIface {
+public class ProducerFactoryImpl implements ProducerFactory {
 
-   private final Logger           logger          = Logger.getLogger(ProducerFactory.class);
-   private static ProducerFactory instance;                                                 //Producer工厂类单例
+   private final Logger           logger          = Logger.getLogger(ProducerFactoryImpl.class);
+   private static ProducerFactoryImpl instance;                                                 //Producer工厂类单例
    //远程调用相关设置
    private final int              remoteServiceTimeout;                                     //远程调用超时
    private static final int       DEFAULT_TIMEOUT = 5000;                                   //远程调用默认超时
@@ -48,7 +48,7 @@ public class ProducerFactory implements ProducerFactoryIface {
     * @param timeout 远程调用超时
     * @throws Exception 远程调用初始化失败
     */
-   private ProducerFactory(int timeout) throws Exception {
+   private ProducerFactoryImpl(int timeout) throws Exception {
       this.remoteServiceTimeout = timeout;
       //初始化远程调用
       try {
@@ -88,7 +88,7 @@ public class ProducerFactory implements ProducerFactoryIface {
     * @return Producer工厂类单例
     * @throws Exception
     */
-   public static ProducerFactory getInstance() throws Exception {
+   public static ProducerFactoryImpl getInstance() throws Exception {
       return doGetInstance(-1);
    }
 
@@ -99,7 +99,7 @@ public class ProducerFactory implements ProducerFactoryIface {
     * @return Producer工厂类单例
     * @throws Exception
     */
-   public static ProducerFactory getInstance(int remoteServiceTimeout) throws Exception {
+   public static ProducerFactoryImpl getInstance(int remoteServiceTimeout) throws Exception {
       return doGetInstance(remoteServiceTimeout);
    }
 
@@ -110,12 +110,12 @@ public class ProducerFactory implements ProducerFactoryIface {
     * @return Producer工程类单例
     * @throws Exception
     */
-   private static synchronized ProducerFactory doGetInstance(int timeout) throws Exception {
+   private static synchronized ProducerFactoryImpl doGetInstance(int timeout) throws Exception {
       if (instance == null) {
          if (timeout < 0)
-            instance = new ProducerFactory(DEFAULT_TIMEOUT);
+            instance = new ProducerFactoryImpl(DEFAULT_TIMEOUT);
          else
-            instance = new ProducerFactory(timeout);
+            instance = new ProducerFactoryImpl(timeout);
       }
       return instance;
    }
@@ -128,7 +128,7 @@ public class ProducerFactory implements ProducerFactoryIface {
     * @throws Exception Producer选项有误，不能生成Producer对象，则抛出异常
     */
    @Override
-   public Producer getProducer(String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception {
-      return new Producer(remoteService, topicName, pOptions);
-   }
+   public ProducerImpl getProducer(String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception {
+      return new ProducerImpl(remoteService, topicName, pOptions);
+   }   
 }

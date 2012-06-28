@@ -7,14 +7,14 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import com.dianping.swallow.producer.impl.Producer;
-import com.dianping.swallow.producer.impl.ProducerFactory;
+import com.dianping.swallow.producer.impl.ProducerImpl;
+import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 
 /**
  * Unit test for simple App.
  */
 public class AppTest extends TestCase {
-   ProducerFactory pf = null;
+   ProducerFactoryImpl pf = null;
 
    /**
     * Create the test case
@@ -24,7 +24,7 @@ public class AppTest extends TestCase {
    public AppTest(String testName) {
       super(testName);
       try {
-         pf = ProducerFactory.getInstance(5000);
+         pf = ProducerFactoryImpl.getInstance(5000);
       } catch (Exception e3) {
          System.out.println(e3.toString());
       }
@@ -56,10 +56,10 @@ public class AppTest extends TestCase {
          // TODO Auto-generated method stub
          Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
          pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
-         pOptions.put(ProducerOptionKey.THREAD_POOL_SIZE, 5);
-         pOptions.put(ProducerOptionKey.IS_CONTINUE_SEND, true);
+         pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
+         pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, true);
          
-         Producer ps = null;
+         ProducerImpl ps = null;
          
          try {
             ps = pf.getProducer(content, pOptions);
@@ -84,7 +84,7 @@ public class AppTest extends TestCase {
 
    public void doTest() {
       for (int i = 0; i < 3; i++) {
-         String newContent = "NO:" + i;
+         String newContent = "NO_" + i;
          Thread td = new Thread(new task(newContent));
          td.start();
       }

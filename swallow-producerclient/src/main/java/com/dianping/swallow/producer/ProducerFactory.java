@@ -17,13 +17,13 @@ package com.dianping.swallow.producer;
 
 import java.util.Map;
 
-import com.dianping.swallow.producer.impl.Producer;
+import com.dianping.swallow.producer.impl.ProducerImpl;
 
 /**
  * Producer工厂类接口
  * @author tong.song
  *
  */
-public interface ProducerFactoryIface {
-   public Producer getProducer(String TopicName, Map<ProducerOptionKey, Object> pOptions) throws Exception;
+public interface ProducerFactory {
+   public ProducerImpl getProducer(String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception;
 }
