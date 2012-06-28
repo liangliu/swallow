@@ -14,6 +14,8 @@ import com.dianping.swallow.common.packet.PktProducerGreet;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.ProducerUtils;
+import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
+import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
@@ -41,11 +43,20 @@ public class ProducerImpl implements Producer {
    private boolean                   continueSend             = DEFAULT_CONTINUE_SEND;               //异步模式是否允许续传
    private int                       retryTimes               = DEFAULT_RETRY_TIMES;                 //异步模式重试次数
 
-   ProducerImpl(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception {
+   /**
+    * 构造函数
+    * 
+    * @param remoteService 远程调用服务
+    * @param topicName topic的名称
+    * @param pOptions producer选项
+    * @throws TopicNameInvalidException topic名称非法//topic名称只能由以下字符组成：[a-z]、[A-Z]、[_]、[.]、[0-9]
+    */
+   ProducerImpl(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions)
+         throws TopicNameInvalidException {
       //初始化Producer参数
       if (!ProducerUtils.isTopicNameValid(topicName))
-         throw new Exception("Topic name is not valid.");
-      
+         throw new TopicNameInvalidException();
+
       destination = Destination.topic(topicName);
 
       if (pOptions != null) {
@@ -71,7 +82,11 @@ public class ProducerImpl implements Producer {
             break;
       }
       //向Swallow发送greet
-      remoteService.sendMessage(new PktProducerGreet(producerVersion));
+      try {
+         remoteService.sendMessage(new PktProducerGreet(producerVersion));
+      } catch (ServerDaoException e) {
+         e.printStackTrace();
+      }
    }
 
    /**
@@ -79,10 +94,11 @@ public class ProducerImpl implements Producer {
     * 
     * @param content 待发送的消息内容
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
-    * @throws Exception 同步模式下，消息发送失败，抛出异常；异步模式下，加入FileQueue失败，抛出异常
+    * @throws ServerDaoException 只存在于同步模式，保存message到数据库失败
+    * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
     */
    @Override
-   public String sendMessage(Object content) throws Exception {
+   public String sendMessage(Object content) throws ServerDaoException, FileQueueClosedException {
       return sendMessage(content, null, null);
    }
 
@@ -92,10 +108,11 @@ public class ProducerImpl implements Producer {
     * @param content 待发送的消息内容
     * @param messageType 消息类型，用于消息过滤
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
-    * @throws Exception 同步模式下，消息发送失败，抛出异常；异步模式下，加入FileQueue失败，抛出异常
+    * @throws ServerDaoException 只存在于同步模式，保存message到数据库失败
+    * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
     */
    @Override
-   public String sendMessage(Object content, String messageType) throws Exception {
+   public String sendMessage(Object content, String messageType) throws ServerDaoException, FileQueueClosedException {
       return sendMessage(content, null, messageType);
    }
 
@@ -105,10 +122,12 @@ public class ProducerImpl implements Producer {
     * @param content 待发送的消息内容
     * @param properties 消息属性，留作后用
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
-    * @throws Exception 同步模式下，消息发送失败，抛出异常；异步模式下，加入FileQueue失败，抛出异常
+    * @throws ServerDaoException 只存在于同步模式，保存message到数据库失败
+    * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
     */
    @Override
-   public String sendMessage(Object content, Map<String, String> properties) throws Exception {
+   public String sendMessage(Object content, Map<String, String> properties) throws ServerDaoException,
+         FileQueueClosedException {
       return sendMessage(content, properties, null);
    }
 
@@ -119,10 +138,12 @@ public class ProducerImpl implements Producer {
     * @param properties 消息属性，留作后用
     * @param messageType 消息类型，用于消息过滤
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
-    * @throws Exception 同步模式下，消息发送失败，抛出异常；异步模式下，加入FileQueue失败，抛出异常
+    * @throws ServerDaoException 只存在于同步模式，保存message到数据库失败
+    * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
     */
    @Override
-   public String sendMessage(Object content, Map<String, String> properties, String messageType) throws Exception {
+   public String sendMessage(Object content, Map<String, String> properties, String messageType)
+         throws ServerDaoException, FileQueueClosedException {
 
       String ret = null;
       //根据content生成SwallowMessage
@@ -142,7 +163,7 @@ public class ProducerImpl implements Producer {
          case SYNC_MODE://同步模式
             try {
                ret = ((PktSwallowPACK) syncHandler.doSendMsg(pktMessage)).getShaInfo();
-            } catch (Exception e) {
+            } catch (ServerDaoException e) {
                logger.log(Level.ERROR, "[SendMessage]:[Message sent failed.]", e.getCause());
                throw e;
             }
@@ -150,9 +171,9 @@ public class ProducerImpl implements Producer {
          case ASYNC_MODE://异步模式
             try {
                asyncHandler.doSendMsg(pktMessage);
-            } catch (FileQueueClosedException fqce) {
-               logger.log(Level.ERROR, "[SendMessage]:[Message sent failed.]", fqce.getCause());
-               throw fqce;
+            } catch (FileQueueClosedException e) {
+               logger.log(Level.ERROR, "[SendMessage]:[Message sent failed.]", e.getCause());
+               throw e;
             }
             break;
       }
@@ -201,6 +222,9 @@ public class ProducerImpl implements Producer {
       return continueSend;
    }
 
+   /**
+    * @return 返回异步模式重试次数
+    */
    public int getRetryTimes() {
       return retryTimes;
    }

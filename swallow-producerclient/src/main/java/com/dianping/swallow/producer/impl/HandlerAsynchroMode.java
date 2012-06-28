@@ -11,6 +11,7 @@ import com.dianping.filequeue.FileQueue;
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.packet.Packet;
 import com.dianping.swallow.common.producer.MQService;
+import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 
 public class HandlerAsynchroMode {
    private Logger            logger = Logger.getLogger(ProducerImpl.class);
@@ -56,7 +57,7 @@ public class HandlerAsynchroMode {
             for (leftRetryTimes = defaultRetryTimes; leftRetryTimes > 0; leftRetryTimes--) {
                try {
                   remoteService.sendMessage(message);
-               } catch (Exception e) {
+               } catch (ServerDaoException e) {
                   logger.log(Level.ERROR, "[SendMessage]:[Message sent failed.]", e.getCause());
                   //发送失败，重发
                   continue;
