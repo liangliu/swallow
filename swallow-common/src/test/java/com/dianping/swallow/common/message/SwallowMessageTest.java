@@ -81,6 +81,7 @@ public class SwallowMessageTest {
       message.setSha1("sha-1 string");
       message.setVersion("0.6.0");
       message.setType("feed");
+      message.setSourceIp("localhost");
       return message;
 
    }

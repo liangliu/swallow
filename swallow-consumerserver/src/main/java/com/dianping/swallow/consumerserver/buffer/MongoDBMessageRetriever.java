@@ -1,5 +1,6 @@
 package com.dianping.swallow.consumerserver.buffer;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -24,10 +25,16 @@ public class MongoDBMessageRetriever implements MessageRetriever {
    @Override
    public List retriveMessage(String topicName, Long messageId, Set<String> messageTypeSet) throws Exception {
       List<SwallowMessage> messages;
-      if (messageTypeSet != null && !messageTypeSet.isEmpty()) {
-         messages = messageDAO.getMessagesGreaterThan(topicName, messageId, messageTypeSet, fetchSize);
-      } else {
-         messages = messageDAO.getMessagesGreaterThan(topicName, messageId, fetchSize);
+      messages = messageDAO.getMessagesGreaterThan(topicName, messageId, fetchSize);
+      //过滤type
+      if (messageTypeSet != null && !messageTypeSet.isEmpty() && messages!=null) {
+         Iterator<SwallowMessage> iterator= messages.iterator();
+         while(iterator.hasNext()){
+            SwallowMessage msg = iterator.next();
+            if(!messageTypeSet.contains(msg.getType())){
+               iterator.remove();
+            }
+         }
       }
 
       if (LOG.isDebugEnabled()) {

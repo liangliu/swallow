@@ -53,7 +53,6 @@ public class AppTest extends TestCase {
 
       @Override
       public void run() {
-         // TODO Auto-generated method stub
          Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
          pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
          pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
