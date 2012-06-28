@@ -7,11 +7,6 @@
            http://www.springframework.org/schema/context/spring-context-3.0.xsd"
 	default-autowire="byName">
 
-	<bean name="placeholder" lazy-init="false"
-		class="com.dianping.lion.client.InitializeConfig">
-		<property name="propertiesPath" value="lion.properties" />
-	</bean>
-
 	<bean id="ackDAO" class="com.dianping.swallow.common.dao.impl.mongodb.AckDAOImpl">
 	</bean>
 
@@ -25,9 +20,8 @@
 
 
 	<bean id="mongoClient"
-		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient"
-		init-method="init">
-		<property value="${swallow.mongo.serverURI}" name="mongoServerURI" />
+		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient">
+		<property name="severURILionKey" value="swallow.mongo.consumerServerURI" />
 	</bean>
 
 </beans>
