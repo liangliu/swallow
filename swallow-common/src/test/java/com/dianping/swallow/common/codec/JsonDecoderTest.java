@@ -27,7 +27,7 @@ public class JsonDecoderTest {
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
       String json = jsonBinder.toJson(message);
       //使用HessianDecoder解码
-      JsonDecoder jsonDecoder = new JsonDecoder();
+      JsonDecoder jsonDecoder = new JsonDecoder(SwallowMessage.class);
       Message actualMessage = (Message) jsonDecoder.decode(null, null,
             ChannelBuffers.wrappedBuffer(json.getBytes("UTF-8")));
       //assert
@@ -37,7 +37,7 @@ public class JsonDecoderTest {
    @Test
    public void testEncode2() throws Exception {
       Object o = new Object();
-      JsonDecoder jsonDecoder = new JsonDecoder();
+      JsonDecoder jsonDecoder = new JsonDecoder(SwallowMessage.class);
       Assert.assertEquals(o, jsonDecoder.decode(null, null, o));
    }
 

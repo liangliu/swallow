@@ -13,6 +13,10 @@ public class ConSlaveThread implements Runnable {
 	
 	private InetSocketAddress slaveAddress;
 	
+	private long waitTime = 1000L;
+	
+	private long connectInterval = 1000L;
+	
 	public ClientBootstrap getBootstrap() {
 		return bootstrap;
 	}
@@ -28,14 +32,13 @@ public class ConSlaveThread implements Runnable {
 	@Override
 	public void run() {
 		try {
-			Thread.sleep(1000);//TODO 配置变量
+			Thread.sleep(waitTime);
 			while(true){
 				synchronized(bootstrap){
 			   		ChannelFuture future = bootstrap.connect(slaveAddress);
 			   		future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！	  
 			   	}
-				System.out.println();
-				Thread.sleep(1000);//TODO 配置变量
+				Thread.sleep(connectInterval);
 			}
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block

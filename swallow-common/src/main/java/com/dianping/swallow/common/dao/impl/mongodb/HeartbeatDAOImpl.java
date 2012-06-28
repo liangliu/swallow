@@ -35,15 +35,19 @@ public class HeartbeatDAOImpl implements HeartbeatDAO {
 
    @Override
    public Date findLastHeartbeat(String ip) {
-	   //TODO resize capped collection size; add index to TICK
+      //TODO resize capped collection size; add index to TICK
       DBCollection collection = this.mongoClient.getHeartbeatCollection(ip.replace('.', '_'));
 
       DBObject fields = BasicDBObjectBuilder.start().add(TICK, Integer.valueOf(1)).get();
       DBObject orderBy = BasicDBObjectBuilder.start().add(TICK, Integer.valueOf(-1)).get();
       DBCursor cursor = collection.find(null, fields).sort(orderBy).limit(1);
-      while (cursor != null) {
-         DBObject result = cursor.next();
-         return (Date) result.get(TICK);
+      try {
+         if (cursor.hasNext()) {
+            DBObject result = cursor.next();
+            return (Date) result.get(TICK);
+         }
+      } finally {
+         cursor.close();
       }
       return null;
    }

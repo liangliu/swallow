@@ -22,7 +22,7 @@ public class JsonEncoderTest {
       HashMap<String, String> map = new HashMap<String, String>();
       map.put("property-key", "property-value");
       msg.setContent("content");
-      JsonEncoder jsonEncoder = new JsonEncoder();
+      JsonEncoder jsonEncoder = new JsonEncoder(SwallowMessage.class);
       ChannelBuffer channelBuffer = (ChannelBuffer) jsonEncoder.encode(null, null, msg);
       //解码
       JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
@@ -36,7 +36,7 @@ public class JsonEncoderTest {
    @Test
    public void testEncode2() throws Exception {
       Object o = new Object();
-      JsonEncoder jsonEncoder = new JsonEncoder();
+      JsonEncoder jsonEncoder = new JsonEncoder(SwallowMessage.class);
       Assert.assertEquals(o, jsonEncoder.encode(null, null, o));
    }
 
