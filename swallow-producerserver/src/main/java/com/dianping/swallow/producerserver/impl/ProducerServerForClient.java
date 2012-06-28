@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dianping.dpsf.api.ServiceRegistry;
 import com.dianping.swallow.common.dao.MessageDAO;
@@ -26,7 +25,6 @@ public class ProducerServerForClient implements MQService {
    private static final int    DEFAULT_PORT = 4000;
    private int                 port         = DEFAULT_PORT;
 
-   @Autowired
    private MessageDAO          messageDAO;
 
    /**

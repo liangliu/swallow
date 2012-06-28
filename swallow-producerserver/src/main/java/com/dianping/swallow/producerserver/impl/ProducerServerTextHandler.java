@@ -69,7 +69,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
             messageDAO.saveMessage(textObject.getTopic(), swallowMessage);
          } catch (Exception e1) {
             //记录异常，返回失败ACK，reason是“Can not save message”
-            logger.log(Level.ERROR, "[TextHandler]:[Save Message Failed.]", e1.getCause());
+            logger.log(Level.ERROR, "[TextHandler]:[Save Message Failed.]", e1);
             textAck.setStatus(SAVE_FAILED);
             textAck.setInfo("Can not save message.");
          }

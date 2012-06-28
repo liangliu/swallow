@@ -21,7 +21,9 @@
 
 	<bean id="mongoClient"
 		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient">
-		<property name="severURILionKey" value="swallow.mongo.producerServerURI" />
+		<constructor-arg>
+			<value>swallow.mongo.consumerServerURI</value>
+		</constructor-arg>
 	</bean>
 
 	<bean id="producerServerForClient" class="com.dianping.swallow.producerserver.impl.ProducerServerForClient" init-method="start">
