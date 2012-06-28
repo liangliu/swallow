@@ -1,5 +1,6 @@
 package com.dianping.swallow.consumerserver.impl;
 
+import java.io.Closeable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +39,7 @@ import com.mongodb.Mongo;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
-public class ConsumerServiceImpl implements ConsumerService{
+public class ConsumerServiceImpl implements ConsumerService, Closeable{
 	
 	private ConfigManager configManager;
 	
@@ -123,6 +124,11 @@ public class ConsumerServiceImpl implements ConsumerService{
     	List<ServerAddress> replicaSetSeeds = MongoUtil.parseUri(uri);
 		mongo = new Mongo(replicaSetSeeds, getDefaultOptions());
     }
+	
+	@Override
+	public void close() {
+		threadFactory.close();
+	}
 	
 	//一些option暂时设置好，先不提供
 	private MongoOptions getDefaultOptions() {

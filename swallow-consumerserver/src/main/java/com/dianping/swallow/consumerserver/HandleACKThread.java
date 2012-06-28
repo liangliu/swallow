@@ -1,14 +1,19 @@
 package com.dianping.swallow.consumerserver;
 
+import java.io.Closeable;
 import java.util.HashSet;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 
-public class HandleACKThread implements Runnable{
+public class HandleACKThread implements Runnable, Closeable{
+	
+	private static Logger LOG = LoggerFactory.getLogger(HandleACKThread.class);
 	
 	private ArrayBlockingQueue<Runnable> getAckWorker;
 	
@@ -16,7 +21,7 @@ public class HandleACKThread implements Runnable{
 	
 	private ConsumerServiceImpl cService;
 	
-	private Boolean isLive = true;
+	private volatile boolean isLive = true;
 
 
 	public void setcId2Topic(CId2Topic cId2Topic) {
@@ -32,6 +37,13 @@ public class HandleACKThread implements Runnable{
 	}
 
 	@Override
+	public void close() {
+		LOG.info("receive close command");
+		LOG.info("closing");
+		isLive = false;
+	}
+
+	@Override
 	public void run() {
 		while(isLive){
 			Runnable worker = null;
@@ -44,10 +56,8 @@ public class HandleACKThread implements Runnable{
 						break;
 					}
 				}
-				
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				LOG.error("unexpected interrupt", e);
 			}			
 			synchronized(cService.getConsumerTypes()){
 				HashSet<Channel> channels = cService.getChannelWorkStatus().get(cId2Topic);
@@ -57,7 +67,7 @@ public class HandleACKThread implements Runnable{
 				}
 			}
 		}
-		
+		LOG.info("closed");
 	}
 
 }

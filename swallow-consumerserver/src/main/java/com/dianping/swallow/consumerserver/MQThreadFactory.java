@@ -2,6 +2,8 @@ package com.dianping.swallow.consumerserver;
 
 
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,16 +12,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 管理所有swallow线程，提供jmx监控
  * @author qing.gu
  *
  */
-public class MQThreadFactory implements ThreadFactory {
+public class MQThreadFactory implements ThreadFactory, Closeable {
 
-	private static Logger log = Logger.getLogger(MQThreadFactory.class);
+	private static Logger LOG = LoggerFactory.getLogger(MQThreadFactory.class);
 
 	private static ThreadGroup topThreadGroup = new ThreadGroup("swallow-top");
 	private final static String PREFIX = "swallow-thread-";
@@ -54,10 +57,18 @@ public class MQThreadFactory implements ThreadFactory {
 		return t;
 	}
 
+	@Override
 	public void close() {
 		for (WeakReference<Thread> ref : threadList) {
 			Thread t = ref.get();
 			if (t != null && t.isAlive()) {
+				if(t instanceof Closeable) {
+					try {
+						((Closeable)t).close();
+					} catch (Exception e) {
+						LOG.error("unexpected exception", e);
+					}
+				}
 				t.interrupt();
 			}
 		}
