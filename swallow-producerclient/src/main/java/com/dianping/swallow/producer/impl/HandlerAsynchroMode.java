@@ -3,6 +3,7 @@ package com.dianping.swallow.producer.impl;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import com.dianping.filequeue.DefaultFileQueueConfig.FileQueueConfigHolder;
 import com.dianping.filequeue.DefaultFileQueueImpl;
 import com.dianping.filequeue.FileQueue;
 import com.dianping.filequeue.FileQueueClosedException;
@@ -18,10 +19,12 @@ public class HandlerAsynchroMode {
 
    private MQThreadFactory   threadFactory = new MQThreadFactory();
 
-   //构造函数//TODO 不续传
+   //构造函数
    public HandlerAsynchroMode(ProducerImpl producer) {
+      FileQueueConfigHolder fileQueueConfig = new FileQueueConfigHolder();
       this.producer = producer;
-      messageQueue = new DefaultFileQueueImpl<Packet>("filequeue.properties", producer.getDestination().getName());//filequeue
+      fileQueueConfig.setMaxDataFileSize(512 * 1024 * 1024);//默认512M
+      messageQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, producer.getDestination().getName(), producer.isContinueSend());
       this.start();
    }
 

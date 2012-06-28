@@ -14,7 +14,8 @@ import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
  * Unit test for simple App.
  */
 public class AppTest extends TestCase {
-   ProducerFactoryImpl pf = null;
+   private ProducerFactoryImpl pf      = null;
+   private String              message;
 
    /**
     * Create the test case
@@ -27,6 +28,9 @@ public class AppTest extends TestCase {
          pf = ProducerFactoryImpl.getInstance(5000);
       } catch (Exception e3) {
          System.out.println(e3.toString());
+      }
+      for (int i = 0; i < 10; i++) {
+         message += "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
       }
    }
 
@@ -57,32 +61,36 @@ public class AppTest extends TestCase {
          pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
          pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
          pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, true);
-         
+
          ProducerImpl ps = null;
-         
          try {
             ps = pf.getProducer(content, pOptions);
          } catch (Exception e2) {
             System.out.println(e2.toString());
          }
+         String str;
+         long begin = System.currentTimeMillis();
          try {
-            while (true) {
+            for (int i = 0; i < 1000; i++) {
                //			content += i++;
-               System.out.println(ps.sendMessage(content));
-               try {
-                  Thread.sleep(2000);
-               } catch (Exception e) {
-                  // TODO: handle exception
-               }
+               str = ps.sendMessage(message);
+//               sumTime += (end - begin);
+               //               try {
+               //                  Thread.sleep(2000);
+               //               } catch (Exception e) {
+               //                  // TODO: handle exception
+               //               }
             }
          } catch (Exception e1) {
             System.out.println(e1.toString());
          }
+         long end = System.currentTimeMillis();
+         System.out.println(end - begin);
       }
    }
 
    public void doTest() {
-      for (int i = 0; i < 3; i++) {
+      for (int i = 0; i < 1; i++) {
          String newContent = "NO_" + i;
          Thread td = new Thread(new task(newContent));
          td.start();
@@ -91,11 +99,11 @@ public class AppTest extends TestCase {
 
    public static void main(String[] args) {
       new AppTest("111").doTest();
-//      ProducerConfigure pc = new ProducerConfigure("producer.properties");
-//      System.out.println(pc.getRemoteServiceTimeout());
-//      System.out.println(pc.getThreadPoolSize());
-//      System.out.println(pc.getDestinationName());
-//      System.out.println(pc.getProducerModeStr());
-//      System.out.println(pc.isContinueSend());
+      //      ProducerConfigure pc = new ProducerConfigure("producer.properties");
+      //      System.out.println(pc.getRemoteServiceTimeout());
+      //      System.out.println(pc.getThreadPoolSize());
+      //      System.out.println(pc.getDestinationName());
+      //      System.out.println(pc.getProducerModeStr());
+      //      System.out.println(pc.isContinueSend());
    }
 }
