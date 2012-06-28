@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import com.dianping.swallow.common.codec.JsonBinder;
+
 public class SwallowMessage implements Serializable, Message {
 
    private static final long   serialVersionUID = -7019466307875540596L;
@@ -65,7 +67,7 @@ public class SwallowMessage implements Serializable, Message {
    }
 
    public <T> T transferContentToBean(Class<T> clazz) {
-      JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+      JsonBinder jsonBinder = JsonBinder.buildBinder();
       return jsonBinder.fromJson(content, clazz);
    }
 
@@ -77,7 +79,7 @@ public class SwallowMessage implements Serializable, Message {
       if (content instanceof String) {
          this.content = (String) content;
       } else {
-         JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+         JsonBinder jsonBinder = JsonBinder.buildBinder();
          this.content = jsonBinder.toJson(content);
       }
    }

@@ -120,8 +120,8 @@ public class MessageDAOImpl implements MessageDAO {
       swallowMessage.setContent((String) result.get(CONTENT));//content
       swallowMessage.setVersion((String) result.get(VERSION));//version
       swallowMessage.setGeneratedTime((Date) result.get(GENERATED_TIME));//generatedTime
-      Map<String, String> propertiesBasicDBObject = (Map<String, String>)result.get(PROPERTIES);//mongo返回是一个BasicDBObject，转化成jdk的HashMap，以免某些序列化方案在反序列化需要依赖BasicDBObject
-      HashMap<String, String> properties = new HashMap<String,String>(propertiesBasicDBObject);
+      Map<String, String> propertiesBasicDBObject = (Map<String, String>) result.get(PROPERTIES);//mongo返回是一个BasicDBObject，转化成jdk的HashMap，以免某些序列化方案在反序列化需要依赖BasicDBObject
+      HashMap<String, String> properties = new HashMap<String, String>(propertiesBasicDBObject);
       swallowMessage.setProperties(properties);//properties
       swallowMessage.setSha1((String) result.get(SHA1));//sha1
       swallowMessage.setType((String) result.get(TYPE));//type
@@ -132,11 +132,42 @@ public class MessageDAOImpl implements MessageDAO {
    public void saveMessage(String topicName, SwallowMessage message) {
       DBCollection collection = this.mongoClient.getMessageCollection(topicName);
 
-      DBObject insert = BasicDBObjectBuilder.start().add(ID, new BSONTimestamp()).add(CONTENT, message.getContent())
-            .add(GENERATED_TIME, message.getGeneratedTime()).add(VERSION, message.getVersion())
-            .add(PROPERTIES, message.getProperties()).add(SHA1, message.getSha1()).add(TYPE, message.getType())
-            .add(SOURCE_IP, message.getSourceIp()).get();
-      collection.insert(insert);
+      BasicDBObjectBuilder builder = BasicDBObjectBuilder.start().add(ID, new BSONTimestamp());
+      //content
+      String content = message.getContent();
+      if (content != null && !"".equals(content.trim())) {
+         builder.add(CONTENT, content);
+      }
+      //generatedTime
+      Date generatedTime = message.getGeneratedTime();
+      if (generatedTime != null) {
+         builder.add(GENERATED_TIME, generatedTime);
+      }
+      //version
+      String version = message.getVersion();
+      if (version != null && !"".equals(version.trim())) {
+         builder.add(VERSION, version);
+      }
+      //properties
+      Map<String, String> properties = message.getProperties();
+      if (properties != null && properties.size() > 0) {
+         builder.add(PROPERTIES, properties);
+      }
+      //sha1
+      String sha1 = message.getSha1();
+      if (sha1 != null && !"".equals(sha1.trim())) {
+         builder.add(SHA1, sha1);
+      }
+      //type
+      String type = message.getType();
+      if (type != null && !"".equals(type.trim())) {
+         builder.add(TYPE, type);
+      }
+      //sourceIp
+      String sourceIp = message.getSourceIp();
+      if (sourceIp != null && !"".equals(sourceIp.trim())) {
+         builder.add(SOURCE_IP, sourceIp);
+      }
+      collection.insert(builder.get());
    }
-
 }
