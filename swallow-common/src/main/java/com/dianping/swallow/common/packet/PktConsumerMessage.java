@@ -32,8 +32,6 @@ public final class PktConsumerMessage extends Packet {
 	 * 
 	 */
 	private static final long serialVersionUID = -8966695130892127961L;
-	
-	//TODO 增加一个greetMessage, ack只需要messageId，channel状态在swallowC保存
 
 	private ConsumerMessageType type;
 	
@@ -79,13 +77,17 @@ public final class PktConsumerMessage extends Packet {
 		this.type = type;
 	}
 	
-	public PktConsumerMessage(ConsumerMessageType type, String consumerId, Destination dest, ConsumerType consumerType, Long messageId){
+	public PktConsumerMessage(ConsumerMessageType type, String consumerId, Destination dest, ConsumerType consumerType){
 		this.setPacketType(PacketType.CONSUMER_GREET);
 		this.type = type;
 		this.dest = dest;
 		this.consumerId = consumerId;
-		this.messageId = messageId;
 		this.consumerType = consumerType;
+	}
+	public PktConsumerMessage(ConsumerMessageType type, Long messageId){
+		this.setPacketType(PacketType.CONSUMER_GREET);
+		this.type = type;
+		this.messageId = messageId;
 	}
 	
 }
