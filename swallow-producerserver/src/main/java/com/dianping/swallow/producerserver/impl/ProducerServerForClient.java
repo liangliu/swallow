@@ -24,7 +24,6 @@ public class ProducerServerForClient implements MQService {
    private static final Logger logger       = Logger.getLogger(ProducerServerForClient.class);
    private static final int    DEFAULT_PORT = 4000;
    private int                 port         = DEFAULT_PORT;
-
    private MessageDAO          messageDAO;
 
    /**
@@ -35,8 +34,8 @@ public class ProducerServerForClient implements MQService {
     * @throws Exception 连续绑定同一个端口抛出异常，pigeon初始化失败抛出异常
     */
    public void start() throws RemoteServiceInitFailedException {
-      ServiceRegistry remoteService = null;
       try {
+         ServiceRegistry remoteService = null;
          remoteService = new ServiceRegistry(getPort());
          Map<String, Object> services = new HashMap<String, Object>();
          services.put("remoteService", this);

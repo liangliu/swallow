@@ -10,12 +10,13 @@ import com.dianping.swallow.common.dao.MessageDAO;
 
 public class ProducerServerForText {
    private static final int DEFAULT_PORT = 8000;
-   private int port = DEFAULT_PORT;
+   private int              port         = DEFAULT_PORT;
+   private MessageDAO       messageDAO;
    
-   private MessageDAO messageDAO;
 
    public void start() {
-      ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
+      ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
+            Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
       bootstrap.setPipelineFactory(new ProducerServerTextPipelineFactory(messageDAO));
       bootstrap.bind(new InetSocketAddress(getPort()));
    }
