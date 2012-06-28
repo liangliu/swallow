@@ -13,43 +13,52 @@ import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.common.packet.PktProducerGreet;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
-import com.dianping.swallow.producer.ProducerIface;
+import com.dianping.swallow.common.producer.ProducerUtils;
+import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
 
-public class Producer implements ProducerIface {
+public class ProducerImpl implements Producer {
    //变量定义
-   private MQService                 remoteService;                                              //远程调用对象
-   private HandlerAsynchroMode       asyncHandler;                                               //异步处理对象
-   private HandlerSynchroMode        syncHandler;                                                //同步处理对象
+   private MQService                 remoteService;                                                  //远程调用对象
+   private HandlerAsynchroMode       asyncHandler;                                                   //异步处理对象
+   private HandlerSynchroMode        syncHandler;                                                    //同步处理对象
 
    //常量定义
-   private final String              producerVersion          = "0.6.0";                         //Producer版本号
-   private static final Logger       logger                   = Logger.getLogger(Producer.class); //日志
+   private final String              producerVersion          = "0.6.0";                             //Producer版本号
+   private static final Logger       logger                   = Logger.getLogger(ProducerImpl.class); //日志
 
    //Producer配置默认值
    private static final ProducerMode DEFAULT_PRODUCER_MODE    = ProducerMode.SYNC_MODE;
    private static final int          DEFAULT_THREAD_POOL_SIZE = 10;
    private static final boolean      DEFAULT_CONTINUE_SEND    = false;
+   private static final int          DEFAULT_RETRY_TIMES      = 5;
 
    //Producer配置变量
-   private final ProducerMode        producerMode;                                               //Producer工作模式
-   private final Destination         destination;                                                //Producer消息目的
-   private final int                 threadPoolSize;                                             //异步处理对象的线程池大小
-   private final boolean             continueSend;                                               //异步模式是否允许续传
+   private Destination               destination;                                                    //Producer消息目的
+   private ProducerMode              producerMode             = DEFAULT_PRODUCER_MODE;               //Producer工作模式
+   private int                       threadPoolSize           = DEFAULT_THREAD_POOL_SIZE;            //异步处理对象的线程池大小
+   private boolean                   continueSend             = DEFAULT_CONTINUE_SEND;               //异步模式是否允许续传
+   private int                       retryTimes               = DEFAULT_RETRY_TIMES;                 //异步模式重试次数
 
-   Producer(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception {
+   ProducerImpl(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception {
       //初始化Producer参数
-      if (topicName == null)
-         throw new Exception("Topic name can not be null.");
+      if (!ProducerUtils.isTopicNameValid(topicName))
+         throw new Exception("Topic name is not valid.");
+      
       destination = Destination.topic(topicName);
-      producerMode = pOptions.containsKey(ProducerOptionKey.PRODUCER_MODE) ? ((ProducerMode) pOptions
-            .get(ProducerOptionKey.PRODUCER_MODE) == ProducerMode.ASYNC_MODE ? ProducerMode.ASYNC_MODE
-            : DEFAULT_PRODUCER_MODE) : DEFAULT_PRODUCER_MODE;
-      threadPoolSize = pOptions.containsKey(ProducerOptionKey.THREAD_POOL_SIZE) ? (Integer) pOptions
-            .get(ProducerOptionKey.THREAD_POOL_SIZE) : DEFAULT_THREAD_POOL_SIZE;
-      continueSend = pOptions.containsKey(ProducerOptionKey.IS_CONTINUE_SEND) ? (Boolean) pOptions
-            .get(ProducerOptionKey.IS_CONTINUE_SEND) : DEFAULT_CONTINUE_SEND;
+
+      if (pOptions != null) {
+         producerMode = pOptions.containsKey(ProducerOptionKey.PRODUCER_MODE) ? ((ProducerMode) pOptions
+               .get(ProducerOptionKey.PRODUCER_MODE) == ProducerMode.ASYNC_MODE ? ProducerMode.ASYNC_MODE
+               : DEFAULT_PRODUCER_MODE) : DEFAULT_PRODUCER_MODE;
+         threadPoolSize = pOptions.containsKey(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE) ? (Integer) pOptions
+               .get(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE) : DEFAULT_THREAD_POOL_SIZE;
+         continueSend = pOptions.containsKey(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND) ? (Boolean) pOptions
+               .get(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND) : DEFAULT_CONTINUE_SEND;
+         retryTimes = pOptions.containsKey(ProducerOptionKey.ASYNC_RETRY_TIMES) ? (Integer) pOptions
+               .get(ProducerOptionKey.ASYNC_RETRY_TIMES) : DEFAULT_RETRY_TIMES;
+      }
       //初始化远程调用
       this.remoteService = remoteService;
       //设置Producer工作模式
@@ -190,5 +199,9 @@ public class Producer implements ProducerIface {
     */
    public boolean isContinueSend() {
       return continueSend;
+   }
+
+   public int getRetryTimes() {
+      return retryTimes;
    }
 }

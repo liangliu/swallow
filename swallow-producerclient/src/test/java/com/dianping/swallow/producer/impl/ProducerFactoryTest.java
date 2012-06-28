@@ -33,11 +33,11 @@ import com.dianping.swallow.producer.ProducerOptionKey;
 public class ProducerFactoryTest{
    @Test
    public void testProducerFactory(){
-      ProducerFactory producerFactory = null;
+      ProducerFactoryImpl producerFactory = null;
       //获取Producer工厂实例
       try {
-         producerFactory = ProducerFactory.getInstance(5000);
-         producerFactory = ProducerFactory.getInstance();
+         producerFactory = ProducerFactoryImpl.getInstance(5000);
+         producerFactory = ProducerFactoryImpl.getInstance();
       } catch (Exception e) {
          System.out.println(e.toString());
       }

@@ -1,8 +1,8 @@
 package com.dianping.swallow.consumerserver.impl;
 
+import java.io.Closeable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -14,7 +14,6 @@ import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.dianping.swallow.common.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
@@ -22,7 +21,6 @@ import com.dianping.swallow.common.dao.impl.mongodb.MongoUtils;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.packet.PktConsumerMessage;
 import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.consumerserver.CId2Topic;
 import com.dianping.swallow.consumerserver.ChannelInformation;
@@ -33,16 +31,10 @@ import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.MQThreadFactory;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
-import com.dianping.swallow.consumerserver.util.MongoUtil;
-import com.mongodb.Mongo;
-import com.mongodb.MongoOptions;
-import com.mongodb.ServerAddress;
 
-public class ConsumerServiceImpl implements ConsumerService{
+public class ConsumerServiceImpl implements ConsumerService, Closeable{
 	
 	private ConfigManager configManager;
-	
-	private Mongo mongo;
 
 	private Map<CId2Topic, HashSet<Channel>> channelWorkStatus;	//channel是否存在的状态
     
@@ -56,8 +48,6 @@ public class ConsumerServiceImpl implements ConsumerService{
     
     @Autowired
     private SwallowBuffer swallowBuffer;
-    
-    private  Map<Channel, ChannelInformation> channelInformations = new HashMap<Channel, ChannelInformation>();
     
     //一个CId2Topic对应一个thread，这是对各thread的状态的管理
     private Set<CId2Topic> threads = new HashSet<CId2Topic>();
@@ -81,10 +71,10 @@ public class ConsumerServiceImpl implements ConsumerService{
     @Autowired
     private Heartbeater heartbeater;
     
-    private Map<CId2Topic, ArrayBlockingQueue<Runnable>> getAckWorkers = new HashMap<CId2Topic, ArrayBlockingQueue<Runnable>>();
+    private Map<CId2Topic, ArrayBlockingQueue<Runnable>> ackWorkers = new HashMap<CId2Topic, ArrayBlockingQueue<Runnable>>();
 	
-	public Map<CId2Topic, ArrayBlockingQueue<Runnable>> getGetAckWorkers() {
-		return getAckWorkers;
+	public Map<CId2Topic, ArrayBlockingQueue<Runnable>> getAckWorkers() {
+		return ackWorkers;
 	}
     
 	public Map<CId2Topic, ArrayBlockingQueue<Channel>> getFreeChannels() {
@@ -97,10 +87,6 @@ public class ConsumerServiceImpl implements ConsumerService{
 
 	public Map<CId2Topic, ConsumerType> getConsumerTypes() {
 		return consumerTypes;
-	}
-
-	public Mongo getMongo() {
-		return mongo;
 	}
 
 	public ConfigManager getConfigManager() {
@@ -120,27 +106,11 @@ public class ConsumerServiceImpl implements ConsumerService{
     	this.channelWorkStatus = new HashMap<CId2Topic, HashSet<Channel>>();
     	this.configManager = ConfigManager.getInstance();
     	this.threadFactory = new MQThreadFactory();
-    	List<ServerAddress> replicaSetSeeds = MongoUtil.parseUri(uri);
-		mongo = new Mongo(replicaSetSeeds, getDefaultOptions());
     }
 	
-	//一些option暂时设置好，先不提供
-	private MongoOptions getDefaultOptions() {
-		MongoOptions options = new MongoOptions();
-//		options.slaveOk = config.isMongoSlaveOk();
-//		options.socketKeepAlive = config.isMongoSocketKeepAlive();
-//		options.socketTimeout = config.getMongoSocketTimeout();
-//		options.connectionsPerHost = config.getMongoConnectionsPerHost();
-//		options.threadsAllowedToBlockForConnectionMultiplier = config
-//				.getMongoThreadsAllowedToBlockForConnectionMultiplier();
-//		options.w = config.getMongoW();
-//		options.wtimeout = config.getMongoWtimeout();
-//		options.fsync = config.isMongoFsync();
-//		options.connectTimeout = config.getMongoConnectTimeout();
-//		options.maxWaitTime = config.getMongoMaxWaitTime();
-//		options.autoConnectRetry = config.isMongoAutoConnectRetry();
-//		options.safe = config.isMongoSafe();
-		return options;
+	@Override
+	public void close() {
+		threadFactory.close();
 	}
 	public void changeChannelWorkStatus(CId2Topic cId2Topic, Channel channel){
 		synchronized(channelWorkStatus){
@@ -172,19 +142,18 @@ public class ConsumerServiceImpl implements ConsumerService{
 		}		
     }
 	
-	private void updateMaxMessageId(String consumerId, String topicName, Long messageId){	
-		if(messageId != null && ConsumerType.UPDATE_AFTER_ACK.equals(consumerTypes.get(consumerId))){
-			ackDao.add(topicName, consumerId, messageId);
+	private void updateMaxMessageId(CId2Topic cId2Topic, Long messageId){	
+		if(messageId != null && ConsumerType.UPDATE_AFTER_ACK.equals(consumerTypes.get(cId2Topic))){
+			ackDao.add(cId2Topic.getTopicName(), cId2Topic.getConsumerId(), messageId);
 		}
     }
 	
-	public void addHandleACKThread(String consumerId, String topicName, ArrayBlockingQueue<Runnable> getAckWorker){
+	public void addHandleACKThread(CId2Topic cId2Topic){
 				
 		HandleACKThread handleACKThread = new HandleACKThread();
-    	handleACKThread.setGetAckWorker(getAckWorker);
-    	handleACKThread.setcId2Topic(new CId2Topic(consumerId, topicName));
+    	handleACKThread.setcId2Topic(cId2Topic);
     	handleACKThread.setcService(this);
-    	Thread thread2 = threadFactory.newThread(handleACKThread, topicName + consumerId + "-handleACKThread-");
+    	Thread thread2 = threadFactory.newThread(handleACKThread, cId2Topic.toString() + "-handleACKThread-");
     	thread2.start();
     }
 	
@@ -278,14 +247,12 @@ public class ConsumerServiceImpl implements ConsumerService{
 		return maxMessageId;
 	}
 
-	public void changeStatuesWhenChannelBreak(Channel channel){
+	public void changeStatuesWhenChannelBreak(Channel channel, ChannelInformation channelInformation){
 		
-		String consumerId = channelInformations.get(channel).getConsumerId();
+		String consumerId = channelInformation.getConsumerId();
+		String topicName = channelInformation.getDest().getName();		
 		synchronized(channelWorkStatus){
-			channelWorkStatus.get(consumerId).remove(channel);
-		}
-		synchronized(channelInformations){
-			channelInformations.remove(channel);
+			channelWorkStatus.get(new CId2Topic(consumerId, topicName)).remove(channel);
 		}
 	}
 	
@@ -345,68 +312,61 @@ public class ConsumerServiceImpl implements ConsumerService{
 		heartbeatThread.start();
 	}
 	
-	public void handlePacket(final Channel channel, final PktConsumerMessage consumerPacket){
+	/**
+	 * 接收的包为greet时
+	 * @param channel
+	 * @param channelInformation
+	 */
+	public void handleGreetPacket(final Channel channel, ChannelInformation channelInformation){
 		
-		final String consumerId;
-		final Destination  dest;
-		final ConsumerType consumerType;
-		final CId2Topic cId2Topic;
-		ArrayBlockingQueue<Runnable> getAckWorker;
-		//接收的包为greet信息时
-		if(ConsumerMessageType.GREET.equals(consumerPacket.getType())){
-			consumerId = consumerPacket.getConsumerId();
-			dest = consumerPacket.getDest();
-	    	consumerType = consumerPacket.getConsumerType();
-	    	cId2Topic = new CId2Topic(consumerId, dest.getName());
-	    	getAckWorker = getAckWorkers.get(cId2Topic);	    	
-	    	if(getAckWorker == null){
-	    		getAckWorker = new ArrayBlockingQueue<Runnable>(10);//TODO 
-	    	}
-	    	getAckWorker.add(new Runnable() {
-				@Override
-				public void run() {					
-			    	ChannelInformation channelInfo =  new ChannelInformation(dest, consumerId, consumerType);
-			    	synchronized(channelInformations){
-				    	channelInformations.put(channel, channelInfo);
-			    	}
-			    	changeChannelWorkStatus(cId2Topic, channel);		    	
-					putChannelToBlockQueue(cId2Topic, channel);
-					synchronized(getMessageThreadStatus){
-						//TODO 不同topic的consumerId可以相同
-						if(!getMessageThreadStatus.contains(consumerId)){
-							addGetMessageThread(new CId2Topic(consumerId, dest.getName()));
-						}
-					}					
-				}
-			});
+		String consumerId = channelInformation.getConsumerId();
+		Destination dest = channelInformation.getDest();
+		final ConsumerType consumerType = channelInformation.getConsumerType();
+		final CId2Topic cId2Topic = new CId2Topic(consumerId, dest.getName());
+		ArrayBlockingQueue<Runnable> ackWorker = ackWorkers.get(cId2Topic);	    	
+    	if(ackWorker == null){
+    		ackWorker = new ArrayBlockingQueue<Runnable>(10);//TODO 
+    	}
+    	ackWorker.add(new Runnable() {
+			@Override
+			public void run() {							    	
+		    	changeChannelWorkStatus(cId2Topic, channel);		    	
+				putChannelToBlockQueue(cId2Topic, channel);
+				synchronized(getMessageThreadStatus){
+					if(!getMessageThreadStatus.contains(cId2Topic)){
+						addGetMessageThread(cId2Topic);
+					}
+				}					
+			}
+		});
 	    	
-	    	synchronized(consumerTypes){
-	    		if(consumerTypes.get(cId2Topic) == null){
-	        		consumerTypes.put(cId2Topic, consumerType);   		
-	        		addHandleACKThread(consumerId, dest.getName(), getAckWorker);
-	        	}
-	    	}
-		} else{
-			//接收的包为ack时
-			synchronized(channelInformations){
-				ChannelInformation channelInfo =  channelInformations.get(channel);
-				if(channelInfo == null){
-					return;
-				}
-				consumerId = channelInfo.getConsumerId();
-				dest = channelInfo.getDest();
-			}			
-			final Long messageId = consumerPacket.getMessageId();
-			cId2Topic = new CId2Topic(consumerId, dest.getName());
-			getAckWorker = getAckWorkers.get(cId2Topic);
-			getAckWorker.add(new Runnable() {
-				@Override
-				public void run() {								    	
-					updateMaxMessageId(consumerId, dest.getName(), messageId);
-					putChannelToBlockQueue(cId2Topic, channel);
-				}
-			});	
-		}	
+    	synchronized(consumerTypes){
+    		if(consumerTypes.get(cId2Topic) == null){
+        		consumerTypes.put(cId2Topic, consumerType);   		
+        		addHandleACKThread(cId2Topic);
+        	}
+    	}
+	}
+	
+	/**
+	 * 接收的包为ack时
+	 * @param channel
+	 * @param channelInformation
+	 * @param messageId
+	 */
+	public void handleACKPacket(final Channel channel, ChannelInformation channelInformation, final Long messageId){
+		
+		String consumerId = channelInformation.getConsumerId();
+		Destination dest = channelInformation.getDest();
+		final CId2Topic cId2Topic = new CId2Topic(consumerId, dest.getName());
+		ArrayBlockingQueue<Runnable> ackWorker = ackWorkers.get(cId2Topic);
+		ackWorker.add(new Runnable() {
+			@Override
+			public void run() {								    	
+				updateMaxMessageId(cId2Topic, messageId);
+				putChannelToBlockQueue(cId2Topic, channel);
+			}
+		});	
 	}
 
 

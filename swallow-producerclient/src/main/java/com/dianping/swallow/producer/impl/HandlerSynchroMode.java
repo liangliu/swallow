@@ -3,9 +3,9 @@ package com.dianping.swallow.producer.impl;
 import com.dianping.swallow.common.packet.Packet;
 
 public class HandlerSynchroMode {
-   private Producer producer;
+   private ProducerImpl producer;
 
-   public HandlerSynchroMode(Producer producer) {
+   public HandlerSynchroMode(ProducerImpl producer) {
       this.producer = producer;
    }
 

@@ -73,11 +73,10 @@ public class ConsumerClient {
 		this.listener = listener;
 	}
 
-	public ConsumerClient(String cid, Destination dest, InetSocketAddress masterAddress, InetSocketAddress slaveAddress){
+	public ConsumerClient(String cid, Destination dest, String swallowCAddress){
 		this.consumerId = cid;
 		this.dest = dest;
-		this.masterAddress = masterAddress;
-		this.slaveAddress = slaveAddress;
+		string2Address(swallowCAddress);
 	}
 	
 	/**
@@ -125,4 +124,14 @@ public class ConsumerClient {
         }); 
     }
     
+    private void string2Address(String swallowCAddress){
+    	String[] ipAndPorts = swallowCAddress.split(",");
+    	String masterIp = ipAndPorts[0].split(":")[0];
+    	int masterPort = Integer.parseInt(ipAndPorts[0].split(":")[1]);
+    	String slaveIp = ipAndPorts[1].split(":")[0];
+    	int slavePort = Integer.parseInt(ipAndPorts[1].split(":")[1]);
+    	masterAddress = new InetSocketAddress(masterIp, masterPort);
+    	slaveAddress = new InetSocketAddress(slaveIp, slavePort);
+    	
+    }
 }

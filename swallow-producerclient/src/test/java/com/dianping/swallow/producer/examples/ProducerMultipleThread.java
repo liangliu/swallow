@@ -22,12 +22,12 @@ import java.util.concurrent.Executors;
 
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
-import com.dianping.swallow.producer.impl.Producer;
-import com.dianping.swallow.producer.impl.ProducerFactory;
+import com.dianping.swallow.producer.impl.ProducerImpl;
+import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 
 class ExampleTask implements Runnable {
-   Producer producer;
-   public ExampleTask(Producer producer){
+   ProducerImpl producer;
+   public ExampleTask(ProducerImpl producer){
       this.producer = producer;
    }
    @Override
@@ -47,22 +47,22 @@ class ExampleTask implements Runnable {
  */
 public class ProducerMultipleThread {
    public static void main(String[] args) {
-      ProducerFactory producerFactory = null;
+      ProducerFactoryImpl producerFactory = null;
       ExecutorService threadPool = Executors.newCachedThreadPool();
       //获取Producer工厂实例
       try {
          //Or: producerFactory = ProducerFactory.getInstance()//默认远程调用timeout为5000;
-         producerFactory = ProducerFactory.getInstance(5000);
+         producerFactory = ProducerFactoryImpl.getInstance(5000);
       } catch (Exception e) {
          System.out.println(e.toString());
       }
       //设置Producer选项
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
-      pOptions.put(ProducerOptionKey.THREAD_POOL_SIZE, 10);
-      pOptions.put(ProducerOptionKey.IS_CONTINUE_SEND, false);
+      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 10);
+      pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
       
-      Producer producerAsync = null;
+      ProducerImpl producerAsync = null;
       //获取Producer实例
       try {
          producerAsync = producerFactory.getProducer("sampleAsync", pOptions);
@@ -72,7 +72,7 @@ public class ProducerMultipleThread {
       
       //重新配置Producer选项
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-      Producer producerSync = null;
+      ProducerImpl producerSync = null;
       
       //获取Producer实例
       try {

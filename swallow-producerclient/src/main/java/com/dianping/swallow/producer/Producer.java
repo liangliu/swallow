@@ -22,7 +22,7 @@ import java.util.Map;
  * 
  * @author tong.song
  */
-public interface ProducerIface {
+public interface Producer {
    public String sendMessage(Object content) throws Exception;
 
    public String sendMessage(Object content, String messageType) throws Exception;

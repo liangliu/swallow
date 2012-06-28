@@ -15,6 +15,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
+import com.dianping.swallow.common.monitor.CloseMonitor;
+import com.dianping.swallow.common.monitor.CloseMonitor.CloseHook;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
 import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
@@ -40,15 +42,27 @@ public class MasterBootStrap {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+		CloseMonitor closeMonitor = new CloseMonitor();
+		int port = Integer.parseInt(System.getProperty("closeMonitorPort", "17555"));
+		closeMonitor.start(port, new CloseHook() {
+			
+			@Override
+			public void onClose() {
+				cService.close();
+			}
+			
+		});
+		
 		// Configure the server.
         ServerBootstrap bootstrap = new ServerBootstrap(
                 new NioServerSocketChannelFactory(
                         Executors.newCachedThreadPool(),
                         Executors.newCachedThreadPool()));
-        final MessageServerHandler handler = new MessageServerHandler(cService);
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {  
             @Override  
             public ChannelPipeline getPipeline() throws Exception {  
+            MessageServerHandler handler = new MessageServerHandler(cService);
             ChannelPipeline pipeline = Channels.pipeline();
             pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
             pipeline.addLast("jsonDecoder", new JsonDecoder(PktConsumerMessage.class));
