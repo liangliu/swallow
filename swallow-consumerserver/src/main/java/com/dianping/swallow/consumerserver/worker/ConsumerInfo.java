@@ -20,5 +20,7 @@ public class ConsumerInfo {
 	public ConsumerType getConsumerType() {
 		return consumerType;
 	}
-
+	public String toString() {
+		return consumerId.getDest().getName() + consumerId.getConsumerId();
+	}
 }

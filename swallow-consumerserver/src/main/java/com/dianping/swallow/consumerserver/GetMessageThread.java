@@ -1,28 +1,22 @@
 package com.dianping.swallow.consumerserver;
 
 import java.io.Closeable;
-import java.util.HashSet;
 
-import org.jboss.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
+import com.dianping.swallow.consumerserver.worker.ConsumerWorkerImpl;
 
 public class GetMessageThread implements Runnable, Closeable{
 	
 	private static Logger LOG = LoggerFactory.getLogger(GetMessageThread.class);
 
-	private CId2Topic cId2Topic;
 	private volatile boolean isLive = true;
-	private ConsumerServiceImpl cService;
+	private ConsumerWorkerImpl consumerInformation;
+	
 
-	public void setcId2Topic(CId2Topic cId2Topic) {
-		this.cId2Topic = cId2Topic;
-	}
-
-	public void setcService(ConsumerServiceImpl cService) {
-		this.cService = cService;
+	public void setConsumerInformation(ConsumerWorkerImpl consumerInformation) {
+		this.consumerInformation = consumerInformation;
 	}
 
 	@Override
@@ -35,13 +29,10 @@ public class GetMessageThread implements Runnable, Closeable{
 	@Override
 	public void run() {
 		while(isLive){
-			cService.sendMessageByPollFreeChannelQueue(cId2Topic);
-			synchronized(cService.getGetMessageThreadStatus()){
-				HashSet<Channel> channels = cService.getChannelWorkStatus().get(cId2Topic);
-				if(channels.isEmpty()){
-					cService.getGetMessageThreadStatus().remove(cId2Topic);
-					isLive = false;
-				}
+			consumerInformation.sendMessageByPollFreeChannelQueue();
+			if(consumerInformation.getConnectedChannels().isEmpty()){
+				consumerInformation.setGetMessageThreadExist(false);
+				isLive = false;
 			}
 		}
 		LOG.info("closed");

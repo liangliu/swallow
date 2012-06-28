@@ -17,8 +17,8 @@ import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
 import com.dianping.swallow.common.packet.PktMessage;
-import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 import com.dianping.swallow.consumerserver.netty.MessageServerHandler;
+import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
 public class SlaveBootStrap {
 
@@ -33,8 +33,8 @@ public class SlaveBootStrap {
 	public static void main(String[] args) {
 		while(true){
 			ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[]{"applicationContext.xml"});
-			final ConsumerServiceImpl cService = ctx.getBean(ConsumerServiceImpl.class);
-			cService.init(isSlave);
+			final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
+			consumerWorkerManager.init(isSlave);
 			// Configure the server.
 	        ServerBootstrap bootstrap = new ServerBootstrap(
 	                new NioServerSocketChannelFactory(
@@ -44,7 +44,7 @@ public class SlaveBootStrap {
 	        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {  
 	            @Override  
 	            public ChannelPipeline getPipeline() throws Exception {  
-	            MessageServerHandler handler = new MessageServerHandler(cService);
+	            MessageServerHandler handler = new MessageServerHandler(consumerWorkerManager);
 	            ChannelPipeline pipeline = Channels.pipeline();
 	            pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
 	            pipeline.addLast("jsonDecoder", new JsonDecoder(PktConsumerMessage.class));
@@ -57,7 +57,7 @@ public class SlaveBootStrap {
 	        // Bind and start to accept incoming connections.
 	       bootstrap.bind(new InetSocketAddress(port));
 	       //TODO 在这个县城检查就可以
-	       cService.checkMasterIsLive(bootstrap);
+	       consumerWorkerManager.checkMasterIsLive(bootstrap);
 	       while(slaveShouldLive){
 	    	   try {
 				Thread.sleep(10000);

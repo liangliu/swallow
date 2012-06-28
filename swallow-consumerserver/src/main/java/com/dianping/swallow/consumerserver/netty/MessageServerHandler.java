@@ -13,23 +13,22 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.dianping.swallow.common.consumer.ConsumerMessageType;
-import com.dianping.swallow.common.consumer.ConsumerType;
-import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
-import com.dianping.swallow.consumerserver.ChannelInformation;
-import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
+import com.dianping.swallow.consumerserver.worker.ConsumerId;
+import com.dianping.swallow.consumerserver.worker.ConsumerInfo;
+import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
 
 
 @ChannelPipelineCoverage("all")
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 	
-	private ConsumerServiceImpl cService;
+	private ConsumerWorkerManager workerManager;
 	
-	private ChannelInformation channelInformation;
+	private ConsumerId consumerId;
 
-	public MessageServerHandler(ConsumerServiceImpl cService){
-		this.cService = cService;
+	public MessageServerHandler(ConsumerWorkerManager workerManager){
+		this.workerManager = workerManager;
 	}
 	//TODO log4j
     private static final Logger logger = Logger.getLogger(
@@ -49,13 +48,10 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     	if(e.getMessage() instanceof PktConsumerMessage){
     		PktConsumerMessage consumerPacket = (PktConsumerMessage)e.getMessage();
     		if(ConsumerMessageType.GREET.equals(consumerPacket.getType())){
-    			String consumerId = consumerPacket.getConsumerId();
-    			Destination dest = consumerPacket.getDest();
-    			ConsumerType consumerType = consumerPacket.getConsumerType();
-    			channelInformation =  new ChannelInformation(dest, consumerId, consumerType);
-    			cService.handleGreetPacket(channel, channelInformation);
+    			consumerId =  new ConsumerId(consumerPacket.getConsumerId(), consumerPacket.getDest());
+    			workerManager.handleGreet(channel, new ConsumerInfo(consumerId, consumerPacket.getConsumerType()));
     		} else{
-    			cService.handleACKPacket(channel, channelInformation, consumerPacket.getMessageId());
+    			workerManager.handleAck(channel, new ConsumerInfo(consumerId, null), consumerPacket.getMessageId());
     		}
     		
     	} else{
@@ -73,7 +69,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
         //只有IOException的时候才需要处理。
         if(e.getCause() instanceof IOException){
         	Channel channel = e.getChannel();
-            cService.changeStatusWhenChannelBreak(channel, channelInformation);
+        	workerManager.handleChannelDisconnect(channel, new ConsumerInfo(consumerId, null));
             channel.close();
         }        
     }
