@@ -35,7 +35,7 @@ public class GetMessageThread implements Runnable, Closeable{
 	@Override
 	public void run() {
 		while(isLive){
-			cService.pollFreeChannelsByCId(cId2Topic);
+			cService.sendMessageByPollFreeChannelQueue(cId2Topic);
 			synchronized(cService.getGetMessageThreadStatus()){
 				HashSet<Channel> channels = cService.getChannelWorkStatus().get(cId2Topic);
 				if(channels.isEmpty()){

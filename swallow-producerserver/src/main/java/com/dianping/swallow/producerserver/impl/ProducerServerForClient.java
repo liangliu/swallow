@@ -16,6 +16,8 @@ import com.dianping.swallow.common.packet.Packet;
 import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
+import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
+import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.producerserver.util.SHAGenerater;
 
 public class ProducerServerForClient implements MQService {
@@ -31,9 +33,10 @@ public class ProducerServerForClient implements MQService {
     * 启动producerServerClient
     * 
     * @param port 供producer连接的端口
+    * @throws RemoteServiceInitFailedException 远程调用初始化失败
     * @throws Exception 连续绑定同一个端口抛出异常，pigeon初始化失败抛出异常
     */
-   public void start() throws Exception {
+   public void start() throws RemoteServiceInitFailedException {
       ServiceRegistry remoteService = null;
       try {
          remoteService = new ServiceRegistry(getPort());
@@ -43,15 +46,16 @@ public class ProducerServerForClient implements MQService {
          remoteService.init();
       } catch (Exception e) {
          logger.log(Level.ERROR, "[ProducerServer]:[Initialize remote service failed.]", e.getCause());
-         throw e;
+         throw new RemoteServiceInitFailedException();
       }
    }
 
    /**
     * 保存swallowMessage到数据库
+    * @throws ServerDaoException 
     */
    @Override
-   public Packet sendMessage(Packet pkt) throws Exception {
+   public Packet sendMessage(Packet pkt) throws ServerDaoException{
       Packet pktRet = null;
       switch (pkt.getPacketType()) {
          case PRODUCER_GREET:
@@ -77,7 +81,7 @@ public class ProducerServerForClient implements MQService {
                      (SwallowMessage) ((PktMessage) pkt).getContent());
             } catch (Exception e) {
                logger.error("[ProducerServer]:[Message saved failed.]", e);
-               throw e;
+               throw new ServerDaoException();
             }
             break;
          default:

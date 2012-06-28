@@ -17,6 +17,7 @@ package com.dianping.swallow.producer;
 
 import java.util.Map;
 
+import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.impl.ProducerImpl;
 
 /**
@@ -25,5 +26,5 @@ import com.dianping.swallow.producer.impl.ProducerImpl;
  *
  */
 public interface ProducerFactory {
-   public ProducerImpl getProducer(String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception;
+   public ProducerImpl getProducer(String topicName, Map<ProducerOptionKey, Object> pOptions) throws TopicNameInvalidException;
 }
