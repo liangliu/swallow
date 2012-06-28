@@ -40,10 +40,11 @@ public class SlaveBootStrap {
 	                new NioServerSocketChannelFactory(
 	                        Executors.newCachedThreadPool(),
 	                        Executors.newCachedThreadPool()));
-	        final MessageServerHandler handler = new MessageServerHandler(cService);
+	        
 	        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {  
 	            @Override  
 	            public ChannelPipeline getPipeline() throws Exception {  
+	            MessageServerHandler handler = new MessageServerHandler(cService);
 	            ChannelPipeline pipeline = Channels.pipeline();
 	            pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
 	            pipeline.addLast("jsonDecoder", new JsonDecoder(PktConsumerMessage.class));

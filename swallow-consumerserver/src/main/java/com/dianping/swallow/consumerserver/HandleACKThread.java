@@ -10,8 +10,6 @@ import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 
 public class HandleACKThread implements Runnable{
 	
-	private ArrayBlockingQueue<Runnable> getAckWorker;
-	
 	private CId2Topic cId2Topic;
 	
 	private ConsumerServiceImpl cService;
@@ -27,17 +25,15 @@ public class HandleACKThread implements Runnable{
 		this.cService = cService;
 	}
 
-	public void setGetAckWorker(ArrayBlockingQueue<Runnable> getAckWorker) {
-		this.getAckWorker = getAckWorker;
-	}
 
 	@Override
 	public void run() {
+		ArrayBlockingQueue<Runnable> ackWorker = cService.getAckWorkers().get(cId2Topic);
 		while(isLive){
 			Runnable worker = null;
 			try {
 				while(true){
-					worker = getAckWorker.poll(cService.getConfigManager().getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
+					worker = ackWorker.poll(cService.getConfigManager().getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
 					if(worker != null){
 						worker.run();
 					} else{
