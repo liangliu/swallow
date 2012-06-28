@@ -18,7 +18,7 @@ package com.dianping.swallow.common.packet;
 
 
 /**
- * TODO Comment of PktProducerGreet
+ * Producer向Swallow发送的Greet报文，包含Producer的版本号
  * @author tong.song
  *
  */

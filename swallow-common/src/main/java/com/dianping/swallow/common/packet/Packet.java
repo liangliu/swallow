@@ -18,7 +18,7 @@ package com.dianping.swallow.common.packet;
 import java.io.Serializable;
 
 /**
- * TODO Comment of Packet
+ * Producer、Consumer与Swallow通信的报文抽象类
  * @author tong.song
  *
  */

@@ -16,7 +16,7 @@
 package com.dianping.swallow.common.packet;
 
 /**
- * TODO Comment of PacketType
+ * 通信报文种类
  * @author tong.song
  *
  */

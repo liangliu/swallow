@@ -21,7 +21,7 @@ import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 
 /**
- * TODO Comment of MQServiceNormalMock
+ * 供测试使用的MQService类，返回一个普通的Packet对象，一定不会抛出异常
  * 
  * @author tong.song
  */
