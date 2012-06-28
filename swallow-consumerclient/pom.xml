@@ -1,33 +1,42 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  
-  <parent>
-     <artifactId>swallow-all</artifactId>
-     <groupId>com.dianping.swallow</groupId>
-     <version>1.0.1</version>
-  </parent>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>swallow-all</artifactId>
+		<groupId>com.dianping.swallow</groupId>
+		<version>1.0.1</version>
+	</parent>
 
-<groupId>com.dianping.swallow</groupId>
-  
-  <artifactId>${swallow-consumerclient.aid}</artifactId>
-  <version>${swallow-consumerclient.version}</version>
-  <packaging>jar</packaging>
+	<modelVersion>4.0.0</modelVersion>
 
-  <name>${swallow-consumerclient.name}</name>
-  <url>http://maven.apache.org</url>
+	<groupId>com.dianping.swallow</groupId>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+	<artifactId>${swallow-consumerclient.aid}</artifactId>
+	<version>${swallow-consumerclient.version}</version>
+	<packaging>jar</packaging>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+	<name>${swallow-consumerclient.name}</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.jboss.netty</groupId>
+			<artifactId>netty</artifactId>
+			<version>3.2.7.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>com.dianping.swallow</groupId>
+			<artifactId>${swallow-common.aid}</artifactId>
+			<version>${swallow-common.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>2.6.3</version>
+		</dependency>
+	</dependencies>
 </project>

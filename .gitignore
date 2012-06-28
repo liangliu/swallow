@@ -41,4 +41,33 @@ Thumbs.db
 ######################
 .project
 .classpath
-org.eclipse.jdt.core.prefs
+*/.settings/
+
+# jupiter generated files #
+######################
+.jupiter
+*.review
+*/review/
+
+# temp folder #
+######################
+*/target/
+*/bin/
+
+# temp file #
+######################
+*~
+
+# should not ignored #
+!*.java
+!*.gitignore
+!*.xml
+!*.jsp
+!*.html
+!*.htm
+!*.js
+!*.css
+!*.jpg
+!*.gif
+!*.properties
+

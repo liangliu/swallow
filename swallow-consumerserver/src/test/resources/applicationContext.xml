@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd"
+	default-autowire="byName">
+
+	<bean id="ackDAO" class="com.dianping.swallow.common.dao.impl.mongodb.AckDAOImpl">
+	</bean>
+
+	<bean id="messageDAO"
+		class="com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl">
+	</bean>
+
+	<bean id="heartbeatDAO"
+		class="com.dianping.swallow.common.dao.impl.mongodb.HeartbeatDAOImpl">
+	</bean>
+
+	<bean id="messageRetriever"
+		class="com.dianping.swallow.consumerserver.buffer.MongoDBMessageRetriever">
+		<property name="fetchSize" value="20" />
+	</bean>
+
+	<bean id="swallowBuffer"
+		class="com.dianping.swallow.consumerserver.buffer.SwallowBuffer">
+		<property name="threshold" value="2" />
+		<property name="capacity" value="1024" />
+	</bean>
+
+	<bean id="mongoClient"
+		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient">
+		<constructor-arg>
+			<value>swallow.mongo.consumerServerURI</value>
+		</constructor-arg>
+	</bean>
+
+
+
+</beans>
