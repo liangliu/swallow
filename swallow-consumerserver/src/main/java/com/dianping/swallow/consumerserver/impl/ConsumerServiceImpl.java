@@ -22,13 +22,13 @@ import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.PktMessage;
+import com.dianping.swallow.common.threadfactory.MQThreadFactory;
 import com.dianping.swallow.consumerserver.CId2Topic;
 import com.dianping.swallow.consumerserver.ChannelInformation;
 import com.dianping.swallow.consumerserver.ConsumerService;
 import com.dianping.swallow.consumerserver.GetMessageThread;
 import com.dianping.swallow.consumerserver.HandleACKThread;
 import com.dianping.swallow.consumerserver.Heartbeater;
-import com.dianping.swallow.consumerserver.MQThreadFactory;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 
@@ -41,6 +41,8 @@ public class ConsumerServiceImpl implements ConsumerService, Closeable{
     private Map<CId2Topic, PktMessage> preparedMesssages = new HashMap<CId2Topic, PktMessage>();
     
     private SwallowMessage message = null;
+    
+    private Map<CId2Topic, BlockingQueue<Message>> messages = new HashMap<CId2Topic, BlockingQueue<Message>>();
     
     private long getMessageInterval = 1000;
     
@@ -166,16 +168,21 @@ public class ConsumerServiceImpl implements ConsumerService, Closeable{
 		thread1.start();
 		
 	}
-	public void pollFreeChannelsByCId(CId2Topic cId2Topic){
-		
-		BlockingQueue<Message> messages = null;
-		//线程刚起，第一次调用的时候，需要先去mongo中获取maxMessageId
-		if(messages == null){
+	private BlockingQueue<Message> getMessageQueue(CId2Topic cId2Topic){
+		BlockingQueue<Message> messageQueue = messages.get(cId2Topic);
+		if(messageQueue != null){
+			return messageQueue;
+		}else {			
 			long messageIdOfTailMessage = getMessageIdOfTailMessage(cId2Topic.getTopicName(), cId2Topic.getConsumerId());
-		    messages = swallowBuffer.createMessageQueue(cId2Topic.getTopicName(), cId2Topic.getConsumerId(), messageIdOfTailMessage);
+			messageQueue = swallowBuffer.createMessageQueue(cId2Topic.getTopicName(), cId2Topic.getConsumerId(), messageIdOfTailMessage);
+			messages.put(cId2Topic, messageQueue);
 			freeChannelQueue = freeChannels.get(cId2Topic);
-		}	
-		
+			return messageQueue;
+		}
+	}
+	public void sendMessageByPollFreeChannelQueue(CId2Topic cId2Topic){		
+		BlockingQueue<Message> messageQueue = getMessageQueue(cId2Topic);
+		//线程刚起，第一次调用的时候，需要先去mongo中获取maxMessageId
 		try {
 			while(true){
 				Channel channel = null;
@@ -195,7 +202,7 @@ public class ConsumerServiceImpl implements ConsumerService, Closeable{
 					} else{			
 						while(true){
 							//获得
-							message = (SwallowMessage)messages.poll(getMessageInterval, TimeUnit.MILLISECONDS);
+							message = (SwallowMessage)messageQueue.poll(getMessageInterval, TimeUnit.MILLISECONDS);
 							if(message == null){
 								getMessageInterval*=2;
 							}else {
@@ -247,7 +254,7 @@ public class ConsumerServiceImpl implements ConsumerService, Closeable{
 		return maxMessageId;
 	}
 
-	public void changeStatuesWhenChannelBreak(Channel channel, ChannelInformation channelInformation){
+	public void changeStatusWhenChannelBreak(Channel channel, ChannelInformation channelInformation){
 		
 		String consumerId = channelInformation.getConsumerId();
 		String topicName = channelInformation.getDest().getName();		
