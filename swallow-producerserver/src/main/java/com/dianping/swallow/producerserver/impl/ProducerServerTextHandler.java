@@ -1,5 +1,6 @@
 package com.dianping.swallow.producerserver.impl;
 
+import java.net.InetAddress;
 import java.util.Date;
 
 import org.apache.log4j.Level;
@@ -20,11 +21,11 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    private final MessageDAO    messageDAO;
 
    //TextHandler状态代码
-   private static final int    OK                = 250;
+   private static final int    OK                 = 250;
    private static final int    INVALID_TOPIC_NAME = 251;
-   private static final int    SAVE_FAILED       = 252;
+   private static final int    SAVE_FAILED        = 252;
 
-   private static final Logger logger            = Logger.getLogger(ProducerServerTextHandler.class);
+   private static final Logger logger             = Logger.getLogger(ProducerServerTextHandler.class);
 
    /**
     * 构造函数
@@ -44,14 +45,19 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    }
 
    @Override
-   public void messageReceived(ChannelHandlerContext ctx, MessageEvent e){
+   public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
       //获取TextObject
       TextObject textObject = (TextObject) e.getMessage();
+      if(logger.isDebugEnabled()) {
+		   logger.debug("receving: " + textObject);
+	   }
+      String sourceIp = e.getChannel().getRemoteAddress().toString();
       //生成SwallowMessage//TODO 增加swallowMessage的IP信息
       SwallowMessage swallowMessage = new SwallowMessage();
       swallowMessage.setContent(textObject.getContent());
       swallowMessage.setGeneratedTime(new Date());
       swallowMessage.setSha1(SHAGenerater.generateSHA(swallowMessage.getContent()));
+      swallowMessage.setSourceIp(sourceIp.substring(sourceIp.indexOf("/") + 1, sourceIp.indexOf(":")));
       //初始化ACK对象
       TextACK textAck = new TextACK();
       textAck.setStatus(OK);
@@ -69,7 +75,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
             messageDAO.saveMessage(textObject.getTopic(), swallowMessage);
          } catch (Exception e1) {
             //记录异常，返回失败ACK，reason是“Can not save message”
-            logger.log(Level.ERROR, "[TextHandler]:[Save Message Failed.]", e1.getCause());
+            logger.log(Level.ERROR, "[TextHandler]:[Save Message Failed.]", e1);
             textAck.setStatus(SAVE_FAILED);
             textAck.setInfo("Can not save message.");
          }

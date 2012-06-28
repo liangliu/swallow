@@ -1,5 +1,8 @@
 package com.dianping.swallow.producer.impl;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Map;
 
@@ -152,6 +155,11 @@ public class ProducerImpl implements Producer {
       swallowMsg.setContent(content);
       swallowMsg.setVersion(producerVersion);
       swallowMsg.setGeneratedTime(new Date());
+      try {
+         swallowMsg.setSourceIp(InetAddress.getLocalHost().getHostAddress());
+      } catch (UnknownHostException e1) {
+         e1.printStackTrace();
+      }
       if (properties != null)
          swallowMsg.setProperties(properties);
       if (messageType != null)
