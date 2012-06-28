@@ -1,34 +1,26 @@
 package com.dianping.swallow.consumerserver;
 
 import java.io.Closeable;
-import java.util.HashSet;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
+import com.dianping.swallow.consumerserver.worker.ConsumerWorkerImpl;
 
 public class HandleACKThread implements Runnable, Closeable{
 	
 	private static Logger LOG = LoggerFactory.getLogger(HandleACKThread.class);
 	
-	private CId2Topic cId2Topic;
+	private ConsumerWorkerImpl consumerInformation;
 	
-	private ConsumerServiceImpl cService;
 	
+	public void setConsumerInformation(ConsumerWorkerImpl consumerInformation) {
+		this.consumerInformation = consumerInformation;
+	}
+
 	private volatile boolean isLive = true;
-
-
-	public void setcId2Topic(CId2Topic cId2Topic) {
-		this.cId2Topic = cId2Topic;
-	}
-
-	public void setcService(ConsumerServiceImpl cService) {
-		this.cService = cService;
-	}
 
 
 	@Override
@@ -40,12 +32,12 @@ public class HandleACKThread implements Runnable, Closeable{
 
 	@Override
 	public void run() {
-		ArrayBlockingQueue<Runnable> ackWorker = cService.getAckWorkers().get(cId2Topic);
+		ArrayBlockingQueue<Runnable> ackWorker = consumerInformation.getAckWorker();
 		while(isLive){
 			Runnable worker = null;
 			try {
 				while(true){
-					worker = ackWorker.poll(cService.getConfigManager().getFreeChannelBlockQueueOutTime(),TimeUnit.MILLISECONDS);
+					worker = ackWorker.poll(1000,TimeUnit.MILLISECONDS);// TODO 
 					if(worker != null){
 						worker.run();
 					} else{
@@ -55,12 +47,9 @@ public class HandleACKThread implements Runnable, Closeable{
 			} catch (InterruptedException e) {
 				LOG.error("unexpected interrupt", e);
 			}			
-			synchronized(cService.getConsumerTypes()){
-				HashSet<Channel> channels = cService.getChannelWorkStatus().get(cId2Topic);
-				if(channels.isEmpty()){
-					cService.getConsumerTypes().remove(cId2Topic);
-					isLive = false;
-				}
+			if(consumerInformation.getConnectedChannels().isEmpty()){
+				consumerInformation.setHandleACKThreadExist(false);
+				isLive = false;
 			}
 		}
 		LOG.info("closed");
