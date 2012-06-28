@@ -1,4 +1,4 @@
-package com.dianping.swallow.consumerserver;
+package com.dianping.swallow.common.threadfactory;
 
 
 

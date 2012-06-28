@@ -1,5 +1,6 @@
 package com.dianping.swallow.consumerserver.netty;
 
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -69,8 +70,11 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
         logger.log(
                 Level.WARNING,
         "客户端断开连接！");
-        Channel channel = e.getChannel();
-        cService.changeStatuesWhenChannelBreak(channel, channelInformation);
-        channel.close();
+        //只有IOException的时候才需要处理。
+        if(e.getCause() instanceof IOException){
+        	Channel channel = e.getChannel();
+            cService.changeStatusWhenChannelBreak(channel, channelInformation);
+            channel.close();
+        }        
     }
 }

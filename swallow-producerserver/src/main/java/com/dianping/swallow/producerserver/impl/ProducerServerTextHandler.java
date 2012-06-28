@@ -21,7 +21,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
 
    //TextHandler状态代码
    private static final int    OK                = 250;
-   private static final int    INVALID_TOPICNAME = 251;
+   private static final int    INVALID_TOPIC_NAME = 251;
    private static final int    SAVE_FAILED       = 252;
 
    private static final Logger logger            = Logger.getLogger(ProducerServerTextHandler.class);
@@ -44,7 +44,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    }
 
    @Override
-   public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
+   public void messageReceived(ChannelHandlerContext ctx, MessageEvent e){
       //获取TextObject
       TextObject textObject = (TextObject) e.getMessage();
       //生成SwallowMessage//TODO 增加swallowMessage的IP信息
@@ -59,8 +59,8 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       if (!ProducerUtils.isTopicNameValid(textObject.getTopic())) {
          logger.log(Level.ERROR, "[TextHandler]:[" + e.getChannel().getRemoteAddress() + ": " + textObject
                + "]:[Wrong format.]");
-         textAck.setStatus(INVALID_TOPICNAME);
-         textAck.setInfo("TopicName is not valid.");
+         textAck.setStatus(INVALID_TOPIC_NAME);
+         textAck.setInfo("TopicName is invalid.");
          //返回ACK
          e.getChannel().write(textAck);
       } else {

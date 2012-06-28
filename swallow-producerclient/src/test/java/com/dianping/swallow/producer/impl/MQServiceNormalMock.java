@@ -18,6 +18,7 @@ package com.dianping.swallow.producer.impl;
 import com.dianping.swallow.common.packet.Packet;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
+import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 
 /**
  * TODO Comment of MQServiceNormalMock
@@ -33,7 +34,7 @@ public class MQServiceNormalMock implements MQService {
     * .swallow.common.packet.Packet)
     */
    @Override
-   public Packet sendMessage(Packet pkt) throws Exception {
+   public Packet sendMessage(Packet pkt) throws ServerDaoException {
       return new PktSwallowPACK("This is a mock ACK.");
    }
 
