@@ -9,12 +9,10 @@ import org.apache.log4j.Logger;
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.packet.Message;
-import com.dianping.swallow.common.packet.PktObjectMessage;
+import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.common.packet.PktProducerGreet;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
-import com.dianping.swallow.producer.HandlerUndeliverable;
 import com.dianping.swallow.producer.ProducerIface;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
@@ -22,27 +20,25 @@ import com.dianping.swallow.producer.ProducerOptionKey;
 public class Producer implements ProducerIface {
    //变量定义
    private MQService                 remoteService;                                              //远程调用对象
-
    private HandlerAsynchroMode       asyncHandler;                                               //异步处理对象
    private HandlerSynchroMode        syncHandler;                                                //同步处理对象
 
-   private HandlerUndeliverable      undeliverableMessageHandler;
-
    //常量定义
-   private final String              producerVersion          = "0.6.0";
-   private static final Logger       logger                   = Logger.getLogger(Producer.class);
+   private final String              producerVersion          = "0.6.0";                         //Producer版本号
+   private static final Logger       logger                   = Logger.getLogger(Producer.class); //日志
 
-   //和配置文件对应的变量
+   //Producer配置默认值
+   private static final ProducerMode DEFAULT_PRODUCER_MODE    = ProducerMode.SYNC_MODE;
+   private static final int          DEFAULT_THREAD_POOL_SIZE = 10;
+   private static final boolean      DEFAULT_CONTINUE_SEND    = false;
+
+   //Producer配置变量
    private final ProducerMode        producerMode;                                               //Producer工作模式
    private final Destination         destination;                                                //Producer消息目的
    private final int                 threadPoolSize;                                             //异步处理对象的线程池大小
    private final boolean             continueSend;                                               //异步模式是否允许续传
 
-   private static final ProducerMode DEFAULT_PRODUCER_MODE    = ProducerMode.SYNC_MODE;
-   private static final int          DEFAULT_THREAD_POOL_SIZE = 10;
-   private static final boolean      DEFAULT_CONTINUE_SEND    = false;
-
-   public Producer(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception {
+   Producer(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions) throws Exception {
       //初始化Producer参数
       if (topicName == null)
          throw new Exception("Topic name can not be null.");
@@ -65,13 +61,6 @@ public class Producer implements ProducerIface {
             asyncHandler = new HandlerAsynchroMode(this);
             break;
       }
-      //Message发送出错处理对象
-      undeliverableMessageHandler = new HandlerUndeliverable() {
-         @Override
-         public void handleUndeliverableMessage(Message msg) {
-            logger.info("[Destination]:[" + msg.getDestination().getName() + "]" + msg.getContent());
-         }
-      };
       //向Swallow发送greet
       remoteService.sendMessage(new PktProducerGreet(producerVersion));
    }
@@ -139,37 +128,26 @@ public class Producer implements ProducerIface {
          swallowMsg.setType(messageType);
 
       //构造packet
-      PktObjectMessage objMsg = new PktObjectMessage(destination, swallowMsg);
+      PktMessage pktMessage = new PktMessage(destination, swallowMsg);
       switch (producerMode) {
          case SYNC_MODE://同步模式
             try {
-               ret = ((PktSwallowPACK) syncHandler.doSendMsg(objMsg)).getShaInfo();
+               ret = ((PktSwallowPACK) syncHandler.doSendMsg(pktMessage)).getShaInfo();
             } catch (Exception e) {
                logger.log(Level.ERROR, "[SendMessage]:[Message sent failed.]", e.getCause());
                throw e;
             }
-            if (ret == null)
-               handleUndeliverableMessage(objMsg);
             break;
          case ASYNC_MODE://异步模式
             try {
-               asyncHandler.doSendMsg(objMsg);
+               asyncHandler.doSendMsg(pktMessage);
             } catch (FileQueueClosedException fqce) {
                logger.log(Level.ERROR, "[SendMessage]:[Message sent failed.]", fqce.getCause());
-               handleUndeliverableMessage(objMsg);
+               throw fqce;
             }
             break;
       }
       return ret;
-   }
-
-   //处理发送失败的Handle
-   private void handleUndeliverableMessage(Message msg) {
-      try {
-         undeliverableMessageHandler.handleUndeliverableMessage(msg);
-      } catch (Exception e) {
-         logger.error("error processing undeliverable message", e);
-      }
    }
 
    /**

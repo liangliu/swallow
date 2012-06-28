@@ -11,11 +11,11 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-import org.bson.types.BSONTimestamp;
 
+import com.dianping.swallow.common.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.packet.PktConsumerGreet;
-import com.dianping.swallow.common.packet.PktObjectMessage;
+import com.dianping.swallow.common.packet.PktConsumerMessage;
+import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.consumer.ConsumerClient;
 
 //TODO delete ?
@@ -27,7 +27,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     
     private ConsumerClient cClient;
     
-    private PktConsumerGreet consumerACKPacket;
+    private PktConsumerMessage consumermessage;
     
     public MessageClientHandler(ConsumerClient cClient){
     	this.cClient = cClient;
@@ -36,8 +36,8 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     public void channelConnected(
             ChannelHandlerContext ctx, ChannelStateEvent e) {
     	
-    	consumerACKPacket = new PktConsumerGreet(cClient.getConsumerId(), cClient.getDest(), cClient.getConsumerType(), null);
-    	e.getChannel().write(consumerACKPacket);   
+    	consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET, cClient.getConsumerId(), cClient.getDest(), cClient.getConsumerType(), null);
+    	e.getChannel().write(consumermessage);   
     	
     }
  
@@ -45,12 +45,12 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     public void messageReceived(
             ChannelHandlerContext ctx, MessageEvent e) {
     	
-    	SwallowMessage swallowMessage = (SwallowMessage)((PktObjectMessage)e.getMessage()).getContent();
-    	Long messageId = swallowMessage.getMessageId();
-    	consumerACKPacket.setMessageId(messageId);
+    	SwallowMessage swallowMessage = (SwallowMessage)((PktMessage)e.getMessage()).getContent();
+    	Long messageId = swallowMessage.getMessageId();    	
+    	consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET,null,null,null,messageId);
     	//TODO 异常处理
     	cClient.getListener().onMessage(swallowMessage);
-    	e.getChannel().write(consumerACKPacket);
+    	e.getChannel().write(consumermessage);
     	
     }
  

@@ -5,17 +5,17 @@ import org.jboss.netty.channel.Channel;
 import com.dianping.swallow.consumerserver.impl.ConsumerServiceImpl;
 
 public class GetMessageThread implements Runnable{
-	private String topicName;
-	private String consumerId;
+
+	private CId2Topic cId2Topic;
 	private Boolean isLive = true;
 	private ConsumerServiceImpl cService;
-	public void setTopicName(String topicName) {
-		this.topicName = topicName;
+
+
+	public void setcId2Topic(CId2Topic cId2Topic) {
+		this.cId2Topic = cId2Topic;
 	}
 
-	public void setConsumerId(String consumerId) {
-		this.consumerId = consumerId;
-	}
+
 
 	public void setcService(ConsumerServiceImpl cService) {
 		this.cService = cService;
@@ -30,11 +30,11 @@ public class GetMessageThread implements Runnable{
 			e.printStackTrace();
 		}
 		while(isLive){
-			cService.pollFreeChannelsByCId(consumerId, topicName);
-			synchronized(cService.getConsumerTypes()){
-				HashSet<Channel> channels = cService.getChannelWorkStatus().get(consumerId);
+			cService.pollFreeChannelsByCId(cId2Topic);
+			synchronized(cService.getGetMessageThreadStatus()){
+				HashSet<Channel> channels = cService.getChannelWorkStatus().get(cId2Topic);
 				if(channels.isEmpty()){
-					cService.getConsumerTypes().remove(consumerId);
+					cService.getGetMessageThreadStatus().remove(cId2Topic);
 					isLive = false;
 				}
 			}

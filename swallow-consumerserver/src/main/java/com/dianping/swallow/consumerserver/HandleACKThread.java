@@ -12,14 +12,15 @@ public class HandleACKThread implements Runnable{
 	
 	private ArrayBlockingQueue<Runnable> getAckWorker;
 	
-	private String consumerId;
+	private CId2Topic cId2Topic;
 	
 	private ConsumerServiceImpl cService;
 	
 	private Boolean isLive = true;
 
-	public void setConsumerId(String consumerId) {
-		this.consumerId = consumerId;
+
+	public void setcId2Topic(CId2Topic cId2Topic) {
+		this.cId2Topic = cId2Topic;
 	}
 
 	public void setcService(ConsumerServiceImpl cService) {
@@ -49,9 +50,9 @@ public class HandleACKThread implements Runnable{
 				e.printStackTrace();
 			}			
 			synchronized(cService.getConsumerTypes()){
-				HashSet<Channel> channels = cService.getChannelWorkStatus().get(consumerId);
+				HashSet<Channel> channels = cService.getChannelWorkStatus().get(cId2Topic);
 				if(channels.isEmpty()){
-					cService.getConsumerTypes().remove(consumerId);
+					cService.getConsumerTypes().remove(cId2Topic);
 					isLive = false;
 				}
 			}
