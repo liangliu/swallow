@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dianping.dpsf.api.ServiceRegistry;
 import com.dianping.swallow.common.dao.MessageDAO;
@@ -25,8 +24,6 @@ public class ProducerServerForClient implements MQService {
    private static final Logger logger       = Logger.getLogger(ProducerServerForClient.class);
    private static final int    DEFAULT_PORT = 4000;
    private int                 port         = DEFAULT_PORT;
-
-   @Autowired
    private MessageDAO          messageDAO;
 
    /**
@@ -37,8 +34,8 @@ public class ProducerServerForClient implements MQService {
     * @throws Exception 连续绑定同一个端口抛出异常，pigeon初始化失败抛出异常
     */
    public void start() throws RemoteServiceInitFailedException {
-      ServiceRegistry remoteService = null;
       try {
+         ServiceRegistry remoteService = null;
          remoteService = new ServiceRegistry(getPort());
          Map<String, Object> services = new HashMap<String, Object>();
          services.put("remoteService", this);
@@ -52,10 +49,11 @@ public class ProducerServerForClient implements MQService {
 
    /**
     * 保存swallowMessage到数据库
-    * @throws ServerDaoException 
+    * 
+    * @throws ServerDaoException
     */
    @Override
-   public Packet sendMessage(Packet pkt) throws ServerDaoException{
+   public Packet sendMessage(Packet pkt) throws ServerDaoException {
       Packet pktRet = null;
       switch (pkt.getPacketType()) {
          case PRODUCER_GREET:
@@ -68,8 +66,7 @@ public class ProducerServerForClient implements MQService {
             }
             break;
          case OBJECT_MSG:
-            String sha1 = SHAGenerater.generateSHA(((SwallowMessage) ((PktMessage) pkt).getContent())
-                  .getContent());
+            String sha1 = SHAGenerater.generateSHA(((SwallowMessage) ((PktMessage) pkt).getContent()).getContent());
             pktRet = new PktSwallowPACK(sha1);
 
             //设置swallowMessage的sha-1//TODO 设置swallowMessage的IP地址
@@ -98,4 +95,9 @@ public class ProducerServerForClient implements MQService {
    public void setPort(int port) {
       this.port = port;
    }
+
+   public void setMessageDAO(MessageDAO messageDAO) {
+      this.messageDAO = messageDAO;
+   }
+
 }

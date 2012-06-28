@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.dianping.swallow.common.codec.JsonBinder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -16,7 +17,7 @@ import com.google.common.collect.Maps;
  */
 public class JsonBinderTest {
 
-   private static JsonBinder binder = JsonBinder.buildNormalBinder();
+   private static JsonBinder binder = JsonBinder.buildBinder();
 
    /**
     * 序列化对象/集合到Json字符串.
@@ -26,7 +27,7 @@ public class JsonBinderTest {
       //Bean
       TestBean bean = new TestBean("A");
       String beanString = binder.toJson(bean);
-      assertEquals("{\"name\":\"A\",\"defaultValue\":\"hello\",\"nullValue\":null}", beanString);
+      assertEquals("{\"name\":\"A\",\"defaultValue\":\"hello\"}", beanString);
 
       //Map
       Map<String, Object> map = Maps.newLinkedHashMap();
@@ -92,21 +93,9 @@ public class JsonBinderTest {
       assertEquals(0, nullListResult.size());
    }
 
-   /**
-    * 测试三种不同的Binder.
-    */
-   @Test
-   public void threeTypeBinders() {
-      //打印全部属性
-      JsonBinder normalBinder = JsonBinder.buildNormalBinder();
-      TestBean bean = new TestBean("A");
-      assertEquals("{\"name\":\"A\",\"defaultValue\":\"hello\",\"nullValue\":null}", normalBinder.toJson(bean));
-
-   }
-
    @Test
    public void error() {
-      JsonBinder normalBinder = JsonBinder.buildNormalBinder();
+      JsonBinder normalBinder = JsonBinder.buildBinder();
       ErrorBean bean = new ErrorBean();
       assertNull(normalBinder.toJson(bean));
       assertNull(normalBinder.fromJson("error json string", ErrorBean.class));

@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import com.dianping.swallow.common.codec.JsonBinder;
+
 public class SwallowMessage implements Serializable, Message {
 
    private static final long   serialVersionUID = -7019466307875540596L;
@@ -21,8 +23,8 @@ public class SwallowMessage implements Serializable, Message {
    private String              sha1;
 
    private String              type;
-   
-   //TODO add source ip
+
+   private String              sourceIp;
 
    public Date getGeneratedTime() {
       return generatedTime;
@@ -65,7 +67,7 @@ public class SwallowMessage implements Serializable, Message {
    }
 
    public <T> T transferContentToBean(Class<T> clazz) {
-      JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+      JsonBinder jsonBinder = JsonBinder.buildBinder();
       return jsonBinder.fromJson(content, clazz);
    }
 
@@ -77,7 +79,7 @@ public class SwallowMessage implements Serializable, Message {
       if (content instanceof String) {
          this.content = (String) content;
       } else {
-         JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+         JsonBinder jsonBinder = JsonBinder.buildBinder();
          this.content = jsonBinder.toJson(content);
       }
    }
@@ -90,11 +92,20 @@ public class SwallowMessage implements Serializable, Message {
       this.type = type;
    }
 
+   public String getSourceIp() {
+      return sourceIp;
+   }
+
+   public void setSourceIp(String sourceIp) {
+      this.sourceIp = sourceIp;
+   }
+
    @Override
    public String toString() {
-      return String.format(
-            "SwallowMessage [generatedTime=%s, messageId=%s, properties=%s, version=%s, content=%s, sha1=%s, type=%s]",
-            generatedTime, messageId, properties, version, content, sha1, type);
+      return String
+            .format(
+                  "SwallowMessage [generatedTime=%s, messageId=%s, properties=%s, version=%s, content=%s, sha1=%s, type=%s, sourceIp=%s]",
+                  generatedTime, messageId, properties, version, content, sha1, type, sourceIp);
    }
 
    @Override
@@ -106,6 +117,7 @@ public class SwallowMessage implements Serializable, Message {
       result = prime * result + ((messageId == null) ? 0 : messageId.hashCode());
       result = prime * result + ((properties == null) ? 0 : properties.hashCode());
       result = prime * result + ((sha1 == null) ? 0 : sha1.hashCode());
+      result = prime * result + ((sourceIp == null) ? 0 : sourceIp.hashCode());
       result = prime * result + ((type == null) ? 0 : type.hashCode());
       result = prime * result + ((version == null) ? 0 : version.hashCode());
       return result;
@@ -144,6 +156,11 @@ public class SwallowMessage implements Serializable, Message {
          if (other.sha1 != null)
             return false;
       } else if (!sha1.equals(other.sha1))
+         return false;
+      if (sourceIp == null) {
+         if (other.sourceIp != null)
+            return false;
+      } else if (!sourceIp.equals(other.sourceIp))
          return false;
       if (type == null) {
          if (other.type != null)
@@ -188,6 +205,11 @@ public class SwallowMessage implements Serializable, Message {
          if (other.sha1 != null)
             return false;
       } else if (!sha1.equals(other.sha1))
+         return false;
+      if (sourceIp == null) {
+         if (other.sourceIp != null)
+            return false;
+      } else if (!sourceIp.equals(other.sourceIp))
          return false;
       if (type == null) {
          if (other.type != null)

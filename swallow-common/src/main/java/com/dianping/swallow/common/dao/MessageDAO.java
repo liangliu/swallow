@@ -1,7 +1,6 @@
 package com.dianping.swallow.common.dao;
 
 import java.util.List;
-import java.util.Set;
 
 import com.dianping.swallow.common.message.SwallowMessage;
 
@@ -22,13 +21,6 @@ public interface MessageDAO {
     * 获取topic数据库的topicName集合/表里，size条messageId字段比messageId参数大的记录
     */
    List<SwallowMessage> getMessagesGreaterThan(String topicName, Long messageId, int size);
-
-   /**
-    * 获取topic数据库的topicName集合/表里，size条messageId字段比messageId参数大，
-    * 且type字段在typeSet参数之内的记录
-    */
-   List<SwallowMessage> getMessagesGreaterThan(String topicName, Long messageId, Set<String> messageTypeSet,
-                                               int fetchSize);
 
    /**
     * 获取topic数据库的topicName集合/表里，最大的messageId字段

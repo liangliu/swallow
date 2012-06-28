@@ -48,6 +48,10 @@ public class TextObject {
    public void setACK(boolean isACK) {
       this.isACK = isACK;
    }
+   
+   public boolean getIsACK() {
+	   return isACK;
+   }
 
    @Override
    public String toString() {

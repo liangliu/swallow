@@ -19,13 +19,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * TODO Comment of ProducerServerBootstrap
+ * 
  * @author tong.song
- *
  */
 public class ProducerServerBootstrap {
    public static void main(String[] args) {
+      new ClassPathXmlApplicationContext("producerServer.xml");
       try {
-         new ClassPathXmlApplicationContext("producerServer.xml");
       } catch (Exception e) {
          System.out.println(e.toString());
       }

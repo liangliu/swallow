@@ -7,8 +7,6 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneDecoder;
 
-import com.dianping.swallow.common.message.JsonBinder;
-import com.dianping.swallow.common.message.SwallowMessage;
 
 /**
  * 用法:
@@ -28,8 +26,8 @@ import com.dianping.swallow.common.message.SwallowMessage;
 public class JsonDecoder extends OneToOneDecoder {
 
    private Class clazz;
-   
-   public JsonDecoder( Class clazz) {
+
+   public JsonDecoder(Class clazz) {
       super();
       this.clazz = clazz;
    }
@@ -43,7 +41,7 @@ public class JsonDecoder extends OneToOneDecoder {
 
       ChannelBuffer buf = (ChannelBuffer) msg;
       String json = buf.toString(Charset.forName("UTF-8"));
-      JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+      JsonBinder jsonBinder = JsonBinder.buildBinder();
       return jsonBinder.fromJson(json, clazz);
    }
 

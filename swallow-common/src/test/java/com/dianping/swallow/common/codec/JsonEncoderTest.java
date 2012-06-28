@@ -8,7 +8,6 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.dianping.swallow.common.message.JsonBinder;
 import com.dianping.swallow.common.message.SwallowMessage;
 
 public class JsonEncoderTest {
@@ -25,7 +24,7 @@ public class JsonEncoderTest {
       JsonEncoder jsonEncoder = new JsonEncoder(SwallowMessage.class);
       ChannelBuffer channelBuffer = (ChannelBuffer) jsonEncoder.encode(null, null, msg);
       //解码
-      JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+      JsonBinder jsonBinder = JsonBinder.buildBinder();
       SwallowMessage actualMsg = jsonBinder.fromJson(channelBuffer.toString(Charset.forName("UTF-8")),
             SwallowMessage.class);
 

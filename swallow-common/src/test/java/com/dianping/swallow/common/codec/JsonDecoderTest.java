@@ -6,7 +6,6 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.dianping.swallow.common.message.JsonBinder;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.example.message.DemoBean;
@@ -24,7 +23,7 @@ public class JsonDecoderTest {
       HashMap<String, String> map = new HashMap<String, String>();
       map.put("property-key", "property-value");
       message.setProperties(map);
-      JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+      JsonBinder jsonBinder = JsonBinder.buildBinder();
       String json = jsonBinder.toJson(message);
       //使用HessianDecoder解码
       JsonDecoder jsonDecoder = new JsonDecoder(SwallowMessage.class);

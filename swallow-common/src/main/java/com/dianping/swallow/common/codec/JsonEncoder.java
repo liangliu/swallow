@@ -8,7 +8,6 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.oneone.OneToOneEncoder;
 
-import com.dianping.swallow.common.message.JsonBinder;
 
 /**
  * 用法:
@@ -36,7 +35,7 @@ public class JsonEncoder extends OneToOneEncoder {
    @Override
    protected Object encode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
       if (msg.getClass() == clazz) {// 对Message进行编码
-         JsonBinder jsonBinder = JsonBinder.buildNormalBinder();
+         JsonBinder jsonBinder = JsonBinder.buildBinder();
          String json = jsonBinder.toJson(msg);
          byte[] jsonBytes = json.getBytes(Charset.forName("UTF-8"));
          ChannelBuffer channelBuffer = ChannelBuffers.buffer(jsonBytes.length);

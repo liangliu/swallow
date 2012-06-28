@@ -1,8 +1,5 @@
 package com.dianping.swallow.producer.impl;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -12,18 +9,19 @@ import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.packet.Packet;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
+import com.dianping.swallow.common.threadfactory.MQThreadFactory;
 
 public class HandlerAsynchroMode {
-   private Logger            logger = Logger.getLogger(ProducerImpl.class);
+   private Logger            logger        = Logger.getLogger(ProducerImpl.class);
    private ProducerImpl      producer;
-   private ExecutorService   senders;                                      //filequeue处理线程池
-   private FileQueue<Packet> messageQueue;                                 //filequeue
+   private FileQueue<Packet> messageQueue;                                        //filequeue
 
-   //构造函数
+   private MQThreadFactory   threadFactory = new MQThreadFactory();
+
+   //构造函数//TODO 不续传
    public HandlerAsynchroMode(ProducerImpl producer) {
       this.producer = producer;
       messageQueue = new DefaultFileQueueImpl<Packet>("filequeue.properties", producer.getDestination().getName());//filequeue
-      senders = Executors.newFixedThreadPool(producer.getThreadPoolSize());
       this.start();
    }
 
@@ -35,8 +33,9 @@ public class HandlerAsynchroMode {
    //启动处理线程
    private void start() {
       int idx;
-      for (idx = 0; idx < producer.getThreadPoolSize(); idx++) {
-         senders.execute(new TskGetAndSend());
+      int threadPoolSize = producer.getThreadPoolSize();
+      for (idx = 0; idx < threadPoolSize; idx++) {
+         threadFactory.newThread(new TskGetAndSend(), "AsyncProducer_" + idx).start();
       }
    }
 

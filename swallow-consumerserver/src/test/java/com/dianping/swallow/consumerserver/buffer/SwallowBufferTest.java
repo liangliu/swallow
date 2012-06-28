@@ -66,11 +66,10 @@ public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {
    @Test
    public void testCreateMessageQueue1() throws InterruptedException {
       BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId);
-
-      Message m = queue.take();
-      if (m != null) {
-         Assert.assertEquals("content2", m.getContent());
-      }
+      Message m;
+      while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
+         ;
+      Assert.assertEquals("content2", m.getContent());
    }
 
    @Test
@@ -79,10 +78,10 @@ public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {
       messageTypeSet.add(TYPE);
       BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
 
-      Message m = queue.take();
-      if (m != null) {
-         Assert.assertEquals("content2", m.getContent());
-      }
+      Message m;
+      while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
+         ;
+      Assert.assertEquals("content2", m.getContent());
    }
 
    @Test
@@ -92,11 +91,12 @@ public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {
 
       swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
       BlockingQueue<Message> queue = swallowBuffer.getMessageQueue(TOPIC_NAME, cid);
-      queue.take();
-      Message m = queue.take();
-      if (m != null) {
-         Assert.assertEquals("content3", m.getContent());
-      }
+      Message m;
+      while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
+         ;
+      while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
+         ;
+      Assert.assertEquals("content3", m.getContent());
    }
 
    @Test

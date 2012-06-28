@@ -17,4 +17,5 @@ public interface Message {
 
    String getSha1();
 
+   String getSourceIp();
 }
