@@ -52,10 +52,11 @@ public class ProducerServerForClient implements MQService {
 
    /**
     * 保存swallowMessage到数据库
-    * @throws ServerDaoException 
+    * 
+    * @throws ServerDaoException
     */
    @Override
-   public Packet sendMessage(Packet pkt) throws ServerDaoException{
+   public Packet sendMessage(Packet pkt) throws ServerDaoException {
       Packet pktRet = null;
       switch (pkt.getPacketType()) {
          case PRODUCER_GREET:
@@ -68,8 +69,7 @@ public class ProducerServerForClient implements MQService {
             }
             break;
          case OBJECT_MSG:
-            String sha1 = SHAGenerater.generateSHA(((SwallowMessage) ((PktMessage) pkt).getContent())
-                  .getContent());
+            String sha1 = SHAGenerater.generateSHA(((SwallowMessage) ((PktMessage) pkt).getContent()).getContent());
             pktRet = new PktSwallowPACK(sha1);
 
             //设置swallowMessage的sha-1//TODO 设置swallowMessage的IP地址
@@ -98,4 +98,9 @@ public class ProducerServerForClient implements MQService {
    public void setPort(int port) {
       this.port = port;
    }
+
+   public void setMessageDAO(MessageDAO messageDAO) {
+      this.messageDAO = messageDAO;
+   }
+
 }

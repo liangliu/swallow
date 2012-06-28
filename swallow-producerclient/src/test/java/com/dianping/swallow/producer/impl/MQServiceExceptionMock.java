@@ -20,7 +20,7 @@ import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 
 /**
- * TODO Comment of MQServiceExceptionMock
+ * 供测试使用的MQService类，一定会抛出异常
  * 
  * @author tong.song
  */
