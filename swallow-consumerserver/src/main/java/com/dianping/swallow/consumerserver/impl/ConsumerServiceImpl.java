@@ -1,5 +1,6 @@
 package com.dianping.swallow.consumerserver.impl;
 
+import java.io.Closeable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -31,7 +32,7 @@ import com.dianping.swallow.consumerserver.MQThreadFactory;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 
-public class ConsumerServiceImpl implements ConsumerService{
+public class ConsumerServiceImpl implements ConsumerService, Closeable{
 	
 	private ConfigManager configManager;
 
@@ -107,6 +108,10 @@ public class ConsumerServiceImpl implements ConsumerService{
     	this.threadFactory = new MQThreadFactory();
     }
 	
+	@Override
+	public void close() {
+		threadFactory.close();
+	}
 	public void changeChannelWorkStatus(CId2Topic cId2Topic, Channel channel){
 		synchronized(channelWorkStatus){
 			if(channelWorkStatus.get(cId2Topic) == null){

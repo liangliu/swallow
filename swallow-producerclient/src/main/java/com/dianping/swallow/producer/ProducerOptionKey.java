@@ -21,7 +21,21 @@ package com.dianping.swallow.producer;
  *
  */
 public enum ProducerOptionKey {
+   /**
+    * Producer工作模式：同步/异步；前缀为ASYNC_的选项：异步模式生效，同步模式忽略
+    */
    PRODUCER_MODE,
-   THREAD_POOL_SIZE,
-   IS_CONTINUE_SEND
+   /**
+    * 异步模式时，从队列中获取并发送消息的线程池大小
+    */
+   ASYNC_THREAD_POOL_SIZE,
+   /**
+    * 异步模式时，重启Producer是否续接上次的队列，继续发送
+    */
+   ASYNC_IS_CONTINUE_SEND,
+   /**
+    * 异步模式时，线程池从队列获取并发送消息的失败重试次数
+    */
+   ASYNC_RETRY_TIMES
+   
 }

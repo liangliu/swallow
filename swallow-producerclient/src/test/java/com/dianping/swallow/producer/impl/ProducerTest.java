@@ -37,11 +37,11 @@ public class ProducerTest {
 
    @Test
    public void testProducerFactory() {
-      ProducerFactory producerFactory = null;
+      ProducerFactoryImpl producerFactory = null;
       //获取Producer工厂实例
       try {
-         producerFactory = ProducerFactory.getInstance(5000);
-         producerFactory = ProducerFactory.getInstance();
+         producerFactory = ProducerFactoryImpl.getInstance(5000);
+         producerFactory = ProducerFactoryImpl.getInstance();
       } catch (Exception e) {
          System.out.println(e.toString());
       }
@@ -67,9 +67,9 @@ public class ProducerTest {
       Map<String, String> property = new HashMap<String, String>();
       property.put("test", "test");
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-      Producer producer = null;
+      ProducerImpl producer = null;
       try {
-         producer = new Producer(remoteService, "testProducer", pOptions);
+         producer = new ProducerImpl(remoteService, "testProducer", pOptions);
       } catch (Exception e) {
       }
       Assert.assertNotNull(producer);
@@ -83,10 +83,10 @@ public class ProducerTest {
       Assert.assertEquals(ProducerMode.SYNC_MODE, producer.getProducerMode());
 
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
-      pOptions.put(ProducerOptionKey.THREAD_POOL_SIZE, 5);
-      pOptions.put(ProducerOptionKey.IS_CONTINUE_SEND, false);
+      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
+      pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
       try {
-         producer = new Producer(remoteService, "testNormalProducer", pOptions);
+         producer = new ProducerImpl(remoteService, "testNormalProducer", pOptions);
       } catch (Exception e) {
       }
       Assert.assertNotNull(producer);

@@ -10,15 +10,16 @@ import com.dianping.filequeue.DefaultFileQueueImpl;
 import com.dianping.filequeue.FileQueue;
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.packet.Packet;
+import com.dianping.swallow.common.producer.MQService;
 
 public class HandlerAsynchroMode {
-   private Logger            logger = Logger.getLogger(Producer.class);
-   private Producer          producer;
-   private ExecutorService   senders;                                  //filequeue处理线程池
-   private FileQueue<Packet> messageQueue;                             //filequeue
+   private Logger            logger = Logger.getLogger(ProducerImpl.class);
+   private ProducerImpl      producer;
+   private ExecutorService   senders;                                      //filequeue处理线程池
+   private FileQueue<Packet> messageQueue;                                 //filequeue
 
    //构造函数
-   public HandlerAsynchroMode(Producer producer) {
+   public HandlerAsynchroMode(ProducerImpl producer) {
       this.producer = producer;
       messageQueue = new DefaultFileQueueImpl<Packet>("filequeue.properties", producer.getDestination().getName());//filequeue
       senders = Executors.newFixedThreadPool(producer.getThreadPoolSize());
@@ -40,15 +41,28 @@ public class HandlerAsynchroMode {
 
    //从filequeue队列获取并发送Message的runnable
    private class TskGetAndSend implements Runnable {
+
+      private final int defaultRetryTimes = producer.getRetryTimes();
+      private int       leftRetryTimes    = defaultRetryTimes;
+      private Packet    message           = null;
+      private MQService remoteService     = producer.getRemoteService();
+
       @Override
       public void run() {
          while (true) {
-            //如果filequeue无元素则阻塞，否则发送
-            try {
-               producer.getRemoteService().sendMessage(messageQueue.get());
-            } catch (Exception e) {
-               logger.log(Level.ERROR, "[SendMessage]:[Message sent failed.]", e.getCause());
-               continue;
+            //从filequeue获取message，如果filequeue无元素则阻塞            
+            message = messageQueue.get();
+            //发送message，重试次数从Producer获取
+            for (leftRetryTimes = defaultRetryTimes; leftRetryTimes > 0; leftRetryTimes--) {
+               try {
+                  remoteService.sendMessage(message);
+               } catch (Exception e) {
+                  logger.log(Level.ERROR, "[SendMessage]:[Message sent failed.]", e.getCause());
+                  //发送失败，重发
+                  continue;
+               }
+               //如果发送成功则跳出循环//TODO 需要日志记录消息重发的次数吗？
+               break;
             }
          }
       }
