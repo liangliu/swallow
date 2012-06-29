@@ -23,8 +23,8 @@ public class ConfigManager {
 	private int freeChannelBlockQueueSize = 10;
 	// time related
 	private int heartbeatCheckInterval = 3000;
-	private int heartbeatMaxStopTime = 120000;
-	private int heartbeatUpdateInterval = 10000;
+	private int heartbeatMaxStopTime = 20000;
+	private int heartbeatUpdateInterval = 4000;
 	private int blockQueueFailoverSleepTime = 1000;
 	private int pullingTime = 1000;
 	private long freeChannelBlockQueueOutTime = 120000;
