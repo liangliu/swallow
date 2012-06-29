@@ -5,7 +5,6 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.dianping.dpsf.api.ServiceRegistry;
@@ -41,8 +40,9 @@ public class ProducerServerForClient implements MQService {
          services.put("remoteService", this);
          remoteService.setServices(services);
          remoteService.init();
+         logger.info("[ProducerServerForClient]:[Initialize pigeon sucessfully.]");
       } catch (Exception e) {
-         logger.log(Level.ERROR, "[ProducerServer]:[Initialize remote service failed.]", e.getCause());
+         logger.error("[ProducerServerForClient]:[Initialize pigeon failed.]", e);
          throw new RemoteServiceInitFailedException();
       }
    }
@@ -69,7 +69,7 @@ public class ProducerServerForClient implements MQService {
             String sha1 = SHAGenerater.generateSHA(((SwallowMessage) ((PktMessage) pkt).getContent()).getContent());
             pktRet = new PktSwallowPACK(sha1);
 
-            //设置swallowMessage的sha-1//TODO 设置swallowMessage的IP地址
+            //设置swallowMessage的sha-1
             ((SwallowMessage) ((PktMessage) pkt).getContent()).setSha1(sha1);
 
             //将swallowMessage保存到mongodb
@@ -77,12 +77,12 @@ public class ProducerServerForClient implements MQService {
                messageDAO.saveMessage(((PktMessage) pkt).getDestination().getName(),
                      (SwallowMessage) ((PktMessage) pkt).getContent());
             } catch (Exception e) {
-               logger.error("[ProducerServer]:[Message saved failed.]", e);
+               logger.error("[ProducerServerForClient]:[Save message to DB failed.]", e);
                throw new ServerDaoException();
             }
             break;
          default:
-            logger.log(Level.WARN, "[ProducerServer]:[Received unrecognized packet.]");
+            logger.warn("[ProducerServerForClient]:[Received unrecognized packet.]");
             break;
       }
       return pktRet;

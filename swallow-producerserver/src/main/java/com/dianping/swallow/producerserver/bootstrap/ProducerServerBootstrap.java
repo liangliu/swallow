@@ -17,17 +17,22 @@ package com.dianping.swallow.producerserver.bootstrap;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
+import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
+
 /**
- * TODO Comment of ProducerServerBootstrap
+ * ProducerServer的Bootstrap类，用以启动ProducerServer
  * 
  * @author tong.song
  */
 public class ProducerServerBootstrap {
    public static void main(String[] args) {
-      new ClassPathXmlApplicationContext("producerServer.xml");
-      try {
-      } catch (Exception e) {
-         System.out.println(e.toString());
-      }
+//      try {
+         new ClassPathXmlApplicationContext("producerServer.xml");
+//      }catch (RemoteServiceInitFailedException e){
+//         System.out.println(e.toString());
+//      }catch (ServerDaoException e) {
+//         System.out.println(e.toString());
+//      }
    }
 }
