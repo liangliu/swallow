@@ -15,7 +15,7 @@ import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
  */
 public class AppTest extends TestCase {
    private ProducerFactoryImpl pf = null;
-   private String              message = "Hello,ZhangYu && OldHorse";
+   private String              message = "Hello,ZhangYu && LaoMa";
 
    /**
     * Create the test case
@@ -60,7 +60,7 @@ public class AppTest extends TestCase {
 
          ProducerImpl ps = null;
          try {
-            ps = pf.getProducer("xx", pOptions);
+            ps = pf.getProducer("songtong", pOptions);
          } catch (Exception e2) {
             System.out.println(e2.toString());
          }
