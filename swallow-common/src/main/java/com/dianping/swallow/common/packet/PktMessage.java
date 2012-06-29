@@ -7,6 +7,10 @@ public class PktMessage extends Packet implements Message{
    private Object content;
 	private Destination dest;
 	
+	public PktMessage() {
+		super();
+	}
+
 	public PktMessage(Destination dest, Object content){
 		super.setPacketType(PacketType.OBJECT_MSG);
 		

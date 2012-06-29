@@ -9,8 +9,8 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
-import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
-import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
+import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
+import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 
 import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
@@ -118,17 +118,18 @@ public class ConsumerClient {
                 new NioClientSocketChannelFactory(
                         Executors.newCachedThreadPool(),
                         Executors.newCachedThreadPool()));
-        final MessageClientHandler handler = new MessageClientHandler(this);
+    	final ConsumerClient cc = this;
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {  
             @Override  
             public ChannelPipeline getPipeline() throws Exception {  
-            ChannelPipeline pipeline = Channels.pipeline();
-            pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
-            pipeline.addLast("jsonDecoder", new JsonDecoder(PktMessage.class));
-            pipeline.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
-            pipeline.addLast("jsonEncoder", new JsonEncoder(PktConsumerMessage.class));
-            pipeline.addLast("handler", handler);
-            return pipeline;  
+            	MessageClientHandler handler = new MessageClientHandler(cc);
+            	ChannelPipeline pipeline = Channels.pipeline();
+	            pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
+	            pipeline.addLast("jsonDecoder", new JsonDecoder(PktMessage.class));
+	            pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
+	            pipeline.addLast("jsonEncoder", new JsonEncoder(PktConsumerMessage.class));
+	            pipeline.addLast("handler", handler);
+	            return pipeline;  
             }  
         }); 
     }
