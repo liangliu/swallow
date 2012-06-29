@@ -36,7 +36,16 @@ public class ConsumerClient {
 	
 	private InetSocketAddress slaveAddress;
 	
-		
+	private Boolean needClose = Boolean.FALSE;
+			
+	public Boolean getNeedClose() {
+		return needClose;
+	}
+
+	public void setNeedClose(Boolean needClose) {
+		this.needClose = needClose;
+	}
+
 	public ConsumerType getConsumerType() {
 		return consumerType;
 	}

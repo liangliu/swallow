@@ -63,13 +63,18 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 	}
 
 	@Override
-	public void handleAck(final Channel channel, final Long ackedMsgId) {
+	public void handleAck(final Channel channel, final Long ackedMsgId, final boolean needClose) {
 
 		ackWorker.add(new Runnable() {
 			@Override
 			public void run() {								    	
 				updateMaxMessageId(ackedMsgId);
-				freeChannels.add(channel);
+				if(needClose){
+					handleChannelDisconnect(channel);
+				}else{
+					freeChannels.add(channel);
+				}
+				
 			}
 		});	
 		

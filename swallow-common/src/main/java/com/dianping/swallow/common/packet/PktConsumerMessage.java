@@ -43,7 +43,15 @@ public final class PktConsumerMessage extends Packet {
 	
 	private ConsumerType consumerType;
 	
+	private boolean needClose;
+	
 
+	public boolean getNeedClose() {
+		return needClose;
+	}
+	public void setNeedClose(boolean needClose) {
+		this.needClose = needClose;
+	}
 	public ConsumerType getConsumerType() {
 		return consumerType;
 	}
@@ -84,10 +92,11 @@ public final class PktConsumerMessage extends Packet {
 		this.consumerId = consumerId;
 		this.consumerType = consumerType;
 	}
-	public PktConsumerMessage(ConsumerMessageType type, Long messageId){
+	public PktConsumerMessage(ConsumerMessageType type, Long messageId, boolean needClose){
 		this.setPacketType(PacketType.CONSUMER_GREET);
 		this.type = type;
 		this.messageId = messageId;
+		this.needClose = needClose;
 	}
 	
 }

@@ -30,10 +30,13 @@ public class GetMessageThread implements Runnable, Closeable{
 	public void run() {
 		while(isLive){
 			consumerInformation.sendMessageByPollFreeChannelQueue();
-			if(consumerInformation.getConnectedChannels().isEmpty()){
-				consumerInformation.setGetMessageThreadExist(false);
-				isLive = false;
+			synchronized(consumerInformation.getConnectedChannels()){
+				if(consumerInformation.getConnectedChannels().isEmpty()){
+					consumerInformation.setGetMessageThreadExist(false);
+					isLive = false;
+				}
 			}
+			
 		}
 		LOG.info("closed");
 	}

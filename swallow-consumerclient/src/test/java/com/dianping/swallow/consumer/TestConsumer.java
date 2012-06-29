@@ -9,7 +9,7 @@ import com.dianping.swallow.common.message.SwallowMessage;
 public class TestConsumer {
 	
 	//应该都是取自于lion
-	public static String swallowCAddress = "1.1.1.1:8000,1.1.1.2:8000";
+	public static String swallowCAddress = "127.0.0.1:8081,127.0.0.1:8082";
 	public static String cid = "zhangyu";
 	public static Destination dest = Destination.topic("zhangyu");
 	public static ConsumerType consumerType = ConsumerType.UPDATE_BEFORE_ACK;
