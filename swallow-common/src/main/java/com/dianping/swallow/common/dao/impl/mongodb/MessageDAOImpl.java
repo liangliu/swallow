@@ -121,8 +121,10 @@ public class MessageDAOImpl implements MessageDAO {
       swallowMessage.setVersion((String) result.get(VERSION));//version
       swallowMessage.setGeneratedTime((Date) result.get(GENERATED_TIME));//generatedTime
       Map<String, String> propertiesBasicDBObject = (Map<String, String>) result.get(PROPERTIES);//mongo返回是一个BasicDBObject，转化成jdk的HashMap，以免某些序列化方案在反序列化需要依赖BasicDBObject
-      HashMap<String, String> properties = new HashMap<String, String>(propertiesBasicDBObject);
-      swallowMessage.setProperties(properties);//properties
+      if (propertiesBasicDBObject != null) {
+         HashMap<String, String> properties = new HashMap<String, String>(propertiesBasicDBObject);
+         swallowMessage.setProperties(properties);//properties
+      }
       swallowMessage.setSha1((String) result.get(SHA1));//sha1
       swallowMessage.setType((String) result.get(TYPE));//type
       swallowMessage.setSourceIp((String) result.get(SOURCE_IP));//sourceIp

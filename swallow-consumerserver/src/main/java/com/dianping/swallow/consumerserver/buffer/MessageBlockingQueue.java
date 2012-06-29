@@ -111,6 +111,7 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       super.finalize();
       //关闭该对象绑定的线程
       this.messageRetriverThread.interrupt();
+      LOG.info("Called finalize() of MessageBlockingQueue: " + this);
    }
 
    private class MessageRetriverThread extends Thread {

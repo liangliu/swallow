@@ -167,6 +167,7 @@ public class MongoClient implements ConfigChange {
          protected void finalize() throws Throwable {
             super.finalize();
             this.close();
+            LOG.info("Called finalize() of Mongo: " + this);
          }
       };
       return mongo;
