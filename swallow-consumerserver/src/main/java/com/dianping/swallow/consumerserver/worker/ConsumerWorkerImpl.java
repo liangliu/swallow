@@ -80,7 +80,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 		
 	}
 	private void updateMaxMessageId(Long ackedMsgId){	
-		if(ackedMsgId != null && ConsumerType.UPDATE_AFTER_ACK.equals(consumerInfo.getConsumerType())){
+		if(ackedMsgId != null && ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())){
 			ackDao.add(topicName, consumerid, ackedMsgId);
 		}
     }
@@ -174,7 +174,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 				}			
 				if(channel == null){
 					break;
-					//TODO 用异常替代isConnected
+					
 				}else if(channel.isConnected()){
 					if(preparedMessage == null){							
 						while(true){
@@ -191,24 +191,23 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 					}
 					 Long messageId = message.getMessageId();
 					//如果consumer是收到ACK之前更新messageId的类型
-					 if(ConsumerType.UPDATE_BEFORE_ACK.equals(consumerInfo.getConsumerType())){
+					 if(ConsumerType.AT_MOST.equals(consumerInfo.getConsumerType())){
 						 ackDao.add(topicName, consumerid, messageId);
 					 }						 
-					 while(true){
-						 if(!channel.isWritable()){
-							 if(channel.isConnected()){
-								 Thread.sleep(1000);
-								 continue;
-							 } else {
-								 break;
-							 }								
-						 } else{
-								//TODO +isWritable?，连接断开后write后是否会抛异常，isWritable()=false的时候retry, when will write() throw exception?														
-							 channel.write(preparedMessage);
-							 preparedMessage = null;
-							}
-					 }
-					
+//					 while(true){
+//						 if(!channel.isWritable()){
+//							 if(channel.isConnected()){
+//								 Thread.sleep(1000);
+//								 continue;
+//							 } else {
+//								 break;
+//							 }								
+//						 } else{
+//								//TODO +isWritable?，连接断开后write后是否会抛异常，isWritable()=false的时候retry, when will write() throw exception?	
+					 if(channel.isConnected()){
+						 channel.write(preparedMessage);
+						 preparedMessage = null;
+					 }					
 				}
 			}
 		} catch (InterruptedException e) {

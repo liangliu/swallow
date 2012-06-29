@@ -1,8 +1,8 @@
 package com.dianping.swallow.producer.impl;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import com.dianping.dpsf.exception.NetException;
 import com.dianping.filequeue.DefaultFileQueueConfig.FileQueueConfigHolder;
 import com.dianping.filequeue.DefaultFileQueueImpl;
 import com.dianping.filequeue.FileQueue;
@@ -12,6 +12,11 @@ import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.threadfactory.MQThreadFactory;
 
+/**
+ * Producer的异步模式消息处理类
+ * 
+ * @author tong.song
+ */
 public class HandlerAsynchroMode {
    private Logger            logger        = Logger.getLogger(ProducerImpl.class);
    private ProducerImpl      producer;
@@ -24,7 +29,8 @@ public class HandlerAsynchroMode {
       FileQueueConfigHolder fileQueueConfig = new FileQueueConfigHolder();
       this.producer = producer;
       fileQueueConfig.setMaxDataFileSize(512 * 1024 * 1024);//默认512M
-      messageQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, producer.getDestination().getName(), producer.isContinueSend());
+      messageQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, producer.getDestination().getName(),
+            producer.isContinueSend());
       this.start();
    }
 
@@ -60,11 +66,21 @@ public class HandlerAsynchroMode {
                try {
                   remoteService.sendMessage(message);
                } catch (ServerDaoException e) {
-                  logger.log(Level.ERROR, "[SendMessage]:[Message sent failed.]", e.getCause());
+                  //如果剩余重试次数<=1，将终止重试，记日志。
+                  if (leftRetryTimes <= 1) {
+                     logger.error("[Producer][AsyncHandler]:[Can not save message to DB, DB is busy or connection to DB is down.]", e);
+                  }
                   //发送失败，重发
                   continue;
+               } catch (NetException e){
+                  logger.error("[Producer][AsyncHandler]:[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]", e);
+                  //发送失败，重发
+                  continue;
+               } catch (Exception e){
+                  //捕获到未知异常，不管
+                  continue;
                }
-               //如果发送成功则跳出循环//TODO 需要日志记录消息重发的次数吗？
+               //如果发送成功则跳出循环//TODO 需要日志记录消息重发的次数吗？发送成功需要记日志吗？
                break;
             }
          }

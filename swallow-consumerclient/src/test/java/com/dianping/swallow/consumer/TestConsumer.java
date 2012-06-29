@@ -12,7 +12,7 @@ public class TestConsumer {
 	public static String swallowCAddress = "127.0.0.1:8081,127.0.0.1:8082";
 	public static String cid = "zhangyu";
 	public static Destination dest = Destination.topic("xx");
-	public static ConsumerType consumerType = ConsumerType.UPDATE_BEFORE_ACK;
+	public static ConsumerType consumerType = ConsumerType.AT_LEAST;
     public static void main(String[] args) throws Exception {
 
     	//TODO 通过spring使用的example
@@ -23,7 +23,13 @@ public class TestConsumer {
 			@Override
 			public void onMessage(SwallowMessage msg) {
 				//用户得到SwallowMessage，
-				System.out.println(msg.getContent());
+				System.out.println(msg.getMessageId() + ":" + msg.getContent());
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 		});

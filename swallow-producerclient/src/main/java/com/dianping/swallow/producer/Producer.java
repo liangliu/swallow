@@ -17,17 +17,55 @@ package com.dianping.swallow.producer;
 
 import java.util.Map;
 
+import com.dianping.filequeue.FileQueueClosedException;
+import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
+import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
+
 /**
  * Producer接口
  * 
  * @author tong.song
  */
 public interface Producer {
-   public String sendMessage(Object content) throws Exception;
+   /**
+    * 发送message
+    * 
+    * @param content 消息体
+    * @return 同步：content的SHA-1签名，异步：null
+    * @throws FileQueueClosedException 异步：保存至filequeue失败
+    * @throws ServerDaoException 同步：远程数据库写入失败
+    */
+   public String sendMessage(Object content) throws ServerDaoException, FileQueueClosedException, RemoteServiceDownException;
 
-   public String sendMessage(Object content, String messageType) throws Exception;
+   /**
+    * 发送message
+    * 
+    * @param content 消息体
+    * @param messageType 用于消息过滤，消息的类型
+    * @return 同步：content的SHA-1签名，异步：null
+    * @throws FileQueueClosedException 异步：保存至filequeue失败
+    * @throws ServerDaoException 同步：远程数据库写入失败
+    */
+   public String sendMessage(Object content, String messageType) throws ServerDaoException, FileQueueClosedException, RemoteServiceDownException;
 
-   public String sendMessage(Object content, Map<String, String> properties) throws Exception;
+   /**
+    * 
+    * @param content 消息体
+    * @param properties 用于消息过滤，留作后用
+    * @return 同步：content的SHA-1签名，异步：null
+    * @throws FileQueueClosedException 异步：保存至filequeue失败
+    * @throws ServerDaoException 同步：远程数据库写入失败
+    */
+   public String sendMessage(Object content, Map<String, String> properties) throws ServerDaoException, FileQueueClosedException, RemoteServiceDownException;
 
-   public String sendMessage(Object content, Map<String, String> properties, String messageType) throws Exception;
+   /**
+    * 
+    * @param content 消息体
+    * @param properties 用于消息过滤，留作后用
+    * @param messageType 用于消息过滤，消息的类型
+    * @return 同步：content的SHA-1签名，异步：null
+    * @throws FileQueueClosedException 异步：保存至filequeue失败
+    * @throws ServerDaoException 同步：远程数据库写入失败
+    */
+   public String sendMessage(Object content, Map<String, String> properties, String messageType) throws ServerDaoException, FileQueueClosedException, RemoteServiceDownException;
 }

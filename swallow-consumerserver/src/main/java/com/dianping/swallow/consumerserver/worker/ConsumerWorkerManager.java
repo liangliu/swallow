@@ -118,20 +118,13 @@ public class ConsumerWorkerManager {
 		heartbeatThread.start();
 	}
 	public void checkMasterIsLive(final ServerBootstrap bootStrap){
+							
+		try {
+			heartbeater.waitUntilBeginBeating(configManager.getMasterIp(), bootStrap, configManager.getHeartbeatCheckInterval(),configManager.getHeartbeatMaxStopTime());
+		} catch (Exception e) {
+			//log.error("Error update heart beat", e);
+		}			
+			
 		
-		Runnable runnable = new Runnable() {
-
-			@Override
-			public void run() {								
-				try {
-					heartbeater.waitUntilBeginBeating(configManager.getMasterIp(), bootStrap, configManager.getHeartbeatCheckInterval(),configManager.getHeartbeatMaxStopTime());
-				} catch (Exception e) {
-					//log.error("Error update heart beat", e);
-				}			
-			}
-		};
-		Thread heartbeatThread = threadFactory.newThread(runnable, "checkMasterIsLive-");
-		heartbeatThread.setDaemon(true);
-		heartbeatThread.start();
 	}
 }

@@ -10,8 +10,6 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
-import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
-import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -28,7 +26,6 @@ public class SlaveBootStrap {
 	private static int port = 8082;
 	
 	private static boolean isSlave = true;
-	public static Boolean slaveShouldLive = Boolean.TRUE;
 	/**
 	 * @param args
 	 */
@@ -60,14 +57,6 @@ public class SlaveBootStrap {
 	       bootstrap.bind(new InetSocketAddress(port));
 	       //TODO 在这个县城检查就可以
 	       consumerWorkerManager.checkMasterIsLive(bootstrap);
-	       while(slaveShouldLive){
-	    	   try {
-				Thread.sleep(10000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	       }
 		} 
 	}
 

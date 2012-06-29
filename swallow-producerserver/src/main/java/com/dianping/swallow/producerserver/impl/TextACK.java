@@ -16,7 +16,7 @@
 package com.dianping.swallow.producerserver.impl;
 
 /**
- * TODO Comment of TextACK
+ * 文本流处理结束后的返回数据，包含状态代码和详细信息
  * 
  * @author tong.song
  */

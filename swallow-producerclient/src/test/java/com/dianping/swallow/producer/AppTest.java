@@ -14,8 +14,8 @@ import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
  * Unit test for simple App.
  */
 public class AppTest extends TestCase {
-   private ProducerFactoryImpl pf      = null;
-   private String              message;
+   private ProducerFactoryImpl pf = null;
+   private String              message = "Hello,ZhangYu && OldHorse";
 
    /**
     * Create the test case
@@ -28,9 +28,6 @@ public class AppTest extends TestCase {
          pf = ProducerFactoryImpl.getInstance(5000);
       } catch (Exception e3) {
          System.out.println(e3.toString());
-      }
-      for (int i = 0; i < 10; i++) {
-         message += "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
       }
    }
 
@@ -49,37 +46,39 @@ public class AppTest extends TestCase {
    }
 
    private class task implements Runnable {
-      String content;
 
       public task(String content) {
-         this.content = content;
       }
 
       @Override
       public void run() {
          Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
-         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
+         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
          pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 10);
-         pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, true);
+         pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
+         pOptions.put(ProducerOptionKey.ASYNC_RETRY_TIMES, 5);
 
          ProducerImpl ps = null;
          try {
-            ps = pf.getProducer(content, pOptions);
+            ps = pf.getProducer("xx", pOptions);
          } catch (Exception e2) {
             System.out.println(e2.toString());
          }
-         String str;
+         String str = "";
          long begin = System.currentTimeMillis();
          try {
-            for (int i = 0; i < 1000; i++) {
+            int idx = 0;
+            //            for (int i = 0; i < 1000; i++) {
+            while (true) {
                //			content += i++;
-               str = ps.sendMessage(message);
-//               sumTime += (end - begin);
-               //               try {
-               //                  Thread.sleep(2000);
-               //               } catch (Exception e) {
-               //                  // TODO: handle exception
-               //               }
+               str = ps.sendMessage("______[" + (idx++) + "]["+ message + "]");
+               //               sumTime += (end - begin);
+               try {
+                  Thread.sleep(100);
+               } catch (Exception e) {
+                  // 
+               }
+               System.out.println(idx);
             }
          } catch (Exception e1) {
             System.out.println(e1.toString());
@@ -90,7 +89,7 @@ public class AppTest extends TestCase {
    }
 
    public void doTest() {
-      for (int i = 0; i < 10; i++) {
+      for (int i = 0; i < 1; i++) {
          String newContent = "NO_" + i;
          Thread td = new Thread(new task(newContent));
          td.start();

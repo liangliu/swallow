@@ -2,7 +2,6 @@ package com.dianping.swallow.producerserver.impl;
 
 import java.util.Date;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -24,7 +23,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    private static final int    INVALID_TOPIC_NAME = 251;
    private static final int    SAVE_FAILED        = 252;
 
-   private static final Logger logger             = Logger.getLogger(ProducerServerTextHandler.class);
+   private static final Logger logger             = Logger.getLogger(ProducerServerForText.class);
 
    /**
     * 构造函数
@@ -44,14 +43,20 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    }
 
    @Override
+   public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+      logger.info("[ProducerServerForText]:[Connection from " + e.getChannel().getRemoteAddress() + "]");
+      super.channelConnected(ctx, e);
+   }
+
+   @Override
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
       //获取TextObject
       TextObject textObject = (TextObject) e.getMessage();
-      if(logger.isDebugEnabled()) {
-		   logger.debug("receving: " + textObject);
-	   }
+      if (logger.isDebugEnabled()) {
+         logger.debug("[ProducerServerForText]:[Message=" + textObject + "]");
+      }
       String sourceIp = e.getChannel().getRemoteAddress().toString();
-      //生成SwallowMessage//TODO 增加swallowMessage的IP信息
+      //生成SwallowMessage
       SwallowMessage swallowMessage = new SwallowMessage();
       swallowMessage.setContent(textObject.getContent());
       swallowMessage.setGeneratedTime(new Date());
@@ -62,8 +67,8 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       textAck.setStatus(OK);
       //TopicName非法，返回失败ACK，reason是"TopicName is not valid."
       if (!ProducerUtils.isTopicNameValid(textObject.getTopic())) {
-         logger.log(Level.ERROR, "[TextHandler]:[" + e.getChannel().getRemoteAddress() + ": " + textObject
-               + "]:[Wrong format.]");
+         logger.error("[ProducerServerForText]:[Incorrect topic name.][From=" + e.getChannel().getRemoteAddress()
+               + "][Content=" + textObject + "]");
          textAck.setStatus(INVALID_TOPIC_NAME);
          textAck.setInfo("TopicName is invalid.");
          //返回ACK
@@ -74,7 +79,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
             messageDAO.saveMessage(textObject.getTopic(), swallowMessage);
          } catch (Exception e1) {
             //记录异常，返回失败ACK，reason是“Can not save message”
-            logger.log(Level.ERROR, "[TextHandler]:[Save Message Failed.]", e1);
+            logger.error("[ProducerServerForText]:[Save message to DB failed.]",e1);
             textAck.setStatus(SAVE_FAILED);
             textAck.setInfo("Can not save message.");
          }
@@ -90,7 +95,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
 
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-      logger.log(Level.WARN, "Unexpected exception from downstream.", e.getCause());
+      logger.error("[Netty]:[Unexpected exception from downstream.]", e.getCause());
       e.getChannel().close();
    }
 }

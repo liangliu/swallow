@@ -27,7 +27,7 @@ import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
 
 /**
- * TODO Comment of ProducerTest
+ * Producer的单元测试，包含了对ProducerFactory和ProducerImpl类的测试
  * 
  * @author tong.song
  */
