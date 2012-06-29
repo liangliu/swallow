@@ -22,10 +22,11 @@ public class SwallowBuffer {
          locksForCreateTopicBuffer[i] = new ReentrantLock();
       }
    }
+
    private final ConcurrentMap<String, TopicBuffer> topicBuffers                     = new ConcurrentHashMap<String, TopicBuffer>();
    private MessageRetriever                         messageRetriever;
-   private int                                      capacityOfQueue                         = Integer.MAX_VALUE;
-   private int                                      thresholdOfQueue                        = 100;
+   private int                                      capacityOfQueue                  = Integer.MAX_VALUE;
+   private int                                      thresholdOfQueue                 = 100;
 
    /**
     * 根据topicName，获取topicName对应的TopicBuffer。<br>
@@ -160,10 +161,11 @@ public class SwallowBuffer {
          }
          MessageBlockingQueue messageBlockingQueue;
          if (messageTypeSet != null) {
-            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue, tailMessageId,
-                  messageTypeSet);
+            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue,
+                  tailMessageId, messageTypeSet);
          } else {
-            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue, tailMessageId);
+            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue,
+                  tailMessageId);
          }
          messageBlockingQueue.setMessageRetriever(messageRetriever);
          messageQueues.put(cid, new SoftReference<BlockingQueue<Message>>(messageBlockingQueue));

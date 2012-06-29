@@ -29,7 +29,7 @@ public class MongoConfig {
    private int                 wtimeout                                     = 500;
    private boolean             fsync                                        = false;
    private int                 connectTimeout                               = 500;
-   private int                 maxWaitTime                                  = 1000 * 60 * 2;
+   private int                 maxWaitTime                                  = 1000;
    private boolean             autoConnectRetry                             = false;
    private boolean             safe                                         = false;
 
