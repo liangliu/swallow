@@ -74,7 +74,6 @@ public class MongoHeartbeater implements Heartbeater {
 				long now = System.currentTimeMillis();
 				if (now - lastBeatTime < maxStopTime) {
 					bootStrap.releaseExternalResources();
-					SlaveBootStrap.slaveShouldLive = Boolean.FALSE;
 					break;
 				}				
 			}
