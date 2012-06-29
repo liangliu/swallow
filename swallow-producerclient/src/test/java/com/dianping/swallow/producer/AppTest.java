@@ -59,7 +59,7 @@ public class AppTest extends TestCase {
       public void run() {
          Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
          pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
-         pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
+         pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 10);
          pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, true);
 
          ProducerImpl ps = null;
@@ -90,7 +90,7 @@ public class AppTest extends TestCase {
    }
 
    public void doTest() {
-      for (int i = 0; i < 1; i++) {
+      for (int i = 0; i < 10; i++) {
          String newContent = "NO_" + i;
          Thread td = new Thread(new task(newContent));
          td.start();
