@@ -17,5 +17,7 @@ public class MongoUtils {
       Long messageId = ((long) time << 32) | inc;
       return messageId;
    }
-
+public static void main(String[] args) {
+	System.out.println(MongoUtils.longToBSONTimestamp(5759378400351354888L));
+}
 }
