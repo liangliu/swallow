@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,37 +27,40 @@ import com.mongodb.ServerAddress;
 
 public class MongoClient implements ConfigChange {
 
-   private static final Logger         LOG                                              = LoggerFactory
-                                                                                              .getLogger(MongoClient.class);
+   private static final Logger           LOG                                              = LoggerFactory
+                                                                                                .getLogger(MongoClient.class);
 
-   private static final String         MONGO_CONFIG_FILENAME                            = "swallow-mongo.properties";
-   private static final String         LION_CONFIG_FILENAME                             = "lion.properties";
-   private static final String         DEFAULT_COLLECTION_NAME                          = "c";
-   private static final String         TOPICNAME_HEARTBEAT                              = "heartbeat";
-   private static final String         TOPICNAME_DEFAULT                                = "default";
+   private static final String           MONGO_CONFIG_FILENAME                            = "swallow-mongo.properties";
+   private static final String           LION_CONFIG_FILENAME                             = "lion.properties";
+   private static final String           DEFAULT_COLLECTION_NAME                          = "c";
+   private static final String           TOPICNAME_HEARTBEAT                              = "heartbeat";
+   private static final String           TOPICNAME_DEFAULT                                = "default";
 
-   private static final String         LION_KEY_MSG_CAPPED_COLLECTION_SIZE              = "swallow.mongo.msgCappedCollectionSize";
-   private static final String         LION_KEY_MSG_CAPPED_COLLECTION_MAX_DOC_NUM       = "swallow.mongo.msgCappedCollectionMaxDocNum";
-   private static final String         LION_KEY_ACK_CAPPED_COLLECTION_SIZE              = "swallow.mongo.ackCappedCollectionSize";
-   private static final String         LION_KEY_ACK_CAPPED_COLLECTION_MAX_DOC_NUM       = "swallow.mongo.ackCappedCollectionMaxDocNum";
-   private static final String         LION_KEY_HEARTBEAT_SERVER_URI                    = "swallow.mongo.heartbeatServerURI";
-   private static final String         LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE        = "swallow.mongo.heartbeatCappedCollectionSize";
-   private static final String         LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM = "swallow.mongo.heartbeatCappedCollectionMaxDocNum";
-   //serverURI的名字可通过setter方法配置(consumer和producer在Lion上的名字是不同的)
-   private String                      severURILionKey;
+   private static final String           LION_KEY_MSG_CAPPED_COLLECTION_SIZE              = "swallow.mongo.msgCappedCollectionSize";
+   private static final String           LION_KEY_MSG_CAPPED_COLLECTION_MAX_DOC_NUM       = "swallow.mongo.msgCappedCollectionMaxDocNum";
+   private static final String           LION_KEY_ACK_CAPPED_COLLECTION_SIZE              = "swallow.mongo.ackCappedCollectionSize";
+   private static final String           LION_KEY_ACK_CAPPED_COLLECTION_MAX_DOC_NUM       = "swallow.mongo.ackCappedCollectionMaxDocNum";
+   private static final String           LION_KEY_HEARTBEAT_SERVER_URI                    = "swallow.mongo.heartbeatServerURI";
+   private static final String           LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE        = "swallow.mongo.heartbeatCappedCollectionSize";
+   private static final String           LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM = "swallow.mongo.heartbeatCappedCollectionMaxDocNum";
+   //serverURI的名字可配置(consumer和producer在Lion上的名字是不同的)
+   private final String                  severURILionKey;
+
+   /** 缓存default collection 存在的标识，避免db.collectionExists的调用 */
+   private final Map<DB, Byte>           collectionExistsSign                             = new ConcurrentHashMap<DB, Byte>();
 
    //lion config
-   private Map<String, Integer>        msgTopicNameToSizes;
-   private Map<String, Integer>        msgTopicNameToMaxDocNums;
-   private Map<String, Integer>        ackTopicNameToSizes;
-   private Map<String, Integer>        ackTopicNameToMaxDocNums;
-   private Mongo                       heartbeatMongo;
-   private int                         heartbeatCappedCollectionSize;
-   private int                         heartbeatCappedCollectionMaxDocNum;
-   private volatile Map<String, Mongo> topicNameToMongoMap;
+   private volatile Map<String, Integer> msgTopicNameToSizes;
+   private volatile Map<String, Integer> msgTopicNameToMaxDocNums;
+   private volatile Map<String, Integer> ackTopicNameToSizes;
+   private volatile Map<String, Integer> ackTopicNameToMaxDocNums;
+   private volatile Mongo                heartbeatMongo;
+   private volatile int                  heartbeatCappedCollectionSize;
+   private volatile int                  heartbeatCappedCollectionMaxDocNum;
+   private volatile Map<String, Mongo>   topicNameToMongoMap;
 
    //local config
-   private MongoOptions                mongoOptions;
+   private MongoOptions                  mongoOptions;
 
    /**
     * 从 Lion(配置topicName,serverUrl的列表) 和 MongoConfigManager(配置Mongo参数) 获取配置，创建
@@ -416,19 +420,36 @@ public class MongoClient implements ConfigChange {
       DB db = mongo.getDB(dbName);
       //从DB实例获取Collection(因为只有一个Collection，所以名字均叫做c),如果不存在，则创建)
       DBCollection collection = null;
-      if (!db.collectionExists(DEFAULT_COLLECTION_NAME)) {
+      if (!collectionExists(db)) {//从缓存检查default collection 存在的标识，避免db.collectionExists的调用
          synchronized (dbName.intern()) {
-            if (!db.collectionExists(DEFAULT_COLLECTION_NAME)) {
+            if (!collectionExists(db) && !db.collectionExists(DEFAULT_COLLECTION_NAME)) {
                collection = createColletcion(db, DEFAULT_COLLECTION_NAME, size, cappedCollectionMaxDocNum,
                      indexDBObject);
             }
+            markCollectionExists(db);//缓存default collection 存在的标识，避免db.collectionExists的调用
          }
-         if (collection == null)
+         if (collection == null)//执行到此处，保证DEFAULT_COLLECTION_NAME已经存在，但collection句柄也许还是null，所以需再检查
             collection = db.getCollection(DEFAULT_COLLECTION_NAME);
       } else {
          collection = db.getCollection(DEFAULT_COLLECTION_NAME);
       }
       return collection;
+   }
+
+   /**
+    * 由于collection创建后不会删除，故可以在内存缓存collection是否存在<br>
+    * 返回true，表示集合确实存在；<br>
+    * 返回false，表示集合可能不存在。<br>
+    */
+   private boolean collectionExists(DB db) {
+      return collectionExistsSign.get(db) != null;
+   }
+
+   /**
+    * 在内存缓存db的default collection是否存在<br>
+    */
+   private void markCollectionExists(DB db) {
+      collectionExistsSign.put(db, Byte.MAX_VALUE);
    }
 
    private DBCollection createColletcion(DB db, String collectionName, int size, int cappedCollectionMaxDocNum,
