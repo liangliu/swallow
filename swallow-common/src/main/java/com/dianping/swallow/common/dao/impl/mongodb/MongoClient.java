@@ -404,8 +404,8 @@ public class MongoClient implements ConfigChange {
       //根据topicName获取Mongo实例
       Mongo mongo = this.topicNameToMongoMap.get(TOPICNAME_HEARTBEAT);
       if (mongo == null) {
-         if (LOG.isInfoEnabled()) {
-            LOG.info("topicname '" + TOPICNAME_HEARTBEAT + "' do not match any Mongo Server, use default.");
+         if (LOG.isDebugEnabled()) {
+            LOG.debug("topicname '" + TOPICNAME_HEARTBEAT + "' do not match any Mongo Server, use default.");
          }
          mongo = this.topicNameToMongoMap.get(TOPICNAME_DEFAULT);
       }
@@ -464,8 +464,14 @@ public class MongoClient implements ConfigChange {
       }
       try {
          DBCollection collection = db.createCollection(collectionName, options);
+         if (LOG.isInfoEnabled()) {
+            LOG.info("Create collection '" + collection + "' on db " + db + ", index is " + indexDBObject);
+         }
          if (indexDBObject != null) {
             collection.ensureIndex(indexDBObject);
+            if (LOG.isInfoEnabled()) {
+               LOG.info("Ensure index " + indexDBObject + "on colleciton " + collection);
+            }
          }
          return collection;
       } catch (MongoException e) {
