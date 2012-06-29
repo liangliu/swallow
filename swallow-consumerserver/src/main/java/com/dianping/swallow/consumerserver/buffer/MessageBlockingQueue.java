@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -13,22 +14,23 @@ import com.dianping.swallow.common.message.Message;
 
 public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
 
-   private static final long   serialVersionUID = -633276713494338593L;
-   private static final Logger LOG              = LoggerFactory.getLogger(MessageBlockingQueue.class);
+   private static final long           serialVersionUID = -633276713494338593L;
+   private static final Logger         LOG              = LoggerFactory.getLogger(MessageBlockingQueue.class);
 
-   private final String        cid;
-   private final String        topicId;
+   private final String                cid;
+   private final String                topicId;
+   private final MessageRetriverThread messageRetriverThread;
 
    /** 最小剩余数量,当queue的消息数量小于threshold时，会触发从数据库加载数据的操作 */
-   private final int           threshold;
+   private final int                   threshold;
 
-   protected MessageRetriever  messageRetriever;
+   protected MessageRetriever          messageRetriever;
 
-   private ReentrantLock       reentrantLock    = new ReentrantLock();
+   private ReentrantLock               reentrantLock    = new ReentrantLock();
+   private Condition                   condition        = reentrantLock.newCondition();
 
-   protected volatile Long     tailMessageId;
-   protected Set<String>       messageTypeSet;
-   private volatile Thread     messageRetrieverDemonThread;
+   protected volatile Long             tailMessageId;
+   protected Set<String>               messageTypeSet;
 
    public MessageBlockingQueue(String cid, String topicId, int threshold, int capacity, Long messageIdOfTailMessage) {
       super(capacity);
@@ -41,6 +43,8 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       if (messageIdOfTailMessage == null)
          throw new IllegalArgumentException("messageIdOfTailMessage is null.");
       this.tailMessageId = messageIdOfTailMessage;
+      messageRetriverThread = new MessageRetriverThread();
+      messageRetriverThread.start();
    }
 
    public MessageBlockingQueue(String cid, String topicId, int threshold, int capacity, Long messageIdOfTailMessage,
@@ -56,6 +60,8 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
          throw new IllegalArgumentException("messageIdOfTailMessage is null.");
       this.tailMessageId = messageIdOfTailMessage;
       this.messageTypeSet = messageTypeSet;
+      messageRetriverThread = new MessageRetriverThread();
+      messageRetriverThread.start();
    }
 
    public Message take() throws InterruptedException {
@@ -86,58 +92,72 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       if (messageRetriever == null) {
          return;
       }
-      if (reentrantLock.tryLock()) {//只有一个线程能启动“获取DB数据的后台线程”
-         try {
-            if (messageRetrieverDemonThread == null || !messageRetrieverDemonThread.isAlive()) {//而且后台线程已经在运行，则不能再启动
-               messageRetrieverDemonThread = new Thread(new Runnable() {
-                  @Override
-                  public void run() {
-                     try {
-                        List<Message> messages = messageRetriever.retriveMessage(MessageBlockingQueue.this.topicId,
-                              MessageBlockingQueue.this.tailMessageId, MessageBlockingQueue.this.messageTypeSet);
-                        if (messages != null) {
-                           int size = messages.size();
-                           for (int i = 0; i < size; i++) {
-                              Message message = messages.get(i);
-                              try {
-                                 MessageBlockingQueue.this.put(message);
-                                 Long messageId = message.getMessageId();
-                                 if (messageId == null) {
-                                    throw new IllegalStateException("the retrived message's messageId is null:"
-                                          + message);
-                                 }
-                                 tailMessageId = messageId;
-                                 if (LOG.isDebugEnabled()) {
-                                    LOG.debug("add message to (topic=" + topicId + ",cid=" + cid + ") queue:"
-                                          + message.toString());
-                                 }
-                              } catch (InterruptedException e) {
-                                 LOG.error(e.getMessage(), e);
-                                 break;
-                              }
-                           }
-                        }
-                     } catch (Exception e1) {
-                        LOG.error(e1.getMessage(), e1);
-                     } finally {
-                        LOG.info("thread done:" + Thread.currentThread().getName());
-                     }
-                  }
-               });
-               messageRetrieverDemonThread
-                     .setName("MessageRetriever-(topic=" + this.topicId + ",cid=" + this.cid + ")");
-               messageRetrieverDemonThread.setDaemon(true);
-               messageRetrieverDemonThread.start();
-               LOG.info("thread start:" + messageRetrieverDemonThread.getName());
-            }
-         } finally {
-            reentrantLock.unlock();
-         }
+      //只有一个线程能唤醒“获取DB数据的后台线程”
+      if (reentrantLock.tryLock()) {
+         condition.signal();
+         reentrantLock.unlock();
       }
    }
 
    public void setMessageRetriever(MessageRetriever messageRetriever) {
       this.messageRetriever = messageRetriever;
+   }
+
+   private class MessageRetriverThread extends Thread {
+
+      public MessageRetriverThread() {
+         this.setName("MessageRetriever-(topic=" + topicId + ",cid=" + cid + ")");
+         this.setDaemon(true);
+      }
+
+      @Override
+      public void run() {
+         LOG.info("thread start:" + this.getName());
+         while (!this.isInterrupted()) {
+            try {
+               reentrantLock.lock();
+               condition.await();
+               retriveMessage();
+            } catch (InterruptedException e) {
+               this.interrupt();
+            } finally {
+               reentrantLock.unlock();
+            }
+         }
+         LOG.info("thread done:" + this.getName());
+      }
+
+      private void retriveMessage() {
+         LOG.info("retriveMessage() start:" + this.getName());
+         try {
+            List<Message> messages = messageRetriever.retriveMessage(MessageBlockingQueue.this.topicId,
+                  MessageBlockingQueue.this.tailMessageId, MessageBlockingQueue.this.messageTypeSet);
+            if (messages != null) {
+               int size = messages.size();
+               for (int i = 0; i < size; i++) {
+                  Message message = messages.get(i);
+                  try {
+                     MessageBlockingQueue.this.put(message);
+                     Long messageId = message.getMessageId();
+                     if (messageId == null) {
+                        throw new IllegalStateException("the retrived message's messageId is null:" + message);
+                     }
+                     tailMessageId = messageId;
+                     if (LOG.isDebugEnabled()) {
+                        LOG.debug("add message to (topic=" + topicId + ",cid=" + cid + ") queue:" + message.toString());
+                     }
+                  } catch (InterruptedException e) {
+                     this.interrupt();
+                     break;
+                  }
+               }
+            }
+         } catch (Exception e1) {
+            LOG.error(e1.getMessage(), e1);
+         }
+         LOG.info("retriveMessage() done:" + this.getName());
+      }
+
    }
 
 }
