@@ -1,7 +1,5 @@
 package com.dianping.swallow.producerserver.impl;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,13 +15,16 @@ import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
+import com.dianping.swallow.common.util.IPUtil;
 import com.dianping.swallow.producerserver.util.SHAGenerater;
 
 public class ProducerServerForClient implements MQService {
 
-   private static final Logger logger       = Logger.getLogger(ProducerServerForClient.class);
-   private static final int    DEFAULT_PORT = 4000;
-   private int                 port         = DEFAULT_PORT;
+   private static final Logger logger           = Logger.getLogger(ProducerServerForClient.class);
+   private static final int    DEFAULT_PORT     = 4000;
+   public static final String  producerServerIP = IPUtil.getFirstNoLoopbackIP4Address();
+
+   private int                 port             = DEFAULT_PORT;
    private MessageDAO          messageDAO;
 
    /**
@@ -56,28 +57,27 @@ public class ProducerServerForClient implements MQService {
    @Override
    public Packet sendMessage(Packet pkt) throws ServerDaoException {
       Packet pktRet = null;
+      SwallowMessage swallowMessage;
+      String topicName;
+      String sha1;
       switch (pkt.getPacketType()) {
          case PRODUCER_GREET:
             logger.info("[ProducerServerForClient]:[Got Greet][From=" + ((PktProducerGreet) pkt).getProducerIP()
                   + "][Version=" + ((PktProducerGreet) pkt).getProducerVersion() + "]");
-            try {
-               //返回ProducerServer地址
-               pktRet = new PktSwallowPACK(InetAddress.getLocalHost().toString());
-            } catch (UnknownHostException uhe) {
-               pktRet = new PktSwallowPACK(uhe.toString());
-            }
+            //返回ProducerServer地址
+            pktRet = new PktSwallowPACK(producerServerIP);
             break;
          case OBJECT_MSG:
-            String sha1 = SHAGenerater.generateSHA(((SwallowMessage) ((PktMessage) pkt).getContent()).getContent());
+            swallowMessage = ((PktMessage) pkt).getContent();
+            topicName = ((PktMessage) pkt).getDestination().getName();
+            sha1 = SHAGenerater.generateSHA(swallowMessage.getContent());
             pktRet = new PktSwallowPACK(sha1);
-
             //设置swallowMessage的sha-1
-            ((SwallowMessage) ((PktMessage) pkt).getContent()).setSha1(sha1);
+            swallowMessage.setSha1(sha1);
 
             //将swallowMessage保存到mongodb
             try {
-               messageDAO.saveMessage(((PktMessage) pkt).getDestination().getName(),
-                     (SwallowMessage) ((PktMessage) pkt).getContent());
+               messageDAO.saveMessage(topicName, swallowMessage);
             } catch (Exception e) {
                logger.error("[ProducerServerForClient]:[Save message to DB failed.]", e);
                throw new ServerDaoException();
@@ -101,5 +101,4 @@ public class ProducerServerForClient implements MQService {
    public void setMessageDAO(MessageDAO messageDAO) {
       this.messageDAO = messageDAO;
    }
-
 }
