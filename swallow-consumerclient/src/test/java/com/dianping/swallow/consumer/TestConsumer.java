@@ -24,6 +24,12 @@ public class TestConsumer {
 			public void onMessage(SwallowMessage msg) {
 				//用户得到SwallowMessage，
 				System.out.println(msg.getMessageId() + ":" + msg.getContent());
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 
 		});
