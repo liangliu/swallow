@@ -51,7 +51,8 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
     			consumerId =  new ConsumerId(consumerPacket.getConsumerId(), consumerPacket.getDest());
     			workerManager.handleGreet(channel, new ConsumerInfo(consumerId, consumerPacket.getConsumerType()));
     		} else{
-    			workerManager.handleAck(channel, new ConsumerInfo(consumerId, null), consumerPacket.getMessageId());
+
+    			workerManager.handleAck(channel, new ConsumerInfo(consumerId, null), consumerPacket.getMessageId(), consumerPacket.getNeedClose());
     		}
     		
     	} else{

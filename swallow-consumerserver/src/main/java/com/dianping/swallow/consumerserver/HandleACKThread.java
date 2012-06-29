@@ -46,11 +46,14 @@ public class HandleACKThread implements Runnable, Closeable{
 				}
 			} catch (InterruptedException e) {
 				LOG.error("unexpected interrupt", e);
-			}			
-			if(consumerInformation.getConnectedChannels().isEmpty()){
-				consumerInformation.setHandleACKThreadExist(false);
-				isLive = false;
+			}		
+			synchronized(consumerInformation.getConnectedChannels()){
+				if(consumerInformation.getConnectedChannels().isEmpty()){
+					consumerInformation.setHandleACKThreadExist(false);
+					isLive = false;
+				}
 			}
+			
 		}
 		LOG.info("closed");
 	}

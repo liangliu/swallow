@@ -47,7 +47,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     	
     	SwallowMessage swallowMessage = (SwallowMessage)((PktMessage)e.getMessage()).getContent();
     	Long messageId = swallowMessage.getMessageId();    	
-    	consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK ,messageId);
+    	consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK ,messageId, cClient.getNeedClose());
     	//TODO 异常处理
     	cClient.getListener().onMessage(swallowMessage);
     	e.getChannel().write(consumermessage);

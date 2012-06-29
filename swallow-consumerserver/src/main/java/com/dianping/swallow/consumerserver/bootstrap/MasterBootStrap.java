@@ -26,7 +26,7 @@ import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 public class MasterBootStrap {
 
 	//TODO 是否lion中
-	private static int slavePort = 8081;
+	private static int masterPort = 8081;
 	
 	private static boolean isSlave = false;
 	/**
@@ -38,7 +38,7 @@ public class MasterBootStrap {
 		final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
 		consumerWorkerManager.init(isSlave);
 		try {
-			Thread.sleep(20000);//TODO 主机启动的时候睡眠一会，给时间给slave关闭。
+			Thread.sleep(200);//TODO 主机启动的时候睡眠一会，给时间给slave关闭。
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -79,7 +79,7 @@ public class MasterBootStrap {
             }  
         });  
         // Bind and start to accept incoming connections.
-        bootstrap.bind(new InetSocketAddress(slavePort));
+        bootstrap.bind(new InetSocketAddress(masterPort));
         
 	}
 
