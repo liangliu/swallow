@@ -12,6 +12,7 @@ import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.Packet;
 import com.dianping.swallow.common.packet.PktMessage;
+import com.dianping.swallow.common.packet.PktProducerGreet;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
@@ -57,7 +58,8 @@ public class ProducerServerForClient implements MQService {
       Packet pktRet = null;
       switch (pkt.getPacketType()) {
          case PRODUCER_GREET:
-            System.out.println("got greet");
+            logger.info("[ProducerServerForClient]:[Got Greet][From=" + ((PktProducerGreet) pkt).getProducerIP()
+                  + "][Version=" + ((PktProducerGreet) pkt).getProducerVersion() + "]");
             try {
                //返回ProducerServer地址
                pktRet = new PktSwallowPACK(InetAddress.getLocalHost().toString());

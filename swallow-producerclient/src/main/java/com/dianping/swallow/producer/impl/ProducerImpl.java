@@ -87,7 +87,7 @@ public class ProducerImpl implements Producer {
       }
       //向Swallow发送greet
       try {
-         remoteService.sendMessage(new PktProducerGreet(producerVersion));
+         remoteService.sendMessage(new PktProducerGreet(producerVersion, producerIP));
       } catch (Exception e) {
          logger.error("[Producer]:[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]", e);
          throw new RemoteServiceDownException();

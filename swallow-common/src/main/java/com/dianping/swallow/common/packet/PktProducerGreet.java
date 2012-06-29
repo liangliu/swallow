@@ -24,14 +24,26 @@ package com.dianping.swallow.common.packet;
  */
 public final class PktProducerGreet extends Packet {
 	private String version;
-	public PktProducerGreet(String producerVersion){
+	private String producerIP;
+	public PktProducerGreet(){
+	   
+	}
+	public PktProducerGreet(String producerVersion, String producerIP){
 		this.setPacketType(PacketType.PRODUCER_GREET);
 		this.setProducerVersion(producerVersion);
+		this.setProducerIP(producerIP);
 	}
+	
 	private void setProducerVersion(String producerVersion) {
 		this.version = producerVersion;
 	}
 	public String getProducerVersion() {
 		return version;
 	}
+   public String getProducerIP() {
+      return producerIP;
+   }
+   public void setProducerIP(String producerIP) {
+      this.producerIP = producerIP;
+   }
 }
