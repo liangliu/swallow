@@ -1,8 +1,5 @@
 package com.dianping.swallow.producer.impl;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.Map;
 
@@ -19,6 +16,7 @@ import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.ProducerUtils;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
+import com.dianping.swallow.common.util.IPUtil;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
@@ -31,6 +29,7 @@ public class ProducerImpl implements Producer {
 
    //常量定义
    private final String              producerVersion          = "0.6.0";                             //Producer版本号
+   private final String              producerIP               = IPUtil.getFirstNoLoopbackIP4Address();
    private static final Logger       logger                   = Logger.getLogger(ProducerImpl.class); //日志
 
    //Producer配置默认值
@@ -52,7 +51,8 @@ public class ProducerImpl implements Producer {
     * @param remoteService 远程调用服务
     * @param topicName topic的名称
     * @param pOptions producer选项
-    * @throws TopicNameInvalidException topic名称非法//topic名称只能由以下字符组成：[a-z]、[A-Z]、[_]、[.]、[0-9]
+    * @throws TopicNameInvalidException
+    *            topic名称非法//topic名称只能由以下字符组成：[a-z]、[A-Z]、[_]、[.]、[0-9]
     */
    ProducerImpl(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions)
          throws TopicNameInvalidException {
@@ -78,7 +78,7 @@ public class ProducerImpl implements Producer {
       //设置Producer工作模式
       switch (producerMode) {
          case SYNC_MODE:
-            syncHandler = new HandlerSynchroMode(this);
+            syncHandler = new HandlerSynchroMode(remoteService);
             break;
          case ASYNC_MODE:
             asyncHandler = new HandlerAsynchroMode(this);
@@ -155,11 +155,7 @@ public class ProducerImpl implements Producer {
       swallowMsg.setContent(content);
       swallowMsg.setVersion(producerVersion);
       swallowMsg.setGeneratedTime(new Date());
-      try {
-         swallowMsg.setSourceIp(InetAddress.getLocalHost().getHostAddress());
-      } catch (UnknownHostException e1) {
-         e1.printStackTrace();
-      }
+      swallowMsg.setSourceIp(producerIP);
       if (properties != null)
          swallowMsg.setProperties(properties);
       if (messageType != null)

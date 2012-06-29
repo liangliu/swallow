@@ -1,6 +1,5 @@
 package com.dianping.swallow.producerserver.impl;
 
-import java.net.InetAddress;
 import java.util.Date;
 
 import org.apache.log4j.Level;

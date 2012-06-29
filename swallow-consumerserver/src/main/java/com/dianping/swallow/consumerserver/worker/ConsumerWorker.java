@@ -8,7 +8,7 @@ public interface ConsumerWorker extends Closeable {
 
 	public void handleGreet(Channel channel);
 
-	public void handleAck(Channel channel, Long ackedMsgId);
+	public void handleAck(Channel channel, Long ackedMsgId, boolean needClose);
 
 	public void handleChannelDisconnect(Channel channel);
 

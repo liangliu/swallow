@@ -43,8 +43,8 @@ public class ConsumerWorkerManager {
 	}
 	
 	
-	public void handleAck(Channel channel, ConsumerInfo consumerInfo, Long ackedMsgId) {
-		findOrCreateConsumerWorker(consumerInfo).handleAck(channel, ackedMsgId);
+	public void handleAck(Channel channel, ConsumerInfo consumerInfo, Long ackedMsgId, boolean needClose) {
+		findOrCreateConsumerWorker(consumerInfo).handleAck(channel, ackedMsgId, needClose);
 	}
 	
 	
