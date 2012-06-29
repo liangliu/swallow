@@ -35,15 +35,16 @@ import com.dianping.swallow.producer.ProducerOptionKey;
  */
 public class ProducerFactoryImpl implements ProducerFactory {
 
-   private final Logger               logger          = Logger.getLogger(ProducerFactoryImpl.class);
-   private static ProducerFactoryImpl instance;                                                     //Producer工厂类单例
+   private final Logger               logger           = Logger.getLogger(ProducerFactoryImpl.class);
+   private static ProducerFactoryImpl instance;                                                      //Producer工厂类单例
+
    //远程调用相关设置
-   private final int                  remoteServiceTimeout;                                         //远程调用超时
-   private static final int           DEFAULT_TIMEOUT = 5000;                                       //远程调用默认超时
+   private final int                  remoteServiceTimeout;                                          //远程调用超时
+   private static final int           DEFAULT_TIMEOUT  = 5000;                                       //远程调用默认超时
    //远程调用相关变量
    @SuppressWarnings("rawtypes")
-   private final ProxyFactory         pigeon          = new ProxyFactory();                         //pigeon代理对象
-   private final MQService            remoteService;                                                //远程调用对象
+   private final ProxyFactory         pigeon           = new ProxyFactory();                         //pigeon代理对象
+   private final MQService            remoteService;                                                 //远程调用对象
 
    /**
     * Producer工厂类构造函数

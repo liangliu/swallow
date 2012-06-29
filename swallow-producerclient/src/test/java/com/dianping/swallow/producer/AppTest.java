@@ -15,7 +15,7 @@ import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
  */
 public class AppTest extends TestCase {
    private ProducerFactoryImpl pf = null;
-   private String              message;
+   private String              message = "Hello,ZhangYu && OldHorse";
 
    /**
     * Create the test case
@@ -28,9 +28,6 @@ public class AppTest extends TestCase {
          pf = ProducerFactoryImpl.getInstance(5000);
       } catch (Exception e3) {
          System.out.println(e3.toString());
-      }
-      for (int i = 0; i < 10; i++) {
-         message += "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
       }
    }
 
@@ -49,10 +46,8 @@ public class AppTest extends TestCase {
    }
 
    private class task implements Runnable {
-      String content;
 
       public task(String content) {
-         this.content = content;
       }
 
       @Override
@@ -69,19 +64,21 @@ public class AppTest extends TestCase {
          } catch (Exception e2) {
             System.out.println(e2.toString());
          }
-         String str = null;
+         String str = "";
          long begin = System.currentTimeMillis();
          try {
+            int idx = 0;
             //            for (int i = 0; i < 1000; i++) {
             while (true) {
                //			content += i++;
-               str = ps.sendMessage(message);
+               str = ps.sendMessage("______[" + (idx++) + "]["+ message + "]");
                //               sumTime += (end - begin);
                try {
                   Thread.sleep(100);
                } catch (Exception e) {
                   // 
                }
+               System.out.println(idx);
             }
          } catch (Exception e1) {
             System.out.println(e1.toString());

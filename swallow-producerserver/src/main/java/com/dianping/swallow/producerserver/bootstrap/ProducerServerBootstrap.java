@@ -17,9 +17,6 @@ package com.dianping.swallow.producerserver.bootstrap;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
-import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
-
 /**
  * ProducerServer的Bootstrap类，用以启动ProducerServer
  * 

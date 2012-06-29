@@ -51,8 +51,8 @@ public class ProducerImpl implements Producer {
     * @param remoteService 远程调用服务
     * @param topicName topic的名称
     * @param pOptions producer选项
-    * @throws TopicNameInvalidException
-    *            topic名称非法//topic名称只能由以下字符组成：[ a-z ]、[ A-Z ]、[ _ ]、[ . ]、[ 0-9 ]
+    * @throws TopicNameInvalidException topic名称非法//topic名称只能由以下字符组成：[ a-z ]、[
+    *            A-Z ]、[ _ ]、[ . ]、[ 0-9 ]
     * @throws RemoteServiceDownException 初始化远程连接失败
     */
    ProducerImpl(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions)
@@ -89,7 +89,9 @@ public class ProducerImpl implements Producer {
       try {
          remoteService.sendMessage(new PktProducerGreet(producerVersion, producerIP));
       } catch (Exception e) {
-         logger.error("[Producer]:[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]", e);
+         logger.error(
+               "[Producer]:[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]",
+               e);
          throw new RemoteServiceDownException();
       }
    }
@@ -103,7 +105,8 @@ public class ProducerImpl implements Producer {
     * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
     */
    @Override
-   public String sendMessage(Object content) throws ServerDaoException, FileQueueClosedException, RemoteServiceDownException {
+   public String sendMessage(Object content) throws ServerDaoException, FileQueueClosedException,
+         RemoteServiceDownException {
       return sendMessage(content, null, null);
    }
 
@@ -117,7 +120,8 @@ public class ProducerImpl implements Producer {
     * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
     */
    @Override
-   public String sendMessage(Object content, String messageType) throws ServerDaoException, FileQueueClosedException, RemoteServiceDownException {
+   public String sendMessage(Object content, String messageType) throws ServerDaoException, FileQueueClosedException,
+         RemoteServiceDownException {
       return sendMessage(content, null, messageType);
    }
 
@@ -172,8 +176,10 @@ public class ProducerImpl implements Producer {
             } catch (ServerDaoException e) {
                logger.error("[Producer]:[Can not save message to DB, DB is busy or connection to DB is down.]", e);
                throw e;
-            } catch (RemoteServiceDownException e){
-               logger.error("[Producer]:[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]", e);
+            } catch (RemoteServiceDownException e) {
+               logger.error(
+                     "[Producer]:[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]",
+                     e);
                throw e;
             }
             break;
@@ -181,7 +187,9 @@ public class ProducerImpl implements Producer {
             try {
                asyncHandler.doSendMsg(pktMessage);
             } catch (FileQueueClosedException e) {
-               logger.error("[Producer]:[Can not save message to FileQueue, please contact to Swallow-Team for more information.]", e);
+               logger.error(
+                     "[Producer]:[Can not save message to FileQueue, please contact to Swallow-Team for more information.]",
+                     e);
                throw e;
             }
             break;
