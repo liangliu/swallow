@@ -11,7 +11,7 @@ public class TestConsumer {
 	//应该都是取自于lion
 	public static String swallowCAddress = "127.0.0.1:8081,127.0.0.1:8082";
 	public static String cid = "zhangyu";
-	public static Destination dest = Destination.topic("zhangyu");
+	public static Destination dest = Destination.topic("xx");
 	public static ConsumerType consumerType = ConsumerType.UPDATE_BEFORE_ACK;
     public static void main(String[] args) throws Exception {
 

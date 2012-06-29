@@ -6,8 +6,6 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.dianping.swallow.common.dao.HeartbeatDAO;
 import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.bootstrap.SlaveBootStrap;
@@ -16,12 +14,15 @@ public class MongoHeartbeater implements Heartbeater {
 
 	private static Logger log = Logger.getLogger(MongoHeartbeater.class);
 
-	@Autowired
-	private HeartbeatDAO dao;
+	private HeartbeatDAO heartbeatDAO;
+
+	public void setHeartbeatDAO(HeartbeatDAO heartbeatDAO) {
+		this.heartbeatDAO = heartbeatDAO;
+	}
 
 	@Override
 	public void beat(String ip) {
-		dao.updateLastHeartbeat(ip);
+		heartbeatDAO.updateLastHeartbeat(ip);
 	}
 
 	@Override
@@ -31,7 +32,7 @@ public class MongoHeartbeater implements Heartbeater {
 		while (true) {
 			Date beat = null;
 			try {
-				beat = dao.findLastHeartbeat(ip);
+				beat = heartbeatDAO.findLastHeartbeat(ip);
 			} catch (Exception e) {
 				//如果访问mongo出错，重置startTime，防止failover时间过长
 				log.error("error find last heartbeat", e);
@@ -62,7 +63,7 @@ public class MongoHeartbeater implements Heartbeater {
 		Date beat = null;
 		while (true) {
 			try {
-				beat = dao.findLastHeartbeat(ip);
+				beat = heartbeatDAO.findLastHeartbeat(ip);
 			} catch (Exception e) {
 				log.error("error find last heartbeat", e);
 				Thread.sleep(1000);

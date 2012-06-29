@@ -85,6 +85,10 @@ public final class PktConsumerMessage extends Packet {
 		this.type = type;
 	}
 	
+	public PktConsumerMessage() {
+		super();
+		
+	}
 	public PktConsumerMessage(ConsumerMessageType type, String consumerId, Destination dest, ConsumerType consumerType){
 		this.setPacketType(PacketType.CONSUMER_GREET);
 		this.type = type;

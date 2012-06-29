@@ -58,8 +58,8 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 		this.messageDao = messageDao;
 		this.swallowBuffer = swallowBuffer;
 		this.threadFactory = threadFactory;
-		consumerid = consumerInfo.getConsumerId().getDest().getName();
-		topicName = consumerInfo.getConsumerId().getConsumerId();
+		topicName = consumerInfo.getConsumerId().getDest().getName();
+		consumerid = consumerInfo.getConsumerId().getConsumerId();
 	}
 
 	@Override
@@ -149,6 +149,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 		}
 		if(maxMessageId == null){
 			int time = (int)(System.currentTimeMillis() / 1000);
+			time = time - 3600*24;
 			BSONTimestamp bst = new BSONTimestamp(time, 1);
 			maxMessageId = MongoUtils.BSONTimestampToLong(bst);
 		}

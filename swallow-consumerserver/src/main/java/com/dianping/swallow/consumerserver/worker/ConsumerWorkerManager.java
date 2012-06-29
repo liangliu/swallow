@@ -6,7 +6,8 @@ import java.util.Map;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.util.internal.ConcurrentHashMap;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
@@ -17,24 +18,32 @@ import com.dianping.swallow.consumerserver.config.ConfigManager;
 
 public class ConsumerWorkerManager {
 	
-	@Autowired
-    private AckDAO ackDao;
-	
-	@Autowired
+	private static final Logger logger = LoggerFactory.getLogger(
+			ConsumerWorkerManager.class.getName());
+  
+	private AckDAO ackDAO;
     private Heartbeater heartbeater;
+    private SwallowBuffer swallowBuffer;
+    private MessageDAO messageDAO;
 	
 	private ConfigManager configManager = ConfigManager.getInstance();;
-	
-    @Autowired
-    private MessageDAO messageDao;
     
     private MQThreadFactory threadFactory = new MQThreadFactory();
     
-    @Autowired
-    private SwallowBuffer swallowBuffer;
-    
 	private Map<ConsumerId, ConsumerWorker> consumerId2ConsumerWorker = new ConcurrentHashMap<ConsumerId, ConsumerWorker>();
 
+	public void setAckDAO(AckDAO ackDAO) {
+		this.ackDAO = ackDAO;
+	}
+	public void setHeartbeater(Heartbeater heartbeater) {
+		this.heartbeater = heartbeater;
+	}
+	public void setSwallowBuffer(SwallowBuffer swallowBuffer) {
+		this.swallowBuffer = swallowBuffer;
+	}
+	public void setMessageDAO(MessageDAO messageDAO) {
+		this.messageDAO = messageDAO;
+	}
 	public ConfigManager getConfigManager() {
 		return configManager;
 	}
@@ -65,7 +74,7 @@ public class ConsumerWorkerManager {
 		if(consumerWorker == null) {
 			synchronized (this) {
 				if(consumerWorker == null) {
-					consumerWorker = new ConsumerWorkerImpl(consumerInfo, ackDao, messageDao, swallowBuffer, threadFactory);
+					consumerWorker = new ConsumerWorkerImpl(consumerInfo, ackDAO, messageDAO, swallowBuffer, threadFactory);
 					consumerId2ConsumerWorker.put(consumerId, consumerWorker);
 				}
 			}
@@ -97,7 +106,7 @@ public class ConsumerWorkerManager {
 						heartbeater.beat(ip);
 						Thread.sleep(configManager.getHeartbeatUpdateInterval());
 					} catch (Exception e) {
-						//log.error("Error update heart beat", e);
+						logger.error("Error update heart beat", e);
 					}
 				}
 			}

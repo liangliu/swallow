@@ -9,6 +9,8 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
+import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import org.springframework.context.ApplicationContext;
@@ -70,9 +72,9 @@ public class MasterBootStrap {
             public ChannelPipeline getPipeline() throws Exception {  
             MessageServerHandler handler = new MessageServerHandler(consumerWorkerManager);
             ChannelPipeline pipeline = Channels.pipeline();
-            pipeline.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
+            pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
             pipeline.addLast("jsonDecoder", new JsonDecoder(PktConsumerMessage.class));
-            pipeline.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
+            pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
             pipeline.addLast("jsonEncoder", new JsonEncoder(PktMessage.class));
             pipeline.addLast("handler", handler);
             return pipeline;  
