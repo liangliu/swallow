@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import com.dianping.swallow.common.dao.HeartbeatDAO;
 import com.dianping.swallow.consumerserver.Heartbeater;
-import com.dianping.swallow.consumerserver.bootstrap.SlaveBootStrap;
 
 public class MongoHeartbeater implements Heartbeater {
 

@@ -82,7 +82,8 @@ public class ConfigManager {
 		this("swallow.properties");
 	}
 
-	private ConfigManager(String configFileName) {
+	@SuppressWarnings("rawtypes")
+   private ConfigManager(String configFileName) {
 		InputStream in = ConfigManager.class.getClassLoader().getResourceAsStream(configFileName);
 		Properties props = new Properties();
 		Class clazz = this.getClass();

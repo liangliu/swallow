@@ -1,9 +1,5 @@
 package com.dianping.swallow.consumerserver;
 
-import java.util.concurrent.ArrayBlockingQueue;
-
-import org.jboss.netty.channel.Channel;
-
 public interface ConsumerService {
 
 	/**

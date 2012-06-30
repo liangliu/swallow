@@ -79,6 +79,7 @@ public class AppTest extends TestCase {
                   // 
                }
                System.out.println(idx);
+               System.out.println(str);
             }
          } catch (Exception e1) {
             System.out.println(e1.toString());
