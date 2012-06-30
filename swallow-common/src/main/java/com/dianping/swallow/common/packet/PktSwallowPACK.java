@@ -35,7 +35,6 @@ public final class PktSwallowPACK extends Packet {
 	}
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
 		return shaInfo;
 	}
 }

@@ -8,7 +8,9 @@ package com.dianping.swallow;
  */
 public class BackoutMessageException extends Exception {
 
-	public enum ScheduleType {
+   private static final long serialVersionUID = -1029955042149831812L;
+
+   public enum ScheduleType {
 		/**
 		 * 在指定的秒数后推送
 		 */

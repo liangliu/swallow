@@ -22,13 +22,11 @@ public class PktMessage extends Packet implements Message{
 	
 	@Override
 	public SwallowMessage getContent() {
-		// TODO Auto-generated method stub
 		return content;
 	}
 
 	@Override
 	public Destination getDestination() {
-		// TODO Auto-generated method stub
 		return dest;
 	}
 }

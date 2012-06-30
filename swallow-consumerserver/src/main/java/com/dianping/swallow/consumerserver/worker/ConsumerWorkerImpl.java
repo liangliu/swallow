@@ -129,7 +129,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
 	@Override
 	public void close() throws IOException {
-		// TODO Auto-generated method stub
+		// TODO 需要实现close吗？
 		
 	}
 
@@ -211,7 +211,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 				}
 			}
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+			//  TODO 使用LOG
 			e.printStackTrace();
 		}
 	}

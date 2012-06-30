@@ -26,7 +26,6 @@ import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
 
 /**
- * TODO Comment of ProducerTest
  * @author tong.song
  *
  */
