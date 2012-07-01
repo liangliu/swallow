@@ -44,7 +44,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
 
    @Override
    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-      logger.info("[ProducerServerForText]:[Connection from " + e.getChannel().getRemoteAddress() + "]");
+      logger.info("[Connection from " + e.getChannel().getRemoteAddress() + "]");
       super.channelConnected(ctx, e);
    }
 
@@ -53,7 +53,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       //获取TextObject
       TextObject textObject = (TextObject) e.getMessage();
       if (logger.isDebugEnabled()) {
-         logger.debug("[ProducerServerForText]:[Message=" + textObject + "]");
+         logger.debug("[Message=" + textObject + "]");
       }
       String sourceIp = e.getChannel().getRemoteAddress().toString();
       //生成SwallowMessage
@@ -67,8 +67,8 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       textAck.setStatus(OK);
       //TopicName非法，返回失败ACK，reason是"TopicName is not valid."
       if (!ProducerUtils.isTopicNameValid(textObject.getTopic())) {
-         logger.error("[ProducerServerForText]:[Incorrect topic name.][From=" + e.getChannel().getRemoteAddress()
-               + "][Content=" + textObject + "]");
+         logger.error("[Incorrect topic name.][From=" + e.getChannel().getRemoteAddress() + "][Content=" + textObject
+               + "]");
          textAck.setStatus(INVALID_TOPIC_NAME);
          textAck.setInfo("TopicName is invalid.");
          //返回ACK
@@ -79,7 +79,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
             messageDAO.saveMessage(textObject.getTopic(), swallowMessage);
          } catch (Exception e1) {
             //记录异常，返回失败ACK，reason是“Can not save message”
-            logger.error("[ProducerServerForText]:[Save message to DB failed.]",e1);
+            logger.error("[Save message to DB failed.]", e1);
             textAck.setStatus(SAVE_FAILED);
             textAck.setInfo("Can not save message.");
          }
