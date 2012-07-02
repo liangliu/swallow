@@ -55,7 +55,6 @@ public class SlaveBootStrap {
 	        });  
 	        // Bind and start to accept incoming connections.
 	       bootstrap.bind(new InetSocketAddress(port));
-	       //TODO 在这个县城检查就可以
 	       consumerWorkerManager.checkMasterIsLive(bootstrap);
 		} 
 	}
