@@ -18,7 +18,7 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
    private static final Logger         LOG              = LoggerFactory.getLogger(MessageBlockingQueue.class);
 
    private final String                cid;
-   private final String                topicId;
+   private final String                topicName;
    private final MessageRetriverThread messageRetriverThread;
 
    /** 最小剩余数量,当queue的消息数量小于threshold时，会触发从数据库加载数据的操作 */
@@ -32,11 +32,11 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
    protected volatile Long             tailMessageId;
    protected Set<String>               messageTypeSet;
 
-   public MessageBlockingQueue(String cid, String topicId, int threshold, int capacity, Long messageIdOfTailMessage) {
+   public MessageBlockingQueue(String cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage) {
       super(capacity);
       //能运行到这里，说明capacity>0
       this.cid = cid;
-      this.topicId = topicId;
+      this.topicName = topicName;
       if (threshold < 0)
          throw new IllegalArgumentException("threshold: " + threshold);
       this.threshold = threshold;
@@ -47,12 +47,12 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       messageRetriverThread.start();
    }
 
-   public MessageBlockingQueue(String cid, String topicId, int threshold, int capacity, Long messageIdOfTailMessage,
+   public MessageBlockingQueue(String cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage,
                                Set<String> messageTypeSet) {
       super(capacity);
       //能运行到这里，说明capacity>0
       this.cid = cid;
-      this.topicId = topicId;
+      this.topicName = topicName;
       if (threshold < 0)
          throw new IllegalArgumentException("threshold: " + threshold);
       this.threshold = threshold;
@@ -117,7 +117,7 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
    private class MessageRetriverThread extends Thread {
 
       public MessageRetriverThread() {
-         this.setName("MessageRetriever-(topic=" + topicId + ",cid=" + cid + ")");
+         this.setName("MessageRetriever-(topic=" + topicName + ",cid=" + cid + ")");
          this.setDaemon(true);
       }
 
@@ -141,7 +141,7 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       private void retriveMessage() {
          LOG.info("retriveMessage() start:" + this.getName());
          try {
-            List<Message> messages = messageRetriever.retriveMessage(MessageBlockingQueue.this.topicId,
+            List<Message> messages = messageRetriever.retriveMessage(MessageBlockingQueue.this.topicName,
                   MessageBlockingQueue.this.tailMessageId, MessageBlockingQueue.this.messageTypeSet);
             if (messages != null) {
                int size = messages.size();
@@ -155,7 +155,7 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
                      }
                      tailMessageId = messageId;
                      if (LOG.isDebugEnabled()) {
-                        LOG.debug("add message to (topic=" + topicId + ",cid=" + cid + ") queue:" + message.toString());
+                        LOG.debug("add message to (topic=" + topicName + ",cid=" + cid + ") queue:" + message.toString());
                      }
                   } catch (InterruptedException e) {
                      this.interrupt();
