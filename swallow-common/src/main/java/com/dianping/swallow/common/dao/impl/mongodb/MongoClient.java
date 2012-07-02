@@ -13,10 +13,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.cat.message.Event;
+import com.dianping.cat.message.internal.DefaultEvent;
 import com.dianping.lion.EnvZooKeeperConfig;
 import com.dianping.lion.client.ConfigCache;
 import com.dianping.lion.client.ConfigChange;
 import com.dianping.lion.client.LionException;
+import com.dianping.swallow.common.cat.CatAdapter;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -154,6 +157,17 @@ public class MongoClient implements ConfigChange {
             this.heartbeatCappedCollectionMaxDocNum = Integer.parseInt(heartbeatCappedCollectionMaxDocNum.trim());
          //添加Lion监听
          cc.addChange(this);
+         //CAT
+         Event event = new DefaultEvent("mongo", "mongo's lion config");
+         event.addData("topicNameToMongoMap", this.topicNameToMongoMap);
+         event.addData("msgTopicNameToSizes", this.msgTopicNameToSizes);
+         event.addData("msgTopicNameToMaxDocNums", this.msgTopicNameToMaxDocNums);
+         event.addData("ackTopicNameToSizes", this.ackTopicNameToSizes);
+         event.addData("ackTopicNameToMaxDocNums", this.ackTopicNameToMaxDocNums);
+         event.addData("heartbeatMongo", this.heartbeatMongo);
+         event.addData("heartbeatCappedCollectionSize", this.heartbeatCappedCollectionSize);
+         event.addData("heartbeatCappedCollectionMaxDocNum", this.heartbeatCappedCollectionMaxDocNum);
+         CatAdapter.logEvent(event);
       } catch (Exception e) {
          throw new IllegalArgumentException("Error Loading Config from Lion : " + e.getMessage(), e);
       }
@@ -355,6 +369,17 @@ public class MongoClient implements ConfigChange {
                LOG.info("parse " + value);
             }
          }
+         //CAT
+         Event event = new DefaultEvent("mongo", "mongo's lion config");
+         event.addData("topicNameToMongoMap", this.topicNameToMongoMap);
+         event.addData("msgTopicNameToSizes", this.msgTopicNameToSizes);
+         event.addData("msgTopicNameToMaxDocNums", this.msgTopicNameToMaxDocNums);
+         event.addData("ackTopicNameToSizes", this.ackTopicNameToSizes);
+         event.addData("ackTopicNameToMaxDocNums", this.ackTopicNameToMaxDocNums);
+         event.addData("heartbeatMongo", this.heartbeatMongo);
+         event.addData("heartbeatCappedCollectionSize", this.heartbeatCappedCollectionSize);
+         event.addData("heartbeatCappedCollectionMaxDocNum", this.heartbeatCappedCollectionMaxDocNum);
+         CatAdapter.logEvent(event);
       } catch (Exception e) {
          LOG.error("Error occour when reset config from Lion, no config property would changed :" + e.getMessage(), e);
       }

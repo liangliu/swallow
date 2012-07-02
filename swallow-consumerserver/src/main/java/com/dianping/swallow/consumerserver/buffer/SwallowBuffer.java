@@ -8,6 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.dianping.cat.message.Event;
+import com.dianping.cat.message.internal.DefaultEvent;
+import com.dianping.swallow.common.cat.CatAdapter;
 import com.dianping.swallow.common.message.Message;
 
 public class SwallowBuffer {
@@ -169,6 +172,15 @@ public class SwallowBuffer {
          }
          messageBlockingQueue.setMessageRetriever(messageRetriever);
          messageQueues.put(cid, new SoftReference<BlockingQueue<Message>>(messageBlockingQueue));
+         //CAT
+         Event event = new DefaultEvent("buffer", "create queue in the buffer");
+         event.addData("cid", cid);
+         event.addData("topicName", topicName);
+         event.addData("thresholdOfQueue", thresholdOfQueue);
+         event.addData("capacityOfQueue", capacityOfQueue);
+         event.addData("tailMessageId", tailMessageId);
+         event.addData("messageTypeSet", messageTypeSet);
+         CatAdapter.logEvent(event);
          return messageBlockingQueue;
       }
 
