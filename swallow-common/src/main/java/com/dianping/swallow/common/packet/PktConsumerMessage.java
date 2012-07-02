@@ -45,6 +45,7 @@ public final class PktConsumerMessage extends Packet {
 	
 	private boolean needClose;
 	
+	private int threadCount;
 
 	public boolean getNeedClose() {
 		return needClose;
@@ -85,19 +86,26 @@ public final class PktConsumerMessage extends Packet {
 		this.type = type;
 	}
 	
-	public PktConsumerMessage() {
+	public int getThreadCount() {
+      return threadCount;
+   }
+   public void setThreadCount(int threadCount) {
+      this.threadCount = threadCount;
+   }
+   public PktConsumerMessage() {
 		super();
 		
 	}
-	public PktConsumerMessage(ConsumerMessageType type, String consumerId, Destination dest, ConsumerType consumerType){
+	public PktConsumerMessage(ConsumerMessageType type, String consumerId, Destination dest, ConsumerType consumerType, int threadCount){
 		this.setPacketType(PacketType.CONSUMER_GREET);
 		this.type = type;
 		this.dest = dest;
 		this.consumerId = consumerId;
 		this.consumerType = consumerType;
+		this.threadCount = threadCount;
 	}
 	public PktConsumerMessage(ConsumerMessageType type, Long messageId, boolean needClose){
-		this.setPacketType(PacketType.CONSUMER_GREET);
+		this.setPacketType(PacketType.CONSUMER_ACK);
 		this.type = type;
 		this.messageId = messageId;
 		this.needClose = needClose;

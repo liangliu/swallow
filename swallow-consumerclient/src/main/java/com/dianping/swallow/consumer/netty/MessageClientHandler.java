@@ -33,21 +33,23 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     public void channelConnected(
             ChannelHandlerContext ctx, ChannelStateEvent e) {
     	
-    	consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET, cClient.getConsumerId(), cClient.getDest(), cClient.getConsumerType());
+    	consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET, cClient.getConsumerId(), cClient.getDest(), cClient.getConsumerType(), cClient.getThreadCount());
     	e.getChannel().write(consumermessage);   
-    	
+    	//如果是多线程，则除了greet消息外，仍需发送threadCount-1次ACK。
+    	if(cClient.getThreadCount() > 1){
+    	   int threadCount = cClient.getThreadCount();
+    	   for(int i = 1; i < threadCount; i++){
+    	     consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, null , cClient.getNeedClose());
+           e.getChannel().write(consumermessage); 
+    	   }
+    	}    	
     }
  
     @Override
     public void messageReceived(
             ChannelHandlerContext ctx, MessageEvent e) {
-    	
-    	SwallowMessage swallowMessage = (SwallowMessage)((PktMessage)e.getMessage()).getContent();
-    	Long messageId = swallowMessage.getMessageId();    	
-    	consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK ,messageId, cClient.getNeedClose());
-    	//TODO 异常处理
-    	cClient.getListener().onMessage(swallowMessage);
-    	e.getChannel().write(consumermessage);
+       
+    	cClient.getListener().onMessage(e);
     	
     }
  

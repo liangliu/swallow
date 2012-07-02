@@ -9,6 +9,7 @@ import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.swallow.common.consumer.ACKHandlerType;
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.threadfactory.MQThreadFactory;
@@ -52,8 +53,8 @@ public class ConsumerWorkerManager {
 	}
 	
 	
-	public void handleAck(Channel channel, ConsumerInfo consumerInfo, Long ackedMsgId, boolean needClose) {
-		findOrCreateConsumerWorker(consumerInfo).handleAck(channel, ackedMsgId, needClose);
+	public void handleAck(Channel channel, ConsumerInfo consumerInfo, Long ackedMsgId, ACKHandlerType type) {
+		findOrCreateConsumerWorker(consumerInfo).handleAck(channel, ackedMsgId, type);
 	}
 	
 	

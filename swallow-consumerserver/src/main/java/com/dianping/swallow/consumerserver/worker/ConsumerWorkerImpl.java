@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.bson.types.BSONTimestamp;
 import org.jboss.netty.channel.Channel;
 
+import com.dianping.swallow.common.consumer.ACKHandlerType;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
@@ -63,18 +64,17 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 	}
 
 	@Override
-	public void handleAck(final Channel channel, final Long ackedMsgId, final boolean needClose) {
+	public void handleAck(final Channel channel, final Long ackedMsgId, final ACKHandlerType type) {
 
 		ackWorker.add(new Runnable() {
 			@Override
 			public void run() {								    	
 				updateMaxMessageId(ackedMsgId);
-				if(needClose){
+				if(ACKHandlerType.CLOSE_CHANNEL.equals(type)){
 					handleChannelDisconnect(channel);
-				}else{
+				}else if(ACKHandlerType.SEND_MESSAGE.equals(type)){
 					freeChannels.add(channel);
-				}
-				
+				}				
 			}
 		});	
 		

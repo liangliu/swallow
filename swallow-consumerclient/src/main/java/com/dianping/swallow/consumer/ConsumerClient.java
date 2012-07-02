@@ -37,6 +37,8 @@ public class ConsumerClient {
 	private InetSocketAddress slaveAddress;
 	
 	private Boolean needClose = Boolean.FALSE;
+	//consumerClient默认是1个线程处理，如需线程池处理，则另外设置线程数目。
+	private int threadCount = 1;
 			
 	public Boolean getNeedClose() {
 		return needClose;
@@ -82,7 +84,15 @@ public class ConsumerClient {
 		this.listener = listener;
 	}
 
-	public ConsumerClient(String cid, Destination dest, String swallowCAddress){
+	public int getThreadCount() {
+      return threadCount;
+   }
+
+   public void setThreadCount(int threadCount) {
+      this.threadCount = threadCount;
+   }
+
+   public ConsumerClient(String cid, Destination dest, String swallowCAddress){
 		this.consumerId = cid;
 		this.dest = dest;
 		string2Address(swallowCAddress);
