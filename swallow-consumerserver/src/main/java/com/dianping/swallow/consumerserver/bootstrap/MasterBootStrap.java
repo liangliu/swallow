@@ -11,8 +11,6 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
-import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
-import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -42,7 +40,7 @@ public class MasterBootStrap {
 		try {
 			Thread.sleep(200);//TODO 主机启动的时候睡眠一会，给时间给slave关闭。
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+		   // TODO 使用LOG
 			e.printStackTrace();
 		}
 		
@@ -55,7 +53,7 @@ public class MasterBootStrap {
 				try {
 					consumerWorkerManager.close();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
+					//  TODO 使用LOG
 					e.printStackTrace();
 				}
 			}

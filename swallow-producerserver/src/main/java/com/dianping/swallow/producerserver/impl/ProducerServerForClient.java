@@ -20,11 +20,12 @@ import com.dianping.swallow.producerserver.util.SHAGenerater;
 
 public class ProducerServerForClient implements MQService {
 
-   private static final Logger logger           = Logger.getLogger(ProducerServerForClient.class);
-   private static final int    DEFAULT_PORT     = 4000;
-   public static final String  producerServerIP = IPUtil.getFirstNoLoopbackIP4Address();
+   private static final Logger logger             = Logger.getLogger(ProducerServerForClient.class);
+   private static final int    DEFAULT_PORT       = 4000;
+   public static final String  producerServerIP   = IPUtil.getFirstNoLoopbackIP4Address();
 
-   private int                 port             = DEFAULT_PORT;
+   private int                 port               = DEFAULT_PORT;
+   private long                receivedMessageNum = 0;
    private MessageDAO          messageDAO;
 
    /**
@@ -42,9 +43,9 @@ public class ProducerServerForClient implements MQService {
          services.put("remoteService", this);
          remoteService.setServices(services);
          remoteService.init();
-         logger.info("[ProducerServerForClient]:[Initialize pigeon sucessfully.]");
+         logger.info("[Initialize pigeon sucessfully, Producer service for client is ready.]");
       } catch (Exception e) {
-         logger.error("[ProducerServerForClient]:[Initialize pigeon failed.]", e);
+         logger.error("[Initialize pigeon failed.]", e);
          throw new RemoteServiceInitFailedException();
       }
    }
@@ -62,8 +63,8 @@ public class ProducerServerForClient implements MQService {
       String sha1;
       switch (pkt.getPacketType()) {
          case PRODUCER_GREET:
-            logger.info("[ProducerServerForClient]:[Got Greet][From=" + ((PktProducerGreet) pkt).getProducerIP()
-                  + "][Version=" + ((PktProducerGreet) pkt).getProducerVersion() + "]");
+            logger.info("[Got Greet][From=" + ((PktProducerGreet) pkt).getProducerIP() + "][Version="
+                  + ((PktProducerGreet) pkt).getProducerVersion() + "]");
             //返回ProducerServer地址
             pktRet = new PktSwallowPACK(producerServerIP);
             break;
@@ -79,12 +80,15 @@ public class ProducerServerForClient implements MQService {
             try {
                messageDAO.saveMessage(topicName, swallowMessage);
             } catch (Exception e) {
-               logger.error("[ProducerServerForClient]:[Save message to DB failed.]", e);
+               logger.error("[Save message to DB failed.]", e);
                throw new ServerDaoException();
+            }
+            if (logger.isDebugEnabled()) {
+               logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getContent() + "]");
             }
             break;
          default:
-            logger.warn("[ProducerServerForClient]:[Received unrecognized packet.]");
+            logger.warn("[Received unrecognized packet.]");
             break;
       }
       return pktRet;

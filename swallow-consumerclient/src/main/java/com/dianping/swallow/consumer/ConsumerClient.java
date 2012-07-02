@@ -106,7 +106,7 @@ public class ConsumerClient {
 	   		try {
 				Thread.sleep(1000);//TODO 配置变量
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+				// TODO 使用LOG
 				e.printStackTrace();
 			}
 	   	}	

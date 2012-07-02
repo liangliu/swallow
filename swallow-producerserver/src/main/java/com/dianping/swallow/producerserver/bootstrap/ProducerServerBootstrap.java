@@ -24,12 +24,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class ProducerServerBootstrap {
    public static void main(String[] args) {
-//      try {
-         new ClassPathXmlApplicationContext("producerServer.xml");
-//      }catch (RemoteServiceInitFailedException e){
-//         System.out.println(e.toString());
-//      }catch (ServerDaoException e) {
-//         System.out.println(e.toString());
-//      }
+      new ClassPathXmlApplicationContext("producerServer.xml");
    }
 }

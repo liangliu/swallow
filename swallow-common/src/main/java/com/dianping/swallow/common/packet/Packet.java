@@ -23,7 +23,8 @@ import java.io.Serializable;
  *
  */
 public abstract class Packet implements Serializable{
-	private PacketType packetType;
+   private static final long serialVersionUID = 3871861235495404121L;
+   private PacketType packetType;
 	public void setPacketType(PacketType packetType){
 		this.packetType = packetType;
 	}

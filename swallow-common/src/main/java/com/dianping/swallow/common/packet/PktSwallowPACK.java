@@ -16,12 +16,12 @@
 package com.dianping.swallow.common.packet;
 
 /**
- * TODO Comment of PktSwallowPACK
  * @author tong.song
  *
  */
 public final class PktSwallowPACK extends Packet {
-	private String shaInfo;
+   private static final long serialVersionUID = 8499019906854672907L;
+   private String shaInfo;
 
 	public PktSwallowPACK(String shaInfo){
 		this.setPacketType(PacketType.SWALLOW_P_ACK);
@@ -35,7 +35,6 @@ public final class PktSwallowPACK extends Packet {
 	}
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
 		return shaInfo;
 	}
 }

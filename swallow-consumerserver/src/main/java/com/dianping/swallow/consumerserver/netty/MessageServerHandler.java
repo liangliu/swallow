@@ -20,6 +20,7 @@ import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
 
 
+@SuppressWarnings("deprecation")
 @ChannelPipelineCoverage("all")
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 	

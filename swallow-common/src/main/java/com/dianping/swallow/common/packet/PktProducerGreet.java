@@ -23,7 +23,8 @@ package com.dianping.swallow.common.packet;
  *
  */
 public final class PktProducerGreet extends Packet {
-	private String version;
+   private static final long serialVersionUID = 3904928996496374432L;
+   private String version;
 	private String producerIP;
 	public PktProducerGreet(){
 	   

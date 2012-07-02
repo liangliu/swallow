@@ -3,6 +3,7 @@ package com.dianping.swallow.common.dao.impl.mongodb;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -324,7 +325,11 @@ public class MongoClient implements ConfigChange {
       value = value.trim();
       try {
          if (this.severURILionKey.equals(key)) {
+            Map<String, Mongo> oldTopicNameToMongoMap = this.topicNameToMongoMap;
             this.topicNameToMongoMap = parseURIAndCreateTopicMongo(value);
+            //Mongo可能有更新，所以需要关闭旧的不再使用的Mongo
+            Thread.sleep(2000);//DAO可能正在使用旧的Mongo，故等候2秒，才执行关闭操作
+            closeUnuseMongo(oldTopicNameToMongoMap.values(), this.topicNameToMongoMap.values(), this.heartbeatMongo);
          } else if (LION_KEY_MSG_CAPPED_COLLECTION_SIZE.equals(key)) {
             this.msgTopicNameToSizes = parseSizeOrDocNum(value);
          } else if (LION_KEY_MSG_CAPPED_COLLECTION_MAX_DOC_NUM.equals(key)) {
@@ -334,7 +339,11 @@ public class MongoClient implements ConfigChange {
          } else if (LION_KEY_ACK_CAPPED_COLLECTION_MAX_DOC_NUM.equals(key)) {
             this.ackTopicNameToMaxDocNums = parseSizeOrDocNum(value);
          } else if (LION_KEY_HEARTBEAT_SERVER_URI.equals(key)) {
+            Mongo oldMongo = this.heartbeatMongo;
             this.heartbeatMongo = parseURIAndCreateHeartbeatMongo(value);
+            //Mongo可能有更新，所以需要关闭旧的不再使用的Mongo
+            Thread.sleep(2000);//DAO可能正在使用旧的Mongo，故等候2秒，才执行关闭操作
+            closeUnuseMongo(oldMongo, this.topicNameToMongoMap.values(), this.heartbeatMongo);
          } else if (LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE.equals(key)) {
             this.heartbeatCappedCollectionSize = Integer.parseInt(value);
             if (LOG.isInfoEnabled()) {
@@ -348,6 +357,32 @@ public class MongoClient implements ConfigChange {
          }
       } catch (Exception e) {
          LOG.error("Error occour when reset config from Lion, no config property would changed :" + e.getMessage(), e);
+      }
+   }
+
+   /**
+    * 关闭无用的Mongo实例
+    */
+   private void closeUnuseMongo(Collection<Mongo> oldMongos, Collection<Mongo> curMongos, Mongo curMongo) {
+      // 找到无用的Mongo：oldTopicNameToMongoMap.values - topicNameToMongoMap.values
+      oldMongos.removeAll(curMongos);
+      oldMongos.remove(curMongo);
+      //close所有unuse的mongo
+      for (Mongo unuseMongo : oldMongos) {
+         if (unuseMongo != null) {
+            unuseMongo.close();
+            LOG.info("Close unuse Mongo: " + unuseMongo);
+         }
+      }
+   }
+
+   /**
+    * 关闭无用的Mongo实例
+    */
+   private void closeUnuseMongo(Mongo oldMongo, Collection<Mongo> curMongos, Mongo curMongo) {
+      if (!curMongos.contains(oldMongo) && oldMongo != curMongo) {
+         oldMongo.close();
+         LOG.info("Close unuse Mongo: " + oldMongo);
       }
    }
 

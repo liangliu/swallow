@@ -41,7 +41,7 @@ public class ConSlaveThread implements Runnable {
 				Thread.sleep(connectInterval);
 			}
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+		   //TODO 使用LOG
 			e.printStackTrace();
 		}
 	}

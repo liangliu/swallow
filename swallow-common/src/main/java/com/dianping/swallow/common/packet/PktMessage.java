@@ -5,6 +5,7 @@ import com.dianping.swallow.common.message.SwallowMessage;
 
 public class PktMessage extends Packet implements Message{
 
+   private static final long serialVersionUID = 2189810352053398027L;
    private SwallowMessage content;
 	private Destination dest;
 	
@@ -21,13 +22,11 @@ public class PktMessage extends Packet implements Message{
 	
 	@Override
 	public SwallowMessage getContent() {
-		// TODO Auto-generated method stub
 		return content;
 	}
 
 	@Override
 	public Destination getDestination() {
-		// TODO Auto-generated method stub
 		return dest;
 	}
 }

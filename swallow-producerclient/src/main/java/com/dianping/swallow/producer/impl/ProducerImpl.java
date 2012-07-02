@@ -1,5 +1,6 @@
 package com.dianping.swallow.producer.impl;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
 
@@ -17,6 +18,7 @@ import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownExceptio
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.common.util.IPUtil;
+import com.dianping.swallow.common.util.ZIPUtil;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
@@ -162,10 +164,20 @@ public class ProducerImpl implements Producer {
       swallowMsg.setVersion(producerVersion);
       swallowMsg.setGeneratedTime(new Date());
       swallowMsg.setSourceIp(producerIP);
-      if (properties != null)
-         swallowMsg.setProperties(properties);
       if (messageType != null)
          swallowMsg.setType(messageType);
+      if (properties != null) {
+         //如果需要压缩内容，properties设置zip=true
+         if (properties.get("zip").equals("true")) {
+            try {
+               swallowMsg.setContent(ZIPUtil.zip(swallowMsg.getContent()));
+            } catch (IOException e) {
+               logger.error("[Compress message failed.]", e);
+               properties.put("zip", "false");
+            }
+         }
+         swallowMsg.setProperties(properties);
+      }
 
       //构造packet
       PktMessage pktMessage = new PktMessage(destination, swallowMsg);
@@ -244,5 +256,23 @@ public class ProducerImpl implements Producer {
     */
    public int getRetryTimes() {
       return retryTimes;
+   }
+   public static void main(String[] args) throws IOException {
+      String str = "";
+      for(int i = 0; i < 100000; i++){
+         str += "!@#$ ASDF ";
+      }
+      SwallowMessage sm = new SwallowMessage();
+      sm.setContent(str);
+//      System.out.println("source string: " + sm.getContent());
+      long begin = System.currentTimeMillis();
+      sm.setContent(ZIPUtil.zip(sm.getContent()));
+      System.out.println("zip cost: " + (System.currentTimeMillis() - begin));
+      System.out.println("ziped string length: " + sm.getContent().length());
+      begin = System.currentTimeMillis();
+      sm.setContent(ZIPUtil.unzip(sm.getContent()));
+      System.out.println("uzip cost: " + (System.currentTimeMillis() - begin));
+//      System.out.println("unziped string: " + sm.getContent());
+      System.out.println("if equal: " + str.equals(sm.getContent()));
    }
 }

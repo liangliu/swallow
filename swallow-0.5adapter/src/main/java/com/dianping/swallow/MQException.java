@@ -21,7 +21,9 @@ package com.dianping.swallow;
  */
 public class MQException extends Exception {
 
-	public MQException() {
+   private static final long serialVersionUID = 1005746850003686607L;
+
+   public MQException() {
 		super();
 	}
 
