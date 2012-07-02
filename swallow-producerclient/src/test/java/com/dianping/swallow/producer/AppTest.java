@@ -53,8 +53,8 @@ public class AppTest extends TestCase {
       @Override
       public void run() {
          Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
-         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-         pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 10);
+         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
+         pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
          pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
          pOptions.put(ProducerOptionKey.ASYNC_RETRY_TIMES, 5);
 
@@ -68,18 +68,17 @@ public class AppTest extends TestCase {
          long begin = System.currentTimeMillis();
          try {
             int idx = 0;
-            //            for (int i = 0; i < 1000; i++) {
-            while (true) {
+                        for (int i = 0; i < 10000; i++) {
+//            while (true) {
                //			content += i++;
                str = ps.sendMessage("______[" + (idx++) + "]["+ message + "]");
                //               sumTime += (end - begin);
-               try {
-                  Thread.sleep(100);
-               } catch (Exception e) {
-                  // 
-               }
-               System.out.println(idx);
-               System.out.println(str);
+//               try {
+//                  Thread.sleep(1000);
+//               } catch (Exception e) {
+//                  // 
+//               }
+//               System.out.println(idx + ": " + str);
             }
          } catch (Exception e1) {
             System.out.println(e1.toString());

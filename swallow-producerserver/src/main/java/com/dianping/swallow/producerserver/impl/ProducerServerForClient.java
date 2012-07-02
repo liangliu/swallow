@@ -83,7 +83,9 @@ public class ProducerServerForClient implements MQService {
                logger.error("[Save message to DB failed.]", e);
                throw new ServerDaoException();
             }
-            logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getContent() + "]");
+            if (logger.isDebugEnabled()) {
+               logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getContent() + "]");
+            }
             break;
          default:
             logger.warn("[Received unrecognized packet.]");

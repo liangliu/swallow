@@ -82,7 +82,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
          logger.info("[ProducerFactoryImpl]:[Initialize pigeon successfully.]");
 
          remoteService = (MQService) pigeon.getProxy();
-         logger.info("[ProducerFactoryImpl]:[Get remoteService successfully.] : [" + "RemoteService's timeout is: "
+         logger.info("[ProducerFactoryImpl]:[Get remoteService successfully.]:[" + "RemoteService's timeout is: "
                + remoteServiceTimeout + ".]");
       } catch (Exception e) {
          logger.error("[ProducerFactoryImpl]:[Initialize remote service failed.]", e);

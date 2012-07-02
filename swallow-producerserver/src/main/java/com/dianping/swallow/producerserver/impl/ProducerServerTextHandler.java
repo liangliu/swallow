@@ -24,6 +24,9 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    private static final int    SAVE_FAILED        = 252;
 
    private static final Logger logger             = Logger.getLogger(ProducerServerForText.class);
+   
+   private long                receivedMessageNum = 0;
+
 
    /**
     * 构造函数
@@ -52,9 +55,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
       //获取TextObject
       TextObject textObject = (TextObject) e.getMessage();
-      if (logger.isDebugEnabled()) {
-         logger.debug("[Message=" + textObject + "]");
-      }
+      //获取sourceIP
       String sourceIp = e.getChannel().getRemoteAddress().toString();
       //生成SwallowMessage
       SwallowMessage swallowMessage = new SwallowMessage();
@@ -62,6 +63,11 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       swallowMessage.setGeneratedTime(new Date());
       swallowMessage.setSha1(SHAGenerater.generateSHA(swallowMessage.getContent()));
       swallowMessage.setSourceIp(sourceIp.substring(sourceIp.indexOf("/") + 1, sourceIp.indexOf(":")));
+      
+      if (logger.isDebugEnabled()) {
+         logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getContent() + "]");
+      }
+
       //初始化ACK对象
       TextACK textAck = new TextACK();
       textAck.setStatus(OK);

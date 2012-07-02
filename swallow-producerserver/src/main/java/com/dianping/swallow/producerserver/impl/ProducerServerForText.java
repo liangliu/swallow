@@ -14,7 +14,6 @@ public class ProducerServerForText {
    private int                 port         = DEFAULT_PORT;
    private static final Logger logger       = Logger.getLogger(ProducerServerForText.class);
    private MessageDAO          messageDAO;
-   private long receivedMessageNum = 0;
 
    public void start() {
       ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
