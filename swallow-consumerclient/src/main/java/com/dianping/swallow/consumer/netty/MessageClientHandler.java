@@ -19,8 +19,8 @@ import com.dianping.swallow.consumer.ConsumerClient;
 
 public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
-   private static final Logger logger = LoggerFactory.getLogger(MessageClientHandler.class.getName());
-
+   private static final Logger LOG = LoggerFactory.getLogger(MessageClientHandler.class);
+   
    private ConsumerClient      cClient;
 
    private PktConsumerMessage  consumermessage;
@@ -59,7 +59,12 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
             Long messageId = swallowMessage.getMessageId();
             PktConsumerMessage consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, messageId,
                   cClient.getNeedClose());
-            cClient.getListener().onMessage(swallowMessage);
+            try{
+               cClient.getListener().onMessage(swallowMessage);
+            } catch(Exception e1){
+               LOG.error("deal with message error!",e1);
+            }
+            
             e.getChannel().write(consumermessage);
          }
       };
@@ -70,7 +75,8 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
       // Close the connection when an exception is raised.
-      logger.error("exception caught, disconnect", e.getCause());
+      
+      LOG.error("exception caught, disconnect from swallowC", e.getCause());
       e.getChannel().close();
    }
 }

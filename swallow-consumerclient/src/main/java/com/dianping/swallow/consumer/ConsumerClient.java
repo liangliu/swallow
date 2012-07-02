@@ -11,6 +11,8 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
@@ -22,23 +24,25 @@ import com.dianping.swallow.consumer.netty.MessageClientHandler;
 
 public class ConsumerClient {
 
-   private String            consumerId;
+   private static final Logger LOG         = LoggerFactory.getLogger(ConsumerClient.class);
+   
+   private String              consumerId;
 
-   private Destination       dest;
+   private Destination         dest;
 
-   private ClientBootstrap   bootstrap;
+   private ClientBootstrap     bootstrap;
 
-   private MessageListener   listener;
+   private MessageListener     listener;
 
-   private ConsumerType      consumerType;
+   private ConsumerType        consumerType;
 
-   private InetSocketAddress masterAddress;
+   private InetSocketAddress   masterAddress;
 
-   private InetSocketAddress slaveAddress;
+   private InetSocketAddress   slaveAddress;
 
-   private Boolean           needClose   = Boolean.FALSE;
+   private Boolean             needClose   = Boolean.FALSE;
    //consumerClient默认是1个线程处理，如需线程池处理，则另外设置线程数目。
-   private int               threadCount = 1;
+   private int                 threadCount = 1;
 
    public Boolean getNeedClose() {
       return needClose;
@@ -116,8 +120,7 @@ public class ConsumerClient {
          try {
             Thread.sleep(1000);//TODO 配置变量
          } catch (InterruptedException e) {
-            // TODO 使用LOG
-            e.printStackTrace();
+            LOG.error("thread InterruptedException", e);
          }
       }
    }

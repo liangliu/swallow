@@ -1,13 +1,7 @@
 package com.dianping.swallow.consumer;
 
-import org.jboss.netty.channel.MessageEvent;
-
-import com.dianping.swallow.common.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.packet.PktConsumerMessage;
-import com.dianping.swallow.common.packet.PktMessage;
 
 public class TestConsumer {
 

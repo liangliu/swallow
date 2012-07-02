@@ -4,9 +4,13 @@ import java.net.InetSocketAddress;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConSlaveThread implements Runnable {
 
+   private static final Logger LOG = LoggerFactory.getLogger(ConSlaveThread.class);
+   
    private ClientBootstrap   bootstrap;
 
    private InetSocketAddress slaveAddress;
@@ -39,8 +43,7 @@ public class ConSlaveThread implements Runnable {
             Thread.sleep(connectInterval);
          }
       } catch (InterruptedException e) {
-         //TODO 使用LOG
-         e.printStackTrace();
+         LOG.error("thread InterruptedException", e);
       }
    }
 }
