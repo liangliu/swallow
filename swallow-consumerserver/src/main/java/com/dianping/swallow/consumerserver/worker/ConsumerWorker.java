@@ -4,13 +4,15 @@ import java.io.Closeable;
 
 import org.jboss.netty.channel.Channel;
 
+import com.dianping.swallow.common.consumer.ACKHandlerType;
+
 public interface ConsumerWorker extends Closeable {
 
-	public void handleGreet(Channel channel);
+   public void handleGreet(Channel channel);
 
-	public void handleAck(Channel channel, Long ackedMsgId, boolean needClose);
+   public void handleAck(Channel channel, Long ackedMsgId, ACKHandlerType type);
 
-	public void handleChannelDisconnect(Channel channel);
+   public void handleChannelDisconnect(Channel channel);
 
-	public void sendMessageByPollFreeChannelQueue();
+   public void sendMessageByPollFreeChannelQueue();
 }
