@@ -3,6 +3,9 @@ package com.dianping.swallow.consumer.netty;
 
 
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
@@ -26,8 +29,12 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
     
     private PktConsumerMessage consumermessage;
     
+    private ExecutorService service;
+    
     public MessageClientHandler(ConsumerClient cClient){
     	this.cClient = cClient;
+    	service = Executors.newFixedThreadPool(cClient.getThreadCount());
+    	
     }
     @Override
     public void channelConnected(
@@ -47,10 +54,20 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
  
     @Override
     public void messageReceived(
-            ChannelHandlerContext ctx, MessageEvent e) {
-       
-    	cClient.getListener().onMessage(e);
-    	
+            ChannelHandlerContext ctx, final MessageEvent e) {
+       Runnable task = new Runnable() {
+         
+         @Override
+         public void run() {    
+           SwallowMessage swallowMessage = (SwallowMessage)((PktMessage)e.getMessage()).getContent();
+           Long messageId = swallowMessage.getMessageId();     
+           PktConsumerMessage consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK ,messageId, cClient.getNeedClose());
+           cClient.getListener().onMessage(swallowMessage);
+           e.getChannel().write(consumermessage);            
+         }
+      };
+      
+      service.submit(task);    	
     }
  
     @Override

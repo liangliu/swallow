@@ -1,6 +1,6 @@
 package com.dianping.swallow.consumer;
 
-import org.jboss.netty.channel.MessageEvent;
+import com.dianping.swallow.common.message.SwallowMessage;
 
 
 
@@ -11,6 +11,6 @@ public interface MessageListener {
 	 * 
 	 * @param msg
 	 */
-	void onMessage(MessageEvent e);
+	void onMessage(SwallowMessage msg);
 
 }
