@@ -22,8 +22,8 @@ public class TestConsumerWithThreadPool {
          @Override
          public void onMessage(SwallowMessage swallowMessage) {
             //用户得到SwallowMessage
- 
-	        System.out.println(swallowMessage.getMessageId() + ":" + swallowMessage.getContent());
+
+            System.out.println(swallowMessage.getMessageId() + ":" + swallowMessage.getContent());
          }
 
       });

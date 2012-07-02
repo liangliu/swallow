@@ -26,7 +26,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    private ConsumerWorkerManager workerManager;
 
    private ConsumerId            consumerId;
-   
+
    private ConsumerInfo          consumerInfo;
 
    private int                   clientThreadCount = 1;
@@ -66,8 +66,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
                workerManager.handleAck(channel, consumerInfo, consumerPacket.getMessageId(),
                      ACKHandlerType.CLOSE_CHANNEL);
             } else if (readyClose && clientThreadCount > 0) {
-               workerManager.handleAck(channel, consumerInfo, consumerPacket.getMessageId(),
-                     ACKHandlerType.NO_SEND);
+               workerManager.handleAck(channel, consumerInfo, consumerPacket.getMessageId(), ACKHandlerType.NO_SEND);
             } else if (!readyClose) {
                workerManager.handleAck(channel, consumerInfo, consumerPacket.getMessageId(),
                      ACKHandlerType.SEND_MESSAGE);

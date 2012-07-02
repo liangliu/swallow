@@ -22,69 +22,69 @@ import com.dianping.swallow.consumer.netty.MessageClientHandler;
 
 public class ConsumerClient {
 
-	private String consumerId;
-	
-	private Destination dest;
-	
-	private ClientBootstrap bootstrap;
-	
-	private MessageListener listener;
-	
-	private ConsumerType consumerType;
-	
-	private InetSocketAddress masterAddress;
-	
-	private InetSocketAddress slaveAddress;
-	
-	private Boolean needClose = Boolean.FALSE;
-	//consumerClient默认是1个线程处理，如需线程池处理，则另外设置线程数目。
-	private int threadCount = 1;
-			
-	public Boolean getNeedClose() {
-		return needClose;
-	}
+   private String            consumerId;
 
-	public void setNeedClose(Boolean needClose) {
-		this.needClose = needClose;
-	}
+   private Destination       dest;
 
-	public ConsumerType getConsumerType() {
-		return consumerType;
-	}
+   private ClientBootstrap   bootstrap;
 
-	public void setConsumerType(ConsumerType consumerType) {
-		this.consumerType = consumerType;
-	}
+   private MessageListener   listener;
 
-	public ClientBootstrap getBootstrap() {
-		return bootstrap;
-	}
+   private ConsumerType      consumerType;
 
-	public String getConsumerId() {
-		return consumerId;
-	}
+   private InetSocketAddress masterAddress;
 
-	public void setConsumerId(String consumerId) {
-		this.consumerId = consumerId;
-	}
+   private InetSocketAddress slaveAddress;
 
-	public Destination getDest() {
-		return dest;
-	}
+   private Boolean           needClose   = Boolean.FALSE;
+   //consumerClient默认是1个线程处理，如需线程池处理，则另外设置线程数目。
+   private int               threadCount = 1;
 
-	public void setDest(Destination dest) {
-		this.dest = dest;
-	}
+   public Boolean getNeedClose() {
+      return needClose;
+   }
 
-	public MessageListener getListener() {
-		return listener;
-	}
+   public void setNeedClose(Boolean needClose) {
+      this.needClose = needClose;
+   }
 
-	public void setListener(MessageListener listener) {
-		this.listener = listener;
-	}
+   public ConsumerType getConsumerType() {
+      return consumerType;
+   }
 
-	public int getThreadCount() {
+   public void setConsumerType(ConsumerType consumerType) {
+      this.consumerType = consumerType;
+   }
+
+   public ClientBootstrap getBootstrap() {
+      return bootstrap;
+   }
+
+   public String getConsumerId() {
+      return consumerId;
+   }
+
+   public void setConsumerId(String consumerId) {
+      this.consumerId = consumerId;
+   }
+
+   public Destination getDest() {
+      return dest;
+   }
+
+   public void setDest(Destination dest) {
+      this.dest = dest;
+   }
+
+   public MessageListener getListener() {
+      return listener;
+   }
+
+   public void setListener(MessageListener listener) {
+      this.listener = listener;
+   }
+
+   public int getThreadCount() {
       return threadCount;
    }
 
@@ -92,66 +92,64 @@ public class ConsumerClient {
       this.threadCount = threadCount;
    }
 
-   public ConsumerClient(String cid, Destination dest, String swallowCAddress){
-		this.consumerId = cid;
-		this.dest = dest;
-		string2Address(swallowCAddress);
-	}
-	
-	/**
-	 * 开始连接服务器，同时把连slave的线程启起来。
-	 */
-	public void beginConnect(){
-		init();
-	   	ConSlaveThread slave = new ConSlaveThread();
-    	slave.setBootstrap(bootstrap);
-    	slave.setSlaveAddress(slaveAddress);
-	   	Thread slaveThread = new Thread(slave);
-	   	slaveThread.start();
-	   	while(true){
-	   		synchronized(bootstrap){
-		   		ChannelFuture future = bootstrap.connect(masterAddress);
-		   		future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞!	
-		   	}
-	   		try {
-				Thread.sleep(1000);//TODO 配置变量
-			} catch (InterruptedException e) {
-				// TODO 使用LOG
-				e.printStackTrace();
-			}
-	   	}	
-	}
-	
-	//连接swollowC，获得bootstrap
-    public void init(){
-    	bootstrap = new ClientBootstrap(
-                new NioClientSocketChannelFactory(
-                        Executors.newCachedThreadPool(),
-                        Executors.newCachedThreadPool()));
-    	final ConsumerClient cc = this;
-        bootstrap.setPipelineFactory(new ChannelPipelineFactory() {  
-            @Override  
-            public ChannelPipeline getPipeline() throws Exception {  
-            	MessageClientHandler handler = new MessageClientHandler(cc);
-            	ChannelPipeline pipeline = Channels.pipeline();
-	            pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
-	            pipeline.addLast("jsonDecoder", new JsonDecoder(PktMessage.class));
-	            pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
-	            pipeline.addLast("jsonEncoder", new JsonEncoder(PktConsumerMessage.class));
-	            pipeline.addLast("handler", handler);
-	            return pipeline;  
-            }  
-        }); 
-    }
-    
-    private void string2Address(String swallowCAddress){
-    	String[] ipAndPorts = swallowCAddress.split(",");
-    	String masterIp = ipAndPorts[0].split(":")[0];
-    	int masterPort = Integer.parseInt(ipAndPorts[0].split(":")[1]);
-    	String slaveIp = ipAndPorts[1].split(":")[0];
-    	int slavePort = Integer.parseInt(ipAndPorts[1].split(":")[1]);
-    	masterAddress = new InetSocketAddress(masterIp, masterPort);
-    	slaveAddress = new InetSocketAddress(slaveIp, slavePort);
-    	
-    }
+   public ConsumerClient(String cid, Destination dest, String swallowCAddress) {
+      this.consumerId = cid;
+      this.dest = dest;
+      string2Address(swallowCAddress);
+   }
+
+   /**
+    * 开始连接服务器，同时把连slave的线程启起来。
+    */
+   public void beginConnect() {
+      init();
+      ConSlaveThread slave = new ConSlaveThread();
+      slave.setBootstrap(bootstrap);
+      slave.setSlaveAddress(slaveAddress);
+      Thread slaveThread = new Thread(slave);
+      slaveThread.start();
+      while (true) {
+         synchronized (bootstrap) {
+            ChannelFuture future = bootstrap.connect(masterAddress);
+            future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞!	
+         }
+         try {
+            Thread.sleep(1000);//TODO 配置变量
+         } catch (InterruptedException e) {
+            // TODO 使用LOG
+            e.printStackTrace();
+         }
+      }
+   }
+
+   //连接swollowC，获得bootstrap
+   public void init() {
+      bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(),
+            Executors.newCachedThreadPool()));
+      final ConsumerClient cc = this;
+      bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+         @Override
+         public ChannelPipeline getPipeline() throws Exception {
+            MessageClientHandler handler = new MessageClientHandler(cc);
+            ChannelPipeline pipeline = Channels.pipeline();
+            pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
+            pipeline.addLast("jsonDecoder", new JsonDecoder(PktMessage.class));
+            pipeline.addLast("frameEncoder", new LengthFieldPrepender(4));
+            pipeline.addLast("jsonEncoder", new JsonEncoder(PktConsumerMessage.class));
+            pipeline.addLast("handler", handler);
+            return pipeline;
+         }
+      });
+   }
+
+   private void string2Address(String swallowCAddress) {
+      String[] ipAndPorts = swallowCAddress.split(",");
+      String masterIp = ipAndPorts[0].split(":")[0];
+      int masterPort = Integer.parseInt(ipAndPorts[0].split(":")[1]);
+      String slaveIp = ipAndPorts[1].split(":")[0];
+      int slavePort = Integer.parseInt(ipAndPorts[1].split(":")[1]);
+      masterAddress = new InetSocketAddress(masterIp, masterPort);
+      slaveAddress = new InetSocketAddress(slaveIp, slavePort);
+
+   }
 }
