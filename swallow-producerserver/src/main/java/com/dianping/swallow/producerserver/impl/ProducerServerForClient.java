@@ -84,7 +84,8 @@ public class ProducerServerForClient implements MQService {
                throw new ServerDaoException();
             }
             if (logger.isDebugEnabled()) {
-               logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getContent() + "]");
+//               logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getContent() + "]");
+               logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getSha1() + "]");
             }
             break;
          default:

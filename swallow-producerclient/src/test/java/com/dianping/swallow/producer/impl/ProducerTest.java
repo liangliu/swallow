@@ -23,8 +23,12 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.dianping.swallow.common.producer.MQService;
+import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
+import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
+
+import static org.mockito.Mockito.*;
 
 /**
  * Producer的单元测试，包含了对ProducerFactory和ProducerImpl类的测试
@@ -48,6 +52,18 @@ public class ProducerTest {
       //设置Producer选项
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
+      try {
+         producerFactory.getProducer("Hello", pOptions);
+         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
+         pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
+         pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 10);
+         pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
+         producerFactory.getProducer("H:ello", pOptions);
+      } catch (TopicNameInvalidException e) {
+         e.printStackTrace();
+      } catch (RemoteServiceDownException e) {
+         e.printStackTrace();
+      }
 
       Assert.assertNotNull(producerFactory);
    }
@@ -102,5 +118,10 @@ public class ProducerTest {
       Assert.assertEquals(false, producer.isContinueSend());
 
       Assert.assertEquals("0.6.0", producer.getProducerVersion());
+   }
+   
+   @Test
+   public void testMockito(){
+      MQService mockMQService = mock(MQService.class);
    }
 }

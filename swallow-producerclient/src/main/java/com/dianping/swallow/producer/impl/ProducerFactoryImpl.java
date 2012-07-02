@@ -79,13 +79,13 @@ public class ProducerFactoryImpl implements ProducerFactory {
       MQService remoteService = null;
       try {
          pigeon.init();
-         logger.info("[ProducerFactoryImpl]:[Initialize pigeon successfully.]");
+         logger.info("[Initialize pigeon successfully.]");
 
          remoteService = (MQService) pigeon.getProxy();
-         logger.info("[ProducerFactoryImpl]:[Get remoteService successfully.]:[" + "RemoteService's timeout is: "
+         logger.info("[Get remoteService successfully.]:[" + "RemoteService's timeout is: "
                + remoteServiceTimeout + ".]");
       } catch (Exception e) {
-         logger.error("[ProducerFactoryImpl]:[Initialize remote service failed.]", e);
+         logger.error("[Initialize remote service failed.]", e);
          throw new RemoteServiceInitFailedException();
       }
       return remoteService;
@@ -143,7 +143,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
       ProducerImpl producerImpl = null;
       try {
          producerImpl = new ProducerImpl(remoteService, topicName, pOptions);
-         logger.info("[ProducerFactoryImpl]:[New producer instance was created.]:[topicName="
+         logger.info("[New producer instance was created.]:[topicName="
                + topicName
                + "][ProducerMode="
                + producerImpl.getProducerMode()
@@ -152,14 +152,14 @@ public class ProducerFactoryImpl implements ProducerFactory {
                      + "][IfContinueSend=" + producerImpl.isContinueSend() + "]" : "]"));
       } catch (TopicNameInvalidException e) {
          logger.error(
-               "[ProducerFactoryImpl]:[Can not get producer instance.]:[topicName="
+               "[Can not get producer instance.]:[topicName="
                      + topicName
                      + "][ProducerMode="
                      + pOptions.get(ProducerOptionKey.PRODUCER_MODE)
                      + ((pOptions.get(ProducerOptionKey.PRODUCER_MODE) == ProducerMode.ASYNC_MODE) ? "][ThreadPoolSize="
                            + pOptions.get(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE)
                            + "][RetryTimes="
-                           + pOptions.get(ProducerOptionKey.ASYNC_RETRY_TIMES)
+                           + pOptions.get(ProducerOptionKey.RETRY_TIMES)
                            + "][IfContinueSend="
                            + pOptions.get(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND) + "]"
                            : "]"), e);
