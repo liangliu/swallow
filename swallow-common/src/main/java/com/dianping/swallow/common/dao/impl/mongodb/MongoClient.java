@@ -13,13 +13,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.cat.message.Event;
-import com.dianping.cat.message.internal.DefaultEvent;
 import com.dianping.lion.EnvZooKeeperConfig;
 import com.dianping.lion.client.ConfigCache;
 import com.dianping.lion.client.ConfigChange;
 import com.dianping.lion.client.LionException;
-import com.dianping.swallow.common.cat.CatAdapter;
+import com.dianping.swallow.common.cat.CatMonitorBean;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -29,7 +27,7 @@ import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
-public class MongoClient implements ConfigChange {
+public class MongoClient implements ConfigChange, CatMonitorBean {
 
    private static final Logger           LOG                                              = LoggerFactory
                                                                                                 .getLogger(MongoClient.class);
@@ -157,17 +155,6 @@ public class MongoClient implements ConfigChange {
             this.heartbeatCappedCollectionMaxDocNum = Integer.parseInt(heartbeatCappedCollectionMaxDocNum.trim());
          //添加Lion监听
          cc.addChange(this);
-         //CAT
-         Event event = new DefaultEvent("mongo", "mongo's lion config");
-         event.addData("topicNameToMongoMap", this.topicNameToMongoMap);
-         event.addData("msgTopicNameToSizes", this.msgTopicNameToSizes);
-         event.addData("msgTopicNameToMaxDocNums", this.msgTopicNameToMaxDocNums);
-         event.addData("ackTopicNameToSizes", this.ackTopicNameToSizes);
-         event.addData("ackTopicNameToMaxDocNums", this.ackTopicNameToMaxDocNums);
-         event.addData("heartbeatMongo", this.heartbeatMongo);
-         event.addData("heartbeatCappedCollectionSize", this.heartbeatCappedCollectionSize);
-         event.addData("heartbeatCappedCollectionMaxDocNum", this.heartbeatCappedCollectionMaxDocNum);
-         CatAdapter.logEvent(event);
       } catch (Exception e) {
          throw new IllegalArgumentException("Error Loading Config from Lion : " + e.getMessage(), e);
       }
@@ -369,17 +356,6 @@ public class MongoClient implements ConfigChange {
                LOG.info("parse " + value);
             }
          }
-         //CAT
-         Event event = new DefaultEvent("mongo", "mongo's lion config");
-         event.addData("topicNameToMongoMap", this.topicNameToMongoMap);
-         event.addData("msgTopicNameToSizes", this.msgTopicNameToSizes);
-         event.addData("msgTopicNameToMaxDocNums", this.msgTopicNameToMaxDocNums);
-         event.addData("ackTopicNameToSizes", this.ackTopicNameToSizes);
-         event.addData("ackTopicNameToMaxDocNums", this.ackTopicNameToMaxDocNums);
-         event.addData("heartbeatMongo", this.heartbeatMongo);
-         event.addData("heartbeatCappedCollectionSize", this.heartbeatCappedCollectionSize);
-         event.addData("heartbeatCappedCollectionMaxDocNum", this.heartbeatCappedCollectionMaxDocNum);
-         CatAdapter.logEvent(event);
       } catch (Exception e) {
          LOG.error("Error occour when reset config from Lion, no config property would changed :" + e.getMessage(), e);
       }
@@ -579,6 +555,20 @@ public class MongoClient implements ConfigChange {
          }
       }
       return result;
+   }
+
+   @Override
+   public Map<String, Object> getStatusMap() {
+      Map<String, Object> map = new HashMap<String, Object>();
+      map.put("topicNameToMongoMap", this.topicNameToMongoMap);
+      map.put("msgTopicNameToSizes", this.msgTopicNameToSizes);
+      map.put("msgTopicNameToMaxDocNums", this.msgTopicNameToMaxDocNums);
+      map.put("ackTopicNameToSizes", this.ackTopicNameToSizes);
+      map.put("ackTopicNameToMaxDocNums", this.ackTopicNameToMaxDocNums);
+      map.put("heartbeatMongo", this.heartbeatMongo);
+      map.put("heartbeatCappedCollectionSize", this.heartbeatCappedCollectionSize);
+      map.put("heartbeatCappedCollectionMaxDocNum", this.heartbeatCappedCollectionMaxDocNum);
+      return map;
    }
 
 }

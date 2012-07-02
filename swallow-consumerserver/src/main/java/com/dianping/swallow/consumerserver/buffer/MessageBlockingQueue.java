@@ -1,6 +1,8 @@
 package com.dianping.swallow.consumerserver.buffer;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -10,9 +12,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.swallow.common.cat.CatMonitorBean;
 import com.dianping.swallow.common.message.Message;
 
-public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
+public class MessageBlockingQueue extends LinkedBlockingQueue<Message> implements CatMonitorBean {
 
    private static final long           serialVersionUID = -633276713494338593L;
    private static final Logger         LOG              = LoggerFactory.getLogger(MessageBlockingQueue.class);
@@ -155,7 +158,8 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
                      }
                      tailMessageId = messageId;
                      if (LOG.isDebugEnabled()) {
-                        LOG.debug("add message to (topic=" + topicName + ",cid=" + cid + ") queue:" + message.toString());
+                        LOG.debug("add message to (topic=" + topicName + ",cid=" + cid + ") queue:"
+                              + message.toString());
                      }
                   } catch (InterruptedException e) {
                      this.interrupt();
@@ -169,6 +173,17 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
          LOG.info("retriveMessage() done:" + this.getName());
       }
 
+   }
+
+   @Override
+   public Map<String, Object> getStatusMap() {
+      Map<String, Object> map = new HashMap<String, Object>();
+      map.put("tailMessageId", this.tailMessageId);
+      map.put("messageTypeSet", this.messageTypeSet);
+      map.put("threshold", this.threshold);
+      map.put("size", this.size());
+      map.put("remainingCapacity", this.remainingCapacity());
+      return map;
    }
 
 }

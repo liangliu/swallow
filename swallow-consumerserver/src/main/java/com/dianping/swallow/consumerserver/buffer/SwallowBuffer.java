@@ -2,18 +2,20 @@ package com.dianping.swallow.consumerserver.buffer;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.dianping.cat.message.Event;
-import com.dianping.cat.message.internal.DefaultEvent;
-import com.dianping.swallow.common.cat.CatAdapter;
+import com.dianping.swallow.common.cat.CatMonitorBean;
 import com.dianping.swallow.common.message.Message;
 
-public class SwallowBuffer {
+public class SwallowBuffer implements CatMonitorBean {
    /**
     * 锁是为了防止相同topicName的TopicBuffer被并发创建，所以相同的topicName对应相同的锁。
     * 锁的个数也决定了最多能有多少创建TopicBuffer的并发操作
@@ -109,11 +111,11 @@ public class SwallowBuffer {
       this.messageRetriever = messageRetriever;
    }
 
-   class TopicBuffer {
+   class TopicBuffer implements CatMonitorBean {
 
-      private final String                                                     topicName;
+      private final String                                                   topicName;
 
-      private ConcurrentHashMap<String, SoftReference<BlockingQueue<Message>>> messageQueues = new ConcurrentHashMap<String, SoftReference<BlockingQueue<Message>>>();
+      private ConcurrentHashMap<String, SoftReference<MessageBlockingQueue>> messageQueues = new ConcurrentHashMap<String, SoftReference<MessageBlockingQueue>>();
 
       private TopicBuffer(String topicName) {
          this.topicName = topicName;
@@ -130,7 +132,7 @@ public class SwallowBuffer {
          if (cid == null) {
             throw new IllegalArgumentException("cid is null.");
          }
-         Reference<BlockingQueue<Message>> ref = messageQueues.get(cid);
+         Reference<MessageBlockingQueue> ref = messageQueues.get(cid);
          if (ref == null) {
             return null;
          }
@@ -171,19 +173,31 @@ public class SwallowBuffer {
                   tailMessageId);
          }
          messageBlockingQueue.setMessageRetriever(messageRetriever);
-         messageQueues.put(cid, new SoftReference<BlockingQueue<Message>>(messageBlockingQueue));
-         //CAT
-         Event event = new DefaultEvent("buffer", "create queue in the buffer");
-         event.addData("cid", cid);
-         event.addData("topicName", topicName);
-         event.addData("thresholdOfQueue", thresholdOfQueue);
-         event.addData("capacityOfQueue", capacityOfQueue);
-         event.addData("tailMessageId", tailMessageId);
-         event.addData("messageTypeSet", messageTypeSet);
-         CatAdapter.logEvent(event);
+         messageQueues.put(cid, new SoftReference<MessageBlockingQueue>(messageBlockingQueue));
          return messageBlockingQueue;
       }
 
+      @Override
+      public Map<String, Object> getStatusMap() {
+         Map<String, Object> map = new HashMap<String, Object>();
+         for (Entry<String, SoftReference<MessageBlockingQueue>> entry : messageQueues.entrySet()) {
+            String cid = entry.getKey();
+            Object messageQueue = entry.getValue().get().getStatusMap();
+            map.put(cid, messageQueue);
+         }
+         return map;
+      }
    }
 
+   @Override
+   public Map<String, Object> getStatusMap() {
+      Map<String, Object> map = new HashMap<String, Object>();
+      Collection<TopicBuffer> topicBuffers = this.topicBuffers.values();
+      if (topicBuffers != null) {
+         for (TopicBuffer topicBuffer : topicBuffers) {
+            map.put(topicBuffer.topicName, topicBuffer.getStatusMap());
+         }
+      }
+      return map;
+   }
 }
