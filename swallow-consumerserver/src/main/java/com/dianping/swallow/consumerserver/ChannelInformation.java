@@ -5,41 +5,40 @@ import com.dianping.swallow.common.message.Destination;
 
 public class ChannelInformation {
 
-	private Destination dest;
-	
-	private String consumerId;
-	
-	private ConsumerType consumerType;
+   private Destination  dest;
 
-	public Destination getDest() {
-		return dest;
-	}
+   private String       consumerId;
 
-	public void setDest(Destination dest) {
-		this.dest = dest;
-	}
+   private ConsumerType consumerType;
 
-	public String getConsumerId() {
-		return consumerId;
-	}
+   public Destination getDest() {
+      return dest;
+   }
 
-	public void setConsumerId(String consumerId) {
-		this.consumerId = consumerId;
-	}
+   public void setDest(Destination dest) {
+      this.dest = dest;
+   }
 
-	public ConsumerType getConsumerType() {
-		return consumerType;
-	}
+   public String getConsumerId() {
+      return consumerId;
+   }
 
-	public void setConsumerType(ConsumerType consumerType) {
-		this.consumerType = consumerType;
-	}
+   public void setConsumerId(String consumerId) {
+      this.consumerId = consumerId;
+   }
 
-	public ChannelInformation(Destination dest, String consumerId, ConsumerType consumerType) {
-		this.dest = dest;
-		this.consumerId = consumerId;
-		this.consumerType = consumerType;
-	}
-	
-	
+   public ConsumerType getConsumerType() {
+      return consumerType;
+   }
+
+   public void setConsumerType(ConsumerType consumerType) {
+      this.consumerType = consumerType;
+   }
+
+   public ChannelInformation(Destination dest, String consumerId, ConsumerType consumerType) {
+      this.dest = dest;
+      this.consumerId = consumerId;
+      this.consumerType = consumerType;
+   }
+
 }

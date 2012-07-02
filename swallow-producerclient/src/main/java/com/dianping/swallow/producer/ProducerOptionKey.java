@@ -26,16 +26,15 @@ public enum ProducerOptionKey {
     */
    PRODUCER_MODE,
    /**
+    * 异步模式时，线程池从队列获取并发送消息的失败重试次数
+    */
+   RETRY_TIMES,
+   /**
     * 异步模式时，从队列中获取并发送消息的线程池大小
     */
    ASYNC_THREAD_POOL_SIZE,
    /**
     * 异步模式时，重启Producer是否续接上次的队列，继续发送
     */
-   ASYNC_IS_CONTINUE_SEND,
-   /**
-    * 异步模式时，线程池从队列获取并发送消息的失败重试次数
-    */
-   ASYNC_RETRY_TIMES
-   
+   ASYNC_IS_CONTINUE_SEND
 }
