@@ -40,6 +40,10 @@ public class ConsumerWorkerManager implements CatMonitorBean {
       this.ackDAO = ackDAO;
    }
 
+   public MQThreadFactory getThreadFactory() {
+      return threadFactory;
+   }
+
    public void setHeartbeater(Heartbeater heartbeater) {
       this.heartbeater = heartbeater;
    }
@@ -80,7 +84,7 @@ public class ConsumerWorkerManager implements CatMonitorBean {
       if (consumerWorker == null) {
          synchronized (this) {
             if (consumerWorker == null) {
-               consumerWorker = new ConsumerWorkerImpl(consumerInfo, ackDAO, messageDAO, swallowBuffer, threadFactory);
+               consumerWorker = new ConsumerWorkerImpl(consumerInfo, this);
                consumerId2ConsumerWorker.put(consumerId, consumerWorker);
             }
          }
@@ -144,4 +148,21 @@ public class ConsumerWorkerManager implements CatMonitorBean {
       map.put("consumerIds", this.consumerId2ConsumerWorker.keySet());
       return map;
    }
+   
+   public void workerDone(ConsumerId consumerId) {
+	   consumerId2ConsumerWorker.remove(consumerId);
+   }
+
+	public AckDAO getAckDAO() {
+		return ackDAO;
+	}
+
+	public SwallowBuffer getSwallowBuffer() {
+		return swallowBuffer;
+	}
+
+	public MessageDAO getMessageDAO() {
+		return messageDAO;
+	}
+
 }
