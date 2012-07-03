@@ -11,8 +11,6 @@ public class AckDAOImplTest extends AbstractDAOImplTest {
    @Autowired
    private AckDAOImpl ackDAO;
 
-   private String     consumerId = "consumer1";
-
    @Test
    public void testAdd() {
       //添加一条记录
@@ -20,9 +18,9 @@ public class AckDAOImplTest extends AbstractDAOImplTest {
       int inc = 1;
       BSONTimestamp timestamp = new BSONTimestamp(time, inc);
       Long expectedMessageId = MongoUtils.BSONTimestampToLong(timestamp);
-      ackDAO.add(TOPIC_NAME, consumerId, MongoUtils.BSONTimestampToLong(timestamp));
+      ackDAO.add(TOPIC_NAME, CONSUMER_ID, MongoUtils.BSONTimestampToLong(timestamp));
       //测试
-      Long maxMessageId = ackDAO.getMaxMessageId(TOPIC_NAME, consumerId);
+      Long maxMessageId = ackDAO.getMaxMessageId(TOPIC_NAME, CONSUMER_ID);
       Assert.assertEquals(expectedMessageId, maxMessageId);
    }
 
@@ -33,9 +31,9 @@ public class AckDAOImplTest extends AbstractDAOImplTest {
       int inc = 1;
       BSONTimestamp timestamp = new BSONTimestamp(time, inc);
       Long expectedMessageId = MongoUtils.BSONTimestampToLong(timestamp);
-      ackDAO.add(TOPIC_NAME, consumerId, MongoUtils.BSONTimestampToLong(timestamp));
+      ackDAO.add(TOPIC_NAME, CONSUMER_ID, MongoUtils.BSONTimestampToLong(timestamp));
       //测试
-      Long maxMessageId = ackDAO.getMaxMessageId(TOPIC_NAME, consumerId);
+      Long maxMessageId = ackDAO.getMaxMessageId(TOPIC_NAME, CONSUMER_ID);
       Assert.assertEquals(expectedMessageId, maxMessageId);
    }
 

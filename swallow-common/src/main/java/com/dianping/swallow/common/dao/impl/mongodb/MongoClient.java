@@ -45,6 +45,7 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
    private static final String           LION_KEY_HEARTBEAT_SERVER_URI                    = "swallow.mongo.heartbeatServerURI";
    private static final String           LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE        = "swallow.mongo.heartbeatCappedCollectionSize";
    private static final String           LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM = "swallow.mongo.heartbeatCappedCollectionMaxDocNum";
+
    //serverURI的名字可配置(consumer和producer在Lion上的名字是不同的)
    private final String                  severURILionKey;
 
@@ -422,7 +423,7 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
          mongo = this.topicNameToMongoMap.get(TOPICNAME_DEFAULT);
       }
       return this.getCollection(mongo, getIntSafely(msgTopicNameToSizes, topicName),
-            getIntSafely(msgTopicNameToMaxDocNums, topicName), "msg_", topicName, new BasicDBObject(MessageDAOImpl.ID,
+            getIntSafely(msgTopicNameToMaxDocNums, topicName), "msg-", topicName, new BasicDBObject(MessageDAOImpl.ID,
                   -1));
    }
 
@@ -437,7 +438,7 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
       return i == null ? -1 : i.intValue();
    }
 
-   public DBCollection getAckCollection(String topicName) {
+   public DBCollection getAckCollection(String topicName, String consumerId) {
       //根据topicName获取Mongo实例
       Mongo mongo = this.topicNameToMongoMap.get(topicName);
       if (mongo == null) {
@@ -447,8 +448,8 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
          mongo = this.topicNameToMongoMap.get(TOPICNAME_DEFAULT);
       }
       return this.getCollection(mongo, getIntSafely(ackTopicNameToSizes, topicName),
-            getIntSafely(ackTopicNameToMaxDocNums, topicName), "ack_", topicName, new BasicDBObject(AckDAOImpl.MSG_ID,
-                  -1).append(AckDAOImpl.CONSUMER_ID, 1));
+            getIntSafely(ackTopicNameToMaxDocNums, topicName), "ack-", topicName + "-" + consumerId, new BasicDBObject(
+                  AckDAOImpl.MSG_ID, -1).append(AckDAOImpl.CONSUMER_ID, 1));
    }
 
    public DBCollection getHeartbeatCollection(String ip) {
@@ -461,7 +462,7 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
          mongo = this.topicNameToMongoMap.get(TOPICNAME_DEFAULT);
       }
       return this.getCollection(mongo, this.heartbeatCappedCollectionSize, this.heartbeatCappedCollectionMaxDocNum,
-            "heartbeat_", ip, new BasicDBObject(HeartbeatDAOImpl.TICK, -1));
+            "heartbeat-", ip, new BasicDBObject(HeartbeatDAOImpl.TICK, -1));
    }
 
    private DBCollection getCollection(Mongo mongo, int size, int cappedCollectionMaxDocNum, String dbNamePrefix,
@@ -521,7 +522,7 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
          if (indexDBObject != null) {
             collection.ensureIndex(indexDBObject);
             if (LOG.isInfoEnabled()) {
-               LOG.info("Ensure index " + indexDBObject + "on colleciton " + collection);
+               LOG.info("Ensure index " + indexDBObject + " on colleciton " + collection);
             }
          }
          return collection;
