@@ -75,6 +75,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 				   if(started) {
 			            if (connectedChannels.isEmpty()) {
 			               getMessageisAlive = false;
+			               ackExecutor.shutdownNow();
 			               workerManager.workerDone(consumerInfo.getConsumerId());
 			               LOG.info("ConsumerWorker for " + consumerInfo.getConsumerId() + " has no connected channel, close it");
 			               break;
@@ -171,7 +172,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
-      ackExecutor.shutdown();
+      ackExecutor.shutdownNow();
    }
 
    private long getMessageIdOfTailMessage(String topicName, String consumerId) {
