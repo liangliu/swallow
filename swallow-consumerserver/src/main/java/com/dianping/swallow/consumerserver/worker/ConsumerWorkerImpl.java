@@ -119,7 +119,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       while (handleACKIsAlive) {
          Runnable worker = null;
          try {
-            while (true) {
+            while (handleACKIsAlive) {
                worker = ackWorker.poll(1000, TimeUnit.MILLISECONDS);// TODO 
                if (worker != null) {
                   worker.run();
