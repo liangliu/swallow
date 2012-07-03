@@ -74,4 +74,9 @@ public class Destination implements Serializable {
       return type == Type.TOPIC;
    }
 
+   @Override
+   public String toString() {
+      return String.format("Destination [name=%s, type=%s]", name, type);
+   }
+
 }
