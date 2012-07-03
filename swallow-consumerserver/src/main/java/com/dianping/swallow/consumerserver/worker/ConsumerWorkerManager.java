@@ -21,9 +21,7 @@ import com.dianping.swallow.consumerserver.config.ConfigManager;
 
 public class ConsumerWorkerManager implements CatMonitorBean {
 
-   private static final Logger             logger                    = LoggerFactory
-                                                                           .getLogger(ConsumerWorkerManager.class
-                                                                                 .getName());
+   private static final Logger             LOG                    = LoggerFactory.getLogger(ConsumerWorkerManager.class);
 
    private AckDAO                          ackDAO;
    private Heartbeater                     heartbeater;
@@ -130,7 +128,7 @@ public class ConsumerWorkerManager implements CatMonitorBean {
                   heartbeater.beat(ip);
                   Thread.sleep(configManager.getHeartbeatUpdateInterval());
                } catch (Exception e) {
-                  logger.error("Error update heart beat", e);
+                  LOG.error("Error update heart beat", e);
                }
             }
          }
