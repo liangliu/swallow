@@ -2,15 +2,16 @@ package com.dianping.swallow.consumerserver.impl;
 
 import java.util.Date;
 
-import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.dianping.swallow.common.dao.HeartbeatDAO;
 import com.dianping.swallow.consumerserver.Heartbeater;
 
 public class MongoHeartbeater implements Heartbeater {
 
-   private static Logger log = Logger.getLogger(MongoHeartbeater.class);
-
+   private static final Logger LOG        = LoggerFactory.getLogger(MongoHeartbeater.class);
    private HeartbeatDAO  heartbeatDAO;
 
    public void setHeartbeatDAO(HeartbeatDAO heartbeatDAO) {
@@ -32,18 +33,18 @@ public class MongoHeartbeater implements Heartbeater {
             beat = heartbeatDAO.findLastHeartbeat(ip);
          } catch (Exception e) {
             //如果访问mongo出错，重置startTime，防止failover时间过长
-            log.error("error find last heartbeat", e);
+            LOG.error("error find last heartbeat", e);
             startTime = System.currentTimeMillis();
             Thread.sleep(1000);
             continue;
          }
          if (beat == null) {
-            log.info(ip + " no beat");
+            LOG.info(ip + " no beat");
             if (System.currentTimeMillis() - startTime > maxStopTime) {
                break;
             }
          } else {
-            log.info(ip + " beat at " + beat.getTime());
+            LOG.info(ip + " beat at " + beat.getTime());
             long now = System.currentTimeMillis();
             lastBeatTime = beat.getTime();
             if (now - lastBeatTime > maxStopTime) {
@@ -52,7 +53,7 @@ public class MongoHeartbeater implements Heartbeater {
          }
          Thread.sleep(checkInterval);
       }
-      log.info(ip + " master stop beating, slave start");
+      LOG.info(ip + " master stop beating, slave start");
    }
 
    @Override
@@ -63,7 +64,7 @@ public class MongoHeartbeater implements Heartbeater {
          try {
             beat = heartbeatDAO.findLastHeartbeat(ip);
          } catch (Exception e) {
-            log.error("error find last heartbeat", e);
+            LOG.error("error find last heartbeat", e);
             Thread.sleep(1000);
             continue;
          }

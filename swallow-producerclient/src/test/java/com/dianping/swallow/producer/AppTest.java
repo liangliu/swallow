@@ -7,6 +7,7 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 import com.dianping.swallow.producer.impl.ProducerImpl;
 
@@ -14,7 +15,7 @@ import com.dianping.swallow.producer.impl.ProducerImpl;
  * Unit test for simple App.
  */
 public class AppTest extends TestCase {
-   private ProducerFactoryImpl pf = null;
+   private ProducerFactoryImpl pf      = null;
    private String              message = "";
 
    /**
@@ -29,10 +30,10 @@ public class AppTest extends TestCase {
       } catch (Exception e3) {
          System.out.println(e3.toString());
       }
-      for(int i = 0; i<10; i++){
+      for (int i = 0; i < 10; i++) {
          message += "AAbbCCddEEffGGhhII jKKllMMnnOOppQQrr SttUUvvWWxxYYzz11@@33$$55^^77**99))aaeeeffggesswweedd!@#$%^&*()";
       }
-      
+
    }
 
    /**
@@ -57,45 +58,45 @@ public class AppTest extends TestCase {
       @Override
       public void run() {
          Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
-         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
+         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
          pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
          pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
          pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
 
          ProducerImpl ps = null;
          try {
-            ps = pf.getProducer("songtong", pOptions);
+            ps = pf.getProducer(Destination.topic("songtong"), pOptions);
          } catch (Exception e2) {
             System.out.println(e2.toString());
          }
          String str = "";
-         long begin = System.currentTimeMillis();
+         //         long begin = System.currentTimeMillis();
          Map<String, String> properties = new HashMap<String, String>();
          properties.put("zip", "true");
-         try {
-            int idx = 0;
-//                        for (int i = 0; i < 10000; i++) {
-            while (true) {
-               //			content += i++;
-               str = ps.sendMessage("______[" + (idx++) + "]["+ message + "]", properties);
+         int idx = 0;
+         //                        for (int i = 0; i < 10000; i++) {
+         while (true) {
+            //			content += i++;
+            try {
+               str = ps.sendMessage("[消息][" + (idx++) + "][" + message + "]");
                //               sumTime += (end - begin);
                try {
                   Thread.sleep(1000);
                } catch (Exception e) {
                   // 
                }
-               System.out.println(idx + ": " + str);
+            } catch (Exception e1) {
+               System.out.println(e1.getMessage());
             }
-         } catch (Exception e1) {
-            System.out.println(e1.toString());
+            System.out.println(idx + ": " + str);
          }
-         long end = System.currentTimeMillis();
-         System.out.println(end - begin);
+         //         long end = System.currentTimeMillis();
+         //         System.out.println(end - begin);
       }
    }
 
    public void doTest() {
-      for (int i = 0; i < 100; i++) {
+      for (int i = 0; i < 1; i++) {
          String newContent = "NO_" + i;
          Thread td = new Thread(new task(newContent));
          td.start();

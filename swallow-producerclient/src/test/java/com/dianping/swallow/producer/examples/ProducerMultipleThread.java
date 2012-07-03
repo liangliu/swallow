@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
 import com.dianping.swallow.producer.impl.ProducerImpl;
@@ -65,7 +66,7 @@ public class ProducerMultipleThread {
       ProducerImpl producerAsync = null;
       //获取Producer实例
       try {
-         producerAsync = producerFactory.getProducer("sampleAsync", pOptions);
+         producerAsync = producerFactory.getProducer(Destination.topic("sampleAsync"), pOptions);
       } catch (Exception e) {
          System.out.println(e.toString());
       }
@@ -76,7 +77,7 @@ public class ProducerMultipleThread {
       
       //获取Producer实例
       try {
-         producerSync = producerFactory.getProducer("sampleSync", pOptions);
+         producerSync = producerFactory.getProducer(Destination.topic("sampleSync"), pOptions);
       } catch (Exception e) {
          System.out.println(e.toString());
       }

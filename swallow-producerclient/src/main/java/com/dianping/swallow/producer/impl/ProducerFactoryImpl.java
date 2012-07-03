@@ -20,6 +20,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.dianping.dpsf.api.ProxyFactory;
+import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
@@ -134,11 +135,11 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * producerMode:ProducerMode.SYNC_MODE; threadPoolSize:10;
     * continueSend:false; retryTimes:5
     * 
-    * @throws TopicNameInvalidException 参数topicName有误
+    * @throws TopicNameInvalidException topic名称非法//topic名称只能由字母、数字、下划线组成
     * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
     */
    @Override
-   public ProducerImpl getProducer(String topicName, Map<ProducerOptionKey, Object> pOptions)
+   public ProducerImpl getProducer(Destination topicName, Map<ProducerOptionKey, Object> pOptions)
          throws TopicNameInvalidException, RemoteServiceDownException {
       ProducerImpl producerImpl = null;
       try {

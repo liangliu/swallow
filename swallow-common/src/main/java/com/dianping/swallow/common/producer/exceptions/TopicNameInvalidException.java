@@ -6,7 +6,7 @@ public class TopicNameInvalidException extends Exception {
 
    @Override
    public String getMessage() {
-      return "Topic name is invalid.";
+      return "Topic name is invalid, only ACCEPT Alphabets、Numbers and Underline.";
    }
 
 }
