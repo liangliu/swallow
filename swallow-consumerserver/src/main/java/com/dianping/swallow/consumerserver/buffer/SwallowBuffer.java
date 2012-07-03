@@ -1,7 +1,7 @@
 package com.dianping.swallow.consumerserver.buffer;
 
 import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -115,7 +115,7 @@ public class SwallowBuffer implements CatMonitorBean {
 
       private final String                                                   topicName;
 
-      private ConcurrentHashMap<String, SoftReference<MessageBlockingQueue>> messageQueues = new ConcurrentHashMap<String, SoftReference<MessageBlockingQueue>>();
+      private ConcurrentHashMap<String, WeakReference<MessageBlockingQueue>> messageQueues = new ConcurrentHashMap<String, WeakReference<MessageBlockingQueue>>();
 
       private TopicBuffer(String topicName) {
          this.topicName = topicName;
@@ -173,14 +173,14 @@ public class SwallowBuffer implements CatMonitorBean {
                   tailMessageId);
          }
          messageBlockingQueue.setMessageRetriever(messageRetriever);
-         messageQueues.put(cid, new SoftReference<MessageBlockingQueue>(messageBlockingQueue));
+         messageQueues.put(cid, new WeakReference<MessageBlockingQueue>(messageBlockingQueue));
          return messageBlockingQueue;
       }
 
       @Override
       public Map<String, Object> getStatusMap() {
          Map<String, Object> map = new HashMap<String, Object>();
-         for (Entry<String, SoftReference<MessageBlockingQueue>> entry : messageQueues.entrySet()) {
+         for (Entry<String, WeakReference<MessageBlockingQueue>> entry : messageQueues.entrySet()) {
             String cid = entry.getKey();
             Object messageQueue = entry.getValue().get().getStatusMap();
             map.put(cid, messageQueue);

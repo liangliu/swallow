@@ -18,7 +18,7 @@ import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownExceptio
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.common.util.IPUtil;
-import com.dianping.swallow.common.util.TopicUtil;
+import com.dianping.swallow.common.util.NameCheckUtil;
 import com.dianping.swallow.common.util.ZipUtil;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerMode;
@@ -60,7 +60,7 @@ public class ProducerImpl implements Producer {
    ProducerImpl(MQService remoteService, Destination topicName, Map<ProducerOptionKey, Object> pOptions)
          throws TopicNameInvalidException, RemoteServiceDownException {
       //初始化Producer参数
-      if (!TopicUtil.isTopicNameValid(topicName.getName()))
+      if (!NameCheckUtil.isTopicNameValid(topicName.getName()))
          throw new TopicNameInvalidException();
 
       destination = topicName;
