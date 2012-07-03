@@ -60,7 +60,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
          } else {
             if (consumerPacket.getNeedClose() || readyClose) {
                if(!readyClose){
-                  Thread thread2 = workerManager.getThreadFactory().newThread(new Runnable() {
+                  Thread thread = workerManager.getThreadFactory().newThread(new Runnable() {
 
                      @Override
                      public void run() {
@@ -72,7 +72,8 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
                         workerManager.handleChannelDisconnect(channel, consumerInfo);
                      }
                   }, consumerInfo.toString() + "-CloseChannelThread-");
-                  thread2.start();
+                  thread.setDaemon(true);
+                  thread.start();
                }
                clientThreadCount--;
                readyClose = Boolean.TRUE;

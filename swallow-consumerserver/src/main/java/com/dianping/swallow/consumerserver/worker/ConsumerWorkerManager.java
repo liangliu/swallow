@@ -65,11 +65,17 @@ public class ConsumerWorkerManager implements CatMonitorBean {
    }
 
    public void handleAck(Channel channel, ConsumerInfo consumerInfo, Long ackedMsgId, ACKHandlerType type) {
-      findOrCreateConsumerWorker(consumerInfo).handleAck(channel, ackedMsgId, type);
+      ConsumerWorker worker = findConsumerWorker(consumerInfo);
+      if(worker != null) {
+         worker.handleAck(channel, ackedMsgId, type);
+      }
    }
 
    public void handleChannelDisconnect(Channel channel, ConsumerInfo consumerInfo) {
-      findOrCreateConsumerWorker(consumerInfo).handleChannelDisconnect(channel);
+      ConsumerWorker worker = findConsumerWorker(consumerInfo);
+      if(worker != null) {
+         worker.handleChannelDisconnect(channel);
+      }
    }
 
    public void close() throws IOException {
@@ -77,19 +83,24 @@ public class ConsumerWorkerManager implements CatMonitorBean {
          entry.getValue().close();
       }
    }
+   
+   private ConsumerWorker findConsumerWorker(ConsumerInfo consumerInfo) {
+      ConsumerId consumerId = consumerInfo.getConsumerId();
+      return consumerId2ConsumerWorker.get(consumerId);
+   }
 
    private ConsumerWorker findOrCreateConsumerWorker(ConsumerInfo consumerInfo) {
+      ConsumerWorker worker = findConsumerWorker(consumerInfo);
       ConsumerId consumerId = consumerInfo.getConsumerId();
-      ConsumerWorker consumerWorker = consumerId2ConsumerWorker.get(consumerId);
-      if (consumerWorker == null) {
+      if (worker == null) {
          synchronized (this) {
-            if (consumerWorker == null) {
-               consumerWorker = new ConsumerWorkerImpl(consumerInfo, this);
-               consumerId2ConsumerWorker.put(consumerId, consumerWorker);
+            if (worker == null) {
+               worker = new ConsumerWorkerImpl(consumerInfo, this);
+               consumerId2ConsumerWorker.put(consumerId, worker);
             }
          }
       }
-      return consumerWorker;
+      return worker;
    }
 
    public void init(boolean isSlave) {

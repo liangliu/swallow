@@ -23,7 +23,9 @@ import com.dianping.swallow.common.dao.impl.mongodb.MongoUtils;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.PktMessage;
+import com.dianping.swallow.common.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.threadfactory.MQThreadFactory;
+import com.dianping.swallow.common.threadfactory.PullStrategy;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 
 public class ConsumerWorkerImpl implements ConsumerWorker {
@@ -37,7 +39,6 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private SwallowBuffer          swallowBuffer;
    private MessageDAO             messageDao;
    private PktMessage             preparedMessage    = null;
-   private long                   getMessageInterval = 1000L;
    private MQThreadFactory        threadFactory;
    private String                 consumerid;
    private String                 topicName;
@@ -45,6 +46,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private volatile boolean       started            = false;
    private ExecutorService        ackExecutor;
    private ConsumerWorkerManager  workerManager;
+   private PullStrategy pullStgy;
 
    public Set<Channel> getConnectedChannels() {
       return connectedChannels;
@@ -59,6 +61,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       topicName = consumerInfo.getConsumerId().getDest().getName();
       consumerid = consumerInfo.getConsumerId().getConsumerId();
       this.workerManager = workerManager;
+      pullStgy = new DefaultPullStrategy(500, 3000);
 
       ackExecutor = new ThreadPoolExecutor(1, 1, Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>());
 
@@ -200,20 +203,15 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       //线程刚起，第一次调用的时候，需要先去mongo中获取maxMessageId
       try {
          while (getMessageisAlive) {
-            Channel channel = freeChannels.poll(1000, TimeUnit.MILLISECONDS);// TODO
-            if (channel == null) {
-               break;
-
-            } else if (channel.isConnected()) {
+            Channel channel = freeChannels.take();// TODO
+            if (channel.isConnected()) {
                if (preparedMessage == null) {
                   SwallowMessage message = null;
                   while (getMessageisAlive) {
                      //获得
-                     message = (SwallowMessage) messageQueue.poll(getMessageInterval, TimeUnit.MILLISECONDS);
-                     if (message == null) {
-                        getMessageInterval *= 2;
-                     } else {
-                        getMessageInterval = 1000;
+                     message = (SwallowMessage) messageQueue.poll(pullStgy.fail(false), TimeUnit.MILLISECONDS);
+                     if (message != null) {
+                        pullStgy.succeess();
                         break;
                      }
                   }
