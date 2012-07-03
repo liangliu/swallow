@@ -17,7 +17,11 @@ package com.dianping.swallow.common.util;
 
 public class NameCheckUtil {
    /**
-    * 判定topicName是否合法(由字母,数字和下划线构成，只能以字母开头，长度为2到20。)
+    * 判定topicName是否合法
+    * 
+    * <pre>
+    * topicName由字母,数字,小数点“.”,减号“-”和下划线“_”构成，只能以字母开头，长度为2到20。
+    * </pre>
     * 
     * @param topicName
     * @return 合法返回true，非法返回false
@@ -26,13 +30,17 @@ public class NameCheckUtil {
       if (topicName == null || topicName.length() == 0) {
          return false;
       }
-      if (topicName.matches("[a-z|A-Z][a-z|A-Z|_|0-9]{1,19}"))
+      if (topicName.matches("[a-z|A-Z][a-z|A-Z|_|.|-|0-9]{1,19}"))
          return true;
       return false;
    }
 
    /**
-    * 判定consumerId是否合法(由字母,数字和下划线构成，只能以字母开头，长度为2到20。)
+    * 判定consumerId是否合法
+    * 
+    * <pre>
+    * consumerId由字母,数字,小数点“.”,减号“-”和下划线“_”构成，只能以字母开头，长度为2到20。
+    * </pre>
     * 
     * @param consumerId
     * @return 合法返回true，非法返回false
@@ -41,7 +49,7 @@ public class NameCheckUtil {
       if (consumerId == null || consumerId.length() == 0) {
          return false;
       }
-      if (consumerId.matches("[a-z|A-Z][a-z|A-Z|_|0-9]{1,19}"))
+      if (consumerId.matches("[a-z|A-Z][a-z|A-Z|_|.|-|0-9]{1,19}"))
          return true;
       return false;
    }
@@ -50,6 +58,9 @@ public class NameCheckUtil {
       System.out.println(isTopicNameValid("ab"));
       System.out.println(isTopicNameValid("a_"));
       System.out.println(isTopicNameValid("a1"));
+      System.out.println(isTopicNameValid("ab_"));
+      System.out.println(isTopicNameValid("a1."));
+      System.out.println(isTopicNameValid("a1.0"));
       System.out.println(isTopicNameValid("a1234567890123456789"));
       System.out.println(isTopicNameValid("a"));//false
       System.out.println(isTopicNameValid("_"));//false
