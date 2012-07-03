@@ -36,16 +36,17 @@ import com.dianping.swallow.producer.ProducerOptionKey;
  */
 public class ProducerFactoryImpl implements ProducerFactory {
 
-   private final Logger               logger           = Logger.getLogger(ProducerFactoryImpl.class);
-   private static ProducerFactoryImpl instance;                                                      //Producer工厂类单例
+   private final Logger               logger          = Logger.getLogger(ProducerFactoryImpl.class);
+   private static ProducerFactoryImpl instance;                                                     //Producer工厂类单例
 
    //远程调用相关设置
-   private final int                  remoteServiceTimeout;                                          //远程调用超时
-   private static final int           DEFAULT_TIMEOUT  = 5000;                                       //远程调用默认超时
+   private final int                  remoteServiceTimeout;                                         //远程调用超时
+   private static final int           DEFAULT_TIMEOUT = 5000;                                       //远程调用默认超时
    //远程调用相关变量
    @SuppressWarnings("rawtypes")
-   private final ProxyFactory         pigeon           = new ProxyFactory();                         //pigeon代理对象
-   private final MQService            remoteService;                                                 //远程调用对象
+   private final ProxyFactory         pigeon          = new ProxyFactory();                         //pigeon代理对象
+   //TODO 为了单元测试，先将final设定去除掉了，后面有别的办法再补回来，或者就直接给Factory类提供一个setMQService方法？
+   private MQService                  remoteService;                                                //远程调用对象
 
    /**
     * Producer工厂类构造函数
@@ -56,7 +57,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    private ProducerFactoryImpl(int timeout) throws RemoteServiceInitFailedException {
       this.remoteServiceTimeout = timeout;
       //初始化远程调用
-      remoteService = initRemoteService(remoteServiceTimeout);
+      setRemoteService(initRemoteService(remoteServiceTimeout));
    }
 
    /**
@@ -83,8 +84,8 @@ public class ProducerFactoryImpl implements ProducerFactory {
          logger.info("[Initialize pigeon successfully.]");
 
          remoteService = (MQService) pigeon.getProxy();
-         logger.info("[Get remoteService successfully.]:[" + "RemoteService's timeout is: "
-               + remoteServiceTimeout + ".]");
+         logger.info("[Get remoteService successfully.]:[" + "RemoteService's timeout is: " + remoteServiceTimeout
+               + ".]");
       } catch (Exception e) {
          logger.error("[Initialize remote service failed.]", e);
          throw new RemoteServiceInitFailedException();
@@ -143,7 +144,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
          throws TopicNameInvalidException, RemoteServiceDownException {
       ProducerImpl producerImpl = null;
       try {
-         producerImpl = new ProducerImpl(remoteService, topicName, pOptions);
+         producerImpl = new ProducerImpl(getRemoteService(), topicName, pOptions);
          logger.info("[New producer instance was created.]:[topicName="
                + topicName
                + "][ProducerMode="
@@ -167,5 +168,13 @@ public class ProducerFactoryImpl implements ProducerFactory {
          throw e;
       }
       return producerImpl;
+   }
+
+   public MQService getRemoteService() {
+      return remoteService;
+   }
+
+   public void setRemoteService(MQService remoteService) {
+      this.remoteService = remoteService;
    }
 }

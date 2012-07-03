@@ -65,7 +65,7 @@ public class AppTest extends TestCase {
 
          ProducerImpl ps = null;
          try {
-            ps = pf.getProducer(Destination.topic("songtong"), pOptions);
+            ps = pf.getProducer(Destination.topic("laoma"), pOptions);
          } catch (Exception e2) {
             System.out.println(e2.toString());
          }
@@ -74,17 +74,17 @@ public class AppTest extends TestCase {
          Map<String, String> properties = new HashMap<String, String>();
          properties.put("zip", "true");
          int idx = 0;
-         //                        for (int i = 0; i < 10000; i++) {
-         while (true) {
+         for (int i = 0; i < 100; i++) {
+            //         while (true) {
             //			content += i++;
             try {
-               str = ps.sendMessage("[消息][" + (idx++) + "][" + message + "]");
+               str = ps.sendMessage("" + (++idx));
                //               sumTime += (end - begin);
-               try {
-                  Thread.sleep(1000);
-               } catch (Exception e) {
-                  // 
-               }
+//               try {
+//                  Thread.sleep(1000);
+//               } catch (Exception e) {
+//                  // 
+//               }
             } catch (Exception e1) {
                System.out.println(e1.getMessage());
             }

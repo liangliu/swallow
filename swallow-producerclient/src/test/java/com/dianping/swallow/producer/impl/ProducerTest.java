@@ -15,23 +15,28 @@
  */
 package com.dianping.swallow.producer.impl;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.mockito.Matchers;
 
+import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.message.Destination;
+import com.dianping.swallow.common.packet.Packet;
+import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
+import com.dianping.swallow.common.producer.exceptions.NullContentException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
+import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
-import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
-import com.dianping.swallow.producer.impl.ProducerImpl;
-
-import static org.mockito.Mockito.*;
 
 /**
  * Producer的单元测试，包含了对ProducerFactory和ProducerImpl类的测试
@@ -43,88 +48,172 @@ public class ProducerTest {
    MQServiceExceptionMock exceptionRemoteService = new MQServiceExceptionMock();
 
    @Test
-   public void testProducerFactory() {
+   public void testProducerFactoryImpl() {
       ProducerFactoryImpl producerFactory = null;
+
+      MQService normalRemoteService = mock(MQService.class);
+
       //获取Producer工厂实例
       try {
          producerFactory = ProducerFactoryImpl.getInstance(5000);
-         producerFactory = ProducerFactoryImpl.getInstance();
       } catch (Exception e) {
-         System.out.println(e.toString());
       }
+
+      producerFactory.setRemoteService(normalRemoteService);
+
+      Assert.assertNotNull(producerFactory);
+
       //设置Producer选项
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
+      pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
+
+      ProducerImpl producer = null;
+
       try {
-         producerFactory.getProducer(Destination.topic("Hello"), pOptions);
-         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
-         pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
-         pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 10);
-         pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
-         producerFactory.getProducer(Destination.topic("H:ello"), pOptions);
+         producer = producerFactory.getProducer(Destination.topic("Hello:Unit_Test"), pOptions);
       } catch (TopicNameInvalidException e) {
          e.printStackTrace();
       } catch (RemoteServiceDownException e) {
          e.printStackTrace();
       }
 
-      Assert.assertNotNull(producerFactory);
-   }
+      Assert.assertNull(producer);
 
-   @Test
-   public void testNormalProducer() {
-      doTestProducer(normalRemoteService);
-   }
-
-   @Test
-   public void testExceptionProducer() {
-      doTestProducer(exceptionRemoteService);
-   }
-
-   public void doTestProducer(MQService remoteService) {
-      Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
-      Map<String, String> property = new HashMap<String, String>();
-      property.put("test", "test");
-      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-      ProducerImpl producer = null;
       try {
-         producer = new ProducerImpl(remoteService, Destination.topic("testProducer"), pOptions);
-      } catch (Exception e) {
+         producer = producerFactory.getProducer(Destination.topic("Hello_Unit_Test"), pOptions);
+      } catch (TopicNameInvalidException e) {
+         e.printStackTrace();
+      } catch (RemoteServiceDownException e) {
+         e.printStackTrace();
       }
+
       Assert.assertNotNull(producer);
-      String str = null;
-      try {
-         str = producer.sendMessage("testProducer");
-      } catch (Exception e) {
-      }
-      Assert.assertNotNull(str);
 
-      Assert.assertEquals(ProducerMode.SYNC_MODE, producer.getProducerMode());
+      producer = null;
+      pOptions = null;
+      pOptions = new HashMap<ProducerOptionKey, Object>();
 
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
-      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
+      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 10);
       pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
-      try {
-         producer = new ProducerImpl(remoteService, Destination.topic("testNormalProducer"), pOptions);
-      } catch (Exception e) {
-      }
-      Assert.assertNotNull(producer);
-      str = null;
-      try {
-         str = producer.sendMessage("testNormalProducer", property, "type1");
-         str = producer.sendMessage("testNormalProducer", property, "type2");
-      } catch (Exception e) {
-      }
-      Assert.assertNull(str);
-      Assert.assertEquals(ProducerMode.ASYNC_MODE, producer.getProducerMode());
-      Assert.assertEquals(5, producer.getThreadPoolSize());
-      Assert.assertEquals(false, producer.isContinueSend());
 
-      Assert.assertEquals("0.6.0", producer.getProducerVersion());
+      try {
+         producer = producerFactory.getProducer(Destination.topic("H:ello"), pOptions);
+      } catch (TopicNameInvalidException e) {
+         //捕获到TopicNameInvalid异常
+      } catch (RemoteServiceDownException e) {
+         //一定不会捕获这个异常
+      }
+
+      Assert.assertNull(producer);
+
+      try {
+         producer = producerFactory.getProducer(Destination.topic("Hello"), pOptions);
+      } catch (TopicNameInvalidException e) {
+         //捕获到TopicNameInvalid异常
+      } catch (RemoteServiceDownException e) {
+         //一定不会捕获这个异常
+      }
+
+      Assert.assertNotNull(producer);
    }
-   
+
    @Test
-   public void testMockito(){
-      MQService mockMQService = mock(MQService.class);
+   public void testProducerImpl() throws ServerDaoException {
+
+      //正常的mock
+      MQService normalRemoteServiceMock = mock(MQService.class);
+      PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
+      when(normalRemoteServiceMock.sendMessage((Packet)Matchers.anyObject())).thenReturn(pktSwallowACK);
+      //抛filequeue异常的mock
+      MQService filequeueExceptionRemoteServiceMock = mock(MQService.class);
+      when(filequeueExceptionRemoteServiceMock.sendMessage((Packet)Matchers.anyObject())).thenThrow(new FileQueueClosedException());
+      //抛remoteServiceDown异常的mock
+      MQService remoteServiceDownExceptionRemoteServiceMock = mock(MQService.class);
+      when(remoteServiceDownExceptionRemoteServiceMock.sendMessage((Packet)Matchers.anyObject())).thenThrow(new RemoteServiceDownException());
+      //抛content为空异常的mock
+      MQService nullContentExceptionRemoteServiceMock = mock(MQService.class);
+      when(nullContentExceptionRemoteServiceMock.sendMessage((Packet)Matchers.anyObject())).thenThrow(new NullContentException());
+      
+      Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
+
+      //同步模式pOptions
+      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
+      pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
+
+      ProducerImpl syncProducer = null;
+      try {
+         syncProducer = new ProducerImpl(normalRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
+      } catch (Exception e) {
+      }
+      
+      Assert.assertNotNull(syncProducer);
+      
+      String strRet = null;
+      try {
+         strRet = syncProducer.sendMessage("Hello world.");
+      } catch (FileQueueClosedException e) {
+      } catch (RemoteServiceDownException e) {
+      } catch (NullContentException e) {
+      }
+      Assert.assertEquals(pktSwallowACK.getShaInfo(), strRet);
    }
+
+   //   @Test
+   //   public void testNormalProducer() {
+   //      doTestProducer(normalRemoteService);
+   //   }
+   //
+   //   @Test
+   //   public void testExceptionProducer() {
+   //      doTestProducer(exceptionRemoteService);
+   //   }
+   //
+   //   public void doTestProducer(MQService remoteService) {
+   //      Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
+   //      Map<String, String> property = new HashMap<String, String>();
+   //      property.put("test", "test");
+   //      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
+   //      ProducerImpl producer = null;
+   //      try {
+   //         producer = new ProducerImpl(remoteService, Destination.topic("testProducer"), pOptions);
+   //      } catch (Exception e) {
+   //      }
+   //      Assert.assertNotNull(producer);
+   //      String str = null;
+   //      try {
+   //         str = producer.sendMessage("testProducer");
+   //      } catch (Exception e) {
+   //      }
+   //      Assert.assertNotNull(str);
+   //
+   //      Assert.assertEquals(ProducerMode.SYNC_MODE, producer.getProducerMode());
+   //
+   //      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
+   //      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
+   //      pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
+   //      try {
+   //         producer = new ProducerImpl(remoteService, Destination.topic("testNormalProducer"), pOptions);
+   //      } catch (Exception e) {
+   //      }
+   //      Assert.assertNotNull(producer);
+   //      str = null;
+   //      try {
+   //         str = producer.sendMessage("testNormalProducer", property, "type1");
+   //         str = producer.sendMessage("testNormalProducer", property, "type2");
+   //      } catch (Exception e) {
+   //      }
+   //      Assert.assertNull(str);
+   //      Assert.assertEquals(ProducerMode.ASYNC_MODE, producer.getProducerMode());
+   //      Assert.assertEquals(5, producer.getThreadPoolSize());
+   //      Assert.assertEquals(false, producer.isContinueSend());
+   //
+   //      Assert.assertEquals("0.6.0", producer.getProducerVersion());
+   //   }
+   //   
+   //   @Test
+   //   public void testMockito(){
+   //      MQService mockMQService = mock(MQService.class);
+   //   }
 }
