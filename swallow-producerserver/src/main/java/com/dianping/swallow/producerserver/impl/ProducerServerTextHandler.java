@@ -12,7 +12,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.producer.ProducerUtils;
+import com.dianping.swallow.common.util.TopicUtil;
 import com.dianping.swallow.producerserver.util.SHAGenerater;
 
 public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
@@ -72,7 +72,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       TextACK textAck = new TextACK();
       textAck.setStatus(OK);
       //TopicName非法，返回失败ACK，reason是"TopicName is not valid."
-      if (!ProducerUtils.isTopicNameValid(textObject.getTopic())) {
+      if (!TopicUtil.isTopicNameValid(textObject.getTopic())) {
          logger.error("[Incorrect topic name.][From=" + e.getChannel().getRemoteAddress() + "][Content=" + textObject
                + "]");
          textAck.setStatus(INVALID_TOPIC_NAME);

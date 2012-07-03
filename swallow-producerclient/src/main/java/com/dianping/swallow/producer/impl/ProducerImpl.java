@@ -13,12 +13,13 @@ import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.common.packet.PktProducerGreet;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
-import com.dianping.swallow.common.producer.ProducerUtils;
+import com.dianping.swallow.common.producer.exceptions.NullContentException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.common.util.IPUtil;
-import com.dianping.swallow.common.util.ZIPUtil;
+import com.dianping.swallow.common.util.TopicUtil;
+import com.dianping.swallow.common.util.ZipUtil;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
@@ -60,7 +61,7 @@ public class ProducerImpl implements Producer {
    ProducerImpl(MQService remoteService, String topicName, Map<ProducerOptionKey, Object> pOptions)
          throws TopicNameInvalidException, RemoteServiceDownException {
       //初始化Producer参数
-      if (!ProducerUtils.isTopicNameValid(topicName))
+      if (!TopicUtil.isTopicNameValid(topicName))
          throw new TopicNameInvalidException();
 
       destination = Destination.topic(topicName);
@@ -73,15 +74,15 @@ public class ProducerImpl implements Producer {
                .get(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE) : DEFAULT_THREAD_POOL_SIZE;
          continueSend = pOptions.containsKey(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND) ? (Boolean) pOptions
                .get(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND) : DEFAULT_CONTINUE_SEND;
-         retryTimes = pOptions.containsKey(ProducerOptionKey.ASYNC_RETRY_TIMES) ? (Integer) pOptions
-               .get(ProducerOptionKey.ASYNC_RETRY_TIMES) : DEFAULT_RETRY_TIMES;
+         retryTimes = pOptions.containsKey(ProducerOptionKey.RETRY_TIMES) ? (Integer) pOptions
+               .get(ProducerOptionKey.RETRY_TIMES) : DEFAULT_RETRY_TIMES;
       }
       //初始化远程调用
       this.remoteService = remoteService;
       //设置Producer工作模式
       switch (producerMode) {
          case SYNC_MODE:
-            syncHandler = new HandlerSynchroMode(remoteService);
+            syncHandler = new HandlerSynchroMode(this);
             break;
          case ASYNC_MODE:
             asyncHandler = new HandlerAsynchroMode(this);
@@ -92,7 +93,7 @@ public class ProducerImpl implements Producer {
          remoteService.sendMessage(new PktProducerGreet(producerVersion, producerIP));
       } catch (Exception e) {
          logger.error(
-               "[Producer]:[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]",
+               "[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]",
                e);
          throw new RemoteServiceDownException();
       }
@@ -105,10 +106,11 @@ public class ProducerImpl implements Producer {
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
     * @throws ServerDaoException 只存在于同步模式，保存message到数据库失败
     * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
+    * @throws NullContentException 如果待发送的消息content为空指针，则抛出该异常
     */
    @Override
    public String sendMessage(Object content) throws ServerDaoException, FileQueueClosedException,
-         RemoteServiceDownException {
+         RemoteServiceDownException, NullContentException {
       return sendMessage(content, null, null);
    }
 
@@ -120,10 +122,11 @@ public class ProducerImpl implements Producer {
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
     * @throws ServerDaoException 只存在于同步模式，保存message到数据库失败
     * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
+    * @throws NullContentException 如果待发送的消息content为空指针，则抛出该异常
     */
    @Override
    public String sendMessage(Object content, String messageType) throws ServerDaoException, FileQueueClosedException,
-         RemoteServiceDownException {
+         RemoteServiceDownException, NullContentException {
       return sendMessage(content, null, messageType);
    }
 
@@ -135,10 +138,11 @@ public class ProducerImpl implements Producer {
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
     * @throws ServerDaoException 只存在于同步模式，保存message到数据库失败
     * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
+    * @throws NullContentException 如果待发送的消息content为空指针，则抛出该异常
     */
    @Override
    public String sendMessage(Object content, Map<String, String> properties) throws ServerDaoException,
-         FileQueueClosedException, RemoteServiceDownException {
+         FileQueueClosedException, RemoteServiceDownException, NullContentException {
       return sendMessage(content, properties, null);
    }
 
@@ -151,12 +155,16 @@ public class ProducerImpl implements Producer {
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
     * @throws ServerDaoException 只存在于同步模式，保存message到数据库失败
     * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
+    * @throws NullContentException 如果待发送的消息content为空指针，则抛出该异常
     */
    @Override
    public String sendMessage(Object content, Map<String, String> properties, String messageType)
-         throws ServerDaoException, FileQueueClosedException, RemoteServiceDownException {
+         throws ServerDaoException, FileQueueClosedException, RemoteServiceDownException, NullContentException {
 
       String ret = null;
+      if (content == null) {
+         throw new NullContentException();
+      }
       //根据content生成SwallowMessage
       SwallowMessage swallowMsg = new SwallowMessage();
 
@@ -168,9 +176,10 @@ public class ProducerImpl implements Producer {
          swallowMsg.setType(messageType);
       if (properties != null) {
          //如果需要压缩内容，properties设置zip=true
+         //PS：压缩内容并非用户传入的Object，而是通过SwallowMessage类转换过的json字符串，压缩失败时，将zip置为false
          if (properties.get("zip").equals("true")) {
             try {
-               swallowMsg.setContent(ZIPUtil.zip(swallowMsg.getContent()));
+               swallowMsg.setContent(ZipUtil.zip(swallowMsg.getContent()));
             } catch (IOException e) {
                logger.error("[Compress message failed.]", e);
                properties.put("zip", "false");
@@ -186,11 +195,11 @@ public class ProducerImpl implements Producer {
             try {
                ret = ((PktSwallowPACK) syncHandler.doSendMsg(pktMessage)).getShaInfo();
             } catch (ServerDaoException e) {
-               logger.error("[Producer]:[Can not save message to DB, DB is busy or connection to DB is down.]", e);
+               logger.error("[Can not save message to DB, DB is busy or connection to DB is down.]", e);
                throw e;
             } catch (RemoteServiceDownException e) {
                logger.error(
-                     "[Producer]:[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]",
+                     "[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]",
                      e);
                throw e;
             }
@@ -200,8 +209,7 @@ public class ProducerImpl implements Producer {
                asyncHandler.doSendMsg(pktMessage);
             } catch (FileQueueClosedException e) {
                logger.error(
-                     "[Producer]:[Can not save message to FileQueue, please contact to Swallow-Team for more information.]",
-                     e);
+                     "[Can not save message to FileQueue, please contact to Swallow-Team for more information.]", e);
                throw e;
             }
             break;
@@ -256,23 +264,5 @@ public class ProducerImpl implements Producer {
     */
    public int getRetryTimes() {
       return retryTimes;
-   }
-   public static void main(String[] args) throws IOException {
-      String str = "";
-      for(int i = 0; i < 100000; i++){
-         str += "!@#$ ASDF ";
-      }
-      SwallowMessage sm = new SwallowMessage();
-      sm.setContent(str);
-//      System.out.println("source string: " + sm.getContent());
-      long begin = System.currentTimeMillis();
-      sm.setContent(ZIPUtil.zip(sm.getContent()));
-      System.out.println("zip cost: " + (System.currentTimeMillis() - begin));
-      System.out.println("ziped string length: " + sm.getContent().length());
-      begin = System.currentTimeMillis();
-      sm.setContent(ZIPUtil.unzip(sm.getContent()));
-      System.out.println("uzip cost: " + (System.currentTimeMillis() - begin));
-//      System.out.println("unziped string: " + sm.getContent());
-      System.out.println("if equal: " + str.equals(sm.getContent()));
    }
 }

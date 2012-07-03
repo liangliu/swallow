@@ -68,15 +68,18 @@ public class HandlerAsynchroMode {
                } catch (ServerDaoException e) {
                   //如果剩余重试次数<=1，将终止重试，记日志。
                   if (leftRetryTimes <= 1) {
-                     logger.error("[Producer][AsyncHandler]:[Can not save message to DB, DB is busy or connection to DB is down.]", e);
+                     logger.error(
+                           "[AsyncHandler]:[Message sent failed.][Reason=DAO]", e);
                   }
                   //发送失败，重发
                   continue;
-               } catch (NetException e){
-                  logger.error("[Producer][AsyncHandler]:[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]", e);
+               } catch (NetException e) {
+                  if (leftRetryTimes <= 1) {
+                     logger.error("[AsyncHandler]:[Message sent failed.][Reason=Network]", e);
+                  }
                   //发送失败，重发
                   continue;
-               } catch (Exception e){
+               } catch (Exception e) {
                   //捕获到未知异常，不管
                   continue;
                }

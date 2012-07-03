@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-public class ZIPUtil {
+public class ZipUtil {
    public static String zip(String str) throws IOException {
       if (str == null || str.length() == 0)
          return str;

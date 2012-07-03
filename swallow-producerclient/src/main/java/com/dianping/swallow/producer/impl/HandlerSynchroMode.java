@@ -7,27 +7,42 @@ import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownExceptio
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 
 /**
- * Producer的异步模式消息处理类
+ * Producer的同步模式消息处理类
  * 
  * @author tong.song
  */
 public class HandlerSynchroMode {
-   MQService remoteService;
+   private MQService    remoteService;
+   private int          retryTimes;
 
-   public HandlerSynchroMode(MQService remoteService) {
-      this.remoteService = remoteService;
+   public HandlerSynchroMode(ProducerImpl producer) {
+      this.remoteService = producer.getRemoteService();
+      this.retryTimes = producer.getRetryTimes();
    }
 
    //对外接口
-   public Packet doSendMsg(Packet pkt) throws ServerDaoException, RemoteServiceDownException{
+   public Packet doSendMsg(Packet pkt) throws ServerDaoException, RemoteServiceDownException {
       Packet pktRet = null;
-      try {
-         pktRet = remoteService.sendMessage(pkt);
-      } catch (ServerDaoException e) {
-         throw e;
-      } catch(NetException e){
-         throw new RemoteServiceDownException();
+      int leftRetryTimes;
+      for (leftRetryTimes = retryTimes; leftRetryTimes > 0; leftRetryTimes--) {
+         try {
+            pktRet = remoteService.sendMessage(pkt);
+         } catch (ServerDaoException e) {
+            //如果剩余重试次数>1，继续重试
+            if (leftRetryTimes > 0)
+               continue;
+            throw e;
+         } catch (NetException e) {
+            //如果剩余重试次数>1，继续重试
+            if (leftRetryTimes > 0)
+               continue;
+            throw new RemoteServiceDownException();
+         } catch(Exception e){
+            continue;
+         }
+         break;
       }
+
       return pktRet;
    }
 }

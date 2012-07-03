@@ -66,11 +66,6 @@
 			<version>${swallow-common.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.dianping.hawk</groupId>
-			<artifactId>hawk-client</artifactId>
-			<version>0.2.0</version>
-		</dependency>
-		<dependency>
 			<groupId>com.dianping.lion</groupId>
 			<artifactId>lion-client</artifactId>
 			<version>0.2.2</version>
@@ -79,6 +74,12 @@
 			<groupId>com.dianping.lion</groupId>
 			<artifactId>lion-${env}</artifactId>
 			<version>1.0.0</version>
+		</dependency>
+		<!-- 监控 -->
+		<dependency>
+			<groupId>com.dianping.cat</groupId>
+			<artifactId>cat-core</artifactId>
+			<version>0.3.1</version>
 		</dependency>
 	</dependencies>
 </project>
