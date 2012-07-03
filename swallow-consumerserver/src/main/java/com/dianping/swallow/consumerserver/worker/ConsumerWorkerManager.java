@@ -40,6 +40,10 @@ public class ConsumerWorkerManager implements CatMonitorBean {
       this.ackDAO = ackDAO;
    }
 
+   public MQThreadFactory getThreadFactory() {
+      return threadFactory;
+   }
+
    public void setHeartbeater(Heartbeater heartbeater) {
       this.heartbeater = heartbeater;
    }
@@ -161,8 +165,4 @@ public class ConsumerWorkerManager implements CatMonitorBean {
 		return messageDAO;
 	}
 
-	public MQThreadFactory getThreadFactory() {
-		return threadFactory;
-	}
-   
 }

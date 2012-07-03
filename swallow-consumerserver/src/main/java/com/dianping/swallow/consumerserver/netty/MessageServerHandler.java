@@ -49,7 +49,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
 
       //收到PktConsumerACK，按照原流程解析
-      Channel channel = e.getChannel();
+      final Channel channel = e.getChannel();
       if (e.getMessage() instanceof PktConsumerMessage) {
          PktConsumerMessage consumerPacket = (PktConsumerMessage) e.getMessage();
          if (ConsumerMessageType.GREET.equals(consumerPacket.getType())) {
@@ -59,6 +59,21 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
             workerManager.handleGreet(channel, consumerInfo, clientThreadCount);
          } else {
             if (consumerPacket.getNeedClose() || readyClose) {
+               if(!readyClose){
+                  Thread thread2 = workerManager.getThreadFactory().newThread(new Runnable() {
+
+                     @Override
+                     public void run() {
+                        try {
+                           Thread.sleep(20000);
+                        } catch (InterruptedException e) {
+                           LOG.error("CloseChannelThread InterruptedException", e);
+                        }
+                        workerManager.handleChannelDisconnect(channel, consumerInfo);
+                     }
+                  }, consumerInfo.toString() + "-CloseChannelThread-");
+                  thread2.start();
+               }
                clientThreadCount--;
                readyClose = Boolean.TRUE;
             }
