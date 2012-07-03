@@ -16,7 +16,7 @@ import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.util.IPUtil;
-import com.dianping.swallow.producerserver.util.SHAGenerater;
+import com.dianping.swallow.common.util.SHAUtil;
 
 public class ProducerServerForClient implements MQService {
 
@@ -71,7 +71,7 @@ public class ProducerServerForClient implements MQService {
          case OBJECT_MSG:
             swallowMessage = ((PktMessage) pkt).getContent();
             topicName = ((PktMessage) pkt).getDestination().getName();
-            sha1 = SHAGenerater.generateSHA(swallowMessage.getContent());
+            sha1 = SHAUtil.generateSHA(swallowMessage.getContent());
             pktRet = new PktSwallowPACK(sha1);
             //设置swallowMessage的sha-1
             swallowMessage.setSha1(sha1);

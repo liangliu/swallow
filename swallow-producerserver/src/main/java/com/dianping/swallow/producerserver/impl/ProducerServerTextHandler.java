@@ -12,8 +12,8 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.util.SHAUtil;
 import com.dianping.swallow.common.util.TopicUtil;
-import com.dianping.swallow.producerserver.util.SHAGenerater;
 
 public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    private final MessageDAO    messageDAO;
@@ -61,7 +61,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       SwallowMessage swallowMessage = new SwallowMessage();
       swallowMessage.setContent(textObject.getContent());
       swallowMessage.setGeneratedTime(new Date());
-      swallowMessage.setSha1(SHAGenerater.generateSHA(swallowMessage.getContent()));
+      swallowMessage.setSha1(SHAUtil.generateSHA(swallowMessage.getContent()));
       swallowMessage.setSourceIp(sourceIp.substring(sourceIp.indexOf("/") + 1, sourceIp.indexOf(":")));
       
       if (logger.isDebugEnabled()) {

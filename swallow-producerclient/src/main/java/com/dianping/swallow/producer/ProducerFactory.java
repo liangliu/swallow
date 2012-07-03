@@ -17,6 +17,7 @@ package com.dianping.swallow.producer;
 
 import java.util.Map;
 
+import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.impl.ProducerImpl;
@@ -36,6 +37,6 @@ public interface ProducerFactory {
     * @throws TopicNameInvalidException 目的地名称非法，则抛出异常
     * @throws RemoteServiceDownException Producer尝试连接远程服务失败时，抛出此异常 
     */
-   public ProducerImpl getProducer(String topicName, Map<ProducerOptionKey, Object> pOptions)
+   public ProducerImpl getProducer(Destination topicName, Map<ProducerOptionKey, Object> pOptions)
          throws TopicNameInvalidException, RemoteServiceDownException;
 }

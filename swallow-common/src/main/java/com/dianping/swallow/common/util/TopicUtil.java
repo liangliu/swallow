@@ -15,19 +15,15 @@
  */
 package com.dianping.swallow.common.util;
 
-/**
- * 给Producer用的工具类
- * 
- * @author tong.song
- */
 public class TopicUtil {
    /**
     * 判定topicName是否合法
+    * 
     * @param topicName
     * @return 合法返回true，非法返回false
     */
    public static boolean isTopicNameValid(String topicName) {
-      if (topicName.matches("[a-z|A-Z|_|.|0-9]+"))
+      if (topicName.matches("[a-z|A-Z|_|0-9]+"))
          return true;
       return false;
    }

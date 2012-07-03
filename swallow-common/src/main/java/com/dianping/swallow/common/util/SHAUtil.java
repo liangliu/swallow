@@ -1,11 +1,11 @@
-package com.dianping.swallow.producerserver.util;
+package com.dianping.swallow.common.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class SHAGenerater {
+public class SHAUtil {
    //根据Object生成SHA-1字符串
    public static String generateSHA(Object obj) throws Exception {
       String ret = null;
