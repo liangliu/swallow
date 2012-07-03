@@ -15,7 +15,7 @@
  */
 package com.dianping.swallow.common.util;
 
-public class TopicUtil {
+public class NameCheckUtil {
    /**
     * 判定topicName是否合法(由字母,数字和下划线构成，只能以字母开头，长度为2到20。)
     * 
