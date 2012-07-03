@@ -1,6 +1,7 @@
 package com.dianping.swallow.consumerserver.worker;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -9,6 +10,7 @@ import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.swallow.common.cat.CatMonitorBean;
 import com.dianping.swallow.common.consumer.ACKHandlerType;
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
@@ -17,7 +19,7 @@ import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 
-public class ConsumerWorkerManager {
+public class ConsumerWorkerManager implements CatMonitorBean {
 
    private static final Logger             logger                    = LoggerFactory
                                                                            .getLogger(ConsumerWorkerManager.class
@@ -28,7 +30,7 @@ public class ConsumerWorkerManager {
    private SwallowBuffer                   swallowBuffer;
    private MessageDAO                      messageDAO;
 
-   private ConfigManager                   configManager             = ConfigManager.getInstance();                         ;
+   private ConfigManager                   configManager             = ConfigManager.getInstance();
 
    private MQThreadFactory                 threadFactory             = new MQThreadFactory();
 
@@ -36,6 +38,10 @@ public class ConsumerWorkerManager {
 
    public void setAckDAO(AckDAO ackDAO) {
       this.ackDAO = ackDAO;
+   }
+
+   public MQThreadFactory getThreadFactory() {
+      return threadFactory;
    }
 
    public void setHeartbeater(Heartbeater heartbeater) {
@@ -78,7 +84,7 @@ public class ConsumerWorkerManager {
       if (consumerWorker == null) {
          synchronized (this) {
             if (consumerWorker == null) {
-               consumerWorker = new ConsumerWorkerImpl(consumerInfo, ackDAO, messageDAO, swallowBuffer, threadFactory);
+               consumerWorker = new ConsumerWorkerImpl(consumerInfo, this);
                consumerId2ConsumerWorker.put(consumerId, consumerWorker);
             }
          }
@@ -135,4 +141,28 @@ public class ConsumerWorkerManager {
       }
 
    }
+
+   @Override
+   public Map<String, Object> getStatusMap() {
+      Map<String, Object> map = new HashMap<String, Object>(1);
+      map.put("consumerIds", this.consumerId2ConsumerWorker.keySet());
+      return map;
+   }
+   
+   public void workerDone(ConsumerId consumerId) {
+	   consumerId2ConsumerWorker.remove(consumerId);
+   }
+
+	public AckDAO getAckDAO() {
+		return ackDAO;
+	}
+
+	public SwallowBuffer getSwallowBuffer() {
+		return swallowBuffer;
+	}
+
+	public MessageDAO getMessageDAO() {
+		return messageDAO;
+	}
+
 }

@@ -47,6 +47,7 @@
 			<list>
 				<ref bean="mongoClient" />
 				<ref bean="swallowBuffer" />
+				<ref bean="consumerWorkerManager" />
 			</list>
 		</property>
 		<property name="period" value="5000" /><!-- TODO 临时使用5秒间隔 -->

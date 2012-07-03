@@ -26,7 +26,7 @@ public class AckDAOImpl implements AckDAO {
 
    @Override
    public Long getMaxMessageId(String topicName, String consumerId) {
-      DBCollection collection = this.mongoClient.getAckCollection(topicName);
+      DBCollection collection = this.mongoClient.getAckCollection(topicName, consumerId);
 
       DBObject query = BasicDBObjectBuilder.start().add(CONSUMER_ID, consumerId).get();
       DBObject fields = BasicDBObjectBuilder.start().add(MSG_ID, Integer.valueOf(1)).get();
@@ -46,7 +46,7 @@ public class AckDAOImpl implements AckDAO {
 
    @Override
    public void add(String topicName, String consumerId, Long messageId) {
-      DBCollection collection = this.mongoClient.getAckCollection(topicName);
+      DBCollection collection = this.mongoClient.getAckCollection(topicName, consumerId);
 
       BSONTimestamp timestamp = MongoUtils.longToBSONTimestamp(messageId);
       DBObject add = BasicDBObjectBuilder.start().add(CONSUMER_ID, consumerId).add(MSG_ID, timestamp).get();

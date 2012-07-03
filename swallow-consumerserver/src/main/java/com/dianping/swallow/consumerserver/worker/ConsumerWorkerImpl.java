@@ -1,10 +1,13 @@
 package com.dianping.swallow.consumerserver.worker;
 
-import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.bson.types.BSONTimestamp;
@@ -21,62 +24,96 @@ import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.common.threadfactory.MQThreadFactory;
-import com.dianping.swallow.consumerserver.GetMessageThread;
-import com.dianping.swallow.consumerserver.HandleACKThread;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 
 public class ConsumerWorkerImpl implements ConsumerWorker {
-   private static final Logger          LOG                   = LoggerFactory.getLogger(ConsumerWorkerImpl.class);
+   private static final Logger    LOG                = LoggerFactory.getLogger(ConsumerWorkerImpl.class);
 
-   private ConsumerInfo                 consumerInfo;
-   private BlockingQueue<Channel>       freeChannels          = new ArrayBlockingQueue<Channel>(10);
-   private Set<Channel>                 connectedChannels     = new HashSet<Channel>();
-   private ArrayBlockingQueue<Runnable> ackWorker             = new ArrayBlockingQueue<Runnable>(10);
-   private boolean                      getMessageThreadExist = Boolean.FALSE;
-   private boolean                      handleACKThreadExist  = Boolean.FALSE;
-   private BlockingQueue<Message>       messageQueue          = null;
-   private AckDAO                       ackDao;
-   private SwallowBuffer                swallowBuffer;
-   private MessageDAO                   messageDao;
-   private PktMessage                   preparedMessage       = null;
-   private SwallowMessage               message;
-   private long                         getMessageInterval    = 1000L;
-   private MQThreadFactory              threadFactory;
-   private String                       consumerid;
-   private String                       topicName;
-   private volatile boolean             handleACKIsAlive               = true;
-   private volatile boolean             getMessageisAlive              = true;
+   private ConsumerInfo           consumerInfo;
+   private BlockingQueue<Channel> freeChannels       = new ArrayBlockingQueue<Channel>(10);
+   private Set<Channel>           connectedChannels  = Collections.synchronizedSet(new HashSet<Channel>());
+   private BlockingQueue<Message> messageQueue       = null;
+   private AckDAO                 ackDao;
+   private SwallowBuffer          swallowBuffer;
+   private MessageDAO             messageDao;
+   private PktMessage             preparedMessage    = null;
+   private long                   getMessageInterval = 1000L;
+   private MQThreadFactory        threadFactory;
+   private String                 consumerid;
+   private String                 topicName;
+   private volatile boolean       getMessageisAlive  = true;
+   private volatile boolean       started            = false;
+   private ExecutorService        ackExecutor;
+   private ConsumerWorkerManager  workerManager;
 
    public Set<Channel> getConnectedChannels() {
       return connectedChannels;
    }
 
-   public void setGetMessageThreadExist(boolean getMessageThreadExist) {
-      this.getMessageThreadExist = getMessageThreadExist;
-   }
-
-   public void setHandleACKThreadExist(boolean handleACKThreadExist) {
-      this.handleACKThreadExist = handleACKThreadExist;
-   }
-
-   public ConsumerWorkerImpl(ConsumerInfo consumerInfo, AckDAO ackDao, MessageDAO messageDao,
-                             SwallowBuffer swallowBuffer, MQThreadFactory threadFactory) {
+   public ConsumerWorkerImpl(ConsumerInfo consumerInfo, ConsumerWorkerManager workerManager) {
       this.consumerInfo = consumerInfo;
-      this.ackDao = ackDao;
-      this.messageDao = messageDao;
-      this.swallowBuffer = swallowBuffer;
-      this.threadFactory = threadFactory;
+      this.ackDao = workerManager.getAckDAO();
+      this.messageDao = workerManager.getMessageDAO();
+      this.swallowBuffer = workerManager.getSwallowBuffer();
+      this.threadFactory = workerManager.getThreadFactory();
       topicName = consumerInfo.getConsumerId().getDest().getName();
       consumerid = consumerInfo.getConsumerId().getConsumerId();
+      this.workerManager = workerManager;
+
+      ackExecutor = new ThreadPoolExecutor(1, 1, Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>());
+
+      startMessageFetcherThread();
+      startConnectedChannelCheckerThread();
+
+   }
+
+   private void startConnectedChannelCheckerThread() {
+      threadFactory.newThread(new Runnable() {
+         @Override
+         public void run() {
+            while (getMessageisAlive) {
+               if (started) {
+                  if (connectedChannels.isEmpty()) {
+                     getMessageisAlive = false;
+                     ackExecutor.shutdownNow();
+                     workerManager.workerDone(consumerInfo.getConsumerId());
+                     LOG.info("ConsumerWorker for " + consumerInfo.getConsumerId()
+                           + " has no connected channel, close it");
+                     break;
+                  }
+               }
+               try {
+                  //TODO
+                  Thread.sleep(2000);
+               } catch (InterruptedException e) {
+                  break;
+               }
+            }
+            LOG.info("connected channel checker thread closed");
+         }
+      }, "swallow-connectedChannelChecker-").start();
+
    }
 
    @Override
    public void handleAck(final Channel channel, final Long ackedMsgId, final ACKHandlerType type) {
 
-      ackWorker.add(new Runnable() {
+      ackExecutor.execute(new Runnable() {
          @Override
          public void run() {
-            updateMaxMessageId(ackedMsgId);
+            while (true) {
+               try {
+                  updateMaxMessageId(ackedMsgId);
+                  break;
+               } catch (Exception e) {
+                  // TODO: handle exception
+                  try {
+                     Thread.sleep(2000);
+                  } catch (InterruptedException e1) {
+                     break;
+                  }
+               }
+            }
             if (ACKHandlerType.CLOSE_CHANNEL.equals(type)) {
                handleChannelDisconnect(channel);
             } else if (ACKHandlerType.SEND_MESSAGE.equals(type)) {
@@ -95,102 +132,36 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    @Override
    public void handleChannelDisconnect(Channel channel) {
-      synchronized (connectedChannels) {
-         connectedChannels.remove(channel);
-      }
+      connectedChannels.remove(channel);
    }
 
-   private void getMessageLoop() {
-      while (getMessageisAlive) {
-         sendMessageByPollFreeChannelQueue();
-         synchronized (getConnectedChannels()) {
-            if (getConnectedChannels().isEmpty()) {
-               setGetMessageThreadExist(false);
-               getMessageisAlive = false;
-            }
-         }
+   private void startMessageFetcherThread() {
 
-      }
-      LOG.info("closed");
-   }
-
-   private void handleAckLoop() {
-      ArrayBlockingQueue<Runnable> ackWorker = getAckWorker();
-      while (handleACKIsAlive) {
-         Runnable worker = null;
-         try {
-            while (true) {
-               worker = ackWorker.poll(1000, TimeUnit.MILLISECONDS);// TODO 
-               if (worker != null) {
-                  worker.run();
-               } else {
-                  break;
-               }
-            }
-         } catch (InterruptedException e) {
-            LOG.error("unexpected interrupt", e);
-         }
-         synchronized (getConnectedChannels()) {
-            if (getConnectedChannels().isEmpty()) {
-               setHandleACKThreadExist(false);
-               handleACKIsAlive = false;
-            }
-         }
-
-      }
-      LOG.info("closed");
-   }
-
-   private void newHandleACKThread() {
-
-      Thread thread2 = threadFactory.newThread(new Runnable() {
+      threadFactory.newThread(new Runnable() {
 
          @Override
          public void run() {
-            handleAckLoop();
-
+            while (getMessageisAlive) {
+               sendMessageByPollFreeChannelQueue();
+            }
+            LOG.info("message fetcher thread closed");
          }
-      }, consumerInfo.toString() + "-handleACKThread-");
-      thread2.start();
-   }
-
-   private void newGetMessageThread() {
-
-      Thread thread1 = threadFactory.newThread(new Runnable() {
-
-         @Override
-         public void run() {
-            getMessageLoop();
-
-         }
-      }, consumerInfo.toString() + "-getMessageThread-");
-      thread1.start();
+      }, consumerInfo.toString() + "-messageFetcher-").start();
 
    }
 
    @Override
    public void handleGreet(final Channel channel, final int clientThreadCount) {
-      ackWorker.add(new Runnable() {
+      ackExecutor.execute(new Runnable() {
          @Override
          public void run() {
-            synchronized (connectedChannels) {
-               connectedChannels.add(channel);
-            }
-            for(int i = 0; i < clientThreadCount; i++){
+            connectedChannels.add(channel);
+            started = true;
+            for (int i = 0; i < clientThreadCount; i++) {
                freeChannels.add(channel);
-            }
-            
-            if (!getMessageThreadExist) {
-               newGetMessageThread();
-               getMessageThreadExist = Boolean.TRUE;
             }
          }
       });
-      if (!handleACKThreadExist) {
-         newHandleACKThread();
-         handleACKThreadExist = Boolean.TRUE;
-      }
-
    }
 
    @Override
@@ -202,15 +173,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
          // TODO Auto-generated catch block
          e.printStackTrace();
       }
-      handleACKIsAlive = false;
-   }
-
-   public ArrayBlockingQueue<Runnable> getAckWorker() {
-      return ackWorker;
-   }
-
-   public void setAckWorker(ArrayBlockingQueue<Runnable> ackWorker) {
-      this.ackWorker = ackWorker;
+      ackExecutor.shutdownNow();
    }
 
    private long getMessageIdOfTailMessage(String topicName, String consumerId) {
@@ -237,18 +200,13 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       //线程刚起，第一次调用的时候，需要先去mongo中获取maxMessageId
       try {
          while (getMessageisAlive) {
-            Channel channel = null;
-            synchronized (freeChannels) {
-               if (freeChannels == null) {
-                  break;
-               }
-               channel = freeChannels.poll(1000, TimeUnit.MILLISECONDS);// TODO
-            }
+            Channel channel = freeChannels.poll(1000, TimeUnit.MILLISECONDS);// TODO
             if (channel == null) {
                break;
 
             } else if (channel.isConnected()) {
                if (preparedMessage == null) {
+                  SwallowMessage message = null;
                   while (getMessageisAlive) {
                      //获得
                      message = (SwallowMessage) messageQueue.poll(getMessageInterval, TimeUnit.MILLISECONDS);
@@ -259,18 +217,31 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                         break;
                      }
                   }
-                  preparedMessage = new PktMessage(consumerInfo.getConsumerId().getDest(), message);
+                  if (message != null) {
+                     preparedMessage = new PktMessage(consumerInfo.getConsumerId().getDest(), message);
+                  }
                }
                //收到close命令后,可能没有取得消息,此时,message为null,不做任何事情.此线程结束.
-               if (message != null) {
-                  Long messageId = message.getMessageId();
+               if (preparedMessage != null) {
+                  Long messageId = preparedMessage.getContent().getMessageId();
                   //如果consumer是收到ACK之前更新messageId的类型
                   if (ConsumerType.AT_MOST.equals(consumerInfo.getConsumerType())) {
-                     ackDao.add(topicName, consumerid, messageId);
+                     while (true) {
+                        try {
+                           ackDao.add(topicName, consumerid, messageId);
+                           break;
+                           //TODO MongoExcpetion
+                        } catch (Exception e) {
+                           //TODO 
+                           Thread.sleep(2000);
+                        }
+                     }
                   }
-                  if (channel.isConnected()) {
+                  try {
                      channel.write(preparedMessage);
                      preparedMessage = null;
+                  } catch (Exception e) {
+                     // TODO: handle exception
                   }
                }
 
