@@ -44,8 +44,6 @@ import com.dianping.swallow.producer.ProducerOptionKey;
  * @author tong.song
  */
 public class ProducerTest {
-   MQServiceNormalMock    normalRemoteService    = new MQServiceNormalMock();
-   MQServiceExceptionMock exceptionRemoteService = new MQServiceExceptionMock();
 
    @Test
    public void testProducerFactoryImpl() {
@@ -120,45 +118,56 @@ public class ProducerTest {
    }
 
    @Test
-   public void testProducerImpl() throws ServerDaoException {
+   public void testProducerImplNormal() throws ServerDaoException {
 
       //正常的mock
       MQService normalRemoteServiceMock = mock(MQService.class);
       PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
-      when(normalRemoteServiceMock.sendMessage((Packet)Matchers.anyObject())).thenReturn(pktSwallowACK);
-      //抛filequeue异常的mock
-      MQService filequeueExceptionRemoteServiceMock = mock(MQService.class);
-      when(filequeueExceptionRemoteServiceMock.sendMessage((Packet)Matchers.anyObject())).thenThrow(new FileQueueClosedException());
-      //抛remoteServiceDown异常的mock
-      MQService remoteServiceDownExceptionRemoteServiceMock = mock(MQService.class);
-      when(remoteServiceDownExceptionRemoteServiceMock.sendMessage((Packet)Matchers.anyObject())).thenThrow(new RemoteServiceDownException());
-      //抛content为空异常的mock
-      MQService nullContentExceptionRemoteServiceMock = mock(MQService.class);
-      when(nullContentExceptionRemoteServiceMock.sendMessage((Packet)Matchers.anyObject())).thenThrow(new NullContentException());
-      
+      when(normalRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenReturn(pktSwallowACK);
+
+      //抛异常的mock
+      MQService exceptionRemoteServiceMock = mock(MQService.class);
+
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
 
       //同步模式pOptions
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
       pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
 
-      ProducerImpl syncProducer = null;
+      ProducerImpl syncNormalProducer = null;
+      ProducerImpl syncExceptionProducer = null;
+      
       try {
-         syncProducer = new ProducerImpl(normalRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
+         syncNormalProducer = new ProducerImpl(normalRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
+         syncExceptionProducer = new ProducerImpl(exceptionRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
       } catch (Exception e) {
       }
-      
-      Assert.assertNotNull(syncProducer);
-      
+      Assert.assertNotNull(syncNormalProducer);
+      Assert.assertNotNull(syncExceptionProducer);
+
       String strRet = null;
+      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(new ServerDaoException());
       try {
-         strRet = syncProducer.sendMessage("Hello world.");
+         strRet = syncNormalProducer.sendMessage("Hello world.");
       } catch (FileQueueClosedException e) {
       } catch (RemoteServiceDownException e) {
       } catch (NullContentException e) {
+      } catch (ServerDaoException e) {
       }
       Assert.assertEquals(pktSwallowACK.getShaInfo(), strRet);
+
+      strRet = null;
+      try {
+         strRet = syncExceptionProducer.sendMessage("Hello world.");
+      } catch (FileQueueClosedException e) {
+      } catch (RemoteServiceDownException e) {
+      } catch (NullContentException e) {
+      } catch (ServerDaoException e) {
+      }
+      Assert.assertNull(strRet);
+     
    }
+
 
    //   @Test
    //   public void testNormalProducer() {

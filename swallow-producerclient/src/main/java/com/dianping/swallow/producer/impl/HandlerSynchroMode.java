@@ -24,8 +24,9 @@ public class HandlerSynchroMode {
    public Packet doSendMsg(Packet pkt) throws ServerDaoException, RemoteServiceDownException {
       Packet pktRet = null;
       int leftRetryTimes;
-      for (leftRetryTimes = retryTimes; leftRetryTimes > 0; leftRetryTimes--) {
+      for (leftRetryTimes = retryTimes; leftRetryTimes > 0; ) {
          try {
+            leftRetryTimes--;
             pktRet = remoteService.sendMessage(pkt);
          } catch (ServerDaoException e) {
             //如果剩余重试次数>1，继续重试
