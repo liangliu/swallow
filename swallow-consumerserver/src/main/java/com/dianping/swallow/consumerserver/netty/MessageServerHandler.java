@@ -1,8 +1,6 @@
 package com.dianping.swallow.consumerserver.netty;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -11,10 +9,13 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.common.consumer.ACKHandlerType;
 import com.dianping.swallow.common.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
+import com.dianping.swallow.consumerserver.impl.MongoHeartbeater;
 import com.dianping.swallow.consumerserver.worker.ConsumerId;
 import com.dianping.swallow.consumerserver.worker.ConsumerInfo;
 import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
@@ -23,6 +24,8 @@ import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 @ChannelPipelineCoverage("all")
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 
+   private static final Logger LOG        = LoggerFactory.getLogger(MongoHeartbeater.class);
+   
    private ConsumerWorkerManager workerManager;
 
    private ConsumerId            consumerId;
@@ -36,9 +39,6 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    public MessageServerHandler(ConsumerWorkerManager workerManager) {
       this.workerManager = workerManager;
    }
-
-   //TODO log4j
-   private static final Logger logger = Logger.getLogger(MessageServerHandler.class.getName());
 
    @Override
    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
@@ -56,7 +56,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
             clientThreadCount = consumerPacket.getThreadCount();
             consumerId = new ConsumerId(consumerPacket.getConsumerId(), consumerPacket.getDest());
             consumerInfo = new ConsumerInfo(consumerId, consumerPacket.getConsumerType());
-            workerManager.handleGreet(channel, consumerInfo);
+            workerManager.handleGreet(channel, consumerInfo, clientThreadCount);
          } else {
             if (consumerPacket.getNeedClose() || readyClose) {
                clientThreadCount--;
@@ -74,14 +74,14 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
          }
 
       } else {
-         //TODO 记日志
+         LOG.error("the received message is not PktConsumerMessage");
       }
 
    }
 
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-      logger.log(Level.WARNING, "客户端断开连接！");
+      LOG.error("Client disconnected!", e.getCause());
       //只有IOException的时候才需要处理。
       if (e.getCause() instanceof IOException) {
          Channel channel = e.getChannel();

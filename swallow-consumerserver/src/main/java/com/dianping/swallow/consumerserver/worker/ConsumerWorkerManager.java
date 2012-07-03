@@ -54,8 +54,8 @@ public class ConsumerWorkerManager {
       return configManager;
    }
 
-   public void handleGreet(Channel channel, ConsumerInfo consumerInfo) {
-      findOrCreateConsumerWorker(consumerInfo).handleGreet(channel);
+   public void handleGreet(Channel channel, ConsumerInfo consumerInfo, int clientThreadCount) {
+      findOrCreateConsumerWorker(consumerInfo).handleGreet(channel, clientThreadCount);
    }
 
    public void handleAck(Channel channel, ConsumerInfo consumerInfo, Long ackedMsgId, ACKHandlerType type) {

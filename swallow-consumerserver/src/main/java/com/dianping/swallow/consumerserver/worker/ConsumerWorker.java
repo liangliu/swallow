@@ -8,7 +8,7 @@ import com.dianping.swallow.common.consumer.ACKHandlerType;
 
 public interface ConsumerWorker extends Closeable {
 
-   public void handleGreet(Channel channel);
+   public void handleGreet(Channel channel, int clientThreadCount);
 
    public void handleAck(Channel channel, Long ackedMsgId, ACKHandlerType type);
 

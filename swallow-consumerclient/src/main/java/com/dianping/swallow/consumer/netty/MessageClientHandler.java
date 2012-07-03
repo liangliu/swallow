@@ -39,14 +39,6 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
       consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET, cClient.getConsumerId(), cClient.getDest(),
             cClient.getConsumerType(), cClient.getThreadCount());
       e.getChannel().write(consumermessage);
-      //如果是多线程，则除了greet消息外，仍需发送threadCount-1次ACK。
-      if (cClient.getThreadCount() > 1) {
-         int threadCount = cClient.getThreadCount();
-         for (int i = 1; i < threadCount; i++) {
-            consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, null, cClient.getNeedClose());
-            e.getChannel().write(consumermessage);
-         }
-      }
    }
 
    @Override

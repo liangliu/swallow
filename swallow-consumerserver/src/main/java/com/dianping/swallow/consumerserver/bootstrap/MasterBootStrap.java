@@ -11,6 +11,8 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -25,14 +27,14 @@ import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
 public class MasterBootStrap {
 
+   private static final Logger LOG        = LoggerFactory.getLogger(MasterBootStrap.class);
+
    //TODO 是否lion中
-   private static int     masterPort = 8081;
+   private static int          masterPort = 8081;
 
-   private static boolean isSlave    = false;
+   private static boolean      isSlave    = false;
 
-   /**
-    * @param args
-    */
+
    public static void main(String[] args) {
 
       ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext.xml" });
@@ -41,8 +43,7 @@ public class MasterBootStrap {
       try {
          Thread.sleep(200);//TODO 主机启动的时候睡眠一会，给时间给slave关闭。
       } catch (InterruptedException e) {
-         // TODO 使用LOG
-         e.printStackTrace();
+         LOG.error("thread InterruptedException", e);
       }
 
       CloseMonitor closeMonitor = new CloseMonitor();
@@ -54,8 +55,7 @@ public class MasterBootStrap {
             try {
                consumerWorkerManager.close();
             } catch (IOException e) {
-               //  TODO 使用LOG
-               e.printStackTrace();
+               LOG.error("close SwallowC error!", e);
             }
          }
 
