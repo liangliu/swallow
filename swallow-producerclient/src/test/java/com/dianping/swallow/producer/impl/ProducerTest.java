@@ -22,11 +22,14 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
+import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
+import com.dianping.swallow.producer.impl.ProducerImpl;
 
 import static org.mockito.Mockito.*;
 
@@ -53,12 +56,12 @@ public class ProducerTest {
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
       try {
-         producerFactory.getProducer("Hello", pOptions);
+         producerFactory.getProducer(Destination.topic("Hello"), pOptions);
          pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
          pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
          pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 10);
          pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
-         producerFactory.getProducer("H:ello", pOptions);
+         producerFactory.getProducer(Destination.topic("H:ello"), pOptions);
       } catch (TopicNameInvalidException e) {
          e.printStackTrace();
       } catch (RemoteServiceDownException e) {
@@ -85,7 +88,7 @@ public class ProducerTest {
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
       ProducerImpl producer = null;
       try {
-         producer = new ProducerImpl(remoteService, "testProducer", pOptions);
+         producer = new ProducerImpl(remoteService, Destination.topic("testProducer"), pOptions);
       } catch (Exception e) {
       }
       Assert.assertNotNull(producer);
@@ -102,7 +105,7 @@ public class ProducerTest {
       pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
       pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
       try {
-         producer = new ProducerImpl(remoteService, "testNormalProducer", pOptions);
+         producer = new ProducerImpl(remoteService, Destination.topic("testNormalProducer"), pOptions);
       } catch (Exception e) {
       }
       Assert.assertNotNull(producer);

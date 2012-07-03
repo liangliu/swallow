@@ -18,6 +18,7 @@ package com.dianping.swallow.producer.examples;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
 import com.dianping.swallow.producer.impl.ProducerImpl;
@@ -47,7 +48,7 @@ public class ProducerAsync {
       ProducerImpl producer = null;
       //获取Producer实例
       try {
-         producer = producerFactory.getProducer("example", pOptions);
+         producer = producerFactory.getProducer(Destination.topic("example"), pOptions);
       } catch (Exception e) {
          System.out.println(e.toString());
       }
