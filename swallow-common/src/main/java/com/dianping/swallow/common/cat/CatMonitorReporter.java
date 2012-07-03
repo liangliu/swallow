@@ -9,6 +9,11 @@ import com.dianping.cat.Cat;
 import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Transaction;
 
+/**
+ * 负责每隔一段时间发送状态情况到CAT服务器
+ * 
+ * @author wukezhu
+ */
 public class CatMonitorReporter extends TimerTask {
 
    private List<CatMonitorBean> catMonitorBeans;

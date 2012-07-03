@@ -24,6 +24,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public class ProducerServerBootstrap {
    public static void main(String[] args) {
-      new ClassPathXmlApplicationContext("producerServer.xml");
+      new ClassPathXmlApplicationContext("applicationContext.xml");
    }
 }

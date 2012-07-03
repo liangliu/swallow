@@ -52,4 +52,9 @@ public class ConsumerId {
       return true;
    }
 
+   @Override
+   public String toString() {
+      return String.format("ConsumerId [consumerId=%s, dest=%s]", consumerId, dest);
+   }
+
 }
