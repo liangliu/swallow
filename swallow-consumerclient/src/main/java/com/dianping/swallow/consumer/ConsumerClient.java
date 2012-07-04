@@ -27,6 +27,8 @@ import com.dianping.swallow.consumer.netty.MessageClientHandler;
 public class ConsumerClient {
 
    private static final Logger LOG         = LoggerFactory.getLogger(ConsumerClient.class);
+   
+   private static final String LION_CONFIG_FILENAME = "lion.properties";
 
    private String              consumerId;
 
@@ -158,8 +160,6 @@ public class ConsumerClient {
       slaveAddress = new InetSocketAddress(slaveIp, slavePort);
 
    }
-
-   private static final String LION_CONFIG_FILENAME = "lion.properties";
 
    private String getSwallowCAddress(String topicName){
       DynamicConfig dynamicConfig = new LionDynamicConfig(LION_CONFIG_FILENAME);

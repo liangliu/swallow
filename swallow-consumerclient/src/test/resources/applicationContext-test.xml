@@ -12,16 +12,7 @@
 			<value>zhang.yu</value>
 		</constructor-arg>
 		<constructor-arg>
-			<ref local="dest"/>  
-		</constructor-arg>
-	</bean>
-	<bean id="dest"
-		class="com.dianping.swallow.common.message.Destination">
-		<constructor-arg>
-			<value>zhang.yu</value>
-		</constructor-arg>
-		<constructor-arg>
-			<ref local="dest"/>  
+			<value>xx</value> 
 		</constructor-arg>
 	</bean>
 </beans>
