@@ -9,15 +9,15 @@ import org.slf4j.LoggerFactory;
 
 public class ConSlaveThread implements Runnable {
 
-   private static final Logger LOG = LoggerFactory.getLogger(ConSlaveThread.class);
-   
-   private ClientBootstrap   bootstrap;
+   private static final Logger LOG             = LoggerFactory.getLogger(ConSlaveThread.class);
 
-   private InetSocketAddress slaveAddress;
+   private ClientBootstrap     bootstrap;
 
-   private long              waitTime        = 1000L;
+   private InetSocketAddress   slaveAddress;
 
-   private long              connectInterval = 1000L;
+   private long                waitTime        = 1000L;
+
+   private long                connectInterval = 1000L;
 
    public ClientBootstrap getBootstrap() {
       return bootstrap;

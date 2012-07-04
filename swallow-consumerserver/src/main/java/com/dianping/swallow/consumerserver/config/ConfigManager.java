@@ -14,31 +14,41 @@ import org.slf4j.LoggerFactory;
  */
 public class ConfigManager {
 
-   private static final Logger  LOG                          = LoggerFactory.getLogger(ConfigManager.class);
+   private static final Logger  LOG                             = LoggerFactory.getLogger(ConfigManager.class);
 
-   private static ConfigManager ins                          = new ConfigManager();
+   private static ConfigManager ins                             = new ConfigManager();
 
-   private int                  freeChannelBlockQueueSize    = 10;
+   private int                  freeChannelBlockQueueSize       = 10;
    // time related
-   private int pullFailDelayBase = 500;
-   private int pullFailDelayUpperBound = 3000;
-   private long checkConnectedChannelInterval = 2000L;
-   private long retryIntervalWhenMongoException = 2000L;
-   private long waitAckTimeWhenCloseSwc = 20000L;
-   private long waitSlaveShutDown = 30000L;
-   private long closeChannelMaxWaitingTime = 20000L;
-   private int                  heartbeatCheckInterval       = 3000;
-   private int                  heartbeatMaxStopTime         = 20000;
-   private int                  heartbeatUpdateInterval      = 4000;
-   private int                  blockQueueFailoverSleepTime  = 1000;
-   private int                  pullingTime                  = 1000;
-   private long                 freeChannelBlockQueueOutTime = 120000;
+   private int                  pullFailDelayBase               = 500;
+   private int                  pullFailDelayUpperBound         = 3000;
+   private long                 checkConnectedChannelInterval   = 2000L;
+   private long                 retryIntervalWhenMongoException = 2000L;
+   private long                 waitAckTimeWhenCloseSwc         = 20000L;
+   private long                 waitSlaveShutDown               = 30000L;
+   private long                 closeChannelMaxWaitingTime      = 20000L;
+   private int                  heartbeatCheckInterval          = 3000;
+   private int                  heartbeatMaxStopTime            = 20000;
+   private int                  heartbeatUpdateInterval         = 4000;
+   private int                  blockQueueFailoverSleepTime     = 1000;
+   private int                  pullingTime                     = 1000;
+   private long                 freeChannelBlockQueueOutTime    = 120000;
+   private int                  masterPort                      = 8081;
+   private int                  slavePort                       = 8082;
 
    //Master Ip
-   private String               masterIp                     = "127.0.0.1";
+   private String               masterIp                        = "127.0.0.1";
 
    public int getPullFailDelayBase() {
       return pullFailDelayBase;
+   }
+
+   public int getMasterPort() {
+      return masterPort;
+   }
+
+   public int getSlavePort() {
+      return slavePort;
    }
 
    public long getCloseChannelMaxWaitingTime() {
@@ -89,7 +99,6 @@ public class ConfigManager {
       return pullingTime;
    }
 
-
    /***
     * @return master consumer心跳最长的停止时间
     */
@@ -104,7 +113,6 @@ public class ConfigManager {
       return heartbeatUpdateInterval;
    }
 
-   
    public static void main(String[] args) {
       new ConfigManager();
    }
