@@ -76,6 +76,12 @@
 			<version>12.0</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.dianping</groupId>
+			<artifactId>jmockmongo-patched</artifactId>
+			<version>0.0.3</version>
+			<scope>test</scope>
+		</dependency>
 		<!-- 监控 -->
 		<dependency>
 			<groupId>com.dianping.cat</groupId>

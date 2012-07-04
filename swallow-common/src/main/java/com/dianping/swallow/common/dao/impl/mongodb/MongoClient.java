@@ -32,7 +32,7 @@ public class MongoClient implements ConfigChangeListener {
                                                                                                 .getLogger(MongoClient.class);
 
    private static final String           MONGO_CONFIG_FILENAME                            = "swallow-mongo.properties";
-   private static final String           LION_CONFIG_FILENAME                             = "lion.properties";
+   private static final String           LION_CONFIG_FILENAME                             = "swallow-mongo-lion.properties";
    private static final String           DEFAULT_COLLECTION_NAME                          = "c";
    private static final String           TOPICNAME_HEARTBEAT                              = "heartbeat";
    private static final String           TOPICNAME_DEFAULT                                = "default";
@@ -63,8 +63,8 @@ public class MongoClient implements ConfigChangeListener {
 
    //local config
    private MongoOptions                  mongoOptions;
-   
-   private DynamicConfig dynamicConfig;
+
+   private DynamicConfig                 dynamicConfig;
 
    /**
     * 从 Lion(配置topicName,serverUrl的列表) 和 MongoConfigManager(配置Mongo参数) 获取配置，创建
@@ -92,10 +92,10 @@ public class MongoClient implements ConfigChangeListener {
          config = new MongoConfig();
       }
       mongoOptions = this.getMongoOptions(config);
-      if(dynamicConfig != null) {
-    	  this.dynamicConfig = dynamicConfig;
+      if (dynamicConfig != null) {
+         this.dynamicConfig = dynamicConfig;
       } else {
-    	  this.dynamicConfig = new LionDynamicConfig(LION_CONFIG_FILENAME);
+         this.dynamicConfig = new LionDynamicConfig(LION_CONFIG_FILENAME);
       }
       loadLionConfig();
       if (LOG.isDebugEnabled()) {
@@ -104,7 +104,7 @@ public class MongoClient implements ConfigChangeListener {
       //hawk监控
       HawkJMXUtil.registerMBean(this);
    }
-   
+
    public MongoClient(String severURILionKey) {
       this(severURILionKey, null);
    }
@@ -148,7 +148,8 @@ public class MongoClient implements ConfigChangeListener {
          this.heartbeatMongo = parseURIAndCreateHeartbeatMongo(dynamicConfig.get(LION_KEY_HEARTBEAT_SERVER_URI).trim());
          String heartbeatCappedCollectionSize = dynamicConfig.get(LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE);
          this.heartbeatCappedCollectionSize = Integer.parseInt(heartbeatCappedCollectionSize.trim());
-         String heartbeatCappedCollectionMaxDocNum = dynamicConfig.get(LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM);//(可选)
+         String heartbeatCappedCollectionMaxDocNum = dynamicConfig
+               .get(LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM);//(可选)
          if (heartbeatCappedCollectionMaxDocNum != null)
             this.heartbeatCappedCollectionMaxDocNum = Integer.parseInt(heartbeatCappedCollectionMaxDocNum.trim());
          //添加Lion监听

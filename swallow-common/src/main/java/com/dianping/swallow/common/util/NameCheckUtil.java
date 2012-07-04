@@ -30,7 +30,7 @@ public class NameCheckUtil {
       if (topicName == null || topicName.length() == 0) {
          return false;
       }
-      if (topicName.matches("[a-z|A-Z][a-z|A-Z|_|.|-|0-9]{1,29}"))
+      if (topicName.matches("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,29}"))
          return true;
       return false;
    }
@@ -49,7 +49,7 @@ public class NameCheckUtil {
       if (consumerId == null || consumerId.length() == 0) {
          return false;
       }
-      if (consumerId.matches("[a-z|A-Z][a-z|A-Z|_|.|-|0-9]{1,29}"))
+      if (consumerId.matches("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,29}"))
          return true;
       return false;
    }
@@ -59,9 +59,9 @@ public class NameCheckUtil {
       System.out.println(isTopicNameValid("a_"));
       System.out.println(isTopicNameValid("a1"));
       System.out.println(isTopicNameValid("ab_"));
-      System.out.println(isTopicNameValid("a1."));
-      System.out.println(isTopicNameValid("a1.0"));
+      System.out.println(isTopicNameValid("a1-0"));
       System.out.println(isTopicNameValid("a1234567890123456789"));
+      System.out.println(isTopicNameValid("a1."));
       System.out.println(isTopicNameValid("a"));//false
       System.out.println(isTopicNameValid("_"));//false
       System.out.println(isTopicNameValid("3"));//false
