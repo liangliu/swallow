@@ -26,8 +26,6 @@ public class MasterBootStrap {
 
    private static final Logger LOG        = LoggerFactory.getLogger(MasterBootStrap.class);
 
-   //TODO 是lion中还是配置文件中?
-   private static int          masterPort = 8081;
 
    private static boolean      isSlave    = false;
 
@@ -36,12 +34,12 @@ public class MasterBootStrap {
       ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext.xml" });
       final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
       consumerWorkerManager.init(isSlave);
-//      try {
-//         Thread.sleep(consumerWorkerManager.getConfigManager().getWaitSlaveShutDown());//主机启动的时候睡眠一会，给时间给slave关闭。
-//      } catch (InterruptedException e) {
-//         LOG.error("thread InterruptedException", e);
-//      }
-      
+      try {
+         Thread.sleep(consumerWorkerManager.getConfigManager().getWaitSlaveShutDown());//主机启动的时候睡眠一会，给时间给slave关闭。
+      } catch (InterruptedException e) {
+         LOG.error("thread InterruptedException", e);
+      }
+
       // Configure the server.
       final ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
             Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
@@ -59,7 +57,7 @@ public class MasterBootStrap {
          }
       });
       // Bind and start to accept incoming connections.
-      bootstrap.bind(new InetSocketAddress(masterPort));
+      bootstrap.bind(new InetSocketAddress(consumerWorkerManager.getConfigManager().getMasterPort()));
 
       CloseMonitor closeMonitor = new CloseMonitor();
       int port = Integer.parseInt(System.getProperty("closeMonitorPort", "17555"));
@@ -67,9 +65,9 @@ public class MasterBootStrap {
 
          @Override
          public void onClose() {
-               consumerWorkerManager.close();
-               bootstrap.releaseExternalResources();
-            
+            consumerWorkerManager.close();
+            bootstrap.releaseExternalResources();
+
          }
 
       });

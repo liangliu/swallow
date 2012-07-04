@@ -28,7 +28,7 @@ public class ConsumerClient {
 
    private static final Logger LOG         = LoggerFactory.getLogger(ConsumerClient.class);
    
-   private static final String LION_CONFIG_FILENAME = "lion1.properties";
+   private static final String LION_CONFIG_FILENAME = "clientLion.properties";
 
    private String              consumerId;
 
@@ -47,6 +47,7 @@ public class ConsumerClient {
    private Boolean             needClose   = Boolean.FALSE;
    //consumerClient默认是1个线程处理，如需线程池处理，则另外设置线程数目。
    private int                 threadCount = 1;
+   private long connectMasterInterval = 1000L;
 
    public Boolean getNeedClose() {
       return needClose;
@@ -123,7 +124,7 @@ public class ConsumerClient {
             future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞!	
          }
          try {
-            Thread.sleep(1000);//TODO 配置变量
+            Thread.sleep(connectMasterInterval);
          } catch (InterruptedException e) {
             LOG.error("thread InterruptedException", e);
          }
