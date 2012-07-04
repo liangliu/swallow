@@ -39,7 +39,7 @@ import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
 
 /**
- * Producer的单元测试，包含了对ProducerFactory和ProducerImpl类的测试
+ * Producer的单元测试，包含了对ProducerFactoryImpl和ProducerImpl类的测试
  * 
  * @author tong.song
  */
@@ -119,34 +119,40 @@ public class ProducerTest {
 
    @Test
    public void testProducerImplNormal() throws ServerDaoException {
+      Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
 
       //正常的mock
       MQService normalRemoteServiceMock = mock(MQService.class);
+      //设置正常mock的行为
       PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
       when(normalRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenReturn(pktSwallowACK);
 
-      //抛异常的mock
-      MQService exceptionRemoteServiceMock = mock(MQService.class);
-
-      Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
+      //抛异常的mock（同步模式）
+      MQService syncExceptionRemoteServiceMock = mock(MQService.class);
+      //抛异常的mock（异步模式）
+      MQService asyncExceptionRemoteServiceMock = mock(MQService.class);
 
       //同步模式pOptions
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
       pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
 
+      //同步模式的Producer
       ProducerImpl syncNormalProducer = null;
       ProducerImpl syncExceptionProducer = null;
-      
+
+      //构造同步模式的Producer
       try {
          syncNormalProducer = new ProducerImpl(normalRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
-         syncExceptionProducer = new ProducerImpl(exceptionRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
+         syncExceptionProducer = new ProducerImpl(syncExceptionRemoteServiceMock, Destination.topic("UnitTest"),
+               pOptions);
       } catch (Exception e) {
       }
+      Assert.assertEquals("0.6.0", syncNormalProducer.getProducerVersion());
       Assert.assertNotNull(syncNormalProducer);
       Assert.assertNotNull(syncExceptionProducer);
 
+      //测试同步模式正常情况下的Producer
       String strRet = null;
-      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(new ServerDaoException());
       try {
          strRet = syncNormalProducer.sendMessage("Hello world.");
       } catch (FileQueueClosedException e) {
@@ -156,7 +162,11 @@ public class ProducerTest {
       }
       Assert.assertEquals(pktSwallowACK.getShaInfo(), strRet);
 
+      //测试同步模式下抛异常的Producer
       strRet = null;
+      //设置异常remoteServiceMock的行为
+      when(syncExceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(
+            new ServerDaoException());
       try {
          strRet = syncExceptionProducer.sendMessage("Hello world.");
       } catch (FileQueueClosedException e) {
@@ -165,64 +175,53 @@ public class ProducerTest {
       } catch (ServerDaoException e) {
       }
       Assert.assertNull(strRet);
-     
+
+      //异步模式的pOptions
+      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
+      pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
+      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
+
+      //异步模式的Producer
+      ProducerImpl asyncNormalProducer = null;
+      ProducerImpl asyncExceptionProducer = null;
+
+      //构造异步模式的Producer
+      try {
+         asyncNormalProducer = new ProducerImpl(normalRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
+         asyncExceptionProducer = new ProducerImpl(asyncExceptionRemoteServiceMock, Destination.topic("UnitTest"),
+               pOptions);
+      } catch (Exception e) {
+      }
+      Assert.assertNotNull(asyncNormalProducer);
+      Assert.assertNotNull(asyncExceptionProducer);
+
+      //测试异步模式下抛出异常的Producer
+      strRet = "";
+      //设置异常remoteServiceMock的行为
+      when(asyncExceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(
+            new ServerDaoException());
+      try {
+         for (int i = 0; i < 100; i++) {
+            strRet = asyncExceptionProducer.sendMessage("Hello World.");
+         }
+      } catch (FileQueueClosedException e) {
+      } catch (RemoteServiceDownException e) {
+      } catch (NullContentException e) {
+      }
+      Assert.assertNull(strRet);
+
+      //测试异步模式下情况正常的Producer//PS:启用消息压缩
+      strRet = "";
+      Map<String, String> properties = new HashMap<String, String>();
+      properties.put("zip", "true");
+      try {
+         for (int i = 0; i < 100; i++) {
+            strRet = asyncNormalProducer.sendMessage("Hello World.", properties);
+         }
+      } catch (FileQueueClosedException e) {
+      } catch (RemoteServiceDownException e) {
+      } catch (NullContentException e) {
+      }
+      Assert.assertNull(strRet);
    }
-
-
-   //   @Test
-   //   public void testNormalProducer() {
-   //      doTestProducer(normalRemoteService);
-   //   }
-   //
-   //   @Test
-   //   public void testExceptionProducer() {
-   //      doTestProducer(exceptionRemoteService);
-   //   }
-   //
-   //   public void doTestProducer(MQService remoteService) {
-   //      Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
-   //      Map<String, String> property = new HashMap<String, String>();
-   //      property.put("test", "test");
-   //      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-   //      ProducerImpl producer = null;
-   //      try {
-   //         producer = new ProducerImpl(remoteService, Destination.topic("testProducer"), pOptions);
-   //      } catch (Exception e) {
-   //      }
-   //      Assert.assertNotNull(producer);
-   //      String str = null;
-   //      try {
-   //         str = producer.sendMessage("testProducer");
-   //      } catch (Exception e) {
-   //      }
-   //      Assert.assertNotNull(str);
-   //
-   //      Assert.assertEquals(ProducerMode.SYNC_MODE, producer.getProducerMode());
-   //
-   //      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
-   //      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
-   //      pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
-   //      try {
-   //         producer = new ProducerImpl(remoteService, Destination.topic("testNormalProducer"), pOptions);
-   //      } catch (Exception e) {
-   //      }
-   //      Assert.assertNotNull(producer);
-   //      str = null;
-   //      try {
-   //         str = producer.sendMessage("testNormalProducer", property, "type1");
-   //         str = producer.sendMessage("testNormalProducer", property, "type2");
-   //      } catch (Exception e) {
-   //      }
-   //      Assert.assertNull(str);
-   //      Assert.assertEquals(ProducerMode.ASYNC_MODE, producer.getProducerMode());
-   //      Assert.assertEquals(5, producer.getThreadPoolSize());
-   //      Assert.assertEquals(false, producer.isContinueSend());
-   //
-   //      Assert.assertEquals("0.6.0", producer.getProducerVersion());
-   //   }
-   //   
-   //   @Test
-   //   public void testMockito(){
-   //      MQService mockMQService = mock(MQService.class);
-   //   }
 }
