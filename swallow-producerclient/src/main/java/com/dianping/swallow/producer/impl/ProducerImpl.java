@@ -62,19 +62,32 @@ public class ProducerImpl implements Producer {
       //初始化Producer参数
       if (!NameCheckUtil.isTopicNameValid(topicName.getName()))
          throw new TopicNameInvalidException();
-
       destination = topicName;
 
       if (pOptions != null) {
-         producerMode = pOptions.containsKey(ProducerOptionKey.PRODUCER_MODE) ? ((ProducerMode) pOptions
-               .get(ProducerOptionKey.PRODUCER_MODE) == ProducerMode.ASYNC_MODE ? ProducerMode.ASYNC_MODE
-               : DEFAULT_PRODUCER_MODE) : DEFAULT_PRODUCER_MODE;
-         threadPoolSize = pOptions.containsKey(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE) ? (Integer) pOptions
-               .get(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE) : DEFAULT_THREAD_POOL_SIZE;
-         continueSend = pOptions.containsKey(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND) ? (Boolean) pOptions
-               .get(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND) : DEFAULT_CONTINUE_SEND;
-         retryTimes = pOptions.containsKey(ProducerOptionKey.RETRY_TIMES) ? (Integer) pOptions
-               .get(ProducerOptionKey.RETRY_TIMES) : DEFAULT_RETRY_TIMES;
+         Object obj = null;
+         if (pOptions.containsKey(ProducerOptionKey.PRODUCER_MODE)) {
+            obj = pOptions.get(ProducerOptionKey.PRODUCER_MODE);
+            if (ProducerMode.class.isInstance(obj))
+               producerMode = (ProducerMode) obj;
+         }
+         if (pOptions.containsKey(ProducerOptionKey.RETRY_TIMES)) {
+            obj = pOptions.get(ProducerOptionKey.RETRY_TIMES);
+            if (Integer.class.isInstance(obj))
+               retryTimes = (Integer) obj;
+         }
+         if (producerMode == ProducerMode.ASYNC_MODE) {
+            if (pOptions.containsKey(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND)) {
+               obj = pOptions.get(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND);
+               if (Boolean.class.isInstance(obj))
+                  continueSend = (Boolean) obj;
+            }
+            if (pOptions.containsKey(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE)) {
+               obj = pOptions.get(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE);
+               if (Integer.class.isInstance(obj))
+                  threadPoolSize = (Integer) obj;
+            }
+         }
       }
       //初始化远程调用
       this.remoteService = remoteService;
@@ -177,7 +190,7 @@ public class ProducerImpl implements Producer {
       if (properties != null) {
          //如果需要压缩内容，properties设置zip=true
          //PS：压缩内容并非用户传入的Object，而是通过SwallowMessage类转换过的json字符串，压缩失败时，将zip置为false
-         if (properties.get("zip").equals("true")) {
+         if (properties.containsKey("zip") && properties.get("zip").equals("true")) {
             try {
                swallowMsg.setContent(ZipUtil.zip(swallowMsg.getContent()));
             } catch (IOException e) {
@@ -195,7 +208,7 @@ public class ProducerImpl implements Producer {
             try {
                PktSwallowPACK pktSwallowPACK = null;
                pktSwallowPACK = (PktSwallowPACK) syncHandler.doSendMsg(pktMessage);
-               if(pktSwallowPACK != null){
+               if (pktSwallowPACK != null) {
                   ret = pktSwallowPACK.getShaInfo();
                }
             } catch (ServerDaoException e) {
