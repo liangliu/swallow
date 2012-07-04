@@ -76,10 +76,17 @@
 			<version>12.0</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- 监控 -->
 		<dependency>
 			<groupId>com.dianping.cat</groupId>
 			<artifactId>cat-core</artifactId>
 			<version>0.3.1</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.dianping.hawk</groupId>
+			<artifactId>hawk-client</artifactId>
+			<version>0.6.7</version>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>

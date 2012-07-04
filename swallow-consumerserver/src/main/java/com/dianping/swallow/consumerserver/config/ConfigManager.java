@@ -9,15 +9,12 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import com.dianping.swallow.consumerserver.bootstrap.MasterBootStrap;
-
 /**
  * @author zhang.yu
  */
 public class ConfigManager {
 
-   private static final Logger LOG        = LoggerFactory.getLogger(ConfigManager.class);
+   private static final Logger  LOG                          = LoggerFactory.getLogger(ConfigManager.class);
 
    private static ConfigManager ins                          = new ConfigManager();
 

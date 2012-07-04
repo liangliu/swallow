@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
+import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.dao.MessageDAO;
 
 public class ProducerServerForText {
@@ -14,6 +15,11 @@ public class ProducerServerForText {
    private int                 port         = DEFAULT_PORT;
    private static final Logger logger       = Logger.getLogger(ProducerServerForText.class);
    private MessageDAO          messageDAO;
+
+   public ProducerServerForText() {
+      //Hawk监控
+      HawkJMXUtil.registerMBean("ProducerServerForText", new HawkMBean());
+   }
 
    public void start() {
       ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
@@ -33,6 +39,15 @@ public class ProducerServerForText {
 
    public void setMessageDAO(MessageDAO messageDAO) {
       this.messageDAO = messageDAO;
+   }
+
+   /**
+    * 用于Hawk监控
+    */
+   public class HawkMBean {
+      public int getPort() {
+         return port;
+      }
    }
 
 }

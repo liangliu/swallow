@@ -15,6 +15,7 @@ import org.jboss.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.consumer.ACKHandlerType;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.dao.AckDAO;
@@ -29,24 +30,24 @@ import com.dianping.swallow.common.threadfactory.PullStrategy;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 
 public class ConsumerWorkerImpl implements ConsumerWorker {
-   private static final Logger    LOG                = LoggerFactory.getLogger(ConsumerWorkerImpl.class);
+   private static final Logger    LOG               = LoggerFactory.getLogger(ConsumerWorkerImpl.class);
 
    private ConsumerInfo           consumerInfo;
-   private BlockingQueue<Channel> freeChannels       = new ArrayBlockingQueue<Channel>(10);
-   private Set<Channel>           connectedChannels  = Collections.synchronizedSet(new HashSet<Channel>());
-   private BlockingQueue<Message> messageQueue       = null;
+   private BlockingQueue<Channel> freeChannels      = new ArrayBlockingQueue<Channel>(10);
+   private Set<Channel>           connectedChannels = Collections.synchronizedSet(new HashSet<Channel>());
+   private BlockingQueue<Message> messageQueue      = null;
    private AckDAO                 ackDao;
    private SwallowBuffer          swallowBuffer;
    private MessageDAO             messageDao;
-   private PktMessage             preparedMessage    = null;
+   private PktMessage             preparedMessage   = null;
    private MQThreadFactory        threadFactory;
    private String                 consumerid;
    private String                 topicName;
-   private volatile boolean       getMessageisAlive  = true;
-   private volatile boolean       started            = false;
+   private volatile boolean       getMessageisAlive = true;
+   private volatile boolean       started           = false;
    private ExecutorService        ackExecutor;
    private ConsumerWorkerManager  workerManager;
-   private PullStrategy pullStgy;
+   private PullStrategy           pullStgy;
 
    public Set<Channel> getConnectedChannels() {
       return connectedChannels;
@@ -68,6 +69,8 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       startMessageFetcherThread();
       startConnectedChannelCheckerThread();
 
+      //Hawk监控
+      HawkJMXUtil.registerMBean(topicName + '-' + consumerid + "-ConsumerWorkerImpl", new HawkMBean());
    }
 
    private void startConnectedChannelCheckerThread() {
@@ -249,4 +252,58 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
          LOG.error("thread InterruptedException", e);
       }
    }
+
+   /**
+    * 用于Hawk监控
+    */
+   public class HawkMBean {
+      public String getConnectedChannels() {
+         StringBuilder sb = new StringBuilder();
+         if (connectedChannels != null) {
+            for (Channel channel : connectedChannels) {
+               sb.append(channel.getRemoteAddress()).append("(isConnected:").append(channel.isConnected()).append(')');
+            }
+         }
+         return sb.toString();
+      }
+
+      public String getFreeChannels() {
+         StringBuilder sb = new StringBuilder();
+         if (freeChannels != null) {
+            for (Channel channel : freeChannels) {
+               sb.append(channel.getRemoteAddress()).append("(isConnected:").append(channel.isConnected()).append(')');
+            }
+         }
+         return sb.toString();
+      }
+
+      public String getConsumerInfo() {
+         return "ConsumerId=" + consumerInfo.getConsumerId() + ",ConsumerType=" + consumerInfo.getConsumerType();
+      }
+
+      public String getConsumerid() {
+         return consumerid;
+      }
+
+      public String getTopicName() {
+         return topicName;
+      }
+
+      public String getPreparedMessage() {
+         if (preparedMessage != null) {
+            return preparedMessage.toString();
+         }
+         return null;
+      }
+
+      public boolean isGetMessageisAlive() {
+         return getMessageisAlive;
+      }
+
+      public boolean isStarted() {
+         return started;
+      }
+
+   }
+
 }

@@ -1,7 +1,6 @@
 package com.dianping.swallow.consumerserver.worker;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -10,7 +9,6 @@ import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.common.cat.CatMonitorBean;
 import com.dianping.swallow.common.consumer.ACKHandlerType;
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
@@ -19,9 +17,10 @@ import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 
-public class ConsumerWorkerManager implements CatMonitorBean {
+public class ConsumerWorkerManager {
 
-   private static final Logger             LOG                    = LoggerFactory.getLogger(ConsumerWorkerManager.class);
+   private static final Logger             LOG                       = LoggerFactory
+                                                                           .getLogger(ConsumerWorkerManager.class);
 
    private AckDAO                          ackDAO;
    private Heartbeater                     heartbeater;
@@ -64,14 +63,14 @@ public class ConsumerWorkerManager implements CatMonitorBean {
 
    public void handleAck(Channel channel, ConsumerInfo consumerInfo, Long ackedMsgId, ACKHandlerType type) {
       ConsumerWorker worker = findConsumerWorker(consumerInfo);
-      if(worker != null) {
+      if (worker != null) {
          worker.handleAck(channel, ackedMsgId, type);
       }
    }
 
    public void handleChannelDisconnect(Channel channel, ConsumerInfo consumerInfo) {
       ConsumerWorker worker = findConsumerWorker(consumerInfo);
-      if(worker != null) {
+      if (worker != null) {
          worker.handleChannelDisconnect(channel);
       }
    }
@@ -81,7 +80,7 @@ public class ConsumerWorkerManager implements CatMonitorBean {
          entry.getValue().close();
       }
    }
-   
+
    private ConsumerWorker findConsumerWorker(ConsumerInfo consumerInfo) {
       ConsumerId consumerId = consumerInfo.getConsumerId();
       return consumerId2ConsumerWorker.get(consumerId);
@@ -151,27 +150,20 @@ public class ConsumerWorkerManager implements CatMonitorBean {
 
    }
 
-   @Override
-   public Map<String, Object> getStatusMap() {
-      Map<String, Object> map = new HashMap<String, Object>(1);
-      map.put("consumerIds", this.consumerId2ConsumerWorker.keySet());
-      return map;
-   }
-   
    public void workerDone(ConsumerId consumerId) {
-	   consumerId2ConsumerWorker.remove(consumerId);
+      consumerId2ConsumerWorker.remove(consumerId);
    }
 
-	public AckDAO getAckDAO() {
-		return ackDAO;
-	}
+   public AckDAO getAckDAO() {
+      return ackDAO;
+   }
 
-	public SwallowBuffer getSwallowBuffer() {
-		return swallowBuffer;
-	}
+   public SwallowBuffer getSwallowBuffer() {
+      return swallowBuffer;
+   }
 
-	public MessageDAO getMessageDAO() {
-		return messageDAO;
-	}
+   public MessageDAO getMessageDAO() {
+      return messageDAO;
+   }
 
 }

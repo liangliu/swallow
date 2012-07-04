@@ -13,11 +13,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.lion.EnvZooKeeperConfig;
 import com.dianping.lion.client.ConfigCache;
 import com.dianping.lion.client.ConfigChange;
 import com.dianping.lion.client.LionException;
-import com.dianping.swallow.common.cat.CatMonitorBean;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -27,7 +27,7 @@ import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
-public class MongoClient implements ConfigChange, CatMonitorBean {
+public class MongoClient implements ConfigChange {
 
    private static final Logger           LOG                                              = LoggerFactory
                                                                                                 .getLogger(MongoClient.class);
@@ -95,6 +95,8 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
       if (LOG.isDebugEnabled()) {
          LOG.debug("Init MongoClient - done.");
       }
+      //hawk监控
+      HawkJMXUtil.registerMBean(this);
    }
 
    /**
@@ -423,7 +425,7 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
          mongo = this.topicNameToMongoMap.get(TOPICNAME_DEFAULT);
       }
       return this.getCollection(mongo, getIntSafely(msgTopicNameToSizes, topicName),
-            getIntSafely(msgTopicNameToMaxDocNums, topicName), "msg-", topicName, new BasicDBObject(MessageDAOImpl.ID,
+            getIntSafely(msgTopicNameToMaxDocNums, topicName), "msg#", topicName, new BasicDBObject(MessageDAOImpl.ID,
                   -1));
    }
 
@@ -448,7 +450,7 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
          mongo = this.topicNameToMongoMap.get(TOPICNAME_DEFAULT);
       }
       return this.getCollection(mongo, getIntSafely(ackTopicNameToSizes, topicName),
-            getIntSafely(ackTopicNameToMaxDocNums, topicName), "ack-", topicName + "-" + consumerId, new BasicDBObject(
+            getIntSafely(ackTopicNameToMaxDocNums, topicName), "ack#", topicName + "#" + consumerId, new BasicDBObject(
                   AckDAOImpl.MSG_ID, -1).append(AckDAOImpl.CONSUMER_ID, 1));
    }
 
@@ -462,7 +464,7 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
          mongo = this.topicNameToMongoMap.get(TOPICNAME_DEFAULT);
       }
       return this.getCollection(mongo, this.heartbeatCappedCollectionSize, this.heartbeatCappedCollectionMaxDocNum,
-            "heartbeat-", ip, new BasicDBObject(HeartbeatDAOImpl.TICK, -1));
+            "heartbeat#", ip, new BasicDBObject(HeartbeatDAOImpl.TICK, -1));
    }
 
    private DBCollection getCollection(Mongo mongo, int size, int cappedCollectionMaxDocNum, String dbNamePrefix,
@@ -558,18 +560,50 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
       return result;
    }
 
-   @Override
-   public Map<String, Object> getStatusMap() {
-      Map<String, Object> map = new HashMap<String, Object>();
-      map.put("topicNameToMongoMap", this.topicNameToMongoMap);
-      map.put("msgTopicNameToSizes", this.msgTopicNameToSizes);
-      map.put("msgTopicNameToMaxDocNums", this.msgTopicNameToMaxDocNums);
-      map.put("ackTopicNameToSizes", this.ackTopicNameToSizes);
-      map.put("ackTopicNameToMaxDocNums", this.ackTopicNameToMaxDocNums);
-      map.put("heartbeatMongo", this.heartbeatMongo);
-      map.put("heartbeatCappedCollectionSize", this.heartbeatCappedCollectionSize);
-      map.put("heartbeatCappedCollectionMaxDocNum", this.heartbeatCappedCollectionMaxDocNum);
-      return map;
+   //以下方法用于Hawk监控
+
+   public String getSeverURILionKey() {
+      return severURILionKey;
+   }
+
+   public Map<String, Integer> getMsgTopicNameToSizes() {
+      return msgTopicNameToSizes;
+   }
+
+   public Map<String, Integer> getMsgTopicNameToMaxDocNums() {
+      return msgTopicNameToMaxDocNums;
+   }
+
+   public Map<String, Integer> getAckTopicNameToSizes() {
+      return ackTopicNameToSizes;
+   }
+
+   public Map<String, Integer> getAckTopicNameToMaxDocNums() {
+      return ackTopicNameToMaxDocNums;
+   }
+
+   public String getHeartbeatMongo() {
+      return heartbeatMongo.toString();
+   }
+
+   public int getHeartbeatCappedCollectionSize() {
+      return heartbeatCappedCollectionSize;
+   }
+
+   public int getHeartbeatCappedCollectionMaxDocNum() {
+      return heartbeatCappedCollectionMaxDocNum;
+   }
+
+   public String getTopicNameToMongoMap() {
+      return topicNameToMongoMap.toString();
+   }
+
+   public String getMongoOptions() {
+      return mongoOptions.toString();
+   }
+
+   public String getCollectionExistsSign() {
+      return collectionExistsSign.toString();
    }
 
 }

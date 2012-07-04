@@ -41,16 +41,4 @@
 		</constructor-arg>
 	</bean>
 
-	<bean id="catMonitorReporter" class="com.dianping.swallow.common.cat.CatMonitorReporter"
-		init-method="start" destroy-method="cancle">
-		<property name="catMonitorBeans">
-			<list>
-				<ref bean="mongoClient" />
-				<ref bean="swallowBuffer" />
-				<ref bean="consumerWorkerManager" />
-			</list>
-		</property>
-		<property name="period" value="5000" /><!-- TODO 临时使用5秒间隔 -->
-	</bean>
-
 </beans>
