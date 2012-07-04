@@ -28,7 +28,7 @@ public class ConsumerClient {
 
    private static final Logger LOG         = LoggerFactory.getLogger(ConsumerClient.class);
    
-   private static final String LION_CONFIG_FILENAME = "lion.properties";
+   private static final String LION_CONFIG_FILENAME = "lion1.properties";
 
    private String              consumerId;
 
