@@ -23,7 +23,7 @@ import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 public class SlaveBootStrap {
 
    //TODO 是否lion中
-   private static int     port    = 8082;
+   private static int     slavePort    = 8082;
 
    private static boolean isSlave = true;
 
@@ -53,7 +53,7 @@ public class SlaveBootStrap {
             }
          });
          // Bind and start to accept incoming connections.
-         bootstrap.bind(new InetSocketAddress(port));
+         bootstrap.bind(new InetSocketAddress(slavePort));
          //检测Master是否起来，没有就一直轮询心跳
          consumerWorkerManager.checkMasterIsALive(bootstrap);
          consumerWorkerManager.close();

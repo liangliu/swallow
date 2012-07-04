@@ -2,7 +2,6 @@ package com.dianping.swallow.consumerserver.impl;
 
 import java.util.Date;
 
-import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

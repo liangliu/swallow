@@ -1,9 +1,7 @@
 package com.dianping.swallow.consumerserver.bootstrap;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
-
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -15,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
 import com.dianping.swallow.common.monitor.CloseMonitor;

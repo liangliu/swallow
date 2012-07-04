@@ -25,7 +25,8 @@ public class ConfigManager {
    private long checkConnectedChannelInterval = 2000L;
    private long retryIntervalWhenMongoException = 2000L;
    private long waitAckTimeWhenCloseSwc = 20000L;
-   private long waitSlaveShutDown = 20000L;
+   private long waitSlaveShutDown = 30000L;
+   private long closeChannelMaxWaitingTime = 20000L;
    private int                  heartbeatCheckInterval       = 3000;
    private int                  heartbeatMaxStopTime         = 20000;
    private int                  heartbeatUpdateInterval      = 4000;
@@ -33,15 +34,15 @@ public class ConfigManager {
    private int                  pullingTime                  = 1000;
    private long                 freeChannelBlockQueueOutTime = 120000;
 
-   // db and collection name related
-   private String               counterDB                    = "swallow_counter";
-   private String               topicDB                      = "swallow_topic";
-
    //Master Ip
    private String               masterIp                     = "127.0.0.1";
 
    public int getPullFailDelayBase() {
       return pullFailDelayBase;
+   }
+
+   public long getCloseChannelMaxWaitingTime() {
+      return closeChannelMaxWaitingTime;
    }
 
    public int getPullFailDelayUpperBound() {
@@ -88,9 +89,6 @@ public class ConfigManager {
       return pullingTime;
    }
 
-   public String getCounterDB() {
-      return counterDB;
-   }
 
    /***
     * @return master consumer心跳最长的停止时间
@@ -106,9 +104,6 @@ public class ConfigManager {
       return heartbeatUpdateInterval;
    }
 
-   public String getTopicDB() {
-      return topicDB;
-   }
    
    public static void main(String[] args) {
       new ConfigManager();
