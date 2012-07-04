@@ -7,17 +7,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.lion.EnvZooKeeperConfig;
-import com.dianping.lion.client.ConfigCache;
-import com.dianping.lion.client.ConfigChange;
-import com.dianping.lion.client.LionException;
 import com.dianping.swallow.common.cat.CatMonitorBean;
+import com.dianping.swallow.common.config.ConfigChangeListener;
+import com.dianping.swallow.common.config.DynamicConfig;
+import com.dianping.swallow.common.config.impl.lion.LionDynamicConfig;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -27,7 +25,7 @@ import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
-public class MongoClient implements ConfigChange, CatMonitorBean {
+public class MongoClient implements ConfigChangeListener, CatMonitorBean {
 
    private static final Logger           LOG                                              = LoggerFactory
                                                                                                 .getLogger(MongoClient.class);
@@ -64,6 +62,8 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
 
    //local config
    private MongoOptions                  mongoOptions;
+   
+   private DynamicConfig dynamicConfig;
 
    /**
     * 从 Lion(配置topicName,serverUrl的列表) 和 MongoConfigManager(配置Mongo参数) 获取配置，创建
@@ -77,7 +77,7 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
     * @throws LionException
     * @throws IOException
     */
-   public MongoClient(String severURILionKey) {
+   public MongoClient(String severURILionKey, DynamicConfig dynamicConfig) {
       this.severURILionKey = severURILionKey;
       if (LOG.isDebugEnabled()) {
          LOG.debug("Init MongoClient - start.");
@@ -91,10 +91,19 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
          config = new MongoConfig();
       }
       mongoOptions = this.getMongoOptions(config);
+      if(dynamicConfig != null) {
+    	  this.dynamicConfig = dynamicConfig;
+      } else {
+    	  this.dynamicConfig = new LionDynamicConfig(LION_CONFIG_FILENAME);
+      }
       loadLionConfig();
       if (LOG.isDebugEnabled()) {
          LOG.debug("Init MongoClient - done.");
       }
+   }
+   
+   public MongoClient(String severURILionKey) {
+      this(severURILionKey, null);
    }
 
    /**
@@ -115,47 +124,32 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
     */
    private void loadLionConfig() {
       try {
-         ConfigCache cc = ConfigCache.getInstance(EnvZooKeeperConfig.getZKAddress());
-         //如果本地文件存在，则使用Lion本地文件
-         InputStream in = MongoClient.class.getClassLoader().getResourceAsStream(LION_CONFIG_FILENAME);
-         if (in != null) {
-            try {
-               Properties props = new Properties();
-               props.load(in);
-               cc.setPts(props);
-               if (LOG.isInfoEnabled()) {
-                  LOG.info("Load Lion local config file :" + LION_CONFIG_FILENAME);
-               }
-            } finally {
-               in.close();
-            }
-         }
          //serverURI
-         this.topicNameToMongoMap = parseURIAndCreateTopicMongo(cc.getProperty(this.severURILionKey).trim());
+         this.topicNameToMongoMap = parseURIAndCreateTopicMongo(dynamicConfig.get(this.severURILionKey).trim());
          //msgTopicNameToSizes
-         String msgTopicNameToSizes = cc.getProperty(LION_KEY_MSG_CAPPED_COLLECTION_SIZE);
+         String msgTopicNameToSizes = dynamicConfig.get(LION_KEY_MSG_CAPPED_COLLECTION_SIZE);
          if (msgTopicNameToSizes != null)
             this.msgTopicNameToSizes = parseSizeOrDocNum(msgTopicNameToSizes.trim());
          //msgTopicNameToMaxDocNums(可选)
-         String msgTopicNameToMaxDocNums = cc.getProperty(LION_KEY_MSG_CAPPED_COLLECTION_MAX_DOC_NUM);
+         String msgTopicNameToMaxDocNums = dynamicConfig.get(LION_KEY_MSG_CAPPED_COLLECTION_MAX_DOC_NUM);
          if (msgTopicNameToMaxDocNums != null)
             this.msgTopicNameToMaxDocNums = parseSizeOrDocNum(msgTopicNameToMaxDocNums.trim());
          //ackTopicNameToSizes
-         String ackTopicNameToSizes = cc.getProperty(LION_KEY_ACK_CAPPED_COLLECTION_SIZE);
+         String ackTopicNameToSizes = dynamicConfig.get(LION_KEY_ACK_CAPPED_COLLECTION_SIZE);
          this.ackTopicNameToSizes = parseSizeOrDocNum(ackTopicNameToSizes.trim());
          //ackTopicNameToMaxDocNums(可选)
-         String ackTopicNameToMaxDocNums = cc.getProperty(LION_KEY_ACK_CAPPED_COLLECTION_MAX_DOC_NUM);
+         String ackTopicNameToMaxDocNums = dynamicConfig.get(LION_KEY_ACK_CAPPED_COLLECTION_MAX_DOC_NUM);
          if (ackTopicNameToMaxDocNums != null)
             this.ackTopicNameToMaxDocNums = parseSizeOrDocNum(ackTopicNameToMaxDocNums.trim());
          //heartbeat
-         this.heartbeatMongo = parseURIAndCreateHeartbeatMongo(cc.getProperty(LION_KEY_HEARTBEAT_SERVER_URI).trim());
-         String heartbeatCappedCollectionSize = cc.getProperty(LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE);
+         this.heartbeatMongo = parseURIAndCreateHeartbeatMongo(dynamicConfig.get(LION_KEY_HEARTBEAT_SERVER_URI).trim());
+         String heartbeatCappedCollectionSize = dynamicConfig.get(LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE);
          this.heartbeatCappedCollectionSize = Integer.parseInt(heartbeatCappedCollectionSize.trim());
-         String heartbeatCappedCollectionMaxDocNum = cc.getProperty(LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM);//(可选)
+         String heartbeatCappedCollectionMaxDocNum = dynamicConfig.get(LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM);//(可选)
          if (heartbeatCappedCollectionMaxDocNum != null)
             this.heartbeatCappedCollectionMaxDocNum = Integer.parseInt(heartbeatCappedCollectionMaxDocNum.trim());
          //添加Lion监听
-         cc.addChange(this);
+         dynamicConfig.setConfigChangeListener(this);
       } catch (Exception e) {
          throw new IllegalArgumentException("Error Loading Config from Lion : " + e.getMessage(), e);
       }
@@ -320,7 +314,7 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
     * </p>
     */
    @Override
-   public void onChange(String key, String value) {
+   public void onConfigChange(String key, String value) {
       if (LOG.isInfoEnabled()) {
          LOG.info("onChange() called.");
       }
@@ -570,6 +564,10 @@ public class MongoClient implements ConfigChange, CatMonitorBean {
       map.put("heartbeatCappedCollectionSize", this.heartbeatCappedCollectionSize);
       map.put("heartbeatCappedCollectionMaxDocNum", this.heartbeatCappedCollectionMaxDocNum);
       return map;
+   }
+
+   public void setDynamicConfig(DynamicConfig dynamicConfig) {
+      this.dynamicConfig = dynamicConfig;
    }
 
 }
