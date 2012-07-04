@@ -1,6 +1,5 @@
 package com.dianping.swallow.consumerserver.worker;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +20,8 @@ import com.dianping.swallow.consumerserver.config.ConfigManager;
 
 public class ConsumerWorkerManager implements CatMonitorBean {
 
-   private static final Logger             LOG                    = LoggerFactory.getLogger(ConsumerWorkerManager.class);
+   private static final Logger             LOG                       = LoggerFactory
+                                                                           .getLogger(ConsumerWorkerManager.class);
 
    private AckDAO                          ackDAO;
    private Heartbeater                     heartbeater;
@@ -64,24 +64,32 @@ public class ConsumerWorkerManager implements CatMonitorBean {
 
    public void handleAck(Channel channel, ConsumerInfo consumerInfo, Long ackedMsgId, ACKHandlerType type) {
       ConsumerWorker worker = findConsumerWorker(consumerInfo);
-      if(worker != null) {
+      if (worker != null) {
          worker.handleAck(channel, ackedMsgId, type);
       }
    }
 
    public void handleChannelDisconnect(Channel channel, ConsumerInfo consumerInfo) {
       ConsumerWorker worker = findConsumerWorker(consumerInfo);
-      if(worker != null) {
+      if (worker != null) {
          worker.handleChannelDisconnect(channel);
       }
    }
 
-   public void close() throws IOException {
+   public void close() {
       for (Map.Entry<ConsumerId, ConsumerWorker> entry : consumerId2ConsumerWorker.entrySet()) {
-         entry.getValue().close();
+         entry.getValue().closeMessageFetcherThread();
+      }
+      try {
+         Thread.sleep(configManager.getWaitAckTimeWhenCloseSwc());
+      } catch (InterruptedException e) {
+         LOG.error("close Swc thread InterruptedException", e);
+      }
+      for (Map.Entry<ConsumerId, ConsumerWorker> entry : consumerId2ConsumerWorker.entrySet()) {
+         entry.getValue().closeAckExecutor();
       }
    }
-   
+
    private ConsumerWorker findConsumerWorker(ConsumerInfo consumerInfo) {
       ConsumerId consumerId = consumerInfo.getConsumerId();
       return consumerId2ConsumerWorker.get(consumerId);
@@ -140,13 +148,13 @@ public class ConsumerWorkerManager implements CatMonitorBean {
       heartbeatThread.start();
    }
 
-   public void checkMasterIsLive(final ServerBootstrap bootStrap) {
+   public void checkMasterIsALive(final ServerBootstrap bootStrap) {
 
       try {
-         heartbeater.waitUntilBeginBeating(configManager.getMasterIp(), bootStrap,
-               configManager.getHeartbeatCheckInterval(), configManager.getHeartbeatMaxStopTime());
+         heartbeater.waitUntilBeginBeating(configManager.getMasterIp(), configManager.getHeartbeatCheckInterval(),
+               configManager.getHeartbeatMaxStopTime());
       } catch (Exception e) {
-         //log.error("Error update heart beat", e);
+         LOG.error("checkMasterIsALive InterruptedException", e);
       }
 
    }
@@ -157,21 +165,21 @@ public class ConsumerWorkerManager implements CatMonitorBean {
       map.put("consumerIds", this.consumerId2ConsumerWorker.keySet());
       return map;
    }
-   
+
    public void workerDone(ConsumerId consumerId) {
-	   consumerId2ConsumerWorker.remove(consumerId);
+      consumerId2ConsumerWorker.remove(consumerId);
    }
 
-	public AckDAO getAckDAO() {
-		return ackDAO;
-	}
+   public AckDAO getAckDAO() {
+      return ackDAO;
+   }
 
-	public SwallowBuffer getSwallowBuffer() {
-		return swallowBuffer;
-	}
+   public SwallowBuffer getSwallowBuffer() {
+      return swallowBuffer;
+   }
 
-	public MessageDAO getMessageDAO() {
-		return messageDAO;
-	}
+   public MessageDAO getMessageDAO() {
+      return messageDAO;
+   }
 
 }

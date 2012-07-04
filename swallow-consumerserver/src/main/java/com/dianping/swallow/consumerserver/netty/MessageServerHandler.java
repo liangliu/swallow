@@ -65,7 +65,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
                      @Override
                      public void run() {
                         try {
-                           Thread.sleep(20000);
+                           Thread.sleep(workerManager.getConfigManager().getCloseChannelMaxWaitingTime());
                         } catch (InterruptedException e) {
                            LOG.error("CloseChannelThread InterruptedException", e);
                         }
@@ -97,12 +97,14 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-      LOG.error("Client disconnected!", e.getCause());
+      
       //只有IOException的时候才需要处理。
       if (e.getCause() instanceof IOException) {
+         LOG.error("Client disconnected!", e.getCause());
          Channel channel = e.getChannel();
          workerManager.handleChannelDisconnect(channel, consumerInfo);
          channel.close();
       }
+      LOG.info("something exception happened!", e.getCause());
    }
 }

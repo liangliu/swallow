@@ -1,9 +1,7 @@
 package com.dianping.swallow.consumerserver.bootstrap;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
-
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -15,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
 import com.dianping.swallow.common.monitor.CloseMonitor;
@@ -41,28 +38,13 @@ public class MasterBootStrap {
       final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
       consumerWorkerManager.init(isSlave);
       try {
-         Thread.sleep(200);//TODO 主机启动的时候睡眠一会，给时间给slave关闭。
+         Thread.sleep(consumerWorkerManager.getConfigManager().getWaitSlaveShutDown());//主机启动的时候睡眠一会，给时间给slave关闭。
       } catch (InterruptedException e) {
          LOG.error("thread InterruptedException", e);
       }
-
-      CloseMonitor closeMonitor = new CloseMonitor();
-      int port = Integer.parseInt(System.getProperty("closeMonitorPort", "17555"));
-      closeMonitor.start(port, new CloseHook() {
-
-         @Override
-         public void onClose() {
-            try {
-               consumerWorkerManager.close();
-            } catch (IOException e) {
-               LOG.error("close SwallowC error!", e);
-            }
-         }
-
-      });
-
+      
       // Configure the server.
-      ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
+      final ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
             Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
       bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
          @Override
@@ -79,6 +61,19 @@ public class MasterBootStrap {
       });
       // Bind and start to accept incoming connections.
       bootstrap.bind(new InetSocketAddress(masterPort));
+
+      CloseMonitor closeMonitor = new CloseMonitor();
+      int port = Integer.parseInt(System.getProperty("closeMonitorPort", "17555"));
+      closeMonitor.start(port, new CloseHook() {
+
+         @Override
+         public void onClose() {
+               consumerWorkerManager.close();
+               bootstrap.releaseExternalResources();
+            
+         }
+
+      });
 
    }
 

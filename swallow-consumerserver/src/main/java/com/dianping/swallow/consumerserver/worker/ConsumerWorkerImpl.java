@@ -3,7 +3,6 @@ package com.dianping.swallow.consumerserver.worker;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -27,12 +26,13 @@ import com.dianping.swallow.common.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.threadfactory.MQThreadFactory;
 import com.dianping.swallow.common.threadfactory.PullStrategy;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
+import com.dianping.swallow.consumerserver.config.ConfigManager;
 
 public class ConsumerWorkerImpl implements ConsumerWorker {
    private static final Logger    LOG                = LoggerFactory.getLogger(ConsumerWorkerImpl.class);
 
    private ConsumerInfo           consumerInfo;
-   private BlockingQueue<Channel> freeChannels       = new ArrayBlockingQueue<Channel>(10);
+   private BlockingQueue<Channel> freeChannels       = new LinkedBlockingQueue<Channel>();
    private Set<Channel>           connectedChannels  = Collections.synchronizedSet(new HashSet<Channel>());
    private BlockingQueue<Message> messageQueue       = null;
    private AckDAO                 ackDao;
@@ -47,13 +47,15 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private ExecutorService        ackExecutor;
    private ConsumerWorkerManager  workerManager;
    private PullStrategy pullStgy;
-
+   private ConfigManager configManager;
+   
    public Set<Channel> getConnectedChannels() {
       return connectedChannels;
    }
 
    public ConsumerWorkerImpl(ConsumerInfo consumerInfo, ConsumerWorkerManager workerManager) {
       this.consumerInfo = consumerInfo;
+      this.configManager = workerManager.getConfigManager();
       this.ackDao = workerManager.getAckDAO();
       this.messageDao = workerManager.getMessageDAO();
       this.swallowBuffer = workerManager.getSwallowBuffer();
@@ -61,7 +63,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       topicName = consumerInfo.getConsumerId().getDest().getName();
       consumerid = consumerInfo.getConsumerId().getConsumerId();
       this.workerManager = workerManager;
-      pullStgy = new DefaultPullStrategy(500, 3000);
+      pullStgy = new DefaultPullStrategy(configManager.getPullFailDelayBase(), configManager.getPullFailDelayUpperBound());
 
       ackExecutor = new ThreadPoolExecutor(1, 1, Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>());
 
@@ -86,15 +88,14 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                   }
                }
                try {
-                  //TODO
-                  Thread.sleep(2000);
+                  Thread.sleep(configManager.getCheckConnectedChannelInterval());
                } catch (InterruptedException e) {
                   break;
                }
             }
             LOG.info("connected channel checker thread closed");
          }
-      }, "swallow-connectedChannelChecker-").start();
+      }, consumerInfo.toString() + "swallow-connectedChannelChecker-").start();
 
    }
 
@@ -109,9 +110,9 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                   updateMaxMessageId(ackedMsgId);
                   break;
                } catch (Exception e) {
-                  // TODO: handle exception
+                  LOG.error("updateMaxMessageId wrong!", e);
                   try {
-                     Thread.sleep(2000);
+                     Thread.sleep(configManager.getRetryIntervalWhenMongoException());
                   } catch (InterruptedException e1) {
                      break;
                   }
@@ -167,16 +168,17 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       });
    }
 
-   @Override
+   public void closeMessageFetcherThread(){
+      getMessageisAlive = false;
+   }
+   
+   public void closeAckExecutor(){
+      ackExecutor.shutdownNow();
+   }
    public void close() {
       getMessageisAlive = false;
-      try {
-         Thread.sleep(20000);
-      } catch (InterruptedException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
-      }
-      ackExecutor.shutdownNow();
+      
+      
    }
 
    private long getMessageIdOfTailMessage(String topicName, String consumerId) {
@@ -187,7 +189,6 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       }
       if (maxMessageId == null) {
          int time = (int) (System.currentTimeMillis() / 1000);
-         time = time - 3600 * 24;
          BSONTimestamp bst = new BSONTimestamp(time, 1);
          maxMessageId = MongoUtils.BSONTimestampToLong(bst);
       }
@@ -203,12 +204,12 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       //线程刚起，第一次调用的时候，需要先去mongo中获取maxMessageId
       try {
          while (getMessageisAlive) {
-            Channel channel = freeChannels.take();// TODO
+            Channel channel = freeChannels.take();
             if (channel.isConnected()) {
                if (preparedMessage == null) {
                   SwallowMessage message = null;
                   while (getMessageisAlive) {
-                     //获得
+                     //从blockQueue中获取消息
                      message = (SwallowMessage) messageQueue.poll(pullStgy.fail(false), TimeUnit.MILLISECONDS);
                      if (message != null) {
                         pullStgy.succeess();
@@ -228,10 +229,9 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                         try {
                            ackDao.add(topicName, consumerid, messageId);
                            break;
-                           //TODO MongoExcpetion
                         } catch (Exception e) {
-                           //TODO 
-                           Thread.sleep(2000);
+                           LOG.error("ackDao.add wrong!", e);
+                           Thread.sleep(configManager.getRetryIntervalWhenMongoException());
                         }
                      }
                   }
@@ -239,14 +239,14 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                      channel.write(preparedMessage);
                      preparedMessage = null;
                   } catch (Exception e) {
-                     // TODO: handle exception
+                     LOG.error(consumerInfo.toString() + "：channel write error.", e);
                   }
                }
 
             }
          }
       } catch (InterruptedException e) {
-         LOG.error("thread InterruptedException", e);
+         LOG.info("get message from messageQueue thread InterruptedException", e);
       }
    }
 }

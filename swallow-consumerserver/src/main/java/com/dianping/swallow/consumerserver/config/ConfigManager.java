@@ -9,9 +9,6 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import com.dianping.swallow.consumerserver.bootstrap.MasterBootStrap;
-
 /**
  * @author zhang.yu
  */
@@ -23,6 +20,13 @@ public class ConfigManager {
 
    private int                  freeChannelBlockQueueSize    = 10;
    // time related
+   private int pullFailDelayBase = 500;
+   private int pullFailDelayUpperBound = 3000;
+   private long checkConnectedChannelInterval = 2000L;
+   private long retryIntervalWhenMongoException = 2000L;
+   private long waitAckTimeWhenCloseSwc = 20000L;
+   private long waitSlaveShutDown = 30000L;
+   private long closeChannelMaxWaitingTime = 20000L;
    private int                  heartbeatCheckInterval       = 3000;
    private int                  heartbeatMaxStopTime         = 20000;
    private int                  heartbeatUpdateInterval      = 4000;
@@ -30,12 +34,36 @@ public class ConfigManager {
    private int                  pullingTime                  = 1000;
    private long                 freeChannelBlockQueueOutTime = 120000;
 
-   // db and collection name related
-   private String               counterDB                    = "swallow_counter";
-   private String               topicDB                      = "swallow_topic";
-
    //Master Ip
    private String               masterIp                     = "127.0.0.1";
+
+   public int getPullFailDelayBase() {
+      return pullFailDelayBase;
+   }
+
+   public long getCloseChannelMaxWaitingTime() {
+      return closeChannelMaxWaitingTime;
+   }
+
+   public int getPullFailDelayUpperBound() {
+      return pullFailDelayUpperBound;
+   }
+
+   public long getCheckConnectedChannelInterval() {
+      return checkConnectedChannelInterval;
+   }
+
+   public long getRetryIntervalWhenMongoException() {
+      return retryIntervalWhenMongoException;
+   }
+
+   public long getWaitAckTimeWhenCloseSwc() {
+      return waitAckTimeWhenCloseSwc;
+   }
+
+   public long getWaitSlaveShutDown() {
+      return waitSlaveShutDown;
+   }
 
    public int getBlockQueueFailoverSleepTime() {
       return blockQueueFailoverSleepTime;
@@ -61,10 +89,22 @@ public class ConfigManager {
       return pullingTime;
    }
 
-   public String getCounterDB() {
-      return counterDB;
+
+   /***
+    * @return master consumer心跳最长的停止时间
+    */
+   public int getHeartbeatMaxStopTime() {
+      return heartbeatMaxStopTime;
    }
 
+   /***
+    * @return master consumer更新心跳的间隔
+    */
+   public int getHeartbeatUpdateInterval() {
+      return heartbeatUpdateInterval;
+   }
+
+   
    public static void main(String[] args) {
       new ConfigManager();
    }
@@ -145,23 +185,5 @@ public class ConfigManager {
             }
          }
       }
-   }
-
-   /***
-    * @return master consumer心跳最长的停止时间
-    */
-   public int getHeartbeatMaxStopTime() {
-      return heartbeatMaxStopTime;
-   }
-
-   /***
-    * @return master consumer更新心跳的间隔
-    */
-   public int getHeartbeatUpdateInterval() {
-      return heartbeatUpdateInterval;
-   }
-
-   public String getTopicDB() {
-      return topicDB;
    }
 }
