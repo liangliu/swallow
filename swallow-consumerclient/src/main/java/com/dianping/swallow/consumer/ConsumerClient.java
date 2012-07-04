@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
+import com.dianping.swallow.common.config.DynamicConfig;
+import com.dianping.swallow.common.config.impl.lion.LionDynamicConfig;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
@@ -25,7 +27,7 @@ import com.dianping.swallow.consumer.netty.MessageClientHandler;
 public class ConsumerClient {
 
    private static final Logger LOG         = LoggerFactory.getLogger(ConsumerClient.class);
-   
+
    private String              consumerId;
 
    private Destination         dest;
@@ -34,7 +36,7 @@ public class ConsumerClient {
 
    private MessageListener     listener;
 
-   private ConsumerType        consumerType;
+   private ConsumerType        consumerType = ConsumerType.AT_MOST;
 
    private InetSocketAddress   masterAddress;
 
@@ -96,9 +98,10 @@ public class ConsumerClient {
       this.threadCount = threadCount;
    }
 
-   public ConsumerClient(String cid, Destination dest, String swallowCAddress) {
+   public ConsumerClient(String cid, String topicName) {
       this.consumerId = cid;
-      this.dest = dest;
+      this.dest = Destination.topic("topicName");
+      String swallowCAddress = getSwallowCAddress(topicName);
       string2Address(swallowCAddress);
    }
 
@@ -154,5 +157,12 @@ public class ConsumerClient {
       masterAddress = new InetSocketAddress(masterIp, masterPort);
       slaveAddress = new InetSocketAddress(slaveIp, slavePort);
 
+   }
+
+   private static final String LION_CONFIG_FILENAME = "lion.properties";
+
+   private String getSwallowCAddress(String topicName){
+      DynamicConfig dynamicConfig = new LionDynamicConfig(LION_CONFIG_FILENAME);
+      return dynamicConfig.get(topicName);
    }
 }

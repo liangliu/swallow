@@ -40,10 +40,14 @@
 			<version>2.6.3</version>
 		</dependency>
 		<dependency>
-            <groupId>com.dianping.lion</groupId>
-            <artifactId>lion-${env}</artifactId>
-            <version>1.0.0</version>
-            <optional>true</optional>
-        </dependency>
+			<groupId>com.dianping.lion</groupId>
+			<artifactId>lion-client</artifactId>
+			<version>0.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.dianping.lion</groupId>
+			<artifactId>lion-${env}</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 </project>

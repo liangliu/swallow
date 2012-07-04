@@ -26,11 +26,10 @@ public class MasterBootStrap {
 
    private static final Logger LOG        = LoggerFactory.getLogger(MasterBootStrap.class);
 
-   //TODO 是否lion中
+   //TODO 是lion中还是配置文件中?
    private static int          masterPort = 8081;
 
    private static boolean      isSlave    = false;
-
 
    public static void main(String[] args) {
 
