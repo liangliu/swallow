@@ -83,5 +83,10 @@
 			<artifactId>lion-${env}</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.dianping</groupId>
+			<artifactId>jmockmongo-patched</artifactId>
+			<version>0.0.3</version>
+		</dependency>
 	</dependencies>
 </project>
