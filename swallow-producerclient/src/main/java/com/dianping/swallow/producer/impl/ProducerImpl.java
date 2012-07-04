@@ -171,6 +171,7 @@ public class ProducerImpl implements Producer {
       swallowMsg.setVersion(producerVersion);
       swallowMsg.setGeneratedTime(new Date());
       swallowMsg.setSourceIp(producerIP);
+
       if (messageType != null)
          swallowMsg.setType(messageType);
       if (properties != null) {
@@ -192,7 +193,11 @@ public class ProducerImpl implements Producer {
       switch (producerMode) {
          case SYNC_MODE://同步模式
             try {
-               ret = ((PktSwallowPACK) syncHandler.doSendMsg(pktMessage)).getShaInfo();
+               PktSwallowPACK pktSwallowPACK = null;
+               pktSwallowPACK = (PktSwallowPACK) syncHandler.doSendMsg(pktMessage);
+               if(pktSwallowPACK != null){
+                  ret = pktSwallowPACK.getShaInfo();
+               }
             } catch (ServerDaoException e) {
                logger.error("[Can not save message to DB, DB is busy or connection to DB is down.]", e);
                throw e;
@@ -264,4 +269,5 @@ public class ProducerImpl implements Producer {
    public int getRetryTimes() {
       return retryTimes;
    }
+
 }
