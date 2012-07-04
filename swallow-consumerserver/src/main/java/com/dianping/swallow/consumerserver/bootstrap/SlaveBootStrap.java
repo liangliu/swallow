@@ -54,7 +54,10 @@ public class SlaveBootStrap {
          });
          // Bind and start to accept incoming connections.
          bootstrap.bind(new InetSocketAddress(port));
+         //检测Master是否起来，没有就一直轮询心跳
          consumerWorkerManager.checkMasterIsALive(bootstrap);
+         consumerWorkerManager.close();
+         bootstrap.releaseExternalResources();
       }
    }
 
