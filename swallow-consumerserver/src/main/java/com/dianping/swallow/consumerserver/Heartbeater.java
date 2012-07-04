@@ -1,6 +1,5 @@
 package com.dianping.swallow.consumerserver;
 
-import org.jboss.netty.bootstrap.ServerBootstrap;
 
 public interface Heartbeater {
 

@@ -3,7 +3,6 @@ package com.dianping.swallow.consumerserver.worker;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -33,7 +32,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private static final Logger    LOG                = LoggerFactory.getLogger(ConsumerWorkerImpl.class);
 
    private ConsumerInfo           consumerInfo;
-   private BlockingQueue<Channel> freeChannels       = new ArrayBlockingQueue<Channel>(10);
+   private BlockingQueue<Channel> freeChannels       = new LinkedBlockingQueue<Channel>();
    private Set<Channel>           connectedChannels  = Collections.synchronizedSet(new HashSet<Channel>());
    private BlockingQueue<Message> messageQueue       = null;
    private AckDAO                 ackDao;
