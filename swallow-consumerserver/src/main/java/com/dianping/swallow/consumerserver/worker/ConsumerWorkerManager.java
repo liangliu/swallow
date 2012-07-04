@@ -1,6 +1,5 @@
 package com.dianping.swallow.consumerserver.worker;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -75,9 +74,17 @@ public class ConsumerWorkerManager {
       }
    }
 
-   public void close() throws IOException {
+   public void close() {
       for (Map.Entry<ConsumerId, ConsumerWorker> entry : consumerId2ConsumerWorker.entrySet()) {
-         entry.getValue().close();
+         entry.getValue().closeMessageFetcherThread();
+      }
+      try {
+         Thread.sleep(configManager.getWaitAckTimeWhenCloseSwc());
+      } catch (InterruptedException e) {
+         LOG.error("close Swc thread InterruptedException", e);
+      }
+      for (Map.Entry<ConsumerId, ConsumerWorker> entry : consumerId2ConsumerWorker.entrySet()) {
+         entry.getValue().closeAckExecutor();
       }
    }
 
@@ -139,13 +146,13 @@ public class ConsumerWorkerManager {
       heartbeatThread.start();
    }
 
-   public void checkMasterIsLive(final ServerBootstrap bootStrap) {
+   public void checkMasterIsALive(final ServerBootstrap bootStrap) {
 
       try {
-         heartbeater.waitUntilBeginBeating(configManager.getMasterIp(), bootStrap,
-               configManager.getHeartbeatCheckInterval(), configManager.getHeartbeatMaxStopTime());
+         heartbeater.waitUntilBeginBeating(configManager.getMasterIp(), configManager.getHeartbeatCheckInterval(),
+               configManager.getHeartbeatMaxStopTime());
       } catch (Exception e) {
-         //log.error("Error update heart beat", e);
+         LOG.error("checkMasterIsALive InterruptedException", e);
       }
 
    }

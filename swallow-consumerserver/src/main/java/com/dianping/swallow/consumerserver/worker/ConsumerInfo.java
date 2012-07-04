@@ -22,6 +22,6 @@ public class ConsumerInfo {
    }
 
    public String toString() {
-      return consumerId.getDest().getName() + consumerId.getConsumerId();
+      return consumerId.getDest().getName() + ":" + consumerId.getConsumerId();
    }
 }

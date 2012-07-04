@@ -2,7 +2,6 @@ package com.dianping.swallow.consumerserver.impl;
 
 import java.util.Date;
 
-import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +56,7 @@ public class MongoHeartbeater implements Heartbeater {
    }
 
    @Override
-   public void waitUntilBeginBeating(String ip, ServerBootstrap bootStrap, long checkInterval, long maxStopTime)
+   public void waitUntilBeginBeating(String ip, long checkInterval, long maxStopTime)
          throws InterruptedException {
       Date beat = null;
       while (true) {
@@ -72,7 +71,7 @@ public class MongoHeartbeater implements Heartbeater {
             long lastBeatTime = beat.getTime();
             long now = System.currentTimeMillis();
             if (now - lastBeatTime < maxStopTime) {
-               bootStrap.releaseExternalResources();
+               //bootStrap.releaseExternalResources();
                break;
             }
          }

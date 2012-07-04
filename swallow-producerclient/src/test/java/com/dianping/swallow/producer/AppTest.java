@@ -31,9 +31,9 @@ public class AppTest extends TestCase {
          System.out.println(e3.toString());
       }
       for (int i = 0; i < 10; i++) {
-         message += "AAbbCCddEEffGGhhII jKKllMMnnOOppQQrr SttUUvvWWxxYYzz11@@33$$55^^77**99))aaeeeffggesswweedd!@#$%^&*()";
+         setMessage(getMessage() + "AAbbCCddEEffGGhhII jKKllMMnnOOppQQrr SttUUvvWWxxYYzz11@@33$$55^^77**99))aaeeeffggesswweedd!@#$%^&*()");
       }
-
+      
    }
 
    /**
@@ -111,5 +111,13 @@ public class AppTest extends TestCase {
       //      System.out.println(pc.getDestinationName());
       //      System.out.println(pc.getProducerModeStr());
       //      System.out.println(pc.isContinueSend());
+   }
+
+   public String getMessage() {
+      return message;
+   }
+
+   public void setMessage(String message) {
+      this.message = message;
    }
 }

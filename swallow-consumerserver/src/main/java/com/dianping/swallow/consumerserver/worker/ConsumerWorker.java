@@ -1,12 +1,10 @@
 package com.dianping.swallow.consumerserver.worker;
 
-import java.io.Closeable;
-
 import org.jboss.netty.channel.Channel;
 
 import com.dianping.swallow.common.consumer.ACKHandlerType;
 
-public interface ConsumerWorker extends Closeable {
+public interface ConsumerWorker{
 
    public void handleGreet(Channel channel, int clientThreadCount);
 
@@ -15,4 +13,8 @@ public interface ConsumerWorker extends Closeable {
    public void handleChannelDisconnect(Channel channel);
 
    public void sendMessageByPollFreeChannelQueue();
+   
+   public void closeMessageFetcherThread();
+   
+   public void closeAckExecutor();
 }

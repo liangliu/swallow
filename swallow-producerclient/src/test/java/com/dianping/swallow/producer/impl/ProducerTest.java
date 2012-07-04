@@ -15,8 +15,7 @@
  */
 package com.dianping.swallow.producer.impl;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,7 +63,7 @@ public class ProducerTest {
       //设置Producer选项
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-      pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
+      pOptions.put(ProducerOptionKey.RETRY_TIMES, 7);
 
       ProducerImpl producer = null;
 
@@ -88,12 +87,15 @@ public class ProducerTest {
 
       Assert.assertNotNull(producer);
 
+      Assert.assertEquals(ProducerMode.SYNC_MODE, producer.getProducerMode());
+      Assert.assertEquals(7, producer.getRetryTimes());
+
       producer = null;
       pOptions = null;
       pOptions = new HashMap<ProducerOptionKey, Object>();
 
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
-      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 10);
+      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 8);
       pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
 
       try {
@@ -115,66 +117,24 @@ public class ProducerTest {
       }
 
       Assert.assertNotNull(producer);
+
+      Assert.assertEquals(8, producer.getThreadPoolSize());
+      Assert.assertEquals(false, producer.isContinueSend());
+      Assert.assertEquals("0.6.0", producer.getProducerVersion());
+
    }
 
    @Test
-   public void testProducerImplNormal() throws ServerDaoException {
+   public void testAsyncProducerImpl() throws ServerDaoException {
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
 
       //正常的mock
       MQService normalRemoteServiceMock = mock(MQService.class);
-      //设置正常mock的行为
       PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
       when(normalRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenReturn(pktSwallowACK);
 
-      //抛异常的mock（同步模式）
-      MQService syncExceptionRemoteServiceMock = mock(MQService.class);
-      //抛异常的mock（异步模式）
-      MQService asyncExceptionRemoteServiceMock = mock(MQService.class);
-
-      //同步模式pOptions
-      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-      pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
-
-      //同步模式的Producer
-      ProducerImpl syncNormalProducer = null;
-      ProducerImpl syncExceptionProducer = null;
-
-      //构造同步模式的Producer
-      try {
-         syncNormalProducer = new ProducerImpl(normalRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
-         syncExceptionProducer = new ProducerImpl(syncExceptionRemoteServiceMock, Destination.topic("UnitTest"),
-               pOptions);
-      } catch (Exception e) {
-      }
-      Assert.assertEquals("0.6.0", syncNormalProducer.getProducerVersion());
-      Assert.assertNotNull(syncNormalProducer);
-      Assert.assertNotNull(syncExceptionProducer);
-
-      //测试同步模式正常情况下的Producer
-      String strRet = null;
-      try {
-         strRet = syncNormalProducer.sendMessage("Hello world.");
-      } catch (FileQueueClosedException e) {
-      } catch (RemoteServiceDownException e) {
-      } catch (NullContentException e) {
-      } catch (ServerDaoException e) {
-      }
-      Assert.assertEquals(pktSwallowACK.getShaInfo(), strRet);
-
-      //测试同步模式下抛异常的Producer
-      strRet = null;
-      //设置异常remoteServiceMock的行为
-      when(syncExceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(
-            new ServerDaoException());
-      try {
-         strRet = syncExceptionProducer.sendMessage("Hello world.");
-      } catch (FileQueueClosedException e) {
-      } catch (RemoteServiceDownException e) {
-      } catch (NullContentException e) {
-      } catch (ServerDaoException e) {
-      }
-      Assert.assertNull(strRet);
+      //抛异常的mock
+      MQService exceptionRemoteServiceMock = mock(MQService.class);
 
       //异步模式的pOptions
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
@@ -182,27 +142,25 @@ public class ProducerTest {
       pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
 
       //异步模式的Producer
-      ProducerImpl asyncNormalProducer = null;
-      ProducerImpl asyncExceptionProducer = null;
+      ProducerImpl normalProducer = null;
+      ProducerImpl exceptionProducer = null;
 
       //构造异步模式的Producer
       try {
-         asyncNormalProducer = new ProducerImpl(normalRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
-         asyncExceptionProducer = new ProducerImpl(asyncExceptionRemoteServiceMock, Destination.topic("UnitTest"),
-               pOptions);
+         normalProducer = new ProducerImpl(normalRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
+         exceptionProducer = new ProducerImpl(exceptionRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
       } catch (Exception e) {
       }
-      Assert.assertNotNull(asyncNormalProducer);
-      Assert.assertNotNull(asyncExceptionProducer);
+      Assert.assertNotNull(normalProducer);
+      Assert.assertNotNull(exceptionProducer);
 
       //测试异步模式下抛出异常的Producer
-      strRet = "";
+      String strRet = "";
       //设置异常remoteServiceMock的行为
-      when(asyncExceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(
-            new ServerDaoException());
+      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(new ServerDaoException());
       try {
          for (int i = 0; i < 100; i++) {
-            strRet = asyncExceptionProducer.sendMessage("Hello World.");
+            strRet = exceptionProducer.sendMessage("Hello World.");
          }
       } catch (FileQueueClosedException e) {
       } catch (RemoteServiceDownException e) {
@@ -216,7 +174,7 @@ public class ProducerTest {
       properties.put("zip", "true");
       try {
          for (int i = 0; i < 100; i++) {
-            strRet = asyncNormalProducer.sendMessage("Hello World.", properties);
+            strRet = normalProducer.sendMessage("Hello World.", properties);
          }
       } catch (FileQueueClosedException e) {
       } catch (RemoteServiceDownException e) {
@@ -224,4 +182,57 @@ public class ProducerTest {
       }
       Assert.assertNull(strRet);
    }
+
+   @Test
+   public void testSyncProducerImpl() throws ServerDaoException {
+
+      //正常的mock
+      MQService normalRemoteServiceMock = mock(MQService.class);
+      PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
+      when(normalRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenReturn(pktSwallowACK);
+
+      //抛异常的mock
+      MQService exceptionRemoteServiceMock = mock(MQService.class);
+
+      //同步模式的options
+      Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
+      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
+      pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
+
+      //构造Producer
+      ProducerImpl normalProducer = null;
+      ProducerImpl exceptionProducer = null;
+      try {
+         normalProducer = new ProducerImpl(normalRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
+         exceptionProducer = new ProducerImpl(exceptionRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
+      } catch (Exception e) {
+      }
+      Assert.assertNotNull(normalProducer);
+      Assert.assertNotNull(exceptionProducer);
+
+      //测试同步模式正常情况下的Producer
+      String strRet = null;
+      try {
+         strRet = normalProducer.sendMessage("Hello world.");
+      } catch (FileQueueClosedException e) {
+      } catch (RemoteServiceDownException e) {
+      } catch (NullContentException e) {
+      } catch (ServerDaoException e) {
+      }
+      Assert.assertEquals(pktSwallowACK.getShaInfo(), strRet);
+
+      //测试同步模式下抛异常的Producer
+      strRet = null;
+      //设置异常remoteServiceMock的行为
+      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(new ServerDaoException());
+      try {
+         strRet = exceptionProducer.sendMessage("Hello world.");
+      } catch (FileQueueClosedException e) {
+      } catch (RemoteServiceDownException e) {
+      } catch (NullContentException e) {
+      } catch (ServerDaoException e) {
+      }
+      Assert.assertNull(strRet);
+   }
+
 }

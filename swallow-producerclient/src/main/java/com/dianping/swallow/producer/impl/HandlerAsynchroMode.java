@@ -18,19 +18,21 @@ import com.dianping.swallow.common.threadfactory.MQThreadFactory;
  * @author tong.song
  */
 public class HandlerAsynchroMode {
-   private Logger            logger        = Logger.getLogger(ProducerImpl.class);
-   private ProducerImpl      producer;
-   private FileQueue<Packet> messageQueue;                                        //filequeue
+   private static final Logger          logger                 = Logger.getLogger(ProducerImpl.class);
+   private static final MQThreadFactory threadFactory          = new MQThreadFactory();
 
-   private MQThreadFactory   threadFactory = new MQThreadFactory();
+   private static final int             DEFAULT_FILEQUEUE_SIZE = 512 * 1024 * 1024;
+
+   private ProducerImpl                 producer;
+   private FileQueue<Packet>            messageQueue;                                                 //filequeue
 
    //构造函数
    public HandlerAsynchroMode(ProducerImpl producer) {
       FileQueueConfigHolder fileQueueConfig = new FileQueueConfigHolder();
       this.producer = producer;
-      fileQueueConfig.setMaxDataFileSize(512 * 1024 * 1024);//默认512M
+      fileQueueConfig.setMaxDataFileSize(DEFAULT_FILEQUEUE_SIZE);
       messageQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, producer.getDestination().getName(),
-            producer.isContinueSend());
+            !producer.isContinueSend());
       this.start();
    }
 
@@ -68,8 +70,7 @@ public class HandlerAsynchroMode {
                } catch (ServerDaoException e) {
                   //如果剩余重试次数<=1，将终止重试，记日志。
                   if (leftRetryTimes <= 1) {
-                     logger.error(
-                           "[AsyncHandler]:[Message sent failed.][Reason=DAO]", e);
+                     logger.error("[AsyncHandler]:[Message sent failed.][Reason=DAO]", e);
                   }
                   //发送失败，重发
                   continue;
