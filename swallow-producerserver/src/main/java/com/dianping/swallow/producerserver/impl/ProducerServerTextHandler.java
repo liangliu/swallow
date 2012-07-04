@@ -10,10 +10,11 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
+import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.util.SHAUtil;
 import com.dianping.swallow.common.util.NameCheckUtil;
+import com.dianping.swallow.common.util.SHAUtil;
 
 public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    private final MessageDAO    messageDAO;
@@ -24,9 +25,8 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    private static final int    SAVE_FAILED        = 252;
 
    private static final Logger logger             = Logger.getLogger(ProducerServerForText.class);
-   
-   private long                receivedMessageNum = 0;
 
+   private long                receivedMessageNum = 0;
 
    /**
     * 构造函数
@@ -35,6 +35,8 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
     */
    public ProducerServerTextHandler(MessageDAO messageDAO) {
       this.messageDAO = messageDAO;
+      //Hawk监控
+      HawkJMXUtil.registerMBean("ProducerServerTextHandler", new HawkMBean());
    }
 
    @Override
@@ -63,7 +65,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       swallowMessage.setGeneratedTime(new Date());
       swallowMessage.setSha1(SHAUtil.generateSHA(swallowMessage.getContent()));
       swallowMessage.setSourceIp(sourceIp.substring(sourceIp.indexOf("/") + 1, sourceIp.indexOf(":")));
-      
+
       if (logger.isDebugEnabled()) {
          logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getContent() + "]");
       }
@@ -103,5 +105,14 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
       logger.error("[Netty]:[Unexpected exception from downstream.]", e.getCause());
       e.getChannel().close();
+   }
+
+   /**
+    * 用于Hawk监控
+    */
+   public class HawkMBean {
+      public long getReceivedMessageNum() {
+         return receivedMessageNum;
+      }
    }
 }

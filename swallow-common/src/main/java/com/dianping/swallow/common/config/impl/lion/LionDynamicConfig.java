@@ -21,6 +21,11 @@ public class LionDynamicConfig implements DynamicConfig {
 	private ConfigCache cc;
 	
 	public LionDynamicConfig(String localConfigFileName) {
+	   String env = EnvZooKeeperConfig.getEnv();
+	   if(!"dev".equals(env)) {
+	      LOG.warn("not dev, ignore lion local config");
+	      return;
+	   }
 		try {
 			cc = ConfigCache.getInstance(EnvZooKeeperConfig.getZKAddress());
 			// 如果本地文件存在，则使用Lion本地文件
@@ -29,7 +34,12 @@ public class LionDynamicConfig implements DynamicConfig {
 				try {
 					Properties props = new Properties();
 					props.load(in);
-					cc.setPts(props);
+					Properties oldProps = cc.getPts();
+					if(oldProps != null) {
+					   oldProps.putAll(props);
+					} else {
+					   cc.setPts(props);
+					}
 					if (LOG.isInfoEnabled()) {
 						LOG.info("Load Lion local config file :" + localConfigFileName);
 					}

@@ -26,62 +26,55 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-			<version>3.0.5.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>3.0.5.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<version>3.0.5.RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.netty</groupId>
 			<artifactId>netty</artifactId>
-			<version>3.2.7.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
-			<version>2.6.3</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>1.2.14</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.swallow</groupId>
 			<artifactId>${swallow-common.aid}</artifactId>
-			<version>${swallow-common.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.dpsf</groupId>
 			<artifactId>dpsf-net</artifactId>
-			<version>1.5.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.dianping.hawk</groupId>
-			<artifactId>hawk-client</artifactId>
-			<version>0.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.lion</groupId>
 			<artifactId>lion-client</artifactId>
-			<version>0.2.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.lion</groupId>
 			<artifactId>lion-${env}</artifactId>
-			<version>1.0.0</version>
+		</dependency>
+		<!-- 监控 -->
+		<dependency>
+			<groupId>com.dianping.cat</groupId>
+			<artifactId>cat-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.dianping.hawk</groupId>
+			<artifactId>hawk-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping</groupId>

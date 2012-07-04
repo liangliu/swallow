@@ -2,20 +2,15 @@ package com.dianping.swallow.consumerserver.buffer;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.dianping.swallow.common.cat.CatMonitorBean;
 import com.dianping.swallow.common.message.Message;
 
-public class SwallowBuffer implements CatMonitorBean {
+public class SwallowBuffer {
    /**
     * 锁是为了防止相同topicName的TopicBuffer被并发创建，所以相同的topicName对应相同的锁。
     * 锁的个数也决定了最多能有多少创建TopicBuffer的并发操作
@@ -111,7 +106,7 @@ public class SwallowBuffer implements CatMonitorBean {
       this.messageRetriever = messageRetriever;
    }
 
-   class TopicBuffer implements CatMonitorBean {
+   class TopicBuffer {
 
       private final String                                                   topicName;
 
@@ -177,27 +172,6 @@ public class SwallowBuffer implements CatMonitorBean {
          return messageBlockingQueue;
       }
 
-      @Override
-      public Map<String, Object> getStatusMap() {
-         Map<String, Object> map = new HashMap<String, Object>();
-         for (Entry<String, WeakReference<MessageBlockingQueue>> entry : messageQueues.entrySet()) {
-            String cid = entry.getKey();
-            Object messageQueue = entry.getValue().get().getStatusMap();
-            map.put(cid, messageQueue);
-         }
-         return map;
-      }
    }
 
-   @Override
-   public Map<String, Object> getStatusMap() {
-      Map<String, Object> map = new HashMap<String, Object>();
-      Collection<TopicBuffer> topicBuffers = this.topicBuffers.values();
-      if (topicBuffers != null) {
-         for (TopicBuffer topicBuffer : topicBuffers) {
-            map.put(topicBuffer.topicName, topicBuffer.getStatusMap());
-         }
-      }
-      return map;
-   }
 }

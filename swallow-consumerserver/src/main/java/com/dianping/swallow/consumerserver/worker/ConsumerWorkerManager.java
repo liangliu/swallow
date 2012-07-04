@@ -1,6 +1,5 @@
 package com.dianping.swallow.consumerserver.worker;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -9,7 +8,6 @@ import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.common.cat.CatMonitorBean;
 import com.dianping.swallow.common.consumer.ACKHandlerType;
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
@@ -18,7 +16,7 @@ import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 
-public class ConsumerWorkerManager implements CatMonitorBean {
+public class ConsumerWorkerManager {
 
    private static final Logger             LOG                       = LoggerFactory
                                                                            .getLogger(ConsumerWorkerManager.class);
@@ -157,13 +155,6 @@ public class ConsumerWorkerManager implements CatMonitorBean {
          LOG.error("checkMasterIsALive InterruptedException", e);
       }
 
-   }
-
-   @Override
-   public Map<String, Object> getStatusMap() {
-      Map<String, Object> map = new HashMap<String, Object>(1);
-      map.put("consumerIds", this.consumerId2ConsumerWorker.keySet());
-      return map;
    }
 
    public void workerDone(ConsumerId consumerId) {

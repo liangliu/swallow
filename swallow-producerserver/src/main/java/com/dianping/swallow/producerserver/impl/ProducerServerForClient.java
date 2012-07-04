@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.dianping.dpsf.api.ServiceRegistry;
+import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.Packet;
@@ -27,6 +28,11 @@ public class ProducerServerForClient implements MQService {
    private int                 port               = DEFAULT_PORT;
    private long                receivedMessageNum = 0;
    private MessageDAO          messageDAO;
+
+   public ProducerServerForClient() {
+      //Hawk监控
+      HawkJMXUtil.registerMBean("ProducerServerForClient", new HawkMBean());
+   }
 
    /**
     * 启动producerServerClient
@@ -84,7 +90,7 @@ public class ProducerServerForClient implements MQService {
                throw new ServerDaoException();
             }
             if (logger.isDebugEnabled()) {
-//               logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getContent() + "]");
+               //               logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getContent() + "]");
                logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getSha1() + "]");
             }
             break;
@@ -106,4 +112,22 @@ public class ProducerServerForClient implements MQService {
    public void setMessageDAO(MessageDAO messageDAO) {
       this.messageDAO = messageDAO;
    }
+
+   /**
+    * 用于Hawk监控
+    */
+   public class HawkMBean {
+      public String getProducerserverip() {
+         return producerServerIP;
+      }
+
+      public long getReceivedMessageNum() {
+         return receivedMessageNum;
+      }
+
+      public int getPort() {
+         return port;
+      }
+   }
+
 }

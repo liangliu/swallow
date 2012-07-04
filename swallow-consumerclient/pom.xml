@@ -20,23 +20,29 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<env>dev</env>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.jboss.netty</groupId>
 			<artifactId>netty</artifactId>
-			<version>3.2.7.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.swallow</groupId>
 			<artifactId>${swallow-common.aid}</artifactId>
-			<version>${swallow-common.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
-			<version>2.6.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.dianping.lion</groupId>
+			<artifactId>lion-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.dianping.lion</groupId>
+			<artifactId>lion-${env}</artifactId>
 		</dependency>
 	</dependencies>
 </project>

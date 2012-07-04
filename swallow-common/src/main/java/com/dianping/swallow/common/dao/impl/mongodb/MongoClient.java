@@ -12,7 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.common.cat.CatMonitorBean;
+import com.dianping.hawk.jmx.HawkJMXUtil;
+import com.dianping.lion.client.LionException;
 import com.dianping.swallow.common.config.ConfigChangeListener;
 import com.dianping.swallow.common.config.DynamicConfig;
 import com.dianping.swallow.common.config.impl.lion.LionDynamicConfig;
@@ -25,13 +26,13 @@ import com.mongodb.MongoException;
 import com.mongodb.MongoOptions;
 import com.mongodb.ServerAddress;
 
-public class MongoClient implements ConfigChangeListener, CatMonitorBean {
+public class MongoClient implements ConfigChangeListener {
 
    private static final Logger           LOG                                              = LoggerFactory
                                                                                                 .getLogger(MongoClient.class);
 
    private static final String           MONGO_CONFIG_FILENAME                            = "swallow-mongo.properties";
-   private static final String           LION_CONFIG_FILENAME                             = "lion.properties";
+   private static final String           LION_CONFIG_FILENAME                             = "swallow-mongo-lion.properties";
    private static final String           DEFAULT_COLLECTION_NAME                          = "c";
    private static final String           TOPICNAME_HEARTBEAT                              = "heartbeat";
    private static final String           TOPICNAME_DEFAULT                                = "default";
@@ -62,8 +63,8 @@ public class MongoClient implements ConfigChangeListener, CatMonitorBean {
 
    //local config
    private MongoOptions                  mongoOptions;
-   
-   private DynamicConfig dynamicConfig;
+
+   private DynamicConfig                 dynamicConfig;
 
    /**
     * 从 Lion(配置topicName,serverUrl的列表) 和 MongoConfigManager(配置Mongo参数) 获取配置，创建
@@ -91,17 +92,19 @@ public class MongoClient implements ConfigChangeListener, CatMonitorBean {
          config = new MongoConfig();
       }
       mongoOptions = this.getMongoOptions(config);
-      if(dynamicConfig != null) {
-    	  this.dynamicConfig = dynamicConfig;
+      if (dynamicConfig != null) {
+         this.dynamicConfig = dynamicConfig;
       } else {
-    	  this.dynamicConfig = new LionDynamicConfig(LION_CONFIG_FILENAME);
+         this.dynamicConfig = new LionDynamicConfig(LION_CONFIG_FILENAME);
       }
       loadLionConfig();
       if (LOG.isDebugEnabled()) {
          LOG.debug("Init MongoClient - done.");
       }
+      //hawk监控
+      HawkJMXUtil.registerMBean("MongoClient", new HawkMBean());
    }
-   
+
    public MongoClient(String severURILionKey) {
       this(severURILionKey, null);
    }
@@ -145,7 +148,8 @@ public class MongoClient implements ConfigChangeListener, CatMonitorBean {
          this.heartbeatMongo = parseURIAndCreateHeartbeatMongo(dynamicConfig.get(LION_KEY_HEARTBEAT_SERVER_URI).trim());
          String heartbeatCappedCollectionSize = dynamicConfig.get(LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE);
          this.heartbeatCappedCollectionSize = Integer.parseInt(heartbeatCappedCollectionSize.trim());
-         String heartbeatCappedCollectionMaxDocNum = dynamicConfig.get(LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM);//(可选)
+         String heartbeatCappedCollectionMaxDocNum = dynamicConfig
+               .get(LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM);//(可选)
          if (heartbeatCappedCollectionMaxDocNum != null)
             this.heartbeatCappedCollectionMaxDocNum = Integer.parseInt(heartbeatCappedCollectionMaxDocNum.trim());
          //添加Lion监听
@@ -417,7 +421,7 @@ public class MongoClient implements ConfigChangeListener, CatMonitorBean {
          mongo = this.topicNameToMongoMap.get(TOPICNAME_DEFAULT);
       }
       return this.getCollection(mongo, getIntSafely(msgTopicNameToSizes, topicName),
-            getIntSafely(msgTopicNameToMaxDocNums, topicName), "msg-", topicName, new BasicDBObject(MessageDAOImpl.ID,
+            getIntSafely(msgTopicNameToMaxDocNums, topicName), "msg#", topicName, new BasicDBObject(MessageDAOImpl.ID,
                   -1));
    }
 
@@ -442,7 +446,7 @@ public class MongoClient implements ConfigChangeListener, CatMonitorBean {
          mongo = this.topicNameToMongoMap.get(TOPICNAME_DEFAULT);
       }
       return this.getCollection(mongo, getIntSafely(ackTopicNameToSizes, topicName),
-            getIntSafely(ackTopicNameToMaxDocNums, topicName), "ack-", topicName + "-" + consumerId, new BasicDBObject(
+            getIntSafely(ackTopicNameToMaxDocNums, topicName), "ack#", topicName + "#" + consumerId, new BasicDBObject(
                   AckDAOImpl.MSG_ID, -1).append(AckDAOImpl.CONSUMER_ID, 1));
    }
 
@@ -456,7 +460,7 @@ public class MongoClient implements ConfigChangeListener, CatMonitorBean {
          mongo = this.topicNameToMongoMap.get(TOPICNAME_DEFAULT);
       }
       return this.getCollection(mongo, this.heartbeatCappedCollectionSize, this.heartbeatCappedCollectionMaxDocNum,
-            "heartbeat-", ip, new BasicDBObject(HeartbeatDAOImpl.TICK, -1));
+            "heartbeat#", ip, new BasicDBObject(HeartbeatDAOImpl.TICK, -1));
    }
 
    private DBCollection getCollection(Mongo mongo, int size, int cappedCollectionMaxDocNum, String dbNamePrefix,
@@ -552,22 +556,59 @@ public class MongoClient implements ConfigChangeListener, CatMonitorBean {
       return result;
    }
 
-   @Override
-   public Map<String, Object> getStatusMap() {
-      Map<String, Object> map = new HashMap<String, Object>();
-      map.put("topicNameToMongoMap", this.topicNameToMongoMap);
-      map.put("msgTopicNameToSizes", this.msgTopicNameToSizes);
-      map.put("msgTopicNameToMaxDocNums", this.msgTopicNameToMaxDocNums);
-      map.put("ackTopicNameToSizes", this.ackTopicNameToSizes);
-      map.put("ackTopicNameToMaxDocNums", this.ackTopicNameToMaxDocNums);
-      map.put("heartbeatMongo", this.heartbeatMongo);
-      map.put("heartbeatCappedCollectionSize", this.heartbeatCappedCollectionSize);
-      map.put("heartbeatCappedCollectionMaxDocNum", this.heartbeatCappedCollectionMaxDocNum);
-      return map;
-   }
-
    public void setDynamicConfig(DynamicConfig dynamicConfig) {
       this.dynamicConfig = dynamicConfig;
+   }
+
+   /**
+    * 用于Hawk监控
+    */
+   public class HawkMBean {
+
+      public String getSeverURILionKey() {
+         return severURILionKey;
+      }
+
+      public Map<String, Integer> getMsgTopicNameToSizes() {
+         return msgTopicNameToSizes;
+      }
+
+      public Map<String, Integer> getMsgTopicNameToMaxDocNums() {
+         return msgTopicNameToMaxDocNums;
+      }
+
+      public Map<String, Integer> getAckTopicNameToSizes() {
+         return ackTopicNameToSizes;
+      }
+
+      public Map<String, Integer> getAckTopicNameToMaxDocNums() {
+         return ackTopicNameToMaxDocNums;
+      }
+
+      public String getHeartbeatMongo() {
+         return heartbeatMongo.toString();
+      }
+
+      public int getHeartbeatCappedCollectionSize() {
+         return heartbeatCappedCollectionSize;
+      }
+
+      public int getHeartbeatCappedCollectionMaxDocNum() {
+         return heartbeatCappedCollectionMaxDocNum;
+      }
+
+      public String getTopicNameToMongoMap() {
+         return topicNameToMongoMap.toString();
+      }
+
+      public String getMongoOptions() {
+         return mongoOptions.toString();
+      }
+
+      public String getCollectionExistsSign() {
+         return collectionExistsSign.toString();
+      }
+
    }
 
 }

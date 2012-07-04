@@ -26,36 +26,30 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.netty</groupId>
 			<artifactId>netty</artifactId>
-			<version>3.2.7.Final</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.caucho</groupId>
 			<artifactId>hessian</artifactId>
-			<version>4.0.7</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
-			<version>2.6.3</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.lion</groupId>
 			<artifactId>lion-client</artifactId>
-			<version>0.2.2</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.lion</groupId>
 			<artifactId>lion-${env}</artifactId>
-			<version>1.0.0</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency><!-- lion need log4j -->
@@ -63,23 +57,15 @@
 			<artifactId>log4j</artifactId>
 			<optional>true</optional>
 		</dependency>
-		<!-- test -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>12.0</version>
-			<scope>test</scope>
-		</dependency>
+		<!-- 监控 -->
 		<dependency>
 			<groupId>com.dianping.cat</groupId>
 			<artifactId>cat-core</artifactId>
-			<version>0.3.1</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.dianping.hawk</groupId>
+			<artifactId>hawk-client</artifactId>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>

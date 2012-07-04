@@ -1,6 +1,10 @@
 package com.dianping.swallow.common.dao.impl.mongodb;
 
+import jmockmongo.MockMongo;
+
 import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.kubek2k.springockito.annotations.SpringockitoContextLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -16,14 +20,15 @@ public abstract class AbstractDAOImplTest extends AbstractJUnit4SpringContextTes
    @Autowired
    private MongoClient           mongoClient;
 
-   //   private DB                    db;
+   private static MockMongo      mock;
 
-   //   @Before
-   //   public void setUp() throws Exception {
-   //      //如果db不存在，则创建db
-   //      Mongo mongo = mongoClient.getMongo(TOPIC_NAME);
-   //      db = mongo.getDB(this.getDBName());
-   //   }
+   @BeforeClass
+   public static void setUpClass() throws Exception {
+      if (mock == null) {
+         mock = new MockMongo(24521);
+         mock.start();
+      }
+   }
 
    @After
    public void tearDown() throws Exception {
@@ -31,6 +36,11 @@ public abstract class AbstractDAOImplTest extends AbstractJUnit4SpringContextTes
       mongoClient.getMessageCollection(TOPIC_NAME).drop();
       mongoClient.getAckCollection(TOPIC_NAME, CONSUMER_ID).drop();
       mongoClient.getHeartbeatCollection(IP.replace('.', '_')).drop();
+
+   }
+
+   @AfterClass
+   public static void tearDownClass() throws Exception {
    }
 
 }

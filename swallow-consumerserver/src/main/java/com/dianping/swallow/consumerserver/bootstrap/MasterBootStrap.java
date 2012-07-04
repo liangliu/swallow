@@ -26,11 +26,8 @@ public class MasterBootStrap {
 
    private static final Logger LOG        = LoggerFactory.getLogger(MasterBootStrap.class);
 
-   //TODO 是否lion中
-   private static int          masterPort = 8081;
 
    private static boolean      isSlave    = false;
-
 
    public static void main(String[] args) {
 
@@ -42,7 +39,7 @@ public class MasterBootStrap {
       } catch (InterruptedException e) {
          LOG.error("thread InterruptedException", e);
       }
-      
+
       // Configure the server.
       final ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
             Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
@@ -60,7 +57,7 @@ public class MasterBootStrap {
          }
       });
       // Bind and start to accept incoming connections.
-      bootstrap.bind(new InetSocketAddress(masterPort));
+      bootstrap.bind(new InetSocketAddress(consumerWorkerManager.getConfigManager().getMasterPort()));
 
       CloseMonitor closeMonitor = new CloseMonitor();
       int port = Integer.parseInt(System.getProperty("closeMonitorPort", "17555"));
@@ -68,9 +65,9 @@ public class MasterBootStrap {
 
          @Override
          public void onClose() {
-               consumerWorkerManager.close();
-               bootstrap.releaseExternalResources();
-            
+            consumerWorkerManager.close();
+            bootstrap.releaseExternalResources();
+
          }
 
       });

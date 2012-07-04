@@ -1,8 +1,6 @@
 package com.dianping.swallow.consumerserver.buffer;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -12,10 +10,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.common.cat.CatMonitorBean;
+import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.message.Message;
 
-public class MessageBlockingQueue extends LinkedBlockingQueue<Message> implements CatMonitorBean {
+public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
 
    private static final long           serialVersionUID = -633276713494338593L;
    private static final Logger         LOG              = LoggerFactory.getLogger(MessageBlockingQueue.class);
@@ -48,6 +46,8 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> implement
       this.tailMessageId = messageIdOfTailMessage;
       messageRetriverThread = new MessageRetriverThread();
       messageRetriverThread.start();
+      //Hawk监控
+      HawkJMXUtil.registerMBean(topicName + "-" + cid + "-MessageBlockingQueue", new HawkMBean());
    }
 
    public MessageBlockingQueue(String cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage,
@@ -65,6 +65,8 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> implement
       this.messageTypeSet = messageTypeSet;
       messageRetriverThread = new MessageRetriverThread();
       messageRetriverThread.start();
+      //Hawk监控
+      HawkJMXUtil.registerMBean(topicName + "-" + cid + "-MessageBlockingQueue", new HawkMBean());
    }
 
    public Message take() throws InterruptedException {
@@ -142,7 +144,9 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> implement
       }
 
       private void retriveMessage() {
-         LOG.info("retriveMessage() start:" + this.getName());
+         if (LOG.isDebugEnabled()) {
+            LOG.debug("retriveMessage() start:" + this.getName());
+         }
          try {
             List<Message> messages = messageRetriever.retriveMessage(MessageBlockingQueue.this.topicName,
                   MessageBlockingQueue.this.tailMessageId, MessageBlockingQueue.this.messageTypeSet);
@@ -170,20 +174,46 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> implement
          } catch (Exception e1) {
             LOG.error(e1.getMessage(), e1);
          }
-         LOG.info("retriveMessage() done:" + this.getName());
+         if (LOG.isDebugEnabled()) {
+            LOG.debug("retriveMessage() done:" + this.getName());
+         }
       }
-
    }
 
-   @Override
-   public Map<String, Object> getStatusMap() {
-      Map<String, Object> map = new HashMap<String, Object>();
-      map.put("tailMessageId", this.tailMessageId);
-      map.put("messageTypeSet", this.messageTypeSet);
-      map.put("threshold", this.threshold);
-      map.put("size", this.size());
-      map.put("remainingCapacity", this.remainingCapacity());
-      return map;
+   //以下是供Hawk监控使用的MBean
+   public class HawkMBean {
+
+      public String getCid() {
+         return cid;
+      }
+
+      public String getTopicName() {
+         return topicName;
+      }
+
+      public int getThreshold() {
+         return threshold;
+      }
+
+      public Long getTailMessageId() {
+         return tailMessageId;
+      }
+
+      public Set<String> getMessageTypeSet() {
+         return messageTypeSet;
+      }
+
+      public int getSize() {
+         return size();
+      }
+
+      public int getRemainingCapacity() {
+         return remainingCapacity();
+      }
+
+      public String getMessageRetriverThreadStatus() {
+         return messageRetriverThread.getState().toString();
+      }
    }
 
 }
