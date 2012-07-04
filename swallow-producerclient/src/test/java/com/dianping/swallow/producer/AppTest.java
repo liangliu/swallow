@@ -74,7 +74,7 @@ public class AppTest extends TestCase {
          Map<String, String> properties = new HashMap<String, String>();
          properties.put("zip", "true");
          int idx = 0;
-         for (int i = 0; i < 100; i++) {
+         for (int i = 0; i < 10; i++) {
             //         while (true) {
             //			content += i++;
             try {
