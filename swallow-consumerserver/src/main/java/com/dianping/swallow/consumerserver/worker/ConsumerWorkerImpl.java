@@ -1,13 +1,13 @@
 package com.dianping.swallow.consumerserver.worker;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -34,27 +34,28 @@ import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 
 public class ConsumerWorkerImpl implements ConsumerWorker {
-   private static final Logger    LOG               = LoggerFactory.getLogger(ConsumerWorkerImpl.class);
+   private static final Logger                    LOG               = LoggerFactory.getLogger(ConsumerWorkerImpl.class);
 
-   private ConsumerInfo           consumerInfo;
-   private BlockingQueue<Channel> freeChannels       = new LinkedBlockingQueue<Channel>();
-   private Set<Channel>           connectedChannels  = Collections.synchronizedSet(new HashSet<Channel>());
-   private BlockingQueue<Message> messageQueue       = null;
-   private AckDAO                 ackDao;
-   private SwallowBuffer          swallowBuffer;
-   private MessageDAO             messageDao;
-   private BlockingQueue<PktMessage>             preparedMessages   = new LinkedBlockingQueue<PktMessage>();
-   private MQThreadFactory        threadFactory;
-   private String                 consumerid;
-   private String                 topicName;
-   private volatile boolean       getMessageisAlive = true;
-   private volatile boolean       started           = false;
-   private ExecutorService        ackExecutor;
-   private ConsumerWorkerManager  workerManager;
-   private PullStrategy pullStgy;
-   private ConfigManager configManager;
-   private Map<Channel, Set<PktMessage>> waitAckMessages = new ConcurrentHashMap<Channel, Set<PktMessage>>();
-   
+   private ConsumerInfo                           consumerInfo;
+   private BlockingQueue<Channel>                 freeChannels      = new LinkedBlockingQueue<Channel>();
+   private Set<Channel>                           connectedChannels = Collections
+                                                                          .synchronizedSet(new HashSet<Channel>());
+   private BlockingQueue<Message>                 messageQueue      = null;
+   private AckDAO                                 ackDao;
+   private SwallowBuffer                          swallowBuffer;
+   private MessageDAO                             messageDao;
+   private Queue<PktMessage>                      cachedMessages    = new ConcurrentLinkedQueue<PktMessage>();
+   private MQThreadFactory                        threadFactory;
+   private String                                 consumerid;
+   private String                                 topicName;
+   private volatile boolean                       getMessageisAlive = true;
+   private volatile boolean                       started           = false;
+   private ExecutorService                        ackExecutor;
+   private ConsumerWorkerManager                  workerManager;
+   private PullStrategy                           pullStgy;
+   private ConfigManager                          configManager;
+   private Map<Channel, Map<PktMessage, Boolean>> waitAckMessages   = new ConcurrentHashMap<Channel, Map<PktMessage, Boolean>>();
+
    public Set<Channel> getConnectedChannels() {
       return connectedChannels;
    }
@@ -69,7 +70,8 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       topicName = consumerInfo.getConsumerId().getDest().getName();
       consumerid = consumerInfo.getConsumerId().getConsumerId();
       this.workerManager = workerManager;
-      pullStgy = new DefaultPullStrategy(configManager.getPullFailDelayBase(), configManager.getPullFailDelayUpperBound());
+      pullStgy = new DefaultPullStrategy(configManager.getPullFailDelayBase(),
+            configManager.getPullFailDelayUpperBound());
 
       ackExecutor = new ThreadPoolExecutor(1, 1, Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>());
 
@@ -137,19 +139,16 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    }
 
-   private void updateWaitAckMessages(Channel channel, Long ackedMsgId){
-      if(ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())){
-         Set<PktMessage> messages = waitAckMessages.get(channel);
-         Iterator<PktMessage> iterator = messages.iterator();
-         while(iterator.hasNext()){
-            PktMessage message = iterator.next();
-            if(ackedMsgId.equals(message.getContent().getMessageId())){
-               messages.remove(message);
-            }
-         }
+   private void updateWaitAckMessages(Channel channel, Long ackedMsgId) {
+      if (ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
+         Map<PktMessage, Boolean> messages = waitAckMessages.get(channel);
+         PktMessage mockPktMessage = new PktMessage();
+         mockPktMessage.getContent().setMessageId(ackedMsgId);
+         messages.remove(mockPktMessage);
       }
-      
+
    }
+
    private void updateMaxMessageId(Long ackedMsgId) {
       if (ackedMsgId != null && ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
          ackDao.add(topicName, consumerid, ackedMsgId);
@@ -159,17 +158,16 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    @Override
    public void handleChannelDisconnect(Channel channel) {
       connectedChannels.remove(channel);
-      if(ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())){
-         Iterator<PktMessage> messages = waitAckMessages.get(channel).iterator();
-         while(messages.hasNext()){
-            try {
-               preparedMessages.put(messages.next());
-            } catch (InterruptedException e) {
-               LOG.error("preparedMessages should be no limit!", e);
+      if (ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
+         Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
+         if (messageMap != null) {
+            for (Map.Entry<PktMessage, Boolean> messageEntry : messageMap.entrySet()) {
+               cachedMessages.add(messageEntry.getKey());
+
             }
          }
       }
-      
+
    }
 
    private void startMessageFetcherThread() {
@@ -201,17 +199,17 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       });
    }
 
-   public void closeMessageFetcherThread(){
+   public void closeMessageFetcherThread() {
       getMessageisAlive = false;
    }
-   
-   public void closeAckExecutor(){
+
+   public void closeAckExecutor() {
       ackExecutor.shutdownNow();
    }
+
    public void close() {
       getMessageisAlive = false;
-      
-      
+
    }
 
    private long getMessageIdOfTailMessage(String topicName, String consumerId) {
@@ -239,8 +237,8 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
          while (getMessageisAlive) {
             Channel channel = freeChannels.take();
             if (channel.isConnected()) {
-               
-               if (preparedMessages.size() == 0) {
+
+               if (cachedMessages.size() == 0) {
                   SwallowMessage message = null;
                   while (getMessageisAlive) {
                      //从blockQueue中获取消息
@@ -251,12 +249,12 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                      }
                   }
                   if (message != null) {
-                     preparedMessages.put(new PktMessage(consumerInfo.getConsumerId().getDest(), message));
+                     cachedMessages.add(new PktMessage(consumerInfo.getConsumerId().getDest(), message));
                   }
                }
                //收到close命令后,可能没有取得消息,此时,message为null,不做任何事情.此线程结束.
-               if (preparedMessages.size() != 0) {
-                  PktMessage preparedMessage = preparedMessages.poll();
+               if (cachedMessages.size() != 0) {
+                  PktMessage preparedMessage = cachedMessages.poll();
                   Long messageId = preparedMessage.getContent().getMessageId();
                   //如果consumer是收到ACK之前更新messageId的类型
                   if (ConsumerType.AT_MOST.equals(consumerInfo.getConsumerType())) {
@@ -272,17 +270,17 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                   }
                   try {
                      channel.write(preparedMessage);
-                     if (ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())){
-                        Set<PktMessage> messageSet = waitAckMessages.get(channel);
-                        if(messageSet == null){
-                           messageSet = new HashSet<PktMessage>();
-                           waitAckMessages.put(channel, messageSet);
+                     if (ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
+                        Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
+                        if (messageMap == null) {
+                           messageMap = new ConcurrentHashMap<PktMessage, Boolean>();
+                           waitAckMessages.put(channel, messageMap);
                         }
-                        messageSet.add(preparedMessage);
+                        messageMap.put(preparedMessage, Boolean.TRUE);
                      }
                   } catch (Exception e) {
                      LOG.error(consumerInfo.toString() + "：channel write error.", e);
-                     preparedMessages.put(preparedMessage);
+                     cachedMessages.add(preparedMessage);
                   }
                }
 
@@ -330,8 +328,8 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       }
 
       public String getPreparedMessage() {
-         if (preparedMessages != null) {
-            return preparedMessages.toString();
+         if (cachedMessages != null) {
+            return cachedMessages.toString();
          }
          return null;
       }

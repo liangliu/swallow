@@ -43,9 +43,9 @@ public final class PktConsumerMessage extends Packet {
 	
 	private ConsumerType consumerType;
 	
-	private boolean needClose;
+	private Boolean needClose;
 	
-	private int threadCount;
+	private Integer threadCount;
 
 	public boolean getNeedClose() {
 		return needClose;

@@ -29,6 +29,16 @@ public class PktMessage extends Packet implements Message {
    public Destination getDestination() {
       return dest;
    }
+   
+   @Override
+   public int hashCode() {
+      return content.hashCode();
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      return content.equals(obj);
+   }
 
    @Override
    public String toString() {
