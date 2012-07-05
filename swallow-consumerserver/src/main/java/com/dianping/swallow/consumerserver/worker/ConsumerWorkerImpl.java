@@ -1,9 +1,13 @@
 package com.dianping.swallow.consumerserver.worker;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -39,7 +43,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private AckDAO                 ackDao;
    private SwallowBuffer          swallowBuffer;
    private MessageDAO             messageDao;
-   private PktMessage             preparedMessage   = null;
+   private BlockingQueue<PktMessage>             preparedMessages   = new LinkedBlockingQueue<PktMessage>();
    private MQThreadFactory        threadFactory;
    private String                 consumerid;
    private String                 topicName;
@@ -49,6 +53,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private ConsumerWorkerManager  workerManager;
    private PullStrategy pullStgy;
    private ConfigManager configManager;
+   private Map<Channel, Set<PktMessage>> waitAckMessages = new ConcurrentHashMap<Channel, Set<PktMessage>>();
    
    public Set<Channel> getConnectedChannels() {
       return connectedChannels;
@@ -110,6 +115,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
          public void run() {
             while (true) {
                try {
+                  updateWaitAckMessages(channel, ackedMsgId);
                   updateMaxMessageId(ackedMsgId);
                   break;
                } catch (Exception e) {
@@ -131,6 +137,19 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    }
 
+   private void updateWaitAckMessages(Channel channel, Long ackedMsgId){
+      if(ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())){
+         Set<PktMessage> messages = waitAckMessages.get(channel);
+         Iterator<PktMessage> iterator = messages.iterator();
+         while(iterator.hasNext()){
+            PktMessage message = iterator.next();
+            if(ackedMsgId.equals(message.getContent().getMessageId())){
+               messages.remove(message);
+            }
+         }
+      }
+      
+   }
    private void updateMaxMessageId(Long ackedMsgId) {
       if (ackedMsgId != null && ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
          ackDao.add(topicName, consumerid, ackedMsgId);
@@ -140,6 +159,17 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    @Override
    public void handleChannelDisconnect(Channel channel) {
       connectedChannels.remove(channel);
+      if(ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())){
+         Iterator<PktMessage> messages = waitAckMessages.get(channel).iterator();
+         while(messages.hasNext()){
+            try {
+               preparedMessages.put(messages.next());
+            } catch (InterruptedException e) {
+               LOG.error("preparedMessages should be no limit!", e);
+            }
+         }
+      }
+      
    }
 
    private void startMessageFetcherThread() {
@@ -209,7 +239,8 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
          while (getMessageisAlive) {
             Channel channel = freeChannels.take();
             if (channel.isConnected()) {
-               if (preparedMessage == null) {
+               
+               if (preparedMessages.size() == 0) {
                   SwallowMessage message = null;
                   while (getMessageisAlive) {
                      //从blockQueue中获取消息
@@ -220,11 +251,12 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                      }
                   }
                   if (message != null) {
-                     preparedMessage = new PktMessage(consumerInfo.getConsumerId().getDest(), message);
+                     preparedMessages.put(new PktMessage(consumerInfo.getConsumerId().getDest(), message));
                   }
                }
                //收到close命令后,可能没有取得消息,此时,message为null,不做任何事情.此线程结束.
-               if (preparedMessage != null) {
+               if (preparedMessages.size() != 0) {
+                  PktMessage preparedMessage = preparedMessages.poll();
                   Long messageId = preparedMessage.getContent().getMessageId();
                   //如果consumer是收到ACK之前更新messageId的类型
                   if (ConsumerType.AT_MOST.equals(consumerInfo.getConsumerType())) {
@@ -240,9 +272,17 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                   }
                   try {
                      channel.write(preparedMessage);
-                     preparedMessage = null;
+                     if (ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())){
+                        Set<PktMessage> messageSet = waitAckMessages.get(channel);
+                        if(messageSet == null){
+                           messageSet = new HashSet<PktMessage>();
+                           waitAckMessages.put(channel, messageSet);
+                        }
+                        messageSet.add(preparedMessage);
+                     }
                   } catch (Exception e) {
                      LOG.error(consumerInfo.toString() + "：channel write error.", e);
+                     preparedMessages.put(preparedMessage);
                   }
                }
 
@@ -290,8 +330,8 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       }
 
       public String getPreparedMessage() {
-         if (preparedMessage != null) {
-            return preparedMessage.toString();
+         if (preparedMessages != null) {
+            return preparedMessages.toString();
          }
          return null;
       }
