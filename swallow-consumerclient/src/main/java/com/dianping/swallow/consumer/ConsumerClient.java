@@ -47,7 +47,7 @@ public class ConsumerClient {
    private Boolean             needClose   = Boolean.FALSE;
    //consumerClient默认是1个线程处理，如需线程池处理，则另外设置线程数目。
    private int                 threadCount = 1;
-   private long connectMasterInterval = 1000L;
+   private long connectMasterInterval = 5000L;
 
    public Boolean getNeedClose() {
       return needClose;
@@ -103,7 +103,7 @@ public class ConsumerClient {
 
    public ConsumerClient(String cid, String topicName) {
       this.consumerId = cid;
-      this.dest = Destination.topic("topicName");
+      this.dest = Destination.topic(topicName);
       String swallowCAddress = getSwallowCAddress(topicName);
       string2Address(swallowCAddress);
    }
@@ -121,7 +121,11 @@ public class ConsumerClient {
       while (true) {
          synchronized (bootstrap) {
             ChannelFuture future = bootstrap.connect(masterAddress);
-            future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞!	
+            try{
+               future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！     
+            }catch(Exception e){
+               LOG.info("something wrong!", e);
+            } 
          }
          try {
             Thread.sleep(connectMasterInterval);

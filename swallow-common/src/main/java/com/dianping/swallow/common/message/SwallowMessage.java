@@ -112,14 +112,7 @@ public class SwallowMessage implements Serializable, Message {
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((content == null) ? 0 : content.hashCode());
-      result = prime * result + ((generatedTime == null) ? 0 : generatedTime.hashCode());
       result = prime * result + ((messageId == null) ? 0 : messageId.hashCode());
-      result = prime * result + ((properties == null) ? 0 : properties.hashCode());
-      result = prime * result + ((sha1 == null) ? 0 : sha1.hashCode());
-      result = prime * result + ((sourceIp == null) ? 0 : sourceIp.hashCode());
-      result = prime * result + ((type == null) ? 0 : type.hashCode());
-      result = prime * result + ((version == null) ? 0 : version.hashCode());
       return result;
    }
 
@@ -129,48 +122,13 @@ public class SwallowMessage implements Serializable, Message {
          return true;
       if (obj == null)
          return false;
-      if (!(obj instanceof SwallowMessage))
+      if (getClass() != obj.getClass())
          return false;
       SwallowMessage other = (SwallowMessage) obj;
-      if (content == null) {
-         if (other.content != null)
-            return false;
-      } else if (!content.equals(other.content))
-         return false;
-      if (generatedTime == null) {
-         if (other.generatedTime != null)
-            return false;
-      } else if (!generatedTime.equals(other.generatedTime))
-         return false;
       if (messageId == null) {
          if (other.messageId != null)
             return false;
       } else if (!messageId.equals(other.messageId))
-         return false;
-      if (properties == null) {
-         if (other.properties != null)
-            return false;
-      } else if (!properties.equals(other.properties))
-         return false;
-      if (sha1 == null) {
-         if (other.sha1 != null)
-            return false;
-      } else if (!sha1.equals(other.sha1))
-         return false;
-      if (sourceIp == null) {
-         if (other.sourceIp != null)
-            return false;
-      } else if (!sourceIp.equals(other.sourceIp))
-         return false;
-      if (type == null) {
-         if (other.type != null)
-            return false;
-      } else if (!type.equals(other.type))
-         return false;
-      if (version == null) {
-         if (other.version != null)
-            return false;
-      } else if (!version.equals(other.version))
          return false;
       return true;
    }
