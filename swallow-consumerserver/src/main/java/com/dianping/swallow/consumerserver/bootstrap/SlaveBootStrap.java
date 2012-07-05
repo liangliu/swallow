@@ -30,7 +30,7 @@ public class SlaveBootStrap {
     */
    public static void main(String[] args) {
       while (true) {
-         ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext.xml" });
+         ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-cServer.xml" });
          final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
          consumerWorkerManager.init(isSlave);
          // Configure the server.
@@ -55,6 +55,9 @@ public class SlaveBootStrap {
          //检测Master是否起来，没有就一直轮询心跳
          consumerWorkerManager.checkMasterIsALive(bootstrap);
          consumerWorkerManager.close();
+         MessageServerHandler.getChannelGroup().unbind();
+         MessageServerHandler.getChannelGroup().close();
+         MessageServerHandler.getChannelGroup().clear();
          bootstrap.releaseExternalResources();
       }
    }

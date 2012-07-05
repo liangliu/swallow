@@ -22,13 +22,14 @@ import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
 import com.dianping.swallow.common.packet.PktMessage;
+import com.dianping.swallow.consumer.config.CClientConfigManager;
 import com.dianping.swallow.consumer.netty.MessageClientHandler;
 
 public class ConsumerClient {
 
    private static final Logger LOG         = LoggerFactory.getLogger(ConsumerClient.class);
    
-   private static final String LION_CONFIG_FILENAME = "clientLion.properties";
+   private static final String LION_CONFIG_FILENAME = "cClientLion.properties";
 
    private String              consumerId;
 
@@ -44,13 +45,18 @@ public class ConsumerClient {
 
    private InetSocketAddress   slaveAddress;
 
+   private CClientConfigManager                   configManager             = CClientConfigManager.getInstance();
+   
    private Boolean             needClose   = Boolean.FALSE;
    //consumerClient默认是1个线程处理，如需线程池处理，则另外设置线程数目。
    private int                 threadCount = 1;
-   private long connectMasterInterval = 5000L;
 
    public Boolean getNeedClose() {
       return needClose;
+   }
+
+   public CClientConfigManager getConfigManager() {
+      return configManager;
    }
 
    public void setNeedClose(Boolean needClose) {
@@ -116,6 +122,7 @@ public class ConsumerClient {
       ConSlaveThread slave = new ConSlaveThread();
       slave.setBootstrap(bootstrap);
       slave.setSlaveAddress(slaveAddress);
+      slave.setConfigManager(configManager);
       Thread slaveThread = new Thread(slave);
       slaveThread.start();
       while (true) {
@@ -128,7 +135,7 @@ public class ConsumerClient {
             } 
          }
          try {
-            Thread.sleep(connectMasterInterval);
+            Thread.sleep(configManager.getConnectMasterInterval());
          } catch (InterruptedException e) {
             LOG.error("thread InterruptedException", e);
          }

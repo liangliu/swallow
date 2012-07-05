@@ -13,7 +13,7 @@ public class TestConsumer {
     * @param args
     */
    public static void main(String[] args) {
-      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-clientTest.xml" });
+      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-cClientTest.xml" });
       final ConsumerClient ConsumerClient = ctx.getBean(ConsumerClient.class);
       ConsumerClient.setListener(new MessageListener() {
 

@@ -9,6 +9,8 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.channel.group.ChannelGroup;
+import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +27,8 @@ import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 
    private static final Logger LOG        = LoggerFactory.getLogger(MongoHeartbeater.class);
+   
+   private static ChannelGroup channelGroup = new DefaultChannelGroup();
    
    private ConsumerWorkerManager workerManager;
 
@@ -43,6 +47,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
       LOG.info("one client connected!");
+      channelGroup.add(e.getChannel());
       System.out.println("haha");
    }
 
@@ -99,6 +104,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
       
+      channelGroup.remove(e.getChannel());
       //只有IOException的时候才需要处理。
       if (e.getCause() instanceof IOException) {
          LOG.error("Client disconnected!", e.getCause());
@@ -108,4 +114,21 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
       }
       LOG.info("something exception happened!", e.getCause());
    }
+   
+   @Override
+   public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+      channelGroup.remove(e.getChannel());
+      super.channelDisconnected(ctx, e);
+   }
+
+   @Override
+   public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+      channelGroup.remove(e.getChannel());
+      super.channelClosed(ctx, e);
+   }
+
+   public static ChannelGroup getChannelGroup() {
+      return channelGroup;
+   }
+   
 }
