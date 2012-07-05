@@ -22,23 +22,20 @@
 	</properties>
 
 	<dependencies>
-		
+
 		<dependency>
 			<groupId>com.dianping.swallow</groupId>
 			<artifactId>${swallow-common.aid}</artifactId>
-			<version>${swallow-common.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.swallow</groupId>
 			<artifactId>${swallow-consumerclient.aid}</artifactId>
-			<version>${swallow-consumerclient.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.swallow</groupId>
 			<artifactId>${swallow-producerclient.aid}</artifactId>
-			<version>${swallow-producerclient.version}</version>
 		</dependency>
-		
+
 
 	</dependencies>
 </project>

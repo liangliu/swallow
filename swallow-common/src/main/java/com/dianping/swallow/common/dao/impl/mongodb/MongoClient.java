@@ -102,7 +102,7 @@ public class MongoClient implements ConfigChangeListener {
          LOG.debug("Init MongoClient - done.");
       }
       //hawk监控
-      HawkJMXUtil.registerMBean(this);
+      HawkJMXUtil.registerMBean("MongoClient", new HawkMBean());
    }
 
    public MongoClient(String severURILionKey) {
@@ -556,54 +556,59 @@ public class MongoClient implements ConfigChangeListener {
       return result;
    }
 
-   //以下方法用于Hawk监控
-
-   public String getSeverURILionKey() {
-      return severURILionKey;
-   }
-
-   public Map<String, Integer> getMsgTopicNameToSizes() {
-      return msgTopicNameToSizes;
-   }
-
-   public Map<String, Integer> getMsgTopicNameToMaxDocNums() {
-      return msgTopicNameToMaxDocNums;
-   }
-
-   public Map<String, Integer> getAckTopicNameToSizes() {
-      return ackTopicNameToSizes;
-   }
-
-   public Map<String, Integer> getAckTopicNameToMaxDocNums() {
-      return ackTopicNameToMaxDocNums;
-   }
-
-   public String getHeartbeatMongo() {
-      return heartbeatMongo.toString();
-   }
-
-   public int getHeartbeatCappedCollectionSize() {
-      return heartbeatCappedCollectionSize;
-   }
-
-   public int getHeartbeatCappedCollectionMaxDocNum() {
-      return heartbeatCappedCollectionMaxDocNum;
-   }
-
-   public String getTopicNameToMongoMap() {
-      return topicNameToMongoMap.toString();
-   }
-
-   public String getMongoOptions() {
-      return mongoOptions.toString();
-   }
-
-   public String getCollectionExistsSign() {
-      return collectionExistsSign.toString();
-   }
-
    public void setDynamicConfig(DynamicConfig dynamicConfig) {
       this.dynamicConfig = dynamicConfig;
+   }
+
+   /**
+    * 用于Hawk监控
+    */
+   public class HawkMBean {
+
+      public String getSeverURILionKey() {
+         return severURILionKey;
+      }
+
+      public Map<String, Integer> getMsgTopicNameToSizes() {
+         return msgTopicNameToSizes;
+      }
+
+      public Map<String, Integer> getMsgTopicNameToMaxDocNums() {
+         return msgTopicNameToMaxDocNums;
+      }
+
+      public Map<String, Integer> getAckTopicNameToSizes() {
+         return ackTopicNameToSizes;
+      }
+
+      public Map<String, Integer> getAckTopicNameToMaxDocNums() {
+         return ackTopicNameToMaxDocNums;
+      }
+
+      public String getHeartbeatMongo() {
+         return heartbeatMongo.toString();
+      }
+
+      public int getHeartbeatCappedCollectionSize() {
+         return heartbeatCappedCollectionSize;
+      }
+
+      public int getHeartbeatCappedCollectionMaxDocNum() {
+         return heartbeatCappedCollectionMaxDocNum;
+      }
+
+      public String getTopicNameToMongoMap() {
+         return topicNameToMongoMap.toString();
+      }
+
+      public String getMongoOptions() {
+         return mongoOptions.toString();
+      }
+
+      public String getCollectionExistsSign() {
+         return collectionExistsSign.toString();
+      }
+
    }
 
 }
