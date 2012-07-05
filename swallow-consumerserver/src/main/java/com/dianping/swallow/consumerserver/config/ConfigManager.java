@@ -122,7 +122,7 @@ public class ConfigManager {
    }
 
    private ConfigManager() {
-      this("swallow.properties");
+      this("cServer.properties");
    }
 
    @SuppressWarnings("rawtypes")
