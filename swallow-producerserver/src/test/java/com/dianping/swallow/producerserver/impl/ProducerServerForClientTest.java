@@ -34,7 +34,8 @@ import com.dianping.swallow.common.util.SHAUtil;
 public class ProducerServerForClientTest {
 
    static MockMongo mockMongo;
-
+   static MockMongo mockMongo2;
+   
    @Test
    public void testProducerServerForClient() throws UnknownHostException {
       //初始化ProducerServerForClient对象
@@ -97,19 +98,6 @@ public class ProducerServerForClientTest {
       //初始化ProducerServerForClient对象
       ProducerServerForClient producerServerForClient = new ProducerServerForClient();
 
-      int port = 4000;
-      producerServerForClient.setPort(port);
-
-      Assert.assertEquals(port, producerServerForClient.getPort());
-
-      //启动Service服务
-      try {
-         producerServerForClient.start();
-      } catch (RemoteServiceInitFailedException e) {
-      }
-
-      //构造greet
-      PktProducerGreet pktProducerGreet = new PktProducerGreet("0.6.0", "Unit Test");
       //构造message
       SwallowMessage swallowMessage = new SwallowMessage();
       swallowMessage.setContent("UnitTest");
@@ -119,14 +107,6 @@ public class ProducerServerForClientTest {
       PktMessage pktMessage = new PktMessage(Destination.topic("UnitTest"), swallowMessage);
       
       PktSwallowPACK ACK = null;
-      //发送greet
-      try {
-         ACK = (PktSwallowPACK) producerServerForClient.sendMessage(pktProducerGreet);
-      } catch (ServerDaoException e) {
-      }
-      
-      Assert.assertEquals(PacketType.SWALLOW_P_ACK, ACK.getPacketType());
-      Assert.assertEquals(Inet4Address.getLocalHost().getHostAddress(), ACK.getShaInfo());
 
       //不抛异常的DAO
       MessageDAOImpl messageDAOImpl = new MessageDAOImpl();
@@ -134,11 +114,29 @@ public class ProducerServerForClientTest {
       //mock的lion配置
       DynamicConfig config = mock(LionDynamicConfig.class);
       when(config.get("swallow.mongo.producerServerURI")).thenReturn("default=mongodb://127.0.0.1:27016;feed=mongodb://127.0.0.1:21017");
+      when(config.get("swallow.mongo.msgCappedCollectionSize")).thenReturn("default=1024;feed,topicForUnitTest=1025");
+      when(config.get("swallow.mongo.msgCappedCollectionMaxDocNum")).thenReturn("default=1024;feed,topicForUnitTest=1025");
+      when(config.get("swallow.mongo.ackCappedCollectionSize")).thenReturn("default=1024;feed,topicForUnitTest=1025");
+      when(config.get("swallow.mongo.ackCappedCollectionMaxDocNum")).thenReturn("default=1024;feed,topicForUnitTest=1025");
+      when(config.get("swallow.mongo.heartbeatServerURI")).thenReturn("mongodb://localhost:24521");
+      when(config.get("swallow.mongo.heartbeatCappedCollectionSize")).thenReturn("1025");
+      when(config.get("swallow.mongo.heartbeatCappedCollectionMaxDocNum")).thenReturn("1025");
+
       //真实的mongoClient
-      MongoClient mongoClient = new MongoClient("lion.properties", config);
+      MongoClient mongoClient = new MongoClient("swallow.mongo.producerServerURI", config);
       messageDAOImpl.setMongoClient(mongoClient);
-      MessageDAO messageDAO = mock(MessageDAO.class);
-      producerServerForClient.setMessageDAO(messageDAO);
+      producerServerForClient.setMessageDAO(messageDAOImpl);
+      
+      ACK = null;
+      try {
+         ACK = (PktSwallowPACK) producerServerForClient.sendMessage(pktMessage);
+      } catch (ServerDaoException e) {
+      }
+      Assert.assertEquals(PacketType.SWALLOW_P_ACK, ACK.getPacketType());
+      Assert.assertEquals(SHAUtil.generateSHA(swallowMessage.getContent()), ACK.getShaInfo());
+      
+      mongoClient.onConfigChange("swallow.mongo.producerServerURI", "default=mongodb://127.0.0.1:27017;feed=mongodb://127.0.0.1:21016");
+
       ACK = null;
       try {
          ACK = (PktSwallowPACK) producerServerForClient.sendMessage(pktMessage);
@@ -147,27 +145,21 @@ public class ProducerServerForClientTest {
       Assert.assertEquals(PacketType.SWALLOW_P_ACK, ACK.getPacketType());
       Assert.assertEquals(SHAUtil.generateSHA(swallowMessage.getContent()), ACK.getShaInfo());
 
-      //设置mock行为，抛出数据库异常
-      doThrow(new RuntimeException()).when(messageDAO).saveMessage(Matchers.anyString(), (SwallowMessage) Matchers.anyObject());
-      ACK = null;
-      try {
-         ACK = (PktSwallowPACK) producerServerForClient.sendMessage(pktMessage);
-      } catch (ServerDaoException e) {
-      }
-      Assert.assertNull(ACK);
-      
    }
 
    @BeforeClass
    public static void beforeClass() {
       mockMongo = new MockMongo(27017);
-      
       mockMongo.start();
+      
+      mockMongo2 = new MockMongo(27016);
+      mockMongo2.start();
    }
 
    @AfterClass
    public static void afterClass() {
       mockMongo.stop();
+      mockMongo2.stop();
    }
 
 }

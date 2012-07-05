@@ -169,6 +169,16 @@ public class ProducerFactoryImpl implements ProducerFactory {
       }
       return producerImpl;
    }
+   
+   /**
+    * 获取默认配置的Producer，默认Producer工作模式为同步，重试次数为5
+    * @throws TopicNameInvalidException topic名称非法//topic名称只能由字母、数字、下划线组成
+    * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
+    */
+   @Override
+   public ProducerImpl getProducer(Destination topicName) throws TopicNameInvalidException, RemoteServiceDownException {
+      return getProducer(topicName, null);
+   }
 
    public MQService getRemoteService() {
       return remoteService;
