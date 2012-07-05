@@ -42,15 +42,16 @@ public class Destination implements Serializable {
       this.type = type;
    }
 
-   /***
-    * 创建Queue类型地址
-    * 
-    * @param name Queue名称
-    * @return
-    */
-   public static Destination queue(String name) {
-      return new Destination(name, Type.QUEUE);
-   }
+   // 此版本不实现queue类型
+   //   /***
+   //    * 创建Queue类型地址
+   //    * 
+   //    * @param name Queue名称
+   //    * @return
+   //    */
+   //   public static Destination queue(String name) {
+   //      return new Destination(name, Type.QUEUE);
+   //   }
 
    /***
     * 创建Topic类型地址
@@ -66,13 +67,14 @@ public class Destination implements Serializable {
       return name;
    }
 
-   public boolean isQueue() {
-      return type == Type.QUEUE;
-   }
-
-   public boolean isTopic() {
-      return type == Type.TOPIC;
-   }
+   // 此版本不实现queue类型，故不需要以下2个方法
+   //   public boolean isQueue() {
+   //      return type == Type.QUEUE;
+   //   }
+   //
+   //   public boolean isTopic() {
+   //      return type == Type.TOPIC;
+   //   }
 
    @Override
    public String toString() {
