@@ -42,7 +42,8 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 
    @Override
    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-
+      LOG.info("one client connected!");
+      System.out.println("haha");
    }
 
    @Override

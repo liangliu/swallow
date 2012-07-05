@@ -17,7 +17,8 @@ package com.dianping.swallow.producer.impl;
 
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dianping.dpsf.api.ProxyFactory;
 import com.dianping.swallow.common.message.Destination;
@@ -36,17 +37,17 @@ import com.dianping.swallow.producer.ProducerOptionKey;
  */
 public class ProducerFactoryImpl implements ProducerFactory {
 
-   private final Logger               logger          = Logger.getLogger(ProducerFactoryImpl.class);
-   private static ProducerFactoryImpl instance;                                                     //Producer工厂类单例
+   private final Logger               logger          = LoggerFactory.getLogger(ProducerFactoryImpl.class);
+   private static ProducerFactoryImpl instance;                                                            //Producer工厂类单例
 
    //远程调用相关设置
-   private final int                  remoteServiceTimeout;                                         //远程调用超时
-   private static final int           DEFAULT_TIMEOUT = 5000;                                       //远程调用默认超时
+   private final int                  remoteServiceTimeout;                                                //远程调用超时
+   private static final int           DEFAULT_TIMEOUT = 5000;                                              //远程调用默认超时
    //远程调用相关变量
    @SuppressWarnings("rawtypes")
-   private final ProxyFactory         pigeon          = new ProxyFactory();                         //pigeon代理对象
+   private final ProxyFactory         pigeon          = new ProxyFactory();                                //pigeon代理对象
    //TODO 为了单元测试，先将final设定去除掉了，后面有别的办法再补回来，或者就直接给Factory类提供一个setMQService方法？
-   private MQService                  remoteService;                                                //远程调用对象
+   private MQService                  remoteService;                                                       //远程调用对象
 
    /**
     * Producer工厂类构造函数

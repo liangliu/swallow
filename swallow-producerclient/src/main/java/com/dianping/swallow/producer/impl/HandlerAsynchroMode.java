@@ -1,6 +1,7 @@
 package com.dianping.swallow.producer.impl;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dianping.dpsf.exception.NetException;
 import com.dianping.filequeue.DefaultFileQueueConfig.FileQueueConfigHolder;
@@ -18,13 +19,13 @@ import com.dianping.swallow.common.threadfactory.MQThreadFactory;
  * @author tong.song
  */
 public class HandlerAsynchroMode {
-   private static final Logger          logger                 = Logger.getLogger(ProducerImpl.class);
+   private static final Logger          logger                 = LoggerFactory.getLogger(ProducerImpl.class);
    private static final MQThreadFactory threadFactory          = new MQThreadFactory();
 
    private static final int             DEFAULT_FILEQUEUE_SIZE = 512 * 1024 * 1024;
 
    private ProducerImpl                 producer;
-   private FileQueue<Packet>            messageQueue;                                                 //filequeue
+   private FileQueue<Packet>            messageQueue;                                                        //filequeue
 
    //构造函数
    public HandlerAsynchroMode(ProducerImpl producer) {

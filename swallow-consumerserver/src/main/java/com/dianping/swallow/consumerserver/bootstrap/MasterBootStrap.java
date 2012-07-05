@@ -1,5 +1,6 @@
 package com.dianping.swallow.consumerserver.bootstrap;
 
+import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import org.jboss.netty.bootstrap.ServerBootstrap;
@@ -13,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.dianping.cat.Cat;
 import com.dianping.swallow.common.codec.JsonDecoder;
 import com.dianping.swallow.common.codec.JsonEncoder;
 import com.dianping.swallow.common.monitor.CloseMonitor;
@@ -24,12 +27,16 @@ import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
 public class MasterBootStrap {
 
-   private static final Logger LOG        = LoggerFactory.getLogger(MasterBootStrap.class);
+   private static final Logger LOG     = LoggerFactory.getLogger(MasterBootStrap.class);
 
+   private static boolean      isSlave = false;
 
-   private static boolean      isSlave    = false;
-
+   /**
+    * 启动Master
+    */
    public static void main(String[] args) {
+      //启动Cat
+      Cat.initialize(new File("/data/appdatas/cat/client.xml"));
 
       ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext.xml" });
       final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);

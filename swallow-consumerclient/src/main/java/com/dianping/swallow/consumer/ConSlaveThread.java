@@ -17,7 +17,7 @@ public class ConSlaveThread implements Runnable {
 
    private long                waitTime        = 1000L;
 
-   private long                connectInterval = 1000L;
+   private long                connectInterval = 5000L;
 
    public ClientBootstrap getBootstrap() {
       return bootstrap;
@@ -38,7 +38,11 @@ public class ConSlaveThread implements Runnable {
          while (true) {
             synchronized (bootstrap) {
                ChannelFuture future = bootstrap.connect(slaveAddress);
-               future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！	  
+               try{
+                  future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！     
+               }catch(Exception e){
+                  LOG.info("something wrong!", e);
+               }                              
             }
             Thread.sleep(connectInterval);
          }
