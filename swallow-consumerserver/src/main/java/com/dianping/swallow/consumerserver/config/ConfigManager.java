@@ -24,11 +24,11 @@ public class ConfigManager {
    private int                  pullFailDelayUpperBound         = 3000;
    private long                 checkConnectedChannelInterval   = 2000L;
    private long                 retryIntervalWhenMongoException = 2000L;
-   private long                 waitAckTimeWhenCloseSwc         = 20000L;
+   private long                 waitAckTimeWhenCloseSwc         = 10000L;
    private long                 waitSlaveShutDown               = 30000L;
    private long                 closeChannelMaxWaitingTime      = 20000L;
    private int                  heartbeatCheckInterval          = 3000;
-   private int                  heartbeatMaxStopTime            = 20000;
+   private int                  heartbeatMaxStopTime            = 10000;
    private int                  heartbeatUpdateInterval         = 4000;
    private int                  blockQueueFailoverSleepTime     = 1000;
    private int                  pullingTime                     = 1000;
