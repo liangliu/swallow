@@ -50,6 +50,7 @@ public class ProducerMultipleThread {
    public static void main(String[] args) {
       ProducerFactoryImpl producerFactory = null;
       ExecutorService threadPool = Executors.newCachedThreadPool();
+      
       //获取Producer工厂实例
       try {
          //Or: producerFactory = ProducerFactory.getInstance()//默认远程调用timeout为5000;
@@ -57,11 +58,13 @@ public class ProducerMultipleThread {
       } catch (Exception e) {
          System.out.println(e.toString());
       }
+      
       //设置Producer选项
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
       pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 10);
       pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
+      pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
       
       ProducerImpl producerAsync = null;
       //获取Producer实例
@@ -73,6 +76,7 @@ public class ProducerMultipleThread {
       
       //重新配置Producer选项
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
+      
       ProducerImpl producerSync = null;
       
       //获取Producer实例
