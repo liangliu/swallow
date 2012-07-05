@@ -37,17 +37,17 @@ import com.dianping.swallow.producer.ProducerOptionKey;
  */
 public class ProducerFactoryImpl implements ProducerFactory {
 
-   private final Logger               logger          = LoggerFactory.getLogger(ProducerFactoryImpl.class);
+   private static final Logger        logger          = LoggerFactory.getLogger(ProducerFactoryImpl.class);
    private static ProducerFactoryImpl instance;                                                            //Producer工厂类单例
 
    //远程调用相关设置
-   private final int                  remoteServiceTimeout;                                                //远程调用超时
+   private static int                 remoteServiceTimeout;                                                //远程调用超时
    private static final int           DEFAULT_TIMEOUT = 5000;                                              //远程调用默认超时
    //远程调用相关变量
    @SuppressWarnings("rawtypes")
-   private final ProxyFactory         pigeon          = new ProxyFactory();                                //pigeon代理对象
+   private static final ProxyFactory  pigeon          = new ProxyFactory();                                //pigeon代理对象
    //TODO 为了单元测试，先将final设定去除掉了，后面有别的办法再补回来，或者就直接给Factory类提供一个setMQService方法？
-   private MQService                  remoteService;                                                       //远程调用对象
+   private static MQService           remoteService;                                                       //远程调用对象
 
    /**
     * Producer工厂类构造函数
@@ -56,9 +56,9 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @throws RemoteServiceInitFailedException 远程调用初始化失败
     */
    private ProducerFactoryImpl(int timeout) throws RemoteServiceInitFailedException {
-      this.remoteServiceTimeout = timeout;
+      remoteServiceTimeout = timeout;
       //初始化远程调用
-      setRemoteService(initRemoteService(remoteServiceTimeout));
+      setRemoteService(initRemoteService(getRemoteServiceTimeout()));
    }
 
    /**
@@ -170,9 +170,10 @@ public class ProducerFactoryImpl implements ProducerFactory {
       }
       return producerImpl;
    }
-   
+
    /**
     * 获取默认配置的Producer，默认Producer工作模式为同步，重试次数为5
+    * 
     * @throws TopicNameInvalidException topic名称非法//topic名称只能由字母、数字、下划线组成
     * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
     */
@@ -186,6 +187,10 @@ public class ProducerFactoryImpl implements ProducerFactory {
    }
 
    public void setRemoteService(MQService remoteService) {
-      this.remoteService = remoteService;
+      ProducerFactoryImpl.remoteService = remoteService;
+   }
+
+   public static int getRemoteServiceTimeout() {
+      return remoteServiceTimeout;
    }
 }
