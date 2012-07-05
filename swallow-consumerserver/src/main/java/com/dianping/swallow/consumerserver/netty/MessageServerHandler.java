@@ -48,7 +48,6 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
       LOG.info("one client connected!");
       channelGroup.add(e.getChannel());
-      System.out.println("haha");
    }
 
    @Override
@@ -65,6 +64,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
             workerManager.handleGreet(channel, consumerInfo, clientThreadCount);
          } else {
             if (consumerPacket.getNeedClose() || readyClose) {
+               //第一次接到channel的close命令后,server启一个后台线程,当一定时间后channel仍未关闭,则强制关闭.
                if(!readyClose){
                   Thread thread = workerManager.getThreadFactory().newThread(new Runnable() {
 
@@ -104,9 +104,9 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
       
-      channelGroup.remove(e.getChannel());
       //只有IOException的时候才需要处理。
       if (e.getCause() instanceof IOException) {
+         channelGroup.remove(e.getChannel());
          LOG.error("Client disconnected!", e.getCause());
          Channel channel = e.getChannel();
          workerManager.handleChannelDisconnect(channel, consumerInfo);
@@ -118,12 +118,16 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
       channelGroup.remove(e.getChannel());
+      Channel channel = e.getChannel();
+      workerManager.handleChannelDisconnect(channel, consumerInfo);
       super.channelDisconnected(ctx, e);
    }
 
    @Override
    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
       channelGroup.remove(e.getChannel());
+      Channel channel = e.getChannel();
+      workerManager.handleChannelDisconnect(channel, consumerInfo);
       super.channelClosed(ctx, e);
    }
 
