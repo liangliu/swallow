@@ -1,6 +1,7 @@
 package com.dianping.swallow.consumerserver.netty;
 
 import java.io.IOException;
+import java.util.Date;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.common.consumer.ACKHandlerType;
 import com.dianping.swallow.common.consumer.ConsumerMessageType;
+import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
 import com.dianping.swallow.consumerserver.impl.MongoHeartbeater;
 import com.dianping.swallow.consumerserver.worker.ConsumerId;
@@ -59,8 +61,13 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
          PktConsumerMessage consumerPacket = (PktConsumerMessage) e.getMessage();
          if (ConsumerMessageType.GREET.equals(consumerPacket.getType())) {
             clientThreadCount = consumerPacket.getThreadCount();
-            consumerId = new ConsumerId(consumerPacket.getConsumerId(), consumerPacket.getDest());
-            consumerInfo = new ConsumerInfo(consumerId, consumerPacket.getConsumerType());
+            if(consumerPacket.getConsumerId() == null){
+               consumerId = new ConsumerId(fakeCid(), consumerPacket.getDest());
+               consumerInfo = new ConsumerInfo(consumerId, ConsumerType.NON_DURABLE);
+            }else{
+               consumerId = new ConsumerId(consumerPacket.getConsumerId(), consumerPacket.getDest());
+               consumerInfo = new ConsumerInfo(consumerId, consumerPacket.getConsumerType());
+            }     
             workerManager.handleGreet(channel, consumerInfo, clientThreadCount);
          } else {
             if (consumerPacket.getNeedClose() || readyClose) {
@@ -134,5 +141,10 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    public static ChannelGroup getChannelGroup() {
       return channelGroup;
    }
-   
+ //生成唯一consumerId
+   private String fakeCid(){
+      Date now = new Date();
+      return Long.toString(now.getTime());
+   }
+
 }
