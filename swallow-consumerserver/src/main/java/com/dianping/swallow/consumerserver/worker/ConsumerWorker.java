@@ -12,9 +12,9 @@ public interface ConsumerWorker{
 
    public void handleChannelDisconnect(Channel channel);
 
-   public void sendMessageByPollFreeChannelQueue();
-   
    public void closeMessageFetcherThread();
    
    public void closeAckExecutor();
+   
+   public boolean allChannelDisconnected();
 }
