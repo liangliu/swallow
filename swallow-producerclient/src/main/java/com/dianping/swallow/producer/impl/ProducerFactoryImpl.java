@@ -21,11 +21,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dianping.dpsf.api.ProxyFactory;
+import com.dianping.dpsf.exception.NetException;
 import com.dianping.swallow.common.message.Destination;
+import com.dianping.swallow.common.packet.PktProducerGreet;
 import com.dianping.swallow.common.producer.MQService;
-import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
+import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
+import com.dianping.swallow.common.util.IPUtil;
+import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
@@ -38,11 +42,16 @@ import com.dianping.swallow.producer.ProducerOptionKey;
 public class ProducerFactoryImpl implements ProducerFactory {
 
    private static final Logger        logger          = LoggerFactory.getLogger(ProducerFactoryImpl.class);
+
+   private static final String        producerIP      = IPUtil.getFirstNoLoopbackIP4Address();             //Producer IP地址
+   private static final String        producerVersion = "0.6.0";                                           //Producer版本号
+
    private static ProducerFactoryImpl instance;                                                            //Producer工厂类单例
 
    //远程调用相关设置
    private static int                 remoteServiceTimeout;                                                //远程调用超时
    private static final int           DEFAULT_TIMEOUT = 5000;                                              //远程调用默认超时
+
    //远程调用相关变量
    @SuppressWarnings("rawtypes")
    private static final ProxyFactory  pigeon          = new ProxyFactory();                                //pigeon代理对象
@@ -58,7 +67,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    private ProducerFactoryImpl(int timeout) throws RemoteServiceInitFailedException {
       remoteServiceTimeout = timeout;
       //初始化远程调用
-      setRemoteService(initRemoteService(getRemoteServiceTimeout()));
+      remoteService = initRemoteService(timeout);
    }
 
    /**
@@ -133,6 +142,41 @@ public class ProducerFactoryImpl implements ProducerFactory {
    }
 
    /**
+    * @return 获取远程调用服务接口
+    */
+   @Override
+   public MQService getRemoteService() {
+      return remoteService;
+   }
+
+   /**
+    * @return 获取Producer本机IP地址
+    */
+   @Override
+   public String getProducerIP() {
+      return producerIP;
+   }
+
+   /**
+    * @return 获取Producer的版本号
+    */
+   @Override
+   public String getProducerVersion() {
+      return producerVersion;
+   }
+
+   /**
+    * 获取默认配置的Producer，默认Producer工作模式为同步，重试次数为5
+    * 
+    * @throws TopicNameInvalidException topic名称非法//topic名称只能由字母、数字、下划线组成
+    * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
+    */
+   @Override
+   public Producer getProducer(Destination dest) throws TopicNameInvalidException {
+      return getProducer(dest, null);
+   }
+
+   /**
     * 获取Producer实现类对象，通过Map指定Producer的选项，未指定的项使用Producer默认配置， Producer默认配置如下：
     * producerMode:ProducerMode.SYNC_MODE; threadPoolSize:10;
     * continueSend:false; retryTimes:5
@@ -141,11 +185,11 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
     */
    @Override
-   public ProducerImpl getProducer(Destination dest, Map<ProducerOptionKey, Object> pOptions)
-         throws TopicNameInvalidException, RemoteServiceDownException {
+   public Producer getProducer(Destination dest, Map<ProducerOptionKey, Object> pOptions)
+         throws TopicNameInvalidException {
       ProducerImpl producerImpl = null;
       try {
-         producerImpl = new ProducerImpl(getRemoteService(), dest, pOptions);
+         producerImpl = new ProducerImpl(this, dest, pOptions);
          logger.info("[New producer instance was created.]:[topicName="
                + dest.getName()
                + "][ProducerMode="
@@ -168,22 +212,19 @@ public class ProducerFactoryImpl implements ProducerFactory {
                            : "]"), e);
          throw e;
       }
+
+      //向swallow发送greet信息
+      PktProducerGreet pktProducerGreet = new PktProducerGreet(producerVersion, producerIP);
+
+      try {
+         remoteService.sendMessage(pktProducerGreet);
+      } catch (ServerDaoException e) {
+         //一定不会捕获到该异常
+      } catch (NetException e){
+         //网络异常，不抛出，以保证用户可以拿到Producer
+         logger.warn("[Network error, couldn't send greet now.]", e);
+      }
       return producerImpl;
-   }
-
-   /**
-    * 获取默认配置的Producer，默认Producer工作模式为同步，重试次数为5
-    * 
-    * @throws TopicNameInvalidException topic名称非法//topic名称只能由字母、数字、下划线组成
-    * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
-    */
-   @Override
-   public ProducerImpl getProducer(Destination dest) throws TopicNameInvalidException, RemoteServiceDownException {
-      return getProducer(dest, null);
-   }
-
-   public MQService getRemoteService() {
-      return remoteService;
    }
 
    public void setRemoteService(MQService remoteService) {
@@ -193,4 +234,5 @@ public class ProducerFactoryImpl implements ProducerFactory {
    public static int getRemoteServiceTimeout() {
       return remoteServiceTimeout;
    }
+
 }

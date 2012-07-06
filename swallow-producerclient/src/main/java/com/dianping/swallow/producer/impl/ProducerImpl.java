@@ -2,6 +2,7 @@ package com.dianping.swallow.producer.impl;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -13,57 +14,58 @@ import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.PktMessage;
-import com.dianping.swallow.common.packet.PktProducerGreet;
 import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.NullContentException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
-import com.dianping.swallow.common.util.IPUtil;
 import com.dianping.swallow.common.util.NameCheckUtil;
 import com.dianping.swallow.common.util.ZipUtil;
 import com.dianping.swallow.producer.Producer;
+import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
 
 public class ProducerImpl implements Producer {
    //变量定义
-   private MQService                 remoteService;                                                   //远程调用对象
-   private HandlerAsynchroMode       asyncHandler;                                                    //异步处理对象
-   private HandlerSynchroMode        syncHandler;                                                     //同步处理对象
+   private MQService                 remoteService;                                                  //远程调用对象
+   private HandlerAsynchroMode       asyncHandler;                                                   //异步处理对象
+   private HandlerSynchroMode        syncHandler;                                                    //同步处理对象
 
    //常量定义
-   private static final String       CAT_TYPE                 = "swallow";                            //cat监控使用的type
-   private static final String       CAT_NAME                 = "produceMessage";                     //cat监控使用的name
-   private final String              producerVersion          = "0.6.0";                              //Producer版本号
-   private final String              producerIP               = IPUtil.getFirstNoLoopbackIP4Address(); //Producer IP地址
+   private static final String       CAT_TYPE                 = "swallow";                           //cat监控使用的type
+   private static final String       CAT_NAME                 = "produceMessage";                    //cat监控使用的name
    private static final Logger       logger                   = Logger.getLogger(ProducerImpl.class); //日志
+   private final String              producerIP;                                                     //Producer IP地址
+   private final String              producerVersion;                                                //Producer版本号
 
    //Producer配置默认值
    private static final ProducerMode DEFAULT_PRODUCER_MODE    = ProducerMode.SYNC_MODE;
-   private static final int          DEFAULT_THREAD_POOL_SIZE = 10;
-   private static final boolean      DEFAULT_CONTINUE_SEND    = false;
    private static final int          DEFAULT_RETRY_TIMES      = 5;
+   private static final boolean      DEFAULT_ZIP_MESSAGE      = false;
+   private static final int          DEFAULT_THREAD_POOL_SIZE = 5;
+   private static final boolean      DEFAULT_CONTINUE_SEND    = false;
 
    //Producer配置变量
-   private Destination               destination;                                                     //Producer消息目的
-   private ProducerMode              producerMode             = DEFAULT_PRODUCER_MODE;                //Producer工作模式
-   private int                       retryTimes               = DEFAULT_RETRY_TIMES;                  //Producer重试次数
-   private int                       threadPoolSize           = DEFAULT_THREAD_POOL_SIZE;             //异步处理对象的线程池大小
-   private boolean                   continueSend             = DEFAULT_CONTINUE_SEND;                //异步模式是否允许续传
+   private Destination               destination;                                                    //Producer消息目的
+   private ProducerMode              producerMode             = DEFAULT_PRODUCER_MODE;               //Producer工作模式
+   private int                       retryTimes               = DEFAULT_RETRY_TIMES;                 //Producer重试次数
+   private boolean                   zipMessage               = DEFAULT_ZIP_MESSAGE;
+   private int                       threadPoolSize           = DEFAULT_THREAD_POOL_SIZE;            //异步处理对象的线程池大小
+   private boolean                   continueSend             = DEFAULT_CONTINUE_SEND;               //异步模式是否允许续传
 
    /**
     * 构造函数
     * 
-    * @param remoteService 远程调用服务
+    * @param producerFactoryImpl.getRemoteService() 远程调用服务
     * @param dest topic的名称
     * @param pOptions producer选项
     * @throws TopicNameInvalidException topic名称非法//topic名称只能由字母、数字、下划线组成
     * @throws RemoteServiceDownException 初始化远程连接失败
     */
-   ProducerImpl(MQService remoteService, Destination dest, Map<ProducerOptionKey, Object> pOptions)
-         throws TopicNameInvalidException, RemoteServiceDownException {
+   ProducerImpl(ProducerFactory producerFactory, Destination dest, Map<ProducerOptionKey, Object> pOptions)
+         throws TopicNameInvalidException {
 
       //初始化Producer目的地
       if (!NameCheckUtil.isTopicNameValid(dest.getName()))
@@ -72,7 +74,10 @@ public class ProducerImpl implements Producer {
 
       //初始化Produce选项
       if (pOptions != null) {
+
          Object obj = null;
+
+         //设置Producer工作模式
          if (pOptions.containsKey(ProducerOptionKey.PRODUCER_MODE)) {
             obj = pOptions.get(ProducerOptionKey.PRODUCER_MODE);
             if (ProducerMode.class.isInstance(obj)) {
@@ -81,6 +86,7 @@ public class ProducerImpl implements Producer {
                logger.warn("[pOptions]:[ProducerMode's format is incorrect, use default value: ProducerMode.SYNC_MODE]");
             }
          }
+         //设置重试次数
          if (pOptions.containsKey(ProducerOptionKey.RETRY_TIMES)) {
             obj = pOptions.get(ProducerOptionKey.RETRY_TIMES);
             if (Integer.class.isInstance(obj)) {
@@ -94,15 +100,19 @@ public class ProducerImpl implements Producer {
                logger.warn("[pOptions]:[RetryTimes's format is incorrect, use default value: 5]");
             }
          }
-         if (producerMode == ProducerMode.ASYNC_MODE) {
-            if (pOptions.containsKey(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND)) {
-               obj = pOptions.get(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND);
-               if (Boolean.class.isInstance(obj)) {
-                  continueSend = (Boolean) obj;
-               } else {
-                  logger.warn("[pOptions]:[ContinueSend's format is incorrect, use default value: false]");
-               }
+         //设置是否压缩消息
+         if (pOptions.containsKey(ProducerOptionKey.IS_ZIP_MESSAGE)) {
+            obj = pOptions.get(ProducerOptionKey.IS_ZIP_MESSAGE);
+            if (Boolean.class.isInstance(obj)) {
+               zipMessage = (Boolean) obj;
+            } else {
+               logger.warn("[pOptions]:[ZipMessage's format is incorrect, use default value: false]");
             }
+         }
+
+         //异步模式设置项
+         if (producerMode == ProducerMode.ASYNC_MODE) {
+            //设置线程池大小
             if (pOptions.containsKey(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE)) {
                obj = pOptions.get(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE);
                if (Integer.class.isInstance(obj)) {
@@ -116,11 +126,22 @@ public class ProducerImpl implements Producer {
                   logger.warn("[pOptions]:[ThreadPoolSize's format is incorrect, use default value: 5]");
                }
             }
+            //设置是否续传
+            if (pOptions.containsKey(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND)) {
+               obj = pOptions.get(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND);
+               if (Boolean.class.isInstance(obj)) {
+                  continueSend = (Boolean) obj;
+               } else {
+                  logger.warn("[pOptions]:[ContinueSend's format is incorrect, use default value: false]");
+               }
+            }
          }
       }
 
-      //初始化远程调用
-      this.remoteService = remoteService;
+      //设置Producer的IP地址及版本号,设置远程调用
+      this.producerIP = producerFactory.getProducerIP();
+      this.producerVersion = producerFactory.getProducerVersion();
+      this.remoteService = producerFactory.getRemoteService();
 
       //设置Producer工作模式
       switch (producerMode) {
@@ -132,16 +153,6 @@ public class ProducerImpl implements Producer {
             break;
       }
 
-
-      //向Swallow发送greet
-      try {
-         remoteService.sendMessage(new PktProducerGreet(producerVersion, producerIP));
-      } catch (Exception e) {
-         logger.error(
-               "[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]",
-               e);
-         throw new RemoteServiceDownException();
-      }
    }
 
    /**
@@ -210,7 +221,8 @@ public class ProducerImpl implements Producer {
          throw new NullContentException();
       }
       //根据content生成SwallowMessage
-      SwallowMessage swallowMsg = new SwallowMessage();
+      SwallowMessage swallowMsg = null;
+      Map<String, String> zipProperties = null;
 
       //使用CAT监控处理消息的时间
       Transaction t = Cat.getProducer().newTransaction(CAT_TYPE, CAT_NAME);
@@ -226,18 +238,21 @@ public class ProducerImpl implements Producer {
 
          if (messageType != null)
             swallowMsg.setType(messageType);
-         if (properties != null) {
-            //如果需要压缩内容，properties设置zip=true
-            //PS：压缩内容并非用户传入的Object，而是通过SwallowMessage类转换过的json字符串，压缩失败时，将zip置为false
-            if (properties.containsKey("zip") && properties.get("zip").equals("true")) {
-               try {
-                  swallowMsg.setContent(ZipUtil.zip(swallowMsg.getContent()));
-               } catch (IOException e) {
-                  logger.error("[Compress message failed.]", e);
-                  properties.put("zip", "false");
-               }
-            }
+         if (properties != null)
             swallowMsg.setProperties(properties);
+         //压缩选项为真：对通过SwallowMessage类转换过的json字符串进行压缩，压缩成功时将swl.zip=true写入properties，
+         //               压缩失败时将swl.zip=false写入properties
+         //压缩选项为假：不做任何操作，properties中将不存在key为zip的项
+         if (zipMessage) {
+            zipProperties = (properties == null) ? (new HashMap<String, String>()) : properties;
+            try {
+               swallowMsg.setContent(ZipUtil.zip(swallowMsg.getContent()));
+               zipProperties.put("swl.zip", "true");
+            } catch (IOException e) {
+               logger.error("[Compress message failed.]", e);
+               zipProperties.put("swl.zip", "false");
+            }
+            swallowMsg.setProperties(zipProperties);
          }
 
          //构造packet
@@ -295,13 +310,6 @@ public class ProducerImpl implements Producer {
     */
    public ProducerMode getProducerMode() {
       return producerMode;
-   }
-
-   /**
-    * @return 返回Producer版本号
-    */
-   public String getProducerVersion() {
-      return producerVersion;
    }
 
    /**

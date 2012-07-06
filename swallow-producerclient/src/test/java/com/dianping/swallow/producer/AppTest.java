@@ -49,8 +49,9 @@ public class AppTest {
          //构造Producer
          ProducerImpl producer = null;
          try {
-            producer = producerFactory.getProducer(Destination.topic("songtong"), pOptions);
+            producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("songtong"), pOptions);
          } catch (Exception e) {
+            e.printStackTrace();
          }
 
          //发送消息设置
@@ -60,14 +61,14 @@ public class AppTest {
 
          //发送消息
          try {
-            //            for (int i = 0; i < MAX_NUM; i++) {
-            while (true) {
+            for (int i = 0; i < MAX_NUM; i++) {
+               //            while (true) {
                //发送消息
                strRet = producer.sendMessage("" + (++sentNum));
 
                //发送频率
                try {
-                  Thread.sleep(1000);
+                  Thread.sleep(5000);
                } catch (Exception e) {
                }
 

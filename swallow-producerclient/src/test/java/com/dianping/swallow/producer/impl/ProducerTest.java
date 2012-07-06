@@ -34,6 +34,7 @@ import com.dianping.swallow.common.producer.exceptions.NullContentException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
+import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
 
@@ -68,22 +69,18 @@ public class ProducerTest {
       ProducerImpl producer = null;
 
       try {
-         producer = producerFactory.getProducer(Destination.topic("Hello:Unit_Test"), pOptions);
+         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello:Unit_Test"), pOptions);
       } catch (TopicNameInvalidException e) {
          e.printStackTrace();
-      } catch (RemoteServiceDownException e) {
-         e.printStackTrace();
-      }
+      } 
 
       Assert.assertNull(producer);
 
       try {
-         producer = producerFactory.getProducer(Destination.topic("Hello_Unit_Test"), pOptions);
+         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello_Unit_Test"), pOptions);
       } catch (TopicNameInvalidException e) {
          e.printStackTrace();
-      } catch (RemoteServiceDownException e) {
-         e.printStackTrace();
-      }
+      } 
 
       Assert.assertNotNull(producer);
 
@@ -99,28 +96,24 @@ public class ProducerTest {
       pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
 
       try {
-         producer = producerFactory.getProducer(Destination.topic("H:ello"), pOptions);
+         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("H:ello"), pOptions);
       } catch (TopicNameInvalidException e) {
          //捕获到TopicNameInvalid异常
-      } catch (RemoteServiceDownException e) {
-         //一定不会捕获这个异常
       }
-
+      
       Assert.assertNull(producer);
 
       try {
-         producer = producerFactory.getProducer(Destination.topic("Hello"), pOptions);
+         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello"), pOptions);
       } catch (TopicNameInvalidException e) {
          //捕获到TopicNameInvalid异常
-      } catch (RemoteServiceDownException e) {
-         //一定不会捕获这个异常
-      }
+      } 
 
       Assert.assertNotNull(producer);
 
       Assert.assertEquals(8, producer.getThreadPoolSize());
       Assert.assertEquals(false, producer.isContinueSend());
-      Assert.assertEquals("0.6.0", producer.getProducerVersion());
+      Assert.assertEquals("0.6.0", producerFactory.getProducerVersion());
 
    }
 
@@ -135,6 +128,18 @@ public class ProducerTest {
 
       //抛异常的mock
       MQService exceptionRemoteServiceMock = mock(MQService.class);
+      
+      //Normal ProducerFactory mock
+      ProducerFactory normalProducerFactory = mock(ProducerFactory.class);
+      when(normalProducerFactory.getRemoteService()).thenReturn(normalRemoteServiceMock);
+      when(normalProducerFactory.getProducerIP()).thenReturn("127.0.0.1");
+      when(normalProducerFactory.getProducerVersion()).thenReturn("0.6.0");
+
+      //Exception ProducerFactory mock
+      ProducerFactory exceptionProducerFactory = mock(ProducerFactory.class);
+      when(exceptionProducerFactory.getRemoteService()).thenReturn(exceptionRemoteServiceMock);
+      when(exceptionProducerFactory.getProducerIP()).thenReturn("127.0.0.1");
+      when(exceptionProducerFactory.getProducerVersion()).thenReturn("0.6.0");
 
       //异步模式的pOptions
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
@@ -147,8 +152,8 @@ public class ProducerTest {
 
       //构造异步模式的Producer
       try {
-         normalProducer = new ProducerImpl(normalRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
-         exceptionProducer = new ProducerImpl(exceptionRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
+         normalProducer = new ProducerImpl(normalProducerFactory, Destination.topic("UnitTest"), pOptions);
+         exceptionProducer = new ProducerImpl(exceptionProducerFactory, Destination.topic("UnitTest"), pOptions);
       } catch (Exception e) {
       }
       Assert.assertNotNull(normalProducer);
@@ -194,6 +199,18 @@ public class ProducerTest {
       //抛异常的mock
       MQService exceptionRemoteServiceMock = mock(MQService.class);
 
+      //Normal ProducerFactory mock
+      ProducerFactory normalProducerFactory = mock(ProducerFactory.class);
+      when(normalProducerFactory.getRemoteService()).thenReturn(normalRemoteServiceMock);
+      when(normalProducerFactory.getProducerIP()).thenReturn("127.0.0.1");
+      when(normalProducerFactory.getProducerVersion()).thenReturn("0.6.0");
+
+      //Exception ProducerFactory mock
+      ProducerFactory exceptionProducerFactory = mock(ProducerFactory.class);
+      when(exceptionProducerFactory.getRemoteService()).thenReturn(exceptionRemoteServiceMock);
+      when(exceptionProducerFactory.getProducerIP()).thenReturn("127.0.0.1");
+      when(exceptionProducerFactory.getProducerVersion()).thenReturn("0.6.0");
+      
       //同步模式的options
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
@@ -203,8 +220,8 @@ public class ProducerTest {
       ProducerImpl normalProducer = null;
       ProducerImpl exceptionProducer = null;
       try {
-         normalProducer = new ProducerImpl(normalRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
-         exceptionProducer = new ProducerImpl(exceptionRemoteServiceMock, Destination.topic("UnitTest"), pOptions);
+         normalProducer = new ProducerImpl(normalProducerFactory, Destination.topic("UnitTest"), pOptions);
+         exceptionProducer = new ProducerImpl(exceptionProducerFactory, Destination.topic("UnitTest"), pOptions);
       } catch (Exception e) {
       }
       Assert.assertNotNull(normalProducer);
