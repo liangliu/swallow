@@ -218,11 +218,12 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       Long maxMessageId = ackDao.getMaxMessageId(topicName, consumerId);
       if (maxMessageId == null) {
          maxMessageId = messageDao.getMaxMessageId(topicName);
-      }
-      if (maxMessageId == null) {
-         int time = (int) (System.currentTimeMillis() / 1000);
-         BSONTimestamp bst = new BSONTimestamp(time, 1);
-         maxMessageId = MongoUtils.BSONTimestampToLong(bst);
+         if (maxMessageId == null) {
+            int time = (int) (System.currentTimeMillis() / 1000);
+            BSONTimestamp bst = new BSONTimestamp(time, 1);
+            maxMessageId = MongoUtils.BSONTimestampToLong(bst);
+         }
+         ackDao.add(topicName, consumerId, maxMessageId);
       }
       return maxMessageId;
    }

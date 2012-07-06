@@ -7,7 +7,6 @@ package com.dianping.swallow.common.consumer;
  */
 public enum ConsumerMessageType {
 
-	//TODO rename, at most/least once
 	ACK,
 	GREET
 	

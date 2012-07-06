@@ -15,4 +15,9 @@
 			<value>xx</value> 
 		</constructor-arg>
 	</bean>
+	<bean id="nonDurableConsumerClient" class="com.dianping.swallow.consumer.ConsumerClient">
+        <constructor-arg>
+            <value>xx</value>
+        </constructor-arg>
+     </bean>
 </beans>
