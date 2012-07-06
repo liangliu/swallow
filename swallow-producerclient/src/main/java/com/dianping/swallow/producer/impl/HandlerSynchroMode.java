@@ -20,7 +20,7 @@ public class HandlerSynchroMode {
 
    public HandlerSynchroMode(ProducerImpl producer) {
       this.remoteService = producer.getRemoteService();
-      this.retryTimes = producer.getRetryTimes();
+      this.retryTimes = producer.getRetryTimes() +1;//初始值等于用户要求的retryTimes+1，这样可以保证至少执行一次
    }
 
    //对外接口
@@ -61,6 +61,7 @@ public class HandlerSynchroMode {
             } catch (InterruptedException ie) {
                //睡眠失败则不睡眠直接发送
             }
+            e.printStackTrace();
             continue;
          }
          defaultPullStrategy.succeess();

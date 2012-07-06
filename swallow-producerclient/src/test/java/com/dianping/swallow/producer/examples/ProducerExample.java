@@ -35,7 +35,7 @@ import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
  * 
  * @author tong.song
  */
-public class Producer {
+public class ProducerExample {
    public static void main(String[] args) {
 
       String message = "message";

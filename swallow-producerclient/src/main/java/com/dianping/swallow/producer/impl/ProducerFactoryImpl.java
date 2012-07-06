@@ -141,13 +141,13 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
     */
    @Override
-   public ProducerImpl getProducer(Destination topicName, Map<ProducerOptionKey, Object> pOptions)
+   public ProducerImpl getProducer(Destination dest, Map<ProducerOptionKey, Object> pOptions)
          throws TopicNameInvalidException, RemoteServiceDownException {
       ProducerImpl producerImpl = null;
       try {
-         producerImpl = new ProducerImpl(getRemoteService(), topicName, pOptions);
+         producerImpl = new ProducerImpl(getRemoteService(), dest, pOptions);
          logger.info("[New producer instance was created.]:[topicName="
-               + topicName
+               + dest.getName()
                + "][ProducerMode="
                + producerImpl.getProducerMode()
                + (producerImpl.getProducerMode().equals(ProducerMode.ASYNC_MODE) ? "][ThreadPoolSize="
@@ -156,7 +156,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
       } catch (TopicNameInvalidException e) {
          logger.error(
                "[Can not get producer instance.]:[topicName="
-                     + topicName
+                     + dest.getName()
                      + "][ProducerMode="
                      + pOptions.get(ProducerOptionKey.PRODUCER_MODE)
                      + ((pOptions.get(ProducerOptionKey.PRODUCER_MODE) == ProducerMode.ASYNC_MODE) ? "][ThreadPoolSize="
@@ -178,8 +178,8 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
     */
    @Override
-   public ProducerImpl getProducer(Destination topicName) throws TopicNameInvalidException, RemoteServiceDownException {
-      return getProducer(topicName, null);
+   public ProducerImpl getProducer(Destination dest) throws TopicNameInvalidException, RemoteServiceDownException {
+      return getProducer(dest, null);
    }
 
    public MQService getRemoteService() {
