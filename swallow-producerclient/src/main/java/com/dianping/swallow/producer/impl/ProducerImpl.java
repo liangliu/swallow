@@ -49,9 +49,9 @@ public class ProducerImpl implements Producer {
    //Producer配置变量
    private Destination               destination;                                                     //Producer消息目的
    private ProducerMode              producerMode             = DEFAULT_PRODUCER_MODE;                //Producer工作模式
+   private int                       retryTimes               = DEFAULT_RETRY_TIMES;                  //Producer重试次数
    private int                       threadPoolSize           = DEFAULT_THREAD_POOL_SIZE;             //异步处理对象的线程池大小
    private boolean                   continueSend             = DEFAULT_CONTINUE_SEND;                //异步模式是否允许续传
-   private int                       retryTimes               = DEFAULT_RETRY_TIMES;                  //异步模式重试次数
 
    /**
     * 构造函数
@@ -64,38 +64,64 @@ public class ProducerImpl implements Producer {
     */
    ProducerImpl(MQService remoteService, Destination dest, Map<ProducerOptionKey, Object> pOptions)
          throws TopicNameInvalidException, RemoteServiceDownException {
-      //初始化Producer参数
+
+      //初始化Producer目的地
       if (!NameCheckUtil.isTopicNameValid(dest.getName()))
          throw new TopicNameInvalidException();
       destination = dest;
 
+      //初始化Produce选项
       if (pOptions != null) {
          Object obj = null;
          if (pOptions.containsKey(ProducerOptionKey.PRODUCER_MODE)) {
             obj = pOptions.get(ProducerOptionKey.PRODUCER_MODE);
-            if (ProducerMode.class.isInstance(obj))
+            if (ProducerMode.class.isInstance(obj)) {
                producerMode = (ProducerMode) obj;
+            } else {
+               logger.warn("[pOptions]:[ProducerMode's format is incorrect, use default value: ProducerMode.SYNC_MODE]");
+            }
          }
          if (pOptions.containsKey(ProducerOptionKey.RETRY_TIMES)) {
             obj = pOptions.get(ProducerOptionKey.RETRY_TIMES);
-            if (Integer.class.isInstance(obj))
-               retryTimes = (Integer) obj;
+            if (Integer.class.isInstance(obj)) {
+               if ((Integer) obj >= 0) {
+                  retryTimes = (Integer) obj;
+               } else {
+                  logger.warn("[pOptions]:[Retry times should be more than 0, use default value: 0]");
+                  retryTimes = 0;
+               }
+            } else {
+               logger.warn("[pOptions]:[RetryTimes's format is incorrect, use default value: 5]");
+            }
          }
          if (producerMode == ProducerMode.ASYNC_MODE) {
             if (pOptions.containsKey(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND)) {
                obj = pOptions.get(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND);
-               if (Boolean.class.isInstance(obj))
+               if (Boolean.class.isInstance(obj)) {
                   continueSend = (Boolean) obj;
+               } else {
+                  logger.warn("[pOptions]:[ContinueSend's format is incorrect, use default value: false]");
+               }
             }
             if (pOptions.containsKey(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE)) {
                obj = pOptions.get(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE);
-               if (Integer.class.isInstance(obj))
-                  threadPoolSize = (Integer) obj;
+               if (Integer.class.isInstance(obj)) {
+                  if ((Integer) obj >= 1) {
+                     threadPoolSize = (Integer) obj;
+                  } else {
+                     logger.warn("[pOptions]:[Threadpool size should be bigger than 1, use default value: 1]");
+                     threadPoolSize = 1;
+                  }
+               } else {
+                  logger.warn("[pOptions]:[ThreadPoolSize's format is incorrect, use default value: 5]");
+               }
             }
          }
       }
+
       //初始化远程调用
       this.remoteService = remoteService;
+
       //设置Producer工作模式
       switch (producerMode) {
          case SYNC_MODE:
@@ -105,6 +131,8 @@ public class ProducerImpl implements Producer {
             asyncHandler = new HandlerAsynchroMode(this);
             break;
       }
+
+
       //向Swallow发送greet
       try {
          remoteService.sendMessage(new PktProducerGreet(producerVersion, producerIP));
@@ -177,18 +205,20 @@ public class ProducerImpl implements Producer {
    @Override
    public String sendMessage(Object content, Map<String, String> properties, String messageType)
          throws ServerDaoException, FileQueueClosedException, RemoteServiceDownException, NullContentException {
+      String ret = null;
+      if (content == null) {
+         throw new NullContentException();
+      }
+      //根据content生成SwallowMessage
+      SwallowMessage swallowMsg = new SwallowMessage();
 
       //使用CAT监控处理消息的时间
       Transaction t = Cat.getProducer().newTransaction(CAT_TYPE, CAT_NAME);
       try {
          Event event = Cat.getProducer().newEvent(CAT_TYPE, CAT_NAME);
 
-         String ret = null;
-         if (content == null) {
-            throw new NullContentException();
-         }
          //根据content生成SwallowMessage
-         SwallowMessage swallowMsg = new SwallowMessage();
+         swallowMsg = new SwallowMessage();
          swallowMsg.setContent(content);
          swallowMsg.setVersion(producerVersion);
          swallowMsg.setGeneratedTime(new Date());

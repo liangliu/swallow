@@ -1,7 +1,6 @@
 package com.dianping.swallow.consumer;
 
 import java.net.InetSocketAddress;
-import java.util.Date;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -116,18 +115,11 @@ public class ConsumerClient {
       string2Address(swallowCAddress);
    }
    public ConsumerClient(String topicName) {
-      this.consumerId = fakeCid();
-      this.consumerType = ConsumerType.NON_DURABLE;
       this.dest = Destination.topic(topicName);
       String swallowCAddress = getSwallowCAddress(topicName);
       string2Address(swallowCAddress);
    }
-   //生成唯一consumerId
-   private String fakeCid(){
-      Date now = new Date();
-      return Long.toString(now.getTime());
-   }
-
+   
    /**
     * 开始连接服务器，同时把连slave的线程启起来。
     */

@@ -3,7 +3,11 @@ package com.dianping.swallow.producer;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.message.Destination;
+import com.dianping.swallow.common.producer.exceptions.NullContentException;
+import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
+import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 import com.dianping.swallow.producer.impl.ProducerImpl;
 
@@ -33,7 +37,7 @@ public class AppTest {
          Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
 
          pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-         pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
+         pOptions.put(ProducerOptionKey.RETRY_TIMES, 0);
 
          pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
          pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
@@ -56,8 +60,8 @@ public class AppTest {
 
          //发送消息
          try {
-            for (int i = 0; i < MAX_NUM; i++) {
-//          while (true) {
+            //            for (int i = 0; i < MAX_NUM; i++) {
+            while (true) {
                //发送消息
                strRet = producer.sendMessage("" + (++sentNum));
 
@@ -70,7 +74,14 @@ public class AppTest {
                //打印内容
                System.out.println(sentNum + ": " + strRet);
             }
-         } catch (Exception e) {
+         } catch (ServerDaoException e1) {
+            e1.printStackTrace();
+         } catch (FileQueueClosedException e1) {
+            e1.printStackTrace();
+         } catch (RemoteServiceDownException e1) {
+            e1.printStackTrace();
+         } catch (NullContentException e1) {
+            e1.printStackTrace();
          }
       }
    }
