@@ -44,6 +44,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
       consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET, cClient.getConsumerId(), cClient.getDest(),
             cClient.getConsumerType(), cClient.getThreadCount());
+
       e.getChannel().write(consumermessage);
    }
 
@@ -55,8 +56,9 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
          public void run() {
             SwallowMessage swallowMessage = (SwallowMessage) ((PktMessage) e.getMessage()).getContent();
             Long messageId = swallowMessage.getMessageId();
-            PktConsumerMessage consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, messageId,
-                  cClient.getNeedClose());
+
+            consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, messageId, cClient.getNeedClose());
+
             //使用CAT监控处理消息的时间
             Transaction t = Cat.getProducer().newTransaction(CAT_TYPE, CAT_NAME);
             try {

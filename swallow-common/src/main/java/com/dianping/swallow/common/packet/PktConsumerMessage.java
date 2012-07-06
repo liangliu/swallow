@@ -47,7 +47,7 @@ public final class PktConsumerMessage extends Packet {
 	
 	private Integer threadCount;
 
-	public boolean getNeedClose() {
+	public Boolean getNeedClose() {
 		return needClose;
 	}
 	public void setNeedClose(boolean needClose) {
@@ -86,7 +86,7 @@ public final class PktConsumerMessage extends Packet {
 		this.type = type;
 	}
 	
-	public int getThreadCount() {
+	public Integer getThreadCount() {
       return threadCount;
    }
    public void setThreadCount(int threadCount) {
