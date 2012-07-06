@@ -24,19 +24,25 @@ public class MQThreadFactory implements ThreadFactory, Closeable {
 	private static Logger LOG = LoggerFactory.getLogger(MQThreadFactory.class);
 
 	private static ThreadGroup topThreadGroup = new ThreadGroup("swallow-top");
-	private final static String PREFIX = "swallow-thread-";
+	private final static String PREFIX_DEFAULT = "swallow-";
+	private String prefix;
 
 	private List<WeakReference<Thread>> threadList = Collections
 			.synchronizedList(new ArrayList<WeakReference<Thread>>());
 	private ConcurrentHashMap<String, AtomicInteger> prefixToSeq = new ConcurrentHashMap<String, AtomicInteger>();
 
-	public MQThreadFactory() {
+	public MQThreadFactory(String namePrefix) {
+	   this.prefix = namePrefix;
 		//暂时注掉监控那玩意。
 //		try {
 //			HawkJMXUtil.registerMBean(new SwallowThreadStatusBean());
 //		} catch (Exception e) {
 //			log.error("error register jxm bean", e);
 //		}
+	}
+	
+	public MQThreadFactory() {
+	   this(PREFIX_DEFAULT);
 	}
 
 	public static ThreadGroup getTopThreadGroup() {
@@ -45,12 +51,12 @@ public class MQThreadFactory implements ThreadFactory, Closeable {
 
 	@Override
 	public Thread newThread(Runnable r) {
-		return newThread(r, PREFIX);
+		return newThread(r, "");
 	}
 
 	public Thread newThread(Runnable r, String threadNamePrefix) {
 		prefixToSeq.putIfAbsent(threadNamePrefix, new AtomicInteger(1));
-		Thread t = new Thread(topThreadGroup, r, PREFIX + threadNamePrefix
+		Thread t = new Thread(topThreadGroup, r, prefix + threadNamePrefix
 				+ prefixToSeq.get(threadNamePrefix).getAndIncrement());
 		threadList.add(new WeakReference<Thread>(t));
 		return t;

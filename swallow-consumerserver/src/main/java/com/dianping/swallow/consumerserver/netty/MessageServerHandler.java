@@ -5,7 +5,6 @@ import java.util.Date;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
@@ -24,8 +23,7 @@ import com.dianping.swallow.consumerserver.worker.ConsumerId;
 import com.dianping.swallow.consumerserver.worker.ConsumerInfo;
 import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
-@SuppressWarnings("deprecation")
-@ChannelPipelineCoverage("all")
+
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 
    private static final Logger LOG        = LoggerFactory.getLogger(MongoHeartbeater.class);
@@ -68,7 +66,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
                consumerId = new ConsumerId(consumerPacket.getConsumerId(), consumerPacket.getDest());
                consumerInfo = new ConsumerInfo(consumerId, consumerPacket.getConsumerType());
             }     
-            workerManager.handleGreet(channel, consumerInfo, clientThreadCount);
+            workerManager.handleGreet(channel, consumerInfo, clientThreadCount, consumerPacket.getMessageType());
          } else {
             if (consumerPacket.getNeedClose() || readyClose) {
                //第一次接到channel的close命令后,server启一个后台线程,当一定时间后channel仍未关闭,则强制关闭.

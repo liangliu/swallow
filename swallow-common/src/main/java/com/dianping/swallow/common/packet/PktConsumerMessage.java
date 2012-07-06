@@ -15,6 +15,8 @@
  */
 package com.dianping.swallow.common.packet;
 
+import java.util.Set;
+
 import com.dianping.swallow.common.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Destination;
@@ -46,8 +48,16 @@ public final class PktConsumerMessage extends Packet {
 	private Boolean needClose;
 	
 	private Integer threadCount;
+	
+	private Set<String> messageType;
 
-	public Boolean getNeedClose() {
+	public Set<String> getMessageType() {
+      return messageType;
+   }
+   public void setMessageType(Set<String> messageType) {
+      this.messageType = messageType;
+   }
+   public Boolean getNeedClose() {
 		return needClose;
 	}
 	public void setNeedClose(boolean needClose) {
@@ -96,13 +106,14 @@ public final class PktConsumerMessage extends Packet {
 		super();
 		
 	}
-	public PktConsumerMessage(ConsumerMessageType type, String consumerId, Destination dest, ConsumerType consumerType, int threadCount){
+	public PktConsumerMessage(ConsumerMessageType type, String consumerId, Destination dest, ConsumerType consumerType, int threadCount, Set<String> messageType){
 		this.setPacketType(PacketType.CONSUMER_GREET);
 		this.type = type;
 		this.dest = dest;
 		this.consumerId = consumerId;
 		this.consumerType = consumerType;
 		this.threadCount = threadCount;
+		this.messageType = messageType;
 	}
 	public PktConsumerMessage(ConsumerMessageType type, Long messageId, boolean needClose){
 		this.setPacketType(PacketType.CONSUMER_ACK);

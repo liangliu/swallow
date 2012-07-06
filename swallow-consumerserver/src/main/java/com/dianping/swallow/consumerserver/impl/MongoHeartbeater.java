@@ -23,7 +23,7 @@ public class MongoHeartbeater implements Heartbeater {
    }
 
    @Override
-   public void waitUntilStopBeating(String ip, long checkInterval, long maxStopTime) throws InterruptedException {
+   public void waitUntilMasterDown(String ip, long checkInterval, long maxStopTime) throws InterruptedException {
       long startTime = System.currentTimeMillis();
       long lastBeatTime = startTime;
       while (true) {
@@ -56,7 +56,7 @@ public class MongoHeartbeater implements Heartbeater {
    }
 
    @Override
-   public void waitUntilBeginBeating(String ip, long checkInterval, long maxStopTime)
+   public void waitUntilMasterUp(String ip, long checkInterval, long maxStopTime)
          throws InterruptedException {
       Date beat = null;
       while (true) {

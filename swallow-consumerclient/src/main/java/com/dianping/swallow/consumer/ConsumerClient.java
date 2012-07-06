@@ -1,6 +1,7 @@
 package com.dianping.swallow.consumer;
 
 import java.net.InetSocketAddress;
+import java.util.Set;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -30,15 +31,20 @@ public class ConsumerClient {
    private static final Logger LOG         = LoggerFactory.getLogger(ConsumerClient.class);
    
    private static final String LION_CONFIG_FILENAME = "cClientLion.properties";
+   
+   private static final String           TOPICNAME_DEFAULT                                = "default";
 
    private String              consumerId;
    
-
+   private Set<String> neededMessageType;
+   
    private Destination         dest;
 
    private ClientBootstrap     bootstrap;
 
    private MessageListener     listener;
+   
+   private final static String LION_KEY_CONSUMER_SERVER_URI = "swallow.consumer.consumerServerURI";
 
    private ConsumerType        consumerType = ConsumerType.AT_MOST;
 
@@ -51,6 +57,14 @@ public class ConsumerClient {
    private Boolean             needClose   = Boolean.FALSE;
    //consumerClient默认是1个线程处理，如需线程池处理，则另外设置线程数目。
    private int                 threadCount = 1;
+
+   public Set<String> getNeededMessageType() {
+      return neededMessageType;
+   }
+
+   public void setNeededMessageType(Set<String> neededMessageType) {
+      this.neededMessageType = neededMessageType;
+   }
 
    public Boolean getNeedClose() {
       return needClose;
@@ -169,7 +183,7 @@ public class ConsumerClient {
    }
 
    private void string2Address(String swallowCAddress) {
-      String[] ipAndPorts = swallowCAddress.split(",");
+      String[] ipAndPorts = swallowCAddress.split("+");
       String masterIp = ipAndPorts[0].split(":")[0];
       int masterPort = Integer.parseInt(ipAndPorts[0].split(":")[1]);
       String slaveIp = ipAndPorts[1].split(":")[0];
@@ -181,6 +195,26 @@ public class ConsumerClient {
 
    private String getSwallowCAddress(String topicName){
       DynamicConfig dynamicConfig = new LionDynamicConfig(LION_CONFIG_FILENAME);
-      return dynamicConfig.get(topicName);
+      String lionValue = dynamicConfig.get(LION_KEY_CONSUMER_SERVER_URI);
+      return getAddressByParseLionValue(lionValue, topicName);
+   }
+   private String getAddressByParseLionValue(String lionValue, String topicName){
+      String swallowAddress = null;
+      label:
+      for (String topicNameToAddress : lionValue.split(";")) {
+         String[] splits = topicNameToAddress.split("=");
+         String address = splits[1];
+         String topicNameStr = splits[0];
+         for (String tempTopicName : topicNameStr.split(",")) {
+            if (TOPICNAME_DEFAULT.equals(tempTopicName)) {
+               swallowAddress = address;
+            }
+            if(topicName.equals(tempTopicName)){
+               swallowAddress = address;
+               break label;
+            }
+         }
+      }
+      return swallowAddress;
    }
 }

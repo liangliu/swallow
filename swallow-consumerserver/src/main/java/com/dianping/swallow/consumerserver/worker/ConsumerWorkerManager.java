@@ -1,8 +1,8 @@
 package com.dianping.swallow.consumerserver.worker;
 
 import java.util.Map;
+import java.util.Set;
 
-import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.slf4j.Logger;
@@ -32,6 +32,9 @@ public class ConsumerWorkerManager {
 
    private Map<ConsumerId, ConsumerWorker> consumerId2ConsumerWorker = new ConcurrentHashMap<ConsumerId, ConsumerWorker>();
 
+   private Thread idleWorkerManagerCheckerThread;
+   private volatile boolean closed = false;
+   
    public void setAckDAO(AckDAO ackDAO) {
       this.ackDAO = ackDAO;
    }
@@ -56,8 +59,8 @@ public class ConsumerWorkerManager {
       return configManager;
    }
 
-   public void handleGreet(Channel channel, ConsumerInfo consumerInfo, int clientThreadCount) {
-      findOrCreateConsumerWorker(consumerInfo).handleGreet(channel, clientThreadCount);
+   public void handleGreet(Channel channel, ConsumerInfo consumerInfo, int clientThreadCount, Set<String> messageType) {
+      findOrCreateConsumerWorker(consumerInfo, messageType).handleGreet(channel, clientThreadCount);
    }
 
    public void handleAck(Channel channel, ConsumerInfo consumerInfo, Long ackedMsgId, ACKHandlerType type) {
@@ -86,6 +89,7 @@ public class ConsumerWorkerManager {
       for (Map.Entry<ConsumerId, ConsumerWorker> entry : consumerId2ConsumerWorker.entrySet()) {
          entry.getValue().closeAckExecutor();
       }
+      closed = true;
    }
 
    private ConsumerWorker findConsumerWorker(ConsumerInfo consumerInfo) {
@@ -93,13 +97,13 @@ public class ConsumerWorkerManager {
       return consumerId2ConsumerWorker.get(consumerId);
    }
 
-   private ConsumerWorker findOrCreateConsumerWorker(ConsumerInfo consumerInfo) {
+   private ConsumerWorker findOrCreateConsumerWorker(ConsumerInfo consumerInfo,Set<String> messageType) {
       ConsumerWorker worker = findConsumerWorker(consumerInfo);
       ConsumerId consumerId = consumerInfo.getConsumerId();
       if (worker == null) {
          synchronized (this) {
             if (worker == null) {
-               worker = new ConsumerWorkerImpl(consumerInfo, this);
+               worker = new ConsumerWorkerImpl(consumerInfo, this, messageType);
                consumerId2ConsumerWorker.put(consumerId, worker);
             }
          }
@@ -108,18 +112,42 @@ public class ConsumerWorkerManager {
    }
 
    public void init(boolean isSlave) {
-      if (isSlave) {
-         try {
-            // wont throw MongoException
-            heartbeater.waitUntilStopBeating(configManager.getMasterIp(), configManager.getHeartbeatCheckInterval(),
-                  configManager.getHeartbeatMaxStopTime());
-         } catch (InterruptedException e) {
-            return;
-         }
-      } else {
+	   
+      startIdleWorkerCheckerThread();
+	   
+      if (!isSlave) {
          startHeartbeater(configManager.getMasterIp());
       }
 
+   }
+
+   private void startIdleWorkerCheckerThread() {
+      idleWorkerManagerCheckerThread = threadFactory.newThread(new Runnable() {
+
+         @Override
+         public void run() {
+            while (!closed) {
+               for (Map.Entry<ConsumerId, ConsumerWorker> entry : consumerId2ConsumerWorker.entrySet()) {
+                  ConsumerWorker worker = entry.getValue();
+                  ConsumerId consumerId = entry.getKey();
+                  if(worker.allChannelDisconnected()) {
+                     worker.closeMessageFetcherThread();
+                     worker.closeAckExecutor();
+                     workerDone(consumerId);
+                     LOG.info("ConsumerWorker for " + consumerId + " has no connected channel, close it");
+                  }
+               }
+               try {
+                  Thread.sleep(configManager.getCheckConnectedChannelInterval());
+               } catch (InterruptedException e) {
+                  break;
+               }
+            }
+            LOG.info("idle ConsumerWorker checker thread closed");
+         }
+
+      }, "-idleConsumerWorkerChecker-");
+      idleWorkerManagerCheckerThread.start();
    }
 
    private void startHeartbeater(final String ip) {
@@ -144,17 +172,6 @@ public class ConsumerWorkerManager {
       Thread heartbeatThread = threadFactory.newThread(runnable, "heartbeat-");
       heartbeatThread.setDaemon(true);
       heartbeatThread.start();
-   }
-
-   public void checkMasterIsALive(final ServerBootstrap bootStrap) {
-
-      try {
-         heartbeater.waitUntilBeginBeating(configManager.getMasterIp(), configManager.getHeartbeatCheckInterval(),
-               configManager.getHeartbeatMaxStopTime());
-      } catch (Exception e) {
-         LOG.error("checkMasterIsALive InterruptedException", e);
-      }
-
    }
 
    public void workerDone(ConsumerId consumerId) {
