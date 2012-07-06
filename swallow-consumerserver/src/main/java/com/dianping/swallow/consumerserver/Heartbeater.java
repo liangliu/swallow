@@ -19,9 +19,9 @@ public interface Heartbeater {
     * @param maxStopTime
     * @throws InterruptedException
     */
-   void waitUntilStopBeating(String ip, long checkInterval, long maxStopTime) throws InterruptedException;
+   void waitUntilMasterDown(String ip, long checkInterval, long maxStopTime) throws InterruptedException;
 
-   void waitUntilBeginBeating(String ip, long checkInterval, long maxStopTime)
+   void waitUntilMasterUp(String ip, long checkInterval, long maxStopTime)
          throws InterruptedException;
 
 }

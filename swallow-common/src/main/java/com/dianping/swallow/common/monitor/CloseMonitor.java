@@ -28,7 +28,7 @@ public class CloseMonitor {
 	}
 
 	public void start(final int port, final String cmd, final CloseHook hook) {
-		new Thread() {
+		Thread t = new Thread() {
 			public void run() {
 				try {
 					ServerSocket ss = new ServerSocket(port);
@@ -63,7 +63,9 @@ public class CloseMonitor {
 					LOG.error("CloseMonitor start failed.", e);
 				}
 			}
-		}.start();
+		};
+		t.setName("CloseMonitor");
+		t.start();
 
 	}
 

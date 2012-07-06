@@ -51,7 +51,6 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private volatile boolean                       getMessageisAlive = true;
    private volatile boolean                       started           = false;
    private ExecutorService                        ackExecutor;
-   private ConsumerWorkerManager                  workerManager;
    private PullStrategy                           pullStgy;
    private ConfigManager                          configManager;
    private Map<Channel, Map<PktMessage, Boolean>> waitAckMessages   = new ConcurrentHashMap<Channel, Map<PktMessage, Boolean>>();
@@ -69,44 +68,15 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       this.threadFactory = workerManager.getThreadFactory();
       topicName = consumerInfo.getConsumerId().getDest().getName();
       consumerid = consumerInfo.getConsumerId().getConsumerId();
-      this.workerManager = workerManager;
       pullStgy = new DefaultPullStrategy(configManager.getPullFailDelayBase(),
             configManager.getPullFailDelayUpperBound());
 
-      ackExecutor = new ThreadPoolExecutor(1, 1, Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>());
+      ackExecutor = new ThreadPoolExecutor(1, 1, Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(), new MQThreadFactory("swallow-ack-"));
 
       startMessageFetcherThread();
-      startConnectedChannelCheckerThread();
 
       //Hawk监控
       HawkJMXUtil.registerMBean(topicName + '-' + consumerid + "-ConsumerWorkerImpl", new HawkMBean());
-   }
-
-   private void startConnectedChannelCheckerThread() {
-      threadFactory.newThread(new Runnable() {
-         @Override
-         public void run() {
-            while (getMessageisAlive) {
-               if (started) {
-                  if (connectedChannels.isEmpty()) {
-                     getMessageisAlive = false;
-                     ackExecutor.shutdownNow();
-                     workerManager.workerDone(consumerInfo.getConsumerId());
-                     LOG.info("ConsumerWorker for " + consumerInfo.getConsumerId()
-                           + " has no connected channel, close it");
-                     break;
-                  }
-               }
-               try {
-                  Thread.sleep(configManager.getCheckConnectedChannelInterval());
-               } catch (InterruptedException e) {
-                  break;
-               }
-            }
-            LOG.info("connected channel checker thread closed");
-         }
-      }, consumerInfo.toString() + "swallow-connectedChannelChecker-").start();
-
    }
 
    @Override
@@ -228,7 +198,6 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       return maxMessageId;
    }
 
-   @Override
    public void sendMessageByPollFreeChannelQueue() {
       if (messageQueue == null) {
          long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid);
@@ -291,6 +260,11 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       } catch (InterruptedException e) {
          LOG.info("get message from messageQueue thread InterruptedException", e);
       }
+   }
+   
+   @Override
+   public boolean allChannelDisconnected() {
+      return started && connectedChannels.isEmpty();
    }
 
    /**
