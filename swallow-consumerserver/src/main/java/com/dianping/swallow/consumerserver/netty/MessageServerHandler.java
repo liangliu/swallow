@@ -9,6 +9,8 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.jboss.netty.channel.group.ChannelGroup;
+import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +27,8 @@ import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 
    private static final Logger LOG        = LoggerFactory.getLogger(MongoHeartbeater.class);
+   
+   private static ChannelGroup channelGroup = new DefaultChannelGroup();
    
    private ConsumerWorkerManager workerManager;
 
@@ -43,7 +47,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
       LOG.info("one client connected!");
-      System.out.println("haha");
+      channelGroup.add(e.getChannel());
    }
 
    @Override
@@ -60,6 +64,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
             workerManager.handleGreet(channel, consumerInfo, clientThreadCount);
          } else {
             if (consumerPacket.getNeedClose() || readyClose) {
+               //第一次接到channel的close命令后,server启一个后台线程,当一定时间后channel仍未关闭,则强制关闭.
                if(!readyClose){
                   Thread thread = workerManager.getThreadFactory().newThread(new Runnable() {
 
@@ -101,6 +106,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
       
       //只有IOException的时候才需要处理。
       if (e.getCause() instanceof IOException) {
+         channelGroup.remove(e.getChannel());
          LOG.error("Client disconnected!", e.getCause());
          Channel channel = e.getChannel();
          workerManager.handleChannelDisconnect(channel, consumerInfo);
@@ -108,4 +114,25 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
       }
       LOG.info("something exception happened!", e.getCause());
    }
+   
+   @Override
+   public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+      channelGroup.remove(e.getChannel());
+      Channel channel = e.getChannel();
+      workerManager.handleChannelDisconnect(channel, consumerInfo);
+      super.channelDisconnected(ctx, e);
+   }
+
+   @Override
+   public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+      channelGroup.remove(e.getChannel());
+      Channel channel = e.getChannel();
+      workerManager.handleChannelDisconnect(channel, consumerInfo);
+      super.channelClosed(ctx, e);
+   }
+
+   public static ChannelGroup getChannelGroup() {
+      return channelGroup;
+   }
+   
 }

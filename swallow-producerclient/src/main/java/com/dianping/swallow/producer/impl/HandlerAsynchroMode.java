@@ -11,6 +11,7 @@ import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.packet.Packet;
 import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
+import com.dianping.swallow.common.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.threadfactory.MQThreadFactory;
 
 /**
@@ -25,7 +26,10 @@ public class HandlerAsynchroMode {
    private static final int             DEFAULT_FILEQUEUE_SIZE = 512 * 1024 * 1024;
 
    private ProducerImpl                 producer;
-   private FileQueue<Packet>            messageQueue;                                                        //filequeue
+   private FileQueue<Packet>            messageQueue;                                                               //filequeue
+
+   private int                          delayBase              = ProducerFactoryImpl.getRemoteServiceTimeout();
+   private DefaultPullStrategy          defaultPullStrategy    = new DefaultPullStrategy(delayBase, 10 * delayBase);
 
    //构造函数
    public HandlerAsynchroMode(ProducerImpl producer) {
@@ -73,18 +77,34 @@ public class HandlerAsynchroMode {
                   if (leftRetryTimes <= 1) {
                      logger.error("[AsyncHandler]:[Message sent failed.][Reason=DAO]", e);
                   }
+                  try {
+                     defaultPullStrategy.fail(true);
+                  } catch (InterruptedException ie) {
+                     //睡眠失败则不睡眠直接发送
+                  }
                   //发送失败，重发
                   continue;
                } catch (NetException e) {
                   if (leftRetryTimes <= 1) {
                      logger.error("[AsyncHandler]:[Message sent failed.][Reason=Network]", e);
                   }
+                  try {
+                     defaultPullStrategy.fail(true);
+                  } catch (InterruptedException ie) {
+                     //睡眠失败则不睡眠直接发送
+                  }
                   //发送失败，重发
                   continue;
                } catch (Exception e) {
+                  try {
+                     defaultPullStrategy.fail(true);
+                  } catch (InterruptedException ie) {
+                     //睡眠失败则不睡眠直接发送
+                  }
                   //捕获到未知异常，不管
                   continue;
                }
+               defaultPullStrategy.succeess();
                //如果发送成功则跳出循环//TODO 需要日志记录消息重发的次数吗？发送成功需要记日志吗？
                break;
             }

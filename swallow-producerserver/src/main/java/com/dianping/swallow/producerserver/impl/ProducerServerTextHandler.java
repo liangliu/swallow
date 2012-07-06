@@ -58,7 +58,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       //获取TextObject
       TextObject textObject = (TextObject) e.getMessage();
       //获取sourceIP
-      String sourceIp = e.getChannel().getRemoteAddress().toString();
+      String sourceIp = e.getRemoteAddress().toString();
       //生成SwallowMessage
       SwallowMessage swallowMessage = new SwallowMessage();
       swallowMessage.setContent(textObject.getContent());

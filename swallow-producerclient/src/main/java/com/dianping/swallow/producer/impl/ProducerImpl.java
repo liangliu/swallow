@@ -57,17 +57,17 @@ public class ProducerImpl implements Producer {
     * 构造函数
     * 
     * @param remoteService 远程调用服务
-    * @param topicName topic的名称
+    * @param dest topic的名称
     * @param pOptions producer选项
     * @throws TopicNameInvalidException topic名称非法//topic名称只能由字母、数字、下划线组成
     * @throws RemoteServiceDownException 初始化远程连接失败
     */
-   ProducerImpl(MQService remoteService, Destination topicName, Map<ProducerOptionKey, Object> pOptions)
+   ProducerImpl(MQService remoteService, Destination dest, Map<ProducerOptionKey, Object> pOptions)
          throws TopicNameInvalidException, RemoteServiceDownException {
       //初始化Producer参数
-      if (!NameCheckUtil.isTopicNameValid(topicName.getName()))
+      if (!NameCheckUtil.isTopicNameValid(dest.getName()))
          throw new TopicNameInvalidException();
-      destination = topicName;
+      destination = dest;
 
       if (pOptions != null) {
          Object obj = null;
