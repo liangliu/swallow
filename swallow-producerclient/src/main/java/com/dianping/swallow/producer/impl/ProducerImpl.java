@@ -217,12 +217,8 @@ public class ProducerImpl implements Producer {
       try {
          Event event = Cat.getProducer().newEvent(CAT_TYPE, CAT_NAME);
 
-         String ret = null;
-         if (content == null) {
-            throw new NullContentException();
-         }
          //根据content生成SwallowMessage
-         SwallowMessage swallowMsg = new SwallowMessage();
+         swallowMsg = new SwallowMessage();
          swallowMsg.setContent(content);
          swallowMsg.setVersion(producerVersion);
          swallowMsg.setGeneratedTime(new Date());
