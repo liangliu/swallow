@@ -7,14 +7,14 @@ import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.consumer.ConsumerClient;
 import com.dianping.swallow.consumer.MessageListener;
 
-public class TestConsumer {
+public class TestNonDurableConsumer {
 
    /**
     * @param args
     */
    public static void main(String[] args) {
       ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-cClientTest.xml" });
-      final ConsumerClient ConsumerClient = (ConsumerClient)ctx.getBean("consumerClient");
+      final ConsumerClient ConsumerClient = (ConsumerClient)ctx.getBean("nonDurableConsumerClient");
       ConsumerClient.setListener(new MessageListener() {
 
          @Override

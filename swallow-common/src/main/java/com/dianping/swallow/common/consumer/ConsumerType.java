@@ -7,8 +7,8 @@ package com.dianping.swallow.common.consumer;
  */
 public enum ConsumerType {
 
-	//TODO rename, at most/least once
 	AT_MOST,
-	AT_LEAST
+	AT_LEAST,
+	NON_DURABLE
 	
 }
