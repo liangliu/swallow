@@ -75,4 +75,49 @@
 			<artifactId>hawk-client</artifactId>
 		</dependency>
 	</dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.3</version>
+				<executions>
+					<execution>
+						<id>master</id>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/resources/META-INF/assembly/assembly-master.xml</descriptor>
+							</descriptors>
+							<archive>
+								<manifest>
+									<mainClass>com.dianping.swallow.consumerserver.bootstrap.MasterBootStrap</mainClass>
+								</manifest>
+							</archive>
+						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>slave</id>
+						<configuration>
+							<descriptors>
+								<descriptor>src/main/resources/META-INF/assembly/assembly-slave.xml</descriptor>
+							</descriptors>
+							<archive>
+								<manifest>
+									<mainClass>com.dianping.swallow.consumerserver.bootstrap.SlaveBootStrap</mainClass>
+								</manifest>
+							</archive>
+						</configuration>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
