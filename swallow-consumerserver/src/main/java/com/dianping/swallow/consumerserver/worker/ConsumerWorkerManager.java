@@ -1,6 +1,7 @@
 package com.dianping.swallow.consumerserver.worker;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.util.internal.ConcurrentHashMap;
@@ -58,8 +59,8 @@ public class ConsumerWorkerManager {
       return configManager;
    }
 
-   public void handleGreet(Channel channel, ConsumerInfo consumerInfo, int clientThreadCount) {
-      findOrCreateConsumerWorker(consumerInfo).handleGreet(channel, clientThreadCount);
+   public void handleGreet(Channel channel, ConsumerInfo consumerInfo, int clientThreadCount, Set<String> messageType) {
+      findOrCreateConsumerWorker(consumerInfo, messageType).handleGreet(channel, clientThreadCount);
    }
 
    public void handleAck(Channel channel, ConsumerInfo consumerInfo, Long ackedMsgId, ACKHandlerType type) {
@@ -96,13 +97,13 @@ public class ConsumerWorkerManager {
       return consumerId2ConsumerWorker.get(consumerId);
    }
 
-   private ConsumerWorker findOrCreateConsumerWorker(ConsumerInfo consumerInfo) {
+   private ConsumerWorker findOrCreateConsumerWorker(ConsumerInfo consumerInfo,Set<String> messageType) {
       ConsumerWorker worker = findConsumerWorker(consumerInfo);
       ConsumerId consumerId = consumerInfo.getConsumerId();
       if (worker == null) {
          synchronized (this) {
             if (worker == null) {
-               worker = new ConsumerWorkerImpl(consumerInfo, this);
+               worker = new ConsumerWorkerImpl(consumerInfo, this, messageType);
                consumerId2ConsumerWorker.put(consumerId, worker);
             }
          }

@@ -54,18 +54,20 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private PullStrategy                           pullStgy;
    private ConfigManager                          configManager;
    private Map<Channel, Map<PktMessage, Boolean>> waitAckMessages   = new ConcurrentHashMap<Channel, Map<PktMessage, Boolean>>();
+   private Set<String> messageType;
 
    public Set<Channel> getConnectedChannels() {
       return connectedChannels;
    }
 
-   public ConsumerWorkerImpl(ConsumerInfo consumerInfo, ConsumerWorkerManager workerManager) {
+   public ConsumerWorkerImpl(ConsumerInfo consumerInfo, ConsumerWorkerManager workerManager, Set<String> messageType) {
       this.consumerInfo = consumerInfo;
       this.configManager = workerManager.getConfigManager();
       this.ackDao = workerManager.getAckDAO();
       this.messageDao = workerManager.getMessageDAO();
       this.swallowBuffer = workerManager.getSwallowBuffer();
       this.threadFactory = workerManager.getThreadFactory();
+      this.messageType = messageType;
       topicName = consumerInfo.getConsumerId().getDest().getName();
       consumerid = consumerInfo.getConsumerId().getConsumerId();
       pullStgy = new DefaultPullStrategy(configManager.getPullFailDelayBase(),
@@ -184,24 +186,59 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    }
 
    private long getMessageIdOfTailMessage(String topicName, String consumerId) {
-
-      Long maxMessageId = ackDao.getMaxMessageId(topicName, consumerId);
-      if (maxMessageId == null) {
-         maxMessageId = messageDao.getMaxMessageId(topicName);
-         if (maxMessageId == null) {
-            int time = (int) (System.currentTimeMillis() / 1000);
-            BSONTimestamp bst = new BSONTimestamp(time, 1);
-            maxMessageId = MongoUtils.BSONTimestampToLong(bst);
+      Long maxMessageId = null;
+      try{
+         while(true){
+            try{
+               maxMessageId = ackDao.getMaxMessageId(topicName, consumerId);
+               break;
+            }catch(Exception e){
+               LOG.error("ackDao.getMaxMessageId wrong!", e);
+               Thread.sleep(configManager.getRetryIntervalWhenMongoException());
+            }
          }
-         ackDao.add(topicName, consumerId, maxMessageId);
+         if (maxMessageId == null) {
+            while(true){
+               try{
+                  maxMessageId = messageDao.getMaxMessageId(topicName);
+                  break;
+               }catch(Exception e){
+                  LOG.error("ackDao.getMaxMessageId wrong!", e);
+                  Thread.sleep(configManager.getRetryIntervalWhenMongoException());
+               }
+            }           
+            if (maxMessageId == null) {
+               int time = (int) (System.currentTimeMillis() / 1000);
+               BSONTimestamp bst = new BSONTimestamp(time, 1);
+               maxMessageId = MongoUtils.BSONTimestampToLong(bst);
+            }
+            while(true){
+               try{
+                  ackDao.add(topicName, consumerId, maxMessageId);
+                  break;
+               }catch(Exception e){
+                  LOG.error("add count wrong!", e);
+                  Thread.sleep(configManager.getRetryIntervalWhenMongoException());
+               }
+            }  
+            
+         }
+         
+      }catch (InterruptedException e) {
+         LOG.info("getMessageIdOfTailMessage thread InterruptedException", e);
       }
-      return maxMessageId;
+      return maxMessageId;     
    }
 
    public void sendMessageByPollFreeChannelQueue() {
       if (messageQueue == null) {
          long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid);
-         messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage);
+         if(messageType == null){
+            messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage);
+         }else{
+            messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage, messageType);
+         }
+         
       }
       //线程刚起，第一次调用的时候，需要先去mongo中获取maxMessageId
       try {

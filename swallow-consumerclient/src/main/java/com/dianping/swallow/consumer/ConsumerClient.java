@@ -1,6 +1,7 @@
 package com.dianping.swallow.consumer;
 
 import java.net.InetSocketAddress;
+import java.util.Set;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -33,7 +34,8 @@ public class ConsumerClient {
 
    private String              consumerId;
    
-
+   private Set<String> neededMessageType;
+   
    private Destination         dest;
 
    private ClientBootstrap     bootstrap;
@@ -51,6 +53,14 @@ public class ConsumerClient {
    private Boolean             needClose   = Boolean.FALSE;
    //consumerClient默认是1个线程处理，如需线程池处理，则另外设置线程数目。
    private int                 threadCount = 1;
+
+   public Set<String> getNeededMessageType() {
+      return neededMessageType;
+   }
+
+   public void setNeededMessageType(Set<String> neededMessageType) {
+      this.neededMessageType = neededMessageType;
+   }
 
    public Boolean getNeedClose() {
       return needClose;
