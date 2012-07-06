@@ -142,8 +142,9 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private void updateWaitAckMessages(Channel channel, Long ackedMsgId) {
       if (ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
          Map<PktMessage, Boolean> messages = waitAckMessages.get(channel);
-         PktMessage mockPktMessage = new PktMessage();
-         mockPktMessage.getContent().setMessageId(ackedMsgId);
+         SwallowMessage swallowMsg = new SwallowMessage();
+         swallowMsg.setMessageId(ackedMsgId);
+         PktMessage mockPktMessage = new PktMessage(consumerInfo.getConsumerId().getDest(), swallowMsg);
          messages.remove(mockPktMessage);
       }
 
