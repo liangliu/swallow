@@ -6,6 +6,9 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Event;
+import com.dianping.cat.message.Transaction;
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.SwallowMessage;
@@ -31,6 +34,8 @@ public class ProducerImpl implements Producer {
    private HandlerSynchroMode        syncHandler;                                                     //同步处理对象
 
    //常量定义
+   private static final String       CAT_TYPE                 = "swallow";                            //cat监控使用的type
+   private static final String       CAT_NAME                 = "produceMessage";                     //cat监控使用的name
    private final String              producerVersion          = "0.6.0";                              //Producer版本号
    private final String              producerIP               = IPUtil.getFirstNoLoopbackIP4Address(); //Producer IP地址
    private static final Logger       logger                   = Logger.getLogger(ProducerImpl.class); //日志
@@ -173,65 +178,79 @@ public class ProducerImpl implements Producer {
    public String sendMessage(Object content, Map<String, String> properties, String messageType)
          throws ServerDaoException, FileQueueClosedException, RemoteServiceDownException, NullContentException {
 
-      String ret = null;
-      if (content == null) {
-         throw new NullContentException();
-      }
-      //根据content生成SwallowMessage
-      SwallowMessage swallowMsg = new SwallowMessage();
+      //使用CAT监控处理消息的时间
+      Transaction t = Cat.getProducer().newTransaction(CAT_TYPE, CAT_NAME);
+      try {
+         Event event = Cat.getProducer().newEvent(CAT_TYPE, CAT_NAME);
 
-      swallowMsg.setContent(content);
-      swallowMsg.setVersion(producerVersion);
-      swallowMsg.setGeneratedTime(new Date());
-      swallowMsg.setSourceIp(producerIP);
-
-      if (messageType != null)
-         swallowMsg.setType(messageType);
-      if (properties != null) {
-         //如果需要压缩内容，properties设置zip=true
-         //PS：压缩内容并非用户传入的Object，而是通过SwallowMessage类转换过的json字符串，压缩失败时，将zip置为false
-         if (properties.containsKey("zip") && properties.get("zip").equals("true")) {
-            try {
-               swallowMsg.setContent(ZipUtil.zip(swallowMsg.getContent()));
-            } catch (IOException e) {
-               logger.error("[Compress message failed.]", e);
-               properties.put("zip", "false");
-            }
+         String ret = null;
+         if (content == null) {
+            throw new NullContentException();
          }
-         swallowMsg.setProperties(properties);
+         //根据content生成SwallowMessage
+         SwallowMessage swallowMsg = new SwallowMessage();
+         swallowMsg.setContent(content);
+         swallowMsg.setVersion(producerVersion);
+         swallowMsg.setGeneratedTime(new Date());
+         swallowMsg.setSourceIp(producerIP);
+
+         if (messageType != null)
+            swallowMsg.setType(messageType);
+         if (properties != null) {
+            //如果需要压缩内容，properties设置zip=true
+            //PS：压缩内容并非用户传入的Object，而是通过SwallowMessage类转换过的json字符串，压缩失败时，将zip置为false
+            if (properties.containsKey("zip") && properties.get("zip").equals("true")) {
+               try {
+                  swallowMsg.setContent(ZipUtil.zip(swallowMsg.getContent()));
+               } catch (IOException e) {
+                  logger.error("[Compress message failed.]", e);
+                  properties.put("zip", "false");
+               }
+            }
+            swallowMsg.setProperties(properties);
+         }
+
+         //构造packet
+         PktMessage pktMessage = new PktMessage(destination, swallowMsg);
+         switch (producerMode) {
+            case SYNC_MODE://同步模式
+               try {
+                  PktSwallowPACK pktSwallowPACK = null;
+                  pktSwallowPACK = (PktSwallowPACK) syncHandler.doSendMsg(pktMessage);
+                  if (pktSwallowPACK != null) {
+                     ret = pktSwallowPACK.getShaInfo();
+                  }
+               } catch (ServerDaoException e) {
+                  logger.error("[Can not save message to DB, DB is busy or connection to DB is down.]", e);
+                  throw e;
+               } catch (RemoteServiceDownException e) {
+                  logger.error(
+                        "[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]",
+                        e);
+                  throw e;
+               }
+               break;
+            case ASYNC_MODE://异步模式
+               try {
+                  asyncHandler.doSendMsg(pktMessage);
+               } catch (FileQueueClosedException e) {
+                  logger.error(
+                        "[Can not save message to FileQueue, please contact to Swallow-Team for more information.]", e);
+                  throw e;
+               }
+               break;
+         }
+
+         event.addData(swallowMsg.toString());
+         event.setStatus(Event.SUCCESS);
+         event.complete();
+         t.setStatus(Transaction.SUCCESS);
+
+         return ret;
+      } finally {
+         t.complete();
       }
 
-      //构造packet
-      PktMessage pktMessage = new PktMessage(destination, swallowMsg);
-      switch (producerMode) {
-         case SYNC_MODE://同步模式
-            try {
-               PktSwallowPACK pktSwallowPACK = null;
-               pktSwallowPACK = (PktSwallowPACK) syncHandler.doSendMsg(pktMessage);
-               if (pktSwallowPACK != null) {
-                  ret = pktSwallowPACK.getShaInfo();
-               }
-            } catch (ServerDaoException e) {
-               logger.error("[Can not save message to DB, DB is busy or connection to DB is down.]", e);
-               throw e;
-            } catch (RemoteServiceDownException e) {
-               logger.error(
-                     "[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]",
-                     e);
-               throw e;
-            }
-            break;
-         case ASYNC_MODE://异步模式
-            try {
-               asyncHandler.doSendMsg(pktMessage);
-            } catch (FileQueueClosedException e) {
-               logger.error(
-                     "[Can not save message to FileQueue, please contact to Swallow-Team for more information.]", e);
-               throw e;
-            }
-            break;
-      }
-      return ret;
    }
 
    /**

@@ -50,5 +50,11 @@
 			<groupId>com.dianping.dpsf</groupId>
 			<artifactId>dpsf-net</artifactId>
 		</dependency>
+		<!-- 监控 -->
+		<dependency>
+			<groupId>com.dianping.cat</groupId>
+			<artifactId>cat-core</artifactId>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 </project>

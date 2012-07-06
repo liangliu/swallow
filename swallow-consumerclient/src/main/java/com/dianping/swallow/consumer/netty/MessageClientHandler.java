@@ -11,6 +11,9 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Event;
+import com.dianping.cat.message.Transaction;
 import com.dianping.swallow.common.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
@@ -19,8 +22,11 @@ import com.dianping.swallow.consumer.ConsumerClient;
 
 public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
-   private static final Logger LOG = LoggerFactory.getLogger(MessageClientHandler.class);
-   
+   private static final Logger LOG      = LoggerFactory.getLogger(MessageClientHandler.class);
+
+   private static final String CAT_TYPE = "swallow";
+   private static final String CAT_NAME = "consumeMessage";
+
    private ConsumerClient      cClient;
 
    private PktConsumerMessage  consumermessage;
@@ -51,12 +57,25 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
             Long messageId = swallowMessage.getMessageId();
             PktConsumerMessage consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, messageId,
                   cClient.getNeedClose());
-            try{
+            //使用CAT监控处理消息的时间
+            Transaction t = Cat.getProducer().newTransaction(CAT_TYPE, CAT_NAME);
+            try {
+               Event event = Cat.getProducer().newEvent(CAT_TYPE, CAT_NAME);
+               event.addData(swallowMessage.toString());
+
+               //处理消息
                cClient.getListener().onMessage(swallowMessage);
-            } catch(Exception e1){
-               LOG.error("deal with message error!",e1);
+
+               event.setStatus(Event.SUCCESS);
+               event.complete();
+               t.setStatus(Transaction.SUCCESS);
+            } catch (Exception e) {
+               LOG.error("deal with message error!", e);
+               t.setStatus(e);
+            } finally {
+               t.complete();
             }
-            
+
             e.getChannel().write(consumermessage);
          }
       };
@@ -67,7 +86,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
       // Close the connection when an exception is raised.
-      
+
       LOG.error("exception caught, disconnect from swallowC", e.getCause());
       e.getChannel().close();
    }
