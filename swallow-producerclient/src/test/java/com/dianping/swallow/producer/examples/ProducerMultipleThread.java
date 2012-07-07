@@ -21,20 +21,21 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.dianping.swallow.common.message.Destination;
+import com.dianping.swallow.producer.Producer;
+import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
-import com.dianping.swallow.producer.impl.ProducerImpl;
 import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 
 class ExampleTask implements Runnable {
-   ProducerImpl producer;
-   public ExampleTask(ProducerImpl producer){
+   Producer producer;
+   public ExampleTask(Producer producer){
       this.producer = producer;
    }
    @Override
    public void run() {
       try {
-         producer.sendMessage(producer.getDestination());
+         producer.sendMessage("Hello World.");
       } catch (Exception e) {
          System.out.println("Got problems.");
       }
@@ -48,12 +49,12 @@ class ExampleTask implements Runnable {
  */
 public class ProducerMultipleThread {
    public static void main(String[] args) {
-      ProducerFactoryImpl producerFactory = null;
+      ProducerFactory producerFactory = null;
       ExecutorService threadPool = Executors.newCachedThreadPool();
       
       //获取Producer工厂实例
       try {
-         //Or: producerFactory = ProducerFactory.getInstance()//默认远程调用timeout为5000;
+         //Or: producerFactory = ProducerFactoryImpl.getInstance()//默认远程调用timeout为5000;
          producerFactory = ProducerFactoryImpl.getInstance(5000);
       } catch (Exception e) {
          System.out.println(e.toString());
@@ -66,7 +67,7 @@ public class ProducerMultipleThread {
       pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
       pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);
       
-      ProducerImpl producerAsync = null;
+      Producer producerAsync = null;
       //获取Producer实例
       try {
          producerAsync = producerFactory.getProducer(Destination.topic("sampleAsync"), pOptions);
@@ -77,7 +78,7 @@ public class ProducerMultipleThread {
       //重新配置Producer选项
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
       
-      ProducerImpl producerSync = null;
+      Producer producerSync = null;
       
       //获取Producer实例
       try {

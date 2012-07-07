@@ -17,24 +17,28 @@ package com.dianping.swallow.producer;
 
 /**
  * Producer选项
+ * 
  * @author tong.song
- *
  */
 public enum ProducerOptionKey {
    /**
-    * Producer工作模式：同步/异步；前缀为ASYNC_的选项：异步模式生效，同步模式忽略
+    * Producer工作模式：同步/异步；前缀为ASYNC_的选项：异步模式生效，同步模式忽略 类型：{@link ProducerMode}
     */
    PRODUCER_MODE,
    /**
-    * 异步模式时，线程池从队列获取并发送消息的失败重试次数
+    * 发送消息的失败重试次数，类型：int
     */
    RETRY_TIMES,
    /**
-    * 异步模式时，从队列中获取并发送消息的线程池大小
+    * 是否压缩消息，类型：boolean
+    */
+   IS_ZIP_MESSAGE,
+   /**
+    * 异步模式时，从队列中获取并发送消息的线程池大小，类型：int
     */
    ASYNC_THREAD_POOL_SIZE,
    /**
-    * 异步模式时，重启Producer是否续接上次的队列，继续发送
+    * 异步模式时，重启Producer是否续接上次的队列，继续发送，类型：boolean
     */
    ASYNC_IS_CONTINUE_SEND
 }
