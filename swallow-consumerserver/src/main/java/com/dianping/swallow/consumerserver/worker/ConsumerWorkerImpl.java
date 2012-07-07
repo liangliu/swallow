@@ -23,13 +23,13 @@ import com.dianping.swallow.common.consumer.ACKHandlerType;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.dao.AckDAO;
 import com.dianping.swallow.common.dao.MessageDAO;
-import com.dianping.swallow.common.dao.impl.mongodb.MongoUtils;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.common.message.SwallowMessage;
 import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.common.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.threadfactory.MQThreadFactory;
 import com.dianping.swallow.common.threadfactory.PullStrategy;
+import com.dianping.swallow.common.util.MongoUtils;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 

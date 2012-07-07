@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.common.dao.MessageDAO;
 import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.util.MongoUtils;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;

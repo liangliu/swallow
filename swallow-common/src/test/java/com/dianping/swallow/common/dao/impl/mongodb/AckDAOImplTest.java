@@ -6,6 +6,8 @@ import org.bson.types.BSONTimestamp;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.dianping.swallow.common.util.MongoUtils;
+
 public class AckDAOImplTest extends AbstractDAOImplTest {
 
    @Autowired

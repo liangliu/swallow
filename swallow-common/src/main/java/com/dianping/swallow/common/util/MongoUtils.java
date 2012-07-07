@@ -1,4 +1,4 @@
-package com.dianping.swallow.common.dao.impl.mongodb;
+package com.dianping.swallow.common.util;
 
 import org.bson.types.BSONTimestamp;
 
@@ -17,7 +17,8 @@ public class MongoUtils {
       Long messageId = ((long) time << 32) | inc;
       return messageId;
    }
-public static void main(String[] args) {
-	System.out.println(MongoUtils.longToBSONTimestamp(5759378400351354888L));
-}
+
+   public static void main(String[] args) {
+      System.out.println(MongoUtils.longToBSONTimestamp(5759378400351354888L));
+   }
 }

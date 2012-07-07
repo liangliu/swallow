@@ -54,7 +54,7 @@ public class AppTest {
          }
 
          //发送消息设置
-         final int MAX_NUM = 100; //可发送消息的最大数量
+//         final int MAX_NUM = 100; //可发送消息的最大数量
          int sentNum = 0; //已发送消息数量
          String strRet = ""; //发送消息的返回值
 

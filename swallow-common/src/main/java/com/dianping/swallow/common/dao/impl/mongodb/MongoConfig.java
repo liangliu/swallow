@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author wukezhu
  */
-public class MongoConfig {
+class MongoConfig {
 
    private static final Logger LOG                                          = LoggerFactory
                                                                                   .getLogger(MongoConfig.class);
