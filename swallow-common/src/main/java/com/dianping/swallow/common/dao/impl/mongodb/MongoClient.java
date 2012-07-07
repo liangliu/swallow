@@ -527,7 +527,7 @@ public class MongoClient implements ConfigChangeListener {
       } catch (MongoException e) {
          if (e.getMessage() != null && e.getMessage().indexOf("collection already exists") >= 0) {
             //collection already exists
-            LOG.error(e.getMessage() + ":the collectionName is " + collectionName);
+            LOG.warn(e.getMessage() + ":the collectionName is " + collectionName);
             return db.getCollection(collectionName);
          } else {
             //other exception, can not connect to mongo etc, should abort
