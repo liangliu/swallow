@@ -12,6 +12,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.hawk.jmx.HawkJMXUtil;
+import com.dianping.swallow.common.internal.monitor.ThreadStatusBean;
+
 /**
  * 管理所有swallow线程，提供jmx监控
  * 
@@ -31,12 +34,7 @@ public class MQThreadFactory implements ThreadFactory, Closeable {
 
    public MQThreadFactory(String namePrefix) {
       this.prefix = namePrefix;
-      //暂时注掉监控那玩意。
-      //		try {
-      //			HawkJMXUtil.registerMBean(new SwallowThreadStatusBean());
-      //		} catch (Exception e) {
-      //			log.error("error register jxm bean", e);
-      //		}
+      HawkJMXUtil.registerMBean(new ThreadStatusBean());
    }
 
    public MQThreadFactory() {
