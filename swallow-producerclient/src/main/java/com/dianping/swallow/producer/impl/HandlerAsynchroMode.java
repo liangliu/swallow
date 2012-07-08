@@ -19,7 +19,7 @@ import com.dianping.swallow.common.threadfactory.MQThreadFactory;
  * 
  * @author tong.song
  */
-public class HandlerAsynchroMode {
+class HandlerAsynchroMode {
    private static final Logger          logger                 = LoggerFactory.getLogger(ProducerImpl.class);
    private static final MQThreadFactory threadFactory          = new MQThreadFactory();
 

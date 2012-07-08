@@ -12,7 +12,7 @@ import com.dianping.swallow.common.threadfactory.DefaultPullStrategy;
  * 
  * @author tong.song
  */
-public class HandlerSynchroMode {
+class HandlerSynchroMode {
    private MQService           remoteService;
    private int                 retryTimes;
    private int                 delayBase           = ProducerFactoryImpl.getRemoteServiceTimeout();
