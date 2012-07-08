@@ -1,4 +1,4 @@
-package com.dianping.swallow.consumer.config;
+package com.dianping.swallow.consumer.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,17 +10,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * <em>Internal-use-only</em> used by Swallow. <strong>DO NOT</strong> access
+ * this class outside of Swallow.
+ * 
  * @author zhang.yu
  */
-public class CClientConfigManager {
+public class ConfigManager {
 
-   private static final Logger  LOG                             = LoggerFactory.getLogger(CClientConfigManager.class);
+   private static final Logger  LOG                   = LoggerFactory.getLogger(ConfigManager.class);
 
-   private static CClientConfigManager ins                             = new CClientConfigManager();
+   private static ConfigManager ins                   = new ConfigManager();
 
-
-   private long                  connectMasterInterval               = 5000L;
-   private long                  connectSlaveInterval               = 5000L;
+   private long                 connectMasterInterval = 5000L;
+   private long                 connectSlaveInterval  = 5000L;
 
    public long getConnectMasterInterval() {
       return connectMasterInterval;
@@ -31,20 +33,20 @@ public class CClientConfigManager {
    }
 
    public static void main(String[] args) {
-      new CClientConfigManager();
+      new ConfigManager();
    }
 
-   public static CClientConfigManager getInstance() {
+   public static ConfigManager getInstance() {
       return ins;
    }
 
-   private CClientConfigManager() {
+   private ConfigManager() {
       this("cClient.properties");
    }
 
    @SuppressWarnings("rawtypes")
-   private CClientConfigManager(String configFileName) {
-      InputStream in = CClientConfigManager.class.getClassLoader().getResourceAsStream(configFileName);
+   private ConfigManager(String configFileName) {
+      InputStream in = ConfigManager.class.getClassLoader().getResourceAsStream(configFileName);
       Properties props = new Properties();
       Class clazz = this.getClass();
       if (in != null) {

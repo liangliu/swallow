@@ -1,4 +1,4 @@
-package com.dianping.swallow.consumer.netty;
+package com.dianping.swallow.consumer.internal;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,6 +20,12 @@ import com.dianping.swallow.common.packet.PktConsumerMessage;
 import com.dianping.swallow.common.packet.PktMessage;
 import com.dianping.swallow.consumer.ConsumerClient;
 
+/**
+ * <em>Internal-use-only</em> used by Swallow. <strong>DO NOT</strong> access
+ * this class outside of Swallow.
+ * 
+ * @author zhang.yu
+ */
 public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
    private static final Logger LOG      = LoggerFactory.getLogger(MessageClientHandler.class);

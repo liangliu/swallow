@@ -23,8 +23,8 @@ import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.packet.PktConsumerMessage;
 import com.dianping.swallow.common.packet.PktMessage;
-import com.dianping.swallow.consumer.config.CClientConfigManager;
-import com.dianping.swallow.consumer.netty.MessageClientHandler;
+import com.dianping.swallow.consumer.internal.ConfigManager;
+import com.dianping.swallow.consumer.internal.MessageClientHandler;
 
 public class ConsumerClient {
 
@@ -52,7 +52,7 @@ public class ConsumerClient {
 
    private InetSocketAddress   slaveAddress;
 
-   private CClientConfigManager                   configManager             = CClientConfigManager.getInstance();
+   private ConfigManager                   configManager             = ConfigManager.getInstance();
    
    private Boolean             needClose   = Boolean.FALSE;
    //consumerClient默认是1个线程处理，如需线程池处理，则另外设置线程数目。
@@ -70,7 +70,7 @@ public class ConsumerClient {
       return needClose;
    }
    
-   public CClientConfigManager getConfigManager() {
+   public ConfigManager getConfigManager() {
       return configManager;
    }
 
@@ -139,7 +139,7 @@ public class ConsumerClient {
     */
    public void beginConnect() {
       init();
-      ConSlaveThread slave = new ConSlaveThread();
+      ConsumerSlaveThread slave = new ConsumerSlaveThread();
       slave.setBootstrap(bootstrap);
       slave.setSlaveAddress(slaveAddress);
       slave.setConfigManager(configManager);

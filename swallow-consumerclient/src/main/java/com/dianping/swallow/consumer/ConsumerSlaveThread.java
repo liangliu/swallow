@@ -7,23 +7,24 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.consumer.config.CClientConfigManager;
+import com.dianping.swallow.consumer.internal.ConfigManager;
 
-public class ConSlaveThread implements Runnable {
 
-   private static final Logger LOG             = LoggerFactory.getLogger(ConSlaveThread.class);
+class ConsumerSlaveThread implements Runnable {
+
+   private static final Logger LOG             = LoggerFactory.getLogger(ConsumerSlaveThread.class);
 
    private ClientBootstrap     bootstrap;
 
    private InetSocketAddress   slaveAddress;
    
-   private CClientConfigManager configManager;
+   private ConfigManager configManager;
 
    public ClientBootstrap getBootstrap() {
       return bootstrap;
    }
 
-   public void setConfigManager(CClientConfigManager configManager) {
+   public void setConfigManager(ConfigManager configManager) {
       this.configManager = configManager;
    }
 
