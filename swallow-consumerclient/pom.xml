@@ -48,7 +48,6 @@
 		<dependency>
 			<groupId>com.dianping.cat</groupId>
 			<artifactId>cat-core</artifactId>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

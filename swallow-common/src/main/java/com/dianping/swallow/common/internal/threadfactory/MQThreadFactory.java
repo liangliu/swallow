@@ -34,7 +34,7 @@ public class MQThreadFactory implements ThreadFactory, Closeable {
 
    public MQThreadFactory(String namePrefix) {
       this.prefix = namePrefix;
-      HawkJMXUtil.registerMBean(new ThreadStatusBean());
+      HawkJMXUtil.registerMBean("SwallowThreadStatusBean", new ThreadStatusBean());
    }
 
    public MQThreadFactory() {
