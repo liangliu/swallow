@@ -7,15 +7,16 @@
            http://www.springframework.org/schema/context/spring-context-3.0.xsd"
 	default-autowire="byName">
 
-	<bean id="ackDAO" class="com.dianping.swallow.common.dao.impl.mongodb.AckDAOImpl">
+	<bean id="ackDAO"
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.AckDAOImpl">
 	</bean>
 
 	<bean id="messageDAO"
-		class="com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl">
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl">
 	</bean>
 
 	<bean id="heartbeatDAO"
-		class="com.dianping.swallow.common.dao.impl.mongodb.HeartbeatDAOImpl">
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.HeartbeatDAOImpl">
 	</bean>
 
 	<bean id="messageRetriever"
@@ -30,7 +31,7 @@
 	</bean>
 
 	<bean id="mongoClient"
-		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient">
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient">
 		<constructor-arg>
 			<value>swallow.mongo.consumerServerURI</value>
 		</constructor-arg>

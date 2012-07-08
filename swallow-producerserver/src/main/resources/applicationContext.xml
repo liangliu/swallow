@@ -7,30 +7,35 @@
            http://www.springframework.org/schema/context/spring-context-3.0.xsd"
 	default-autowire="byName">
 
-	<bean id="ackDAO" class="com.dianping.swallow.common.dao.impl.mongodb.AckDAOImpl">
+	<bean id="ackDAO"
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.AckDAOImpl">
 	</bean>
 
 	<bean id="messageDAO"
-		class="com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl">
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl">
 	</bean>
 
 	<bean id="heartbeatDAO"
-		class="com.dianping.swallow.common.dao.impl.mongodb.HeartbeatDAOImpl">
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.HeartbeatDAOImpl">
 	</bean>
 
 
 	<bean id="mongoClient"
-		class="com.dianping.swallow.common.dao.impl.mongodb.MongoClient">
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient">
 		<constructor-arg>
 			<value>swallow.mongo.producerServerURI</value>
 		</constructor-arg>
 	</bean>
 
-	<bean id="producerServerForClient" class="com.dianping.swallow.producerserver.impl.ProducerServerForClient" init-method="start">
-		<property name="port" value="4000" /> 
+	<bean id="producerServerForClient"
+		class="com.dianping.swallow.producerserver.impl.ProducerServerForClient"
+		init-method="start">
+		<property name="port" value="4000" />
 	</bean>
-		
-	<bean id="producerServerForText" class="com.dianping.swallow.producerserver.impl.ProducerServerForText" init-method="start">
+
+	<bean id="producerServerForText"
+		class="com.dianping.swallow.producerserver.impl.ProducerServerForText"
+		init-method="start">
 		<property name="port" value="8000" />
 	</bean>
 </beans>
