@@ -7,6 +7,8 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+import com.dianping.swallow.common.internal.message.SwallowMessage;
+
 public class SwallowMessageTest {
 
    @Test

@@ -10,8 +10,8 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
 
-import com.dianping.swallow.common.codec.JsonEncoder;
-import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.internal.codec.JsonEncoder;
+import com.dianping.swallow.common.internal.message.SwallowMessage;
 
 /**
  * 收到客户端的连接后，发送经过ProtobufVarint32LengthFieldPrepender和JsonEncoder编码后的消息。

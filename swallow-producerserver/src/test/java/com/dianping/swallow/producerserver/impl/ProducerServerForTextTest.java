@@ -12,8 +12,8 @@ import org.jboss.netty.channel.MessageEvent;
 import org.junit.Test;
 import org.mockito.Matchers;
 
-import com.dianping.swallow.common.dao.MessageDAO;
-import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.internal.dao.MessageDAO;
+import com.dianping.swallow.common.internal.message.SwallowMessage;
 
 public class ProducerServerForTextTest {
    @Test

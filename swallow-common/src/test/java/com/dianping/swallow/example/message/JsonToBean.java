@@ -1,7 +1,7 @@
 package com.dianping.swallow.example.message;
 
-import com.dianping.swallow.common.codec.JsonBinder;
-import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.internal.codec.JsonBinder;
+import com.dianping.swallow.common.internal.message.SwallowMessage;
 
 public class JsonToBean {
 

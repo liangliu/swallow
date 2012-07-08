@@ -3,7 +3,7 @@ package com.dianping.swallow.consumer.spring;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.consumer.ConsumerClient;
 import com.dianping.swallow.consumer.MessageListener;
 
@@ -14,11 +14,11 @@ public class TestConsumer {
     */
    public static void main(String[] args) {
       ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-cClientTest.xml" });
-      final ConsumerClient ConsumerClient = (ConsumerClient)ctx.getBean("consumerClient");
+      final ConsumerClient ConsumerClient = (ConsumerClient) ctx.getBean("consumerClient");
       ConsumerClient.setListener(new MessageListener() {
 
          @Override
-         public void onMessage(SwallowMessage swallowMessage) {
+         public void onMessage(Message swallowMessage) {
             //用户得到SwallowMessage
 
             System.out.println(swallowMessage.getMessageId() + ":" + swallowMessage.getContent());

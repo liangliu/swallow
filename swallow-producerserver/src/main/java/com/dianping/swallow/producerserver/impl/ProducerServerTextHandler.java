@@ -11,10 +11,10 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.dianping.hawk.jmx.HawkJMXUtil;
-import com.dianping.swallow.common.dao.MessageDAO;
-import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.util.NameCheckUtil;
-import com.dianping.swallow.common.util.SHAUtil;
+import com.dianping.swallow.common.internal.dao.MessageDAO;
+import com.dianping.swallow.common.internal.message.SwallowMessage;
+import com.dianping.swallow.common.internal.util.NameCheckUtil;
+import com.dianping.swallow.common.internal.util.SHAUtil;
 
 public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    private final MessageDAO    messageDAO;

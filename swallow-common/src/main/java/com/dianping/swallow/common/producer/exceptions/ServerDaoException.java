@@ -1,6 +1,6 @@
 package com.dianping.swallow.common.producer.exceptions;
 
-public class ServerDaoException extends Exception {
+public class ServerDaoException extends RuntimeException {
 
    private static final long serialVersionUID = -35938089521851134L;
 

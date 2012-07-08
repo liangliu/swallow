@@ -26,10 +26,10 @@ import org.junit.Test;
 import org.mockito.Matchers;
 
 import com.dianping.filequeue.FileQueueClosedException;
+import com.dianping.swallow.common.internal.packet.Packet;
+import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
+import com.dianping.swallow.common.internal.producer.MQService;
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.common.packet.Packet;
-import com.dianping.swallow.common.packet.PktSwallowPACK;
-import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.NullContentException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
@@ -37,6 +37,7 @@ import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException
 import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
+import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 
 /**
  * Producer的单元测试，包含了对ProducerFactoryImpl和ProducerImpl类的测试

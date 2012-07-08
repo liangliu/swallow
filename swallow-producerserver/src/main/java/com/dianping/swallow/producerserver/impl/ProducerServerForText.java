@@ -8,7 +8,7 @@ import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 
 import com.dianping.hawk.jmx.HawkJMXUtil;
-import com.dianping.swallow.common.dao.MessageDAO;
+import com.dianping.swallow.common.internal.dao.MessageDAO;
 
 public class ProducerServerForText {
    private static final int    DEFAULT_PORT = 8000;

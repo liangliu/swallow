@@ -22,17 +22,18 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.dpsf.api.ProxyFactory;
 import com.dianping.dpsf.exception.NetException;
+import com.dianping.swallow.common.internal.packet.PktProducerGreet;
+import com.dianping.swallow.common.internal.producer.MQService;
+import com.dianping.swallow.common.internal.util.IPUtil;
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.common.packet.PktProducerGreet;
-import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
-import com.dianping.swallow.common.util.IPUtil;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
+import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 
 /**
  * Producer工厂类

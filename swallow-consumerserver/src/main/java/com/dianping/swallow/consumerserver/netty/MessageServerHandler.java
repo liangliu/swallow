@@ -14,10 +14,10 @@ import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.common.consumer.ACKHandlerType;
-import com.dianping.swallow.common.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.consumer.ConsumerType;
-import com.dianping.swallow.common.packet.PktConsumerMessage;
+import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
+import com.dianping.swallow.common.internal.consumer.ConsumerMessageType;
+import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.consumerserver.impl.MongoHeartbeater;
 import com.dianping.swallow.consumerserver.worker.ConsumerId;
 import com.dianping.swallow.consumerserver.worker.ConsumerInfo;

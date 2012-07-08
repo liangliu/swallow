@@ -17,12 +17,12 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.dianping.cat.Cat;
-import com.dianping.swallow.common.codec.JsonDecoder;
-import com.dianping.swallow.common.codec.JsonEncoder;
-import com.dianping.swallow.common.monitor.CloseMonitor;
-import com.dianping.swallow.common.monitor.CloseMonitor.CloseHook;
-import com.dianping.swallow.common.packet.PktConsumerMessage;
-import com.dianping.swallow.common.packet.PktMessage;
+import com.dianping.swallow.common.internal.codec.JsonDecoder;
+import com.dianping.swallow.common.internal.codec.JsonEncoder;
+import com.dianping.swallow.common.internal.monitor.CloseMonitor;
+import com.dianping.swallow.common.internal.monitor.CloseMonitor.CloseHook;
+import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
+import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 import com.dianping.swallow.consumerserver.netty.MessageServerHandler;

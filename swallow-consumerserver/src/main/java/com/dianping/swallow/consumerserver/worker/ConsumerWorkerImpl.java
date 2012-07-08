@@ -19,17 +19,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dianping.hawk.jmx.HawkJMXUtil;
-import com.dianping.swallow.common.consumer.ACKHandlerType;
 import com.dianping.swallow.common.consumer.ConsumerType;
-import com.dianping.swallow.common.dao.AckDAO;
-import com.dianping.swallow.common.dao.MessageDAO;
+import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
+import com.dianping.swallow.common.internal.dao.AckDAO;
+import com.dianping.swallow.common.internal.dao.MessageDAO;
+import com.dianping.swallow.common.internal.message.SwallowMessage;
+import com.dianping.swallow.common.internal.packet.PktMessage;
+import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
+import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
+import com.dianping.swallow.common.internal.threadfactory.PullStrategy;
+import com.dianping.swallow.common.internal.util.MongoUtils;
 import com.dianping.swallow.common.message.Message;
-import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.packet.PktMessage;
-import com.dianping.swallow.common.threadfactory.DefaultPullStrategy;
-import com.dianping.swallow.common.threadfactory.MQThreadFactory;
-import com.dianping.swallow.common.threadfactory.PullStrategy;
-import com.dianping.swallow.common.util.MongoUtils;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 

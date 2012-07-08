@@ -17,10 +17,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
-import com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl;
-import com.dianping.swallow.common.dao.impl.mongodb.MongoClient;
+import com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl;
+import com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient;
+import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.message.Message;
-import com.dianping.swallow.common.message.SwallowMessage;
 
 @ContextConfiguration(loader = SpringockitoContextLoader.class, locations = "classpath:applicationContext.xml")
 public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {

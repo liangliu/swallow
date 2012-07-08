@@ -1,6 +1,6 @@
 package com.dianping.swallow.common.producer.exceptions;
 
-public class NullContentException extends Exception{
+public class NullContentException extends RuntimeException{
    private static final long serialVersionUID = -6251131303134970375L;
 
    @Override

@@ -1,6 +1,6 @@
 package com.dianping.swallow.common.producer.exceptions;
 
-public class TopicNameInvalidException extends Exception {
+public class TopicNameInvalidException extends RuntimeException {
 
    private static final long serialVersionUID = 5536528063495154789L;
 

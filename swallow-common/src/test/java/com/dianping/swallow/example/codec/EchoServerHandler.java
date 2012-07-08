@@ -5,7 +5,7 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.dianping.swallow.example.message.DemoBean;
-import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.internal.message.SwallowMessage;
 
 public class EchoServerHandler extends SimpleChannelUpstreamHandler {
 

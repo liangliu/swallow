@@ -1,6 +1,6 @@
 package com.dianping.swallow.common.producer.exceptions;
 
-public class RemoteServiceDownException extends Exception{
+public class RemoteServiceDownException extends RuntimeException{
    private static final long serialVersionUID = -8885826779834945921L;
 
    @Override

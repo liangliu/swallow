@@ -5,7 +5,7 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.common.dao.HeartbeatDAO;
+import com.dianping.swallow.common.internal.dao.HeartbeatDAO;
 import com.dianping.swallow.consumerserver.Heartbeater;
 
 public class MongoHeartbeater implements Heartbeater {

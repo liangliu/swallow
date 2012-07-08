@@ -17,8 +17,8 @@ package com.dianping.swallow.producer;
 
 import java.util.Map;
 
+import com.dianping.swallow.common.internal.producer.MQService;
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.common.producer.MQService;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 

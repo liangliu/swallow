@@ -2,7 +2,7 @@ package com.dianping.swallow.consumerserver.worker;
 
 import org.jboss.netty.channel.Channel;
 
-import com.dianping.swallow.common.consumer.ACKHandlerType;
+import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
 
 public interface ConsumerWorker{
 

@@ -15,48 +15,49 @@ import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.common.codec.JsonDecoder;
-import com.dianping.swallow.common.codec.JsonEncoder;
-import com.dianping.swallow.common.config.DynamicConfig;
-import com.dianping.swallow.common.config.impl.lion.LionDynamicConfig;
 import com.dianping.swallow.common.consumer.ConsumerType;
+import com.dianping.swallow.common.internal.codec.JsonDecoder;
+import com.dianping.swallow.common.internal.codec.JsonEncoder;
+import com.dianping.swallow.common.internal.config.DynamicConfig;
+import com.dianping.swallow.common.internal.config.impl.LionDynamicConfig;
+import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
+import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.common.packet.PktConsumerMessage;
-import com.dianping.swallow.common.packet.PktMessage;
-import com.dianping.swallow.consumer.internal.ConfigManager;
-import com.dianping.swallow.consumer.internal.MessageClientHandler;
+import com.dianping.swallow.consumer.internal.ConsumerSlaveThread;
+import com.dianping.swallow.consumer.internal.config.ConfigManager;
+import com.dianping.swallow.consumer.internal.netty.MessageClientHandler;
 
 public class ConsumerClient {
 
-   private static final Logger LOG         = LoggerFactory.getLogger(ConsumerClient.class);
-   
-   private static final String LION_CONFIG_FILENAME = "cClientLion.properties";
-   
-   private static final String           TOPICNAME_DEFAULT                                = "default";
+   private static final Logger LOG                          = LoggerFactory.getLogger(ConsumerClient.class);
+
+   private static final String LION_CONFIG_FILENAME         = "cClientLion.properties";
+
+   private static final String TOPICNAME_DEFAULT            = "default";
 
    private String              consumerId;
-   
-   private Set<String> neededMessageType;
-   
+
+   private Set<String>         neededMessageType;
+
    private Destination         dest;
 
    private ClientBootstrap     bootstrap;
 
    private MessageListener     listener;
-   
+
    private final static String LION_KEY_CONSUMER_SERVER_URI = "swallow.consumer.consumerServerURI";
 
-   private ConsumerType        consumerType = ConsumerType.AT_MOST;
+   private ConsumerType        consumerType                 = ConsumerType.AT_MOST;
 
    private InetSocketAddress   masterAddress;
 
    private InetSocketAddress   slaveAddress;
 
-   private ConfigManager                   configManager             = ConfigManager.getInstance();
-   
-   private Boolean             needClose   = Boolean.FALSE;
+   private ConfigManager       configManager                = ConfigManager.getInstance();
+
+   private boolean             needClose                    = false;
    //consumerClient默认是1个线程处理，如需线程池处理，则另外设置线程数目。
-   private int                 threadCount = 1;
+   private int                 threadCount                  = 1;
 
    public Set<String> getNeededMessageType() {
       return neededMessageType;
@@ -66,15 +67,15 @@ public class ConsumerClient {
       this.neededMessageType = neededMessageType;
    }
 
-   public Boolean getNeedClose() {
+   public boolean getNeedClose() {
       return needClose;
    }
-   
+
    public ConfigManager getConfigManager() {
       return configManager;
    }
 
-   public void setNeedClose(Boolean needClose) {
+   public void setNeedClose(boolean needClose) {
       this.needClose = needClose;
    }
 
@@ -128,12 +129,13 @@ public class ConsumerClient {
       String swallowCAddress = getSwallowCAddress(topicName);
       string2Address(swallowCAddress);
    }
+
    public ConsumerClient(String topicName) {
       this.dest = Destination.topic(topicName);
       String swallowCAddress = getSwallowCAddress(topicName);
       string2Address(swallowCAddress);
    }
-   
+
    /**
     * 开始连接服务器，同时把连slave的线程启起来。
     */
@@ -148,11 +150,11 @@ public class ConsumerClient {
       while (true) {
          synchronized (bootstrap) {
             ChannelFuture future = bootstrap.connect(masterAddress);
-            try{
+            try {
                future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！     
-            }catch(Exception e){
+            } catch (Exception e) {
                LOG.info("something wrong!", e);
-            } 
+            }
          }
          try {
             Thread.sleep(configManager.getConnectMasterInterval());
@@ -193,15 +195,15 @@ public class ConsumerClient {
 
    }
 
-   private String getSwallowCAddress(String topicName){
+   private String getSwallowCAddress(String topicName) {
       DynamicConfig dynamicConfig = new LionDynamicConfig(LION_CONFIG_FILENAME);
       String lionValue = dynamicConfig.get(LION_KEY_CONSUMER_SERVER_URI);
       return getAddressByParseLionValue(lionValue, topicName);
    }
-   private String getAddressByParseLionValue(String lionValue, String topicName){
+
+   private String getAddressByParseLionValue(String lionValue, String topicName) {
       String swallowAddress = null;
-      label:
-      for (String topicNameToAddress : lionValue.split(";")) {
+      label: for (String topicNameToAddress : lionValue.split(";")) {
          String[] splits = topicNameToAddress.split("=");
          String address = splits[1];
          String topicNameStr = splits[0];
@@ -209,7 +211,7 @@ public class ConsumerClient {
             if (TOPICNAME_DEFAULT.equals(tempTopicName)) {
                swallowAddress = address;
             }
-            if(topicName.equals(tempTopicName)){
+            if (topicName.equals(tempTopicName)) {
                swallowAddress = address;
                break label;
             }

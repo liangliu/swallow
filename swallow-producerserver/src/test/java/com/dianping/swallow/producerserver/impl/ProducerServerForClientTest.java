@@ -16,20 +16,20 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Matchers;
 
-import com.dianping.swallow.common.config.DynamicConfig;
-import com.dianping.swallow.common.config.impl.lion.LionDynamicConfig;
-import com.dianping.swallow.common.dao.MessageDAO;
-import com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl;
-import com.dianping.swallow.common.dao.impl.mongodb.MongoClient;
+import com.dianping.swallow.common.internal.config.DynamicConfig;
+import com.dianping.swallow.common.internal.config.impl.LionDynamicConfig;
+import com.dianping.swallow.common.internal.dao.MessageDAO;
+import com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl;
+import com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient;
+import com.dianping.swallow.common.internal.message.SwallowMessage;
+import com.dianping.swallow.common.internal.packet.PacketType;
+import com.dianping.swallow.common.internal.packet.PktMessage;
+import com.dianping.swallow.common.internal.packet.PktProducerGreet;
+import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
+import com.dianping.swallow.common.internal.util.SHAUtil;
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.packet.PacketType;
-import com.dianping.swallow.common.packet.PktMessage;
-import com.dianping.swallow.common.packet.PktProducerGreet;
-import com.dianping.swallow.common.packet.PktSwallowPACK;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
-import com.dianping.swallow.common.util.SHAUtil;
 
 public class ProducerServerForClientTest {
 

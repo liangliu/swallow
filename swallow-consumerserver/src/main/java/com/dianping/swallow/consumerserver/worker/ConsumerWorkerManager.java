@@ -8,10 +8,10 @@ import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.common.consumer.ACKHandlerType;
-import com.dianping.swallow.common.dao.AckDAO;
-import com.dianping.swallow.common.dao.MessageDAO;
-import com.dianping.swallow.common.threadfactory.MQThreadFactory;
+import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
+import com.dianping.swallow.common.internal.dao.AckDAO;
+import com.dianping.swallow.common.internal.dao.MessageDAO;
+import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
 import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;

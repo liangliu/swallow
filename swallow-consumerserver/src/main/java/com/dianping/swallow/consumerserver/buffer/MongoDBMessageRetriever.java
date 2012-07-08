@@ -7,8 +7,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.common.dao.MessageDAO;
-import com.dianping.swallow.common.message.SwallowMessage;
+import com.dianping.swallow.common.internal.dao.MessageDAO;
+import com.dianping.swallow.common.internal.message.SwallowMessage;
 
 public class MongoDBMessageRetriever implements MessageRetriever {
    private static final Logger LOG       = LoggerFactory.getLogger(MongoDBMessageRetriever.class);
