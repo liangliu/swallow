@@ -19,7 +19,7 @@ public class BeanToJson {
       map.put("property-key", "property-value");
       message.setProperties(map);
 
-      JsonBinder jsonBinder = JsonBinder.buildBinder();
+      JsonBinder jsonBinder = JsonBinder.getNonEmptyBinder();
       String json = jsonBinder.toJson(message);
       System.out.println(json);
 

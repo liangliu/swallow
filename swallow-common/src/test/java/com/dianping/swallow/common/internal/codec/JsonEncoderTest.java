@@ -26,7 +26,7 @@ public class JsonEncoderTest {
       JsonEncoder jsonEncoder = new JsonEncoder(SwallowMessage.class);
       ChannelBuffer channelBuffer = (ChannelBuffer) jsonEncoder.encode(null, null, msg);
       //解码
-      JsonBinder jsonBinder = JsonBinder.buildBinder();
+      JsonBinder jsonBinder = JsonBinder.getNonEmptyBinder();
       SwallowMessage actualMsg = jsonBinder.fromJson(channelBuffer.toString(Charset.forName("UTF-8")),
             SwallowMessage.class);
 

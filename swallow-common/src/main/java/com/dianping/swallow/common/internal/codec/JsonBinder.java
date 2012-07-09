@@ -19,9 +19,20 @@ public class JsonBinder {
 
    private static Logger logger = LoggerFactory.getLogger(JsonBinder.class);
 
-   private ObjectMapper  mapper;
+   private static class NonEmptySingletonHolder {
+      public static final JsonBinder nonEmptyBinder = new JsonBinder(Include.NON_EMPTY);
+   }
 
-   public JsonBinder(Include include) {
+   /**
+    * 获取只输出非Null且非Empty(如List.isEmpty)的属性到Json字符串的Mapper,建议在外部接口中使用.
+    */
+   public static JsonBinder getNonEmptyBinder() {
+      return NonEmptySingletonHolder.nonEmptyBinder;
+   }
+
+   private ObjectMapper mapper;
+
+   private JsonBinder(Include include) {
       mapper = new ObjectMapper();
       //设置输出时包含属性的风格
       mapper.setSerializationInclusion(include);
@@ -30,17 +41,9 @@ public class JsonBinder {
    }
 
    /**
-    * 创建只输出非Null且非Empty(如List.isEmpty)的属性到Json字符串的Mapper,建议在外部接口中使用.
-    */
-   public static JsonBinder buildBinder() {
-      return new JsonBinder(Include.NON_EMPTY);
-   }
-
-   /**
     * Object可以是POJO，也可以是Collection或数组。 如果对象为Null, 返回"null". 如果集合为空集合, 返回"[]".
     */
    public String toJson(Object object) {
-
       try {
          return mapper.writeValueAsString(object);
       } catch (IOException e) {
@@ -60,7 +63,6 @@ public class JsonBinder {
       if (jsonString == null || "".equals(jsonString.trim())) {
          return null;
       }
-
       try {
          return mapper.readValue(jsonString, clazz);
       } catch (IOException e) {

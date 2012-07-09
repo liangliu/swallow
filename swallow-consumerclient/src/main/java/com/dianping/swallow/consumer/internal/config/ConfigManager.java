@@ -41,7 +41,7 @@ public class ConfigManager {
    }
 
    private ConfigManager() {
-      this("cClient.properties");
+      this("swallow-consumerclient.properties");
    }
 
    @SuppressWarnings("rawtypes")

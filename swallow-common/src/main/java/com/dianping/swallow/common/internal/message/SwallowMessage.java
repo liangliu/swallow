@@ -78,7 +78,7 @@ public class SwallowMessage implements Serializable, Message {
    }
 
    public <T> T transferContentToBean(Class<T> clazz) {
-      JsonBinder jsonBinder = JsonBinder.buildBinder();
+      JsonBinder jsonBinder = JsonBinder.getNonEmptyBinder();
       return jsonBinder.fromJson(content, clazz);
    }
 
@@ -90,7 +90,7 @@ public class SwallowMessage implements Serializable, Message {
       if (content instanceof String) {
          this.content = (String) content;
       } else {
-         JsonBinder jsonBinder = JsonBinder.buildBinder();
+         JsonBinder jsonBinder = JsonBinder.getNonEmptyBinder();
          this.content = jsonBinder.toJson(content);
       }
    }
