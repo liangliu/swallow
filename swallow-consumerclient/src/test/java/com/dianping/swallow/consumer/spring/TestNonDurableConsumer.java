@@ -13,7 +13,7 @@ public class TestNonDurableConsumer {
     * @param args
     */
    public static void main(String[] args) {
-      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-cClientTest.xml" });
+      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumerclientTest.xml" });
       final ConsumerClientImpl ConsumerClient = (ConsumerClientImpl) ctx.getBean("nonDurableConsumerClient");
       ConsumerClient.setListener(new MessageListener() {
 
@@ -22,6 +22,12 @@ public class TestNonDurableConsumer {
             //用户得到SwallowMessage
 
             System.out.println(swallowMessage.getMessageId() + ":" + swallowMessage.getContent());
+            try {
+               Thread.sleep(100);
+            } catch (InterruptedException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            }
          }
       });
       ConsumerClient.start();

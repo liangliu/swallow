@@ -23,6 +23,12 @@ public class TestConsumer {
             //用户得到SwallowMessage
 
             System.out.println(swallowMessage.getMessageId() + ":" + swallowMessage.getContent());
+            try {
+               Thread.sleep(100);
+            } catch (InterruptedException e) {
+               // TODO Auto-generated catch block
+               e.printStackTrace();
+            }
          }
       });
       consumerClient.start();
