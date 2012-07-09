@@ -21,16 +21,17 @@ import com.mongodb.DBObject;
 public class MessageDAOImpl implements MessageDAO {
 
    @SuppressWarnings("unused")
-   private static final Logger LOG            = LoggerFactory.getLogger(MessageDAOImpl.class);
+   private static final Logger LOG                 = LoggerFactory.getLogger(MessageDAOImpl.class);
 
-   public static final String  ID             = "_id";
-   public static final String  CONTENT        = "c";
-   public static final String  VERSION        = "v";
-   public static final String  SHA1           = "s";
-   public static final String  GENERATED_TIME = "gt";
-   public static final String  PROPERTIES     = "p";
-   public static final String  TYPE           = "t";
-   public static final String  SOURCE_IP      = "si";
+   public static final String  ID                  = "_id";
+   public static final String  CONTENT             = "c";
+   public static final String  VERSION             = "v";
+   public static final String  SHA1                = "s";
+   public static final String  GENERATED_TIME      = "gt";
+   public static final String  PROPERTIES          = "p";
+   public static final String  INTERNAL_PROPERTIES = "_p";
+   public static final String  TYPE                = "t";
+   public static final String  SOURCE_IP           = "si";
 
    private MongoClient         mongoClient;
 
@@ -126,6 +127,11 @@ public class MessageDAOImpl implements MessageDAO {
          HashMap<String, String> properties = new HashMap<String, String>(propertiesBasicDBObject);
          swallowMessage.setProperties(properties);//properties
       }
+      Map<String, String> internalPropertiesBasicDBObject = (Map<String, String>) result.get(INTERNAL_PROPERTIES);//mongo返回是一个BasicDBObject，转化成jdk的HashMap，以免某些序列化方案在反序列化需要依赖BasicDBObject
+      if (internalPropertiesBasicDBObject != null) {
+         HashMap<String, String> properties = new HashMap<String, String>(internalPropertiesBasicDBObject);
+         swallowMessage.setInternalProperties(properties);//properties
+      }
       swallowMessage.setSha1((String) result.get(SHA1));//sha1
       swallowMessage.setType((String) result.get(TYPE));//type
       swallowMessage.setSourceIp((String) result.get(SOURCE_IP));//sourceIp
@@ -155,6 +161,11 @@ public class MessageDAOImpl implements MessageDAO {
       Map<String, String> properties = message.getProperties();
       if (properties != null && properties.size() > 0) {
          builder.add(PROPERTIES, properties);
+      }
+      //internalProperties
+      Map<String, String> internalProperties = message.getInternalProperties();
+      if (internalProperties != null && internalProperties.size() > 0) {
+         builder.add(INTERNAL_PROPERTIES, internalProperties);
       }
       //sha1
       String sha1 = message.getSha1();
