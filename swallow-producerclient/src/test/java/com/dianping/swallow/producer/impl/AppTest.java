@@ -46,12 +46,12 @@ public class AppTest {
 
          //设置发送消息时的选项
          Map<String, String> properties = new HashMap<String, String>();
-         properties.put("zip", "true");
+         properties.put("zip", "false");
 
          //构造Producer
          ProducerImpl producer = null;
          try {
-            producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("songtong"), pOptions);
+            producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("xx"), pOptions);
          } catch (Exception e) {
             e.printStackTrace();
          }
@@ -63,14 +63,14 @@ public class AppTest {
 
          //发送消息
          try {
-            for (int i = 0; i < MAX_NUM; i++) {
-               //            while (true) {
+//            for (int i = 0; i < MAX_NUM; i++) {
+                           while (true) {
                //发送消息
                strRet = producer.sendMessage("" + (++sentNum));
 
                //发送频率
                try {
-                  Thread.sleep(5000);
+                  Thread.sleep(1000);
                } catch (Exception e) {
                }
 
