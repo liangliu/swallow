@@ -17,7 +17,7 @@ import com.google.common.collect.Maps;
  */
 public class JsonBinderTest {
 
-   private static JsonBinder binder = JsonBinder.buildBinder();
+   private static JsonBinder binder = JsonBinder.getNonEmptyBinder();
 
    /**
     * 序列化对象/集合到Json字符串.
@@ -95,7 +95,7 @@ public class JsonBinderTest {
 
    @Test
    public void error() {
-      JsonBinder normalBinder = JsonBinder.buildBinder();
+      JsonBinder normalBinder = JsonBinder.getNonEmptyBinder();
       ErrorBean bean = new ErrorBean();
       assertNull(normalBinder.toJson(bean));
       assertNull(normalBinder.fromJson("error json string", ErrorBean.class));

@@ -41,7 +41,7 @@ public class JsonDecoder extends OneToOneDecoder {
 
       ChannelBuffer buf = (ChannelBuffer) msg;
       String json = buf.toString(Charset.forName("UTF-8"));
-      JsonBinder jsonBinder = JsonBinder.buildBinder();
+      JsonBinder jsonBinder = JsonBinder.getNonEmptyBinder();
       return jsonBinder.fromJson(json, clazz);
    }
 

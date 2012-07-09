@@ -35,7 +35,7 @@ public class JsonEncoder extends OneToOneEncoder {
    @Override
    protected Object encode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
       if (msg.getClass() == clazz) {// 对Message进行编码
-         JsonBinder jsonBinder = JsonBinder.buildBinder();
+         JsonBinder jsonBinder = JsonBinder.getNonEmptyBinder();
          String json = jsonBinder.toJson(msg);
          byte[] jsonBytes = json.getBytes(Charset.forName("UTF-8"));
          ChannelBuffer channelBuffer = ChannelBuffers.buffer(jsonBytes.length);
