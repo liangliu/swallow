@@ -52,7 +52,7 @@ public class AppTest {
          //构造Producer
          ProducerImpl producer = null;
          try {
-            producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("songtong"), pOptions);
+            producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("xx"), pOptions);
          } catch (Exception e) {
             e.printStackTrace();
          }
@@ -63,7 +63,7 @@ public class AppTest {
          String strRet = ""; //发送消息的返回值
 
          //发送消息
-         //            while (true) {
+         //         while (true) {
          for (int i = 0; i < MAX_NUM; i++) {
             try {
                //发送消息
@@ -77,13 +77,13 @@ public class AppTest {
             } catch (NullContentException e1) {
                e1.printStackTrace();
             }
-            
+
             //发送频率
             try {
-               Thread.sleep(5000);
+               Thread.sleep(1000);
             } catch (Exception e) {
             }
-            
+
             //打印内容
             System.out.println(sentNum + ": " + strRet);
          }

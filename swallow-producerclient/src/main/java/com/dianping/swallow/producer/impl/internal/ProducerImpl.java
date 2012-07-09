@@ -240,19 +240,19 @@ public class ProducerImpl implements Producer {
             swallowMsg.setType(messageType);
          if (properties != null)
             swallowMsg.setProperties(properties);
-         //压缩选项为真：对通过SwallowMessage类转换过的json字符串进行压缩，压缩成功时将swl.zip=true写入properties，
-         //               压缩失败时将swl.zip=false写入properties
-         //压缩选项为假：不做任何操作，properties中将不存在key为zip的项
+         //压缩选项为真：对通过SwallowMessage类转换过的json字符串进行压缩，压缩成功时将compress=gzip写入InternalProperties，
+         //               压缩失败时将compress=failed写入InternalProperties
+         //压缩选项为假：不做任何操作，InternalProperties中将不存在key为zip的项
          if (zipMessage) {
-            zipProperties = (properties == null) ? (new HashMap<String, String>()) : properties;
+            zipProperties = new HashMap<String, String>();
             try {
                swallowMsg.setContent(ZipUtil.zip(swallowMsg.getContent()));
-               zipProperties.put("swl.zip", "true");
+               zipProperties.put("compress", "gzip");
             } catch (IOException e) {
                logger.error("[Compress message failed.]", e);
-               zipProperties.put("swl.zip", "false");
+               zipProperties.put("compress", "failed");
             }
-            swallowMsg.setProperties(zipProperties);
+            swallowMsg.setInternalProperties(zipProperties);
          }
 
          //构造packet
