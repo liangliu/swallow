@@ -15,7 +15,7 @@ public class TestConsumer {
     */
    public static void main(String[] args) {
       ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumerclientTest.xml" });
-      final ConsumerClient consumerClient = (ConsumerClientImpl) ctx.getBean("consumerClient");
+      final ConsumerClient consumerClient = (ConsumerClientImpl) ctx.getBean("consumerClient");      
       consumerClient.setListener(new MessageListener() {
 
          @Override
@@ -25,7 +25,7 @@ public class TestConsumer {
             System.out.println(swallowMessage.getMessageId() + ":" + swallowMessage.getContent());
          }
       });
-      consumerClient.beginConnect();
+      consumerClient.start();
 
    }
 

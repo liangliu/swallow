@@ -141,7 +141,7 @@ public class ConsumerClientImpl implements ConsumerClient{
    /**
     * 开始连接服务器，同时把连slave的线程启起来。
     */
-   public void beginConnect() {
+   public void start() {
       init();
       ConsumerSlaveThread slave = new ConsumerSlaveThread();
       slave.setBootstrap(bootstrap);

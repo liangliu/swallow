@@ -1,5 +1,6 @@
 package com.dianping.swallow.consumerserver.worker;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -29,6 +30,7 @@ import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
 import com.dianping.swallow.common.internal.threadfactory.PullStrategy;
 import com.dianping.swallow.common.internal.util.MongoUtils;
+import com.dianping.swallow.common.internal.util.ZipUtil;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
@@ -252,6 +254,14 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                      }
                   }
                   if (message != null) {
+                     //需要解压缩的话，则进行解压缩
+                     if("gzip".equals(message.getInternalProperties().get("compress"))){
+                        try {
+                           message.setContent(ZipUtil.unzip(message.getContent()));
+                        } catch (IOException e) {
+                           LOG.error("ZipUtil.unzip error!", e);
+                        }
+                     }
                      cachedMessages.add(new PktMessage(consumerInfo.getConsumerId().getDest(), message));
                   }
                }
