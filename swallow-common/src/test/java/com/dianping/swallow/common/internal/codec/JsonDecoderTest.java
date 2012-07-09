@@ -25,7 +25,7 @@ public class JsonDecoderTest {
       HashMap<String, String> map = new HashMap<String, String>();
       map.put("property-key", "property-value");
       message.setProperties(map);
-      JsonBinder jsonBinder = JsonBinder.buildBinder();
+      JsonBinder jsonBinder = JsonBinder.getNonEmptyBinder();
       String json = jsonBinder.toJson(message);
       //使用HessianDecoder解码
       JsonDecoder jsonDecoder = new JsonDecoder(SwallowMessage.class);
