@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-
 public class ZipUtil {
    /**
     * 压缩字符串
@@ -20,7 +19,7 @@ public class ZipUtil {
          return str;
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       GZIPOutputStream gzip = new GZIPOutputStream(out);
-      gzip.write(str.getBytes());
+      gzip.write(str.getBytes("UTF-8"));
       gzip.close();
       return out.toString("ISO-8859-1");
    }
@@ -43,7 +42,12 @@ public class ZipUtil {
       while ((n = gunzip.read(buffer)) >= 0) {
          out.write(buffer, 0, n);
       }
-      return out.toString();
+      return out.toString("UTF-8");
+   }
+   
+   public static void main(String[] args) throws IOException {
+      System.out.println(zip("测试中文Encoding。"));
+      System.out.println(unzip(zip("测试中文Encoding。")));
    }
 
 }

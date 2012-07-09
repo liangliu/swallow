@@ -17,6 +17,8 @@ public class SwallowMessage implements Serializable, Message {
 
    private Map<String, String> properties;
 
+   private Map<String, String> internalProperties;
+
    private String              version;
 
    private String              content;
@@ -57,6 +59,14 @@ public class SwallowMessage implements Serializable, Message {
 
    public void setProperties(Map<String, String> properties) {
       this.properties = properties;
+   }
+
+   public Map<String, String> getInternalProperties() {
+      return internalProperties;
+   }
+
+   public void setInternalProperties(Map<String, String> internalProperties) {
+      this.internalProperties = internalProperties;
    }
 
    public String getSha1() {
