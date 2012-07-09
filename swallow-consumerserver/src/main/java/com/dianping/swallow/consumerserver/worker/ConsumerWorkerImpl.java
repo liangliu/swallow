@@ -233,68 +233,22 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    }
 
    public void sendMessageByPollFreeChannelQueue() {
+      //创建消息缓冲QUEUE
       if (messageQueue == null) {
          long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid);
          messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage, messageType);
       }
-      //线程刚起，第一次调用的时候，需要先去mongo中获取maxMessageId
       try {
          while (getMessageisAlive) {
             Channel channel = freeChannels.take();
+            //如果未连接，则不做处理
             if (channel.isConnected()) {
-
                if (cachedMessages.isEmpty()) {
-                  SwallowMessage message = null;
-                  while (getMessageisAlive) {
-                     //从blockQueue中获取消息
-                     message = (SwallowMessage) messageQueue.poll(pullStgy.fail(false), TimeUnit.MILLISECONDS);
-                     if (message != null) {
-                        pullStgy.succeess();
-                        break;
-                     }
-                  }
-                  if (message != null) {
-                     //需要解压缩的话，则进行解压缩
-                     if("gzip".equals(message.getInternalProperties().get("compress"))){
-                        try {
-                           message.setContent(ZipUtil.unzip(message.getContent()));
-                        } catch (IOException e) {
-                           LOG.error("ZipUtil.unzip error!", e);
-                        }
-                     }
-                     cachedMessages.add(new PktMessage(consumerInfo.getConsumerId().getDest(), message));
-                  }
+                  putMsg2CachedMsgFromMsgQueue();                  
                }
-               //收到close命令后,可能没有取得消息,此时,message为null,不做任何事情.此线程结束.
+               //收到close命令后,可能没有取得消息,此时,cachedMessages仍然可能为null
                if (!cachedMessages.isEmpty()) {
-                  PktMessage preparedMessage = cachedMessages.poll();
-                  Long messageId = preparedMessage.getContent().getMessageId();
-                  //如果consumer是收到ACK之前更新messageId的类型
-                  if (ConsumerType.AT_MOST.equals(consumerInfo.getConsumerType())) {
-                     while (true) {
-                        try {
-                           ackDao.add(topicName, consumerid, messageId);
-                           break;
-                        } catch (Exception e) {
-                           LOG.error("ackDao.add wrong!", e);
-                           Thread.sleep(configManager.getRetryIntervalWhenMongoException());
-                        }
-                     }
-                  }
-                  try {
-                     channel.write(preparedMessage);
-                     if (ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
-                        Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
-                        if (messageMap == null) {
-                           messageMap = new ConcurrentHashMap<PktMessage, Boolean>();
-                           waitAckMessages.put(channel, messageMap);
-                        }
-                        messageMap.put(preparedMessage, Boolean.TRUE);
-                     }
-                  } catch (Exception e) {
-                     LOG.error(consumerInfo.toString() + "：channel write error.", e);
-                     cachedMessages.add(preparedMessage);
-                  }
+                  sendMsgFromCachedMessages(channel);                 
                }
 
             }
@@ -304,6 +258,63 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       }
    }
    
+   private void sendMsgFromCachedMessages(Channel channel) throws InterruptedException {
+      PktMessage preparedMessage = cachedMessages.poll();
+      Long messageId = preparedMessage.getContent().getMessageId();
+      //如果是AT_MOST模式，收到ACK之前更新messageId的类型
+      if (ConsumerType.AT_MOST.equals(consumerInfo.getConsumerType())) {
+         while (true) {
+            try {
+               ackDao.add(topicName, consumerid, messageId);
+               break;
+            } catch (Exception e) {
+               LOG.error("ackDao.add wrong!", e);
+               Thread.sleep(configManager.getRetryIntervalWhenMongoException());
+            }
+         }
+      }
+      try {
+         channel.write(preparedMessage);
+         //如果是AT_LEAST模式，发送完后，在server端记录已发送但未收到ACK的消息记录
+         if (ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
+            Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
+            if (messageMap == null) {
+               messageMap = new ConcurrentHashMap<PktMessage, Boolean>();
+               waitAckMessages.put(channel, messageMap);
+            }
+            messageMap.put(preparedMessage, Boolean.TRUE);
+         }
+      } catch (Exception e) {
+         LOG.error(consumerInfo.toString() + "：channel write error.", e);
+         cachedMessages.add(preparedMessage);
+      }
+      
+   }
+
+   private void putMsg2CachedMsgFromMsgQueue() throws InterruptedException {
+      SwallowMessage message = null;
+      while (getMessageisAlive) {
+         //从blockQueue中获取消息
+         message = (SwallowMessage) messageQueue.poll(pullStgy.fail(false), TimeUnit.MILLISECONDS);
+         if (message != null) {
+            pullStgy.succeess();
+            break;
+         }
+      }
+      if (message != null) {
+         //如果是压缩后的消息，则进行解压缩
+         if("gzip".equals(message.getInternalProperties().get("compress"))){
+            try {
+               message.setContent(ZipUtil.unzip(message.getContent()));
+            } catch (IOException e) {
+               LOG.error("ZipUtil.unzip error!", e);
+            }
+         }
+         cachedMessages.add(new PktMessage(consumerInfo.getConsumerId().getDest(), message));
+      }
+      
+   }
+
    @Override
    public boolean allChannelDisconnected() {
       return started && connectedChannels.isEmpty();
