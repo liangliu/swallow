@@ -17,11 +17,7 @@
 		<property name="threadCount" value="10" />
 		<property name="consumerType" value="AT_LEAST" />
 	</bean>
-	<!--  bean id="consumertype" class="com.dianping.swallow.common.consumer.ConsumerType" >
-	<constructor-arg>
-            <value>AT_LEAST</value>
-        </constructor-arg>
-    </bean>-->
+
 	<bean id="nonDurableConsumerClient" class="com.dianping.swallow.consumer.impl.ConsumerClientImpl">
         <constructor-arg>
             <value>xx</value>

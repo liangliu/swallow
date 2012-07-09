@@ -50,7 +50,7 @@ public class SlaveBootStrap {
       //启动Cat
       Cat.initialize(new File("/data/appdatas/cat/client.xml"));
       
-      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-cServer.xml" });
+      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumerserver.xml" });
       ConfigManager configManager = ConfigManager.getInstance();
       
       final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
