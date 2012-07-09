@@ -233,12 +233,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    public void sendMessageByPollFreeChannelQueue() {
       if (messageQueue == null) {
          long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid);
-         if(messageType == null){
-            messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage);
-         }else{
-            messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage, messageType);
-         }
-         
+         messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage, messageType);
       }
       //线程刚起，第一次调用的时候，需要先去mongo中获取maxMessageId
       try {
@@ -246,7 +241,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
             Channel channel = freeChannels.take();
             if (channel.isConnected()) {
 
-               if (cachedMessages.size() == 0) {
+               if (cachedMessages.isEmpty()) {
                   SwallowMessage message = null;
                   while (getMessageisAlive) {
                      //从blockQueue中获取消息
@@ -261,7 +256,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                   }
                }
                //收到close命令后,可能没有取得消息,此时,message为null,不做任何事情.此线程结束.
-               if (cachedMessages.size() != 0) {
+               if (!cachedMessages.isEmpty()) {
                   PktMessage preparedMessage = cachedMessages.poll();
                   Long messageId = preparedMessage.getContent().getMessageId();
                   //如果consumer是收到ACK之前更新messageId的类型
