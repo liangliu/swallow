@@ -6,6 +6,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.consumer.ConsumerClient;
 import com.dianping.swallow.consumer.MessageListener;
+import com.dianping.swallow.consumer.impl.ConsumerClientImpl;
 
 public class TestConsumer {
 
@@ -13,9 +14,9 @@ public class TestConsumer {
     * @param args
     */
    public static void main(String[] args) {
-      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-cClientTest.xml" });
-      final ConsumerClient ConsumerClient = (ConsumerClient) ctx.getBean("consumerClient");
-      ConsumerClient.setListener(new MessageListener() {
+      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumerclientTest.xml" });
+      final ConsumerClient consumerClient = (ConsumerClientImpl) ctx.getBean("consumerClient");
+      consumerClient.setListener(new MessageListener() {
 
          @Override
          public void onMessage(Message swallowMessage) {
@@ -24,7 +25,7 @@ public class TestConsumer {
             System.out.println(swallowMessage.getMessageId() + ":" + swallowMessage.getContent());
          }
       });
-      ConsumerClient.beginConnect();
+      consumerClient.beginConnect();
 
    }
 

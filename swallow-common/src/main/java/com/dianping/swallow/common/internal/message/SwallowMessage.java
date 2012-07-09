@@ -111,12 +111,12 @@ public class SwallowMessage implements Serializable, Message {
       this.sourceIp = sourceIp;
    }
 
+
    @Override
    public String toString() {
-      return String
-            .format(
-                  "SwallowMessage [generatedTime=%s, messageId=%s, properties=%s, version=%s, content=%s, sha1=%s, type=%s, sourceIp=%s]",
-                  generatedTime, messageId, properties, version, content, sha1, type, sourceIp);
+      return "SwallowMessage [generatedTime=" + generatedTime + ", messageId=" + messageId + ", properties="
+            + properties + ", internalProperties=" + internalProperties + ", version=" + version + ", content="
+            + content + ", sha1=" + sha1 + ", type=" + type + ", sourceIp=" + sourceIp + "]";
    }
 
    @Override
@@ -169,6 +169,11 @@ public class SwallowMessage implements Serializable, Message {
          if (other.properties != null)
             return false;
       } else if (!properties.equals(other.properties))
+         return false;
+      if (internalProperties == null) {
+         if (other.internalProperties != null)
+            return false;
+      } else if (!internalProperties.equals(other.internalProperties))
          return false;
       if (sha1 == null) {
          if (other.sha1 != null)
