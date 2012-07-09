@@ -303,13 +303,15 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       }
       if (message != null) {
          //如果是压缩后的消息，则进行解压缩
-//         if("gzip".equals(message.getInternalProperties().get("compress"))){
-//            try {
-//               message.setContent(ZipUtil.unzip(message.getContent()));
-//            } catch (IOException e) {
-//               LOG.error("ZipUtil.unzip error!", e);
-//            }
-//         }
+         if(message.getInternalProperties() != null){
+            if("gzip".equals(message.getInternalProperties().get("compress"))){
+               try {
+                  message.setContent(ZipUtil.unzip(message.getContent()));
+               } catch (IOException e) {
+                  LOG.error("ZipUtil.unzip error!", e);
+               }
+            }
+         }        
          cachedMessages.add(new PktMessage(consumerInfo.getConsumerId().getDest(), message));
       }
       
