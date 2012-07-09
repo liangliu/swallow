@@ -24,7 +24,7 @@ public class TestNonDurableConsumer {
             System.out.println(swallowMessage.getMessageId() + ":" + swallowMessage.getContent());
          }
       });
-      ConsumerClient.beginConnect();
+      ConsumerClient.start();
 
    }
 

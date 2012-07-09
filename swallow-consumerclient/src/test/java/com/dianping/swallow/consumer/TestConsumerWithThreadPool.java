@@ -22,7 +22,7 @@ public class TestConsumerWithThreadPool {
             System.out.println(swallowMessage.getMessageId() + ":" + swallowMessage.getContent());
          }
       });
-      cClient.beginConnect();
+      cClient.start();
 
    }
 
