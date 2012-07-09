@@ -32,7 +32,7 @@ public class SwallowMessageTest {
       demoBean.setB("b");
       msg.setGeneratedTime(null);
       msg.setContent(demoBean);
-      Assert.assertEquals(1363116876, msg.hashCode());
+      Assert.assertEquals(32, msg.hashCode());
    }
 
    @Test
@@ -45,7 +45,7 @@ public class SwallowMessageTest {
       msg.setGeneratedTime(null);
       msg.setContent(demoBean);
       Assert.assertEquals(
-            "SwallowMessage [generatedTime=null, messageId=1, properties={property-key=property-value}, version=0.6.0, content={\"a\":1,\"b\":\"b\"}, sha1=sha-1 string, type=feed, sourceIp=localhost]",
+            "SwallowMessage [generatedTime=null, messageId=1, properties={property-key=property-value}, internalProperties={property-key=property-value}, version=0.6.0, content={\"a\":1,\"b\":\"b\"}, sha1=sha-1 string, type=feed, sourceIp=localhost]",
             msg.toString());
    }
 
@@ -56,7 +56,7 @@ public class SwallowMessageTest {
       SwallowMessage msg2 = createMessage();
       msg2.setGeneratedTime(null);
       Assert.assertTrue(msg.equals(msg2));
-      msg2.setVersion("1");
+      msg2.setMessageId(2L);
       Assert.assertFalse(msg.equals(msg2));
    }
 
@@ -72,6 +72,22 @@ public class SwallowMessageTest {
       Assert.assertTrue(msg.equalsWithoutMessageId(msg2));
    }
 
+   @Test
+   public void testGetters() throws Exception {
+      SwallowMessage msg = createMessage();
+      Assert.assertEquals("this is a SwallowMessage", msg.getContent());
+      Assert.assertEquals("sha-1 string", msg.getSha1());
+      Assert.assertEquals("localhost", msg.getSourceIp());
+      Assert.assertEquals("feed", msg.getType());
+      Assert.assertEquals("0.6.0", msg.getVersion());
+      Assert.assertNotNull(msg.getGeneratedTime());
+      HashMap<String, String> map = new HashMap<String, String>();
+      map.put("property-key", "property-value");
+      Assert.assertEquals(map, msg.getInternalProperties());
+      Assert.assertEquals(Long.valueOf(1L), msg.getMessageId());
+      Assert.assertEquals(map, msg.getProperties());
+   }
+
    private static SwallowMessage createMessage() {
       SwallowMessage message = new SwallowMessage();
       message.setMessageId(1L);
@@ -80,6 +96,7 @@ public class SwallowMessageTest {
       HashMap<String, String> map = new HashMap<String, String>();
       map.put("property-key", "property-value");
       message.setProperties(map);
+      message.setInternalProperties(map);
       message.setSha1("sha-1 string");
       message.setVersion("0.6.0");
       message.setType("feed");
