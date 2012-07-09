@@ -74,9 +74,9 @@ public class HandlerAsynchroMode {
                try {
                   leftRetryTimes--;
                   //TODO 去除debug状态
-                  if(logger.isDebugEnabled()){
-                     logger.debug("[AsyncroModeHandler]:[" + (defaultRetryTimes - leftRetryTimes) + " th send.]");
-                  }
+//                  if(logger.isDebugEnabled()){
+//                     logger.debug("[AsyncroModeHandler]:[" + (defaultRetryTimes - leftRetryTimes) + " th send.]");
+//                  }
                   remoteService.sendMessage(message);
                } catch (ServerDaoException e) {
                   //如果剩余重试次数>0，超时重试
@@ -91,9 +91,9 @@ public class HandlerAsynchroMode {
                   }
                   logger.error("[AsyncHandler]:[Message sent failed.][Reason=DAO]", e);
                   //TODO 去除debug状态
-                  if (logger.isDebugEnabled()) {
-                     logger.debug("Can not save message to DB.");
-                  }
+//                  if (logger.isDebugEnabled()) {
+//                     logger.debug("Can not save message to DB.");
+//                  }
                } catch (NetException e) {
                   if (leftRetryTimes > 0) {
                      try {
@@ -106,9 +106,9 @@ public class HandlerAsynchroMode {
                   }
                   logger.error("[AsyncHandler]:[Message sent failed.][Reason=Network]", e);
                   //TODO 去除debug状态
-                  if (logger.isDebugEnabled()) {
-                     logger.debug("Network is down.");
-                  }
+//                  if (logger.isDebugEnabled()) {
+//                     logger.debug("Network is down.");
+//                  }
                } catch (Exception e) {
                   e.printStackTrace();
                   try {
@@ -120,7 +120,7 @@ public class HandlerAsynchroMode {
                   continue;
                }
                defaultPullStrategy.succeess();
-               //如果发送成功则跳出循环//TODO 需要日志记录消息重发的次数吗？发送成功需要记日志吗？
+               //如果发送成功则跳出循环
                break;
             }
          }
