@@ -18,7 +18,7 @@ import com.dianping.swallow.common.internal.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
-import com.dianping.swallow.consumer.ConsumerClient;
+import com.dianping.swallow.consumer.impl.ConsumerClientImpl;
 
 /**
  * <em>Internal-use-only</em> used by Swallow. <strong>DO NOT</strong> access
@@ -33,13 +33,13 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    private static final String CAT_TYPE = "swallow";
    private static final String CAT_NAME = "consumeMessage";
 
-   private ConsumerClient      cClient;
+   private ConsumerClientImpl      cClient;
 
    private PktConsumerMessage  consumermessage;
 
    private ExecutorService     service;
 
-   public MessageClientHandler(ConsumerClient cClient) {
+   public MessageClientHandler(ConsumerClientImpl cClient) {
       this.cClient = cClient;
       service = Executors.newFixedThreadPool(cClient.getThreadCount());
 

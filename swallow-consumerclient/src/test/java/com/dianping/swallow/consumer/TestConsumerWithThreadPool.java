@@ -2,6 +2,7 @@ package com.dianping.swallow.consumer;
 
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Message;
+import com.dianping.swallow.consumer.impl.ConsumerClientImpl;
 
 public class TestConsumerWithThreadPool {
 
@@ -11,9 +12,7 @@ public class TestConsumerWithThreadPool {
 
    public static void main(String[] args) throws Exception {
 
-      final ConsumerClient cClient = new ConsumerClient(cid, topicName);
-      cClient.setThreadCount(10);
-      cClient.setConsumerType(consumerType);
+      final ConsumerClient cClient = new ConsumerClientImpl(cid, topicName);
       cClient.setListener(new MessageListener() {
 
          @Override
