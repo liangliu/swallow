@@ -33,7 +33,7 @@ public class ConsumerClientImpl implements ConsumerClient{
 
    private static final Logger LOG                          = LoggerFactory.getLogger(ConsumerClientImpl.class);
 
-   private static final String LION_CONFIG_FILENAME         = "cClientLion.properties";
+   private static final String LION_CONFIG_FILENAME         = "swallow-consumerclient-lion.properties";
 
    private static final String TOPICNAME_DEFAULT            = "default";
 
@@ -128,14 +128,14 @@ public class ConsumerClientImpl implements ConsumerClient{
    public ConsumerClientImpl(String cid, String topicName) {
       this.consumerId = cid;
       this.dest = Destination.topic(topicName);
-//      String swallowCAddress = getSwallowCAddress(topicName);
-//      string2Address(swallowCAddress);
+      String swallowCAddress = getSwallowCAddress(topicName);
+      string2Address(swallowCAddress);
    }
 
    public ConsumerClientImpl(String topicName) {
       this.dest = Destination.topic(topicName);
-//      String swallowCAddress = getSwallowCAddress(topicName);
-//      string2Address(swallowCAddress);
+      String swallowCAddress = getSwallowCAddress(topicName);
+      string2Address(swallowCAddress);
    }
 
    /**
@@ -187,7 +187,7 @@ public class ConsumerClientImpl implements ConsumerClient{
    }
 
    private void string2Address(String swallowCAddress) {
-      String[] ipAndPorts = swallowCAddress.split("+");
+      String[] ipAndPorts = swallowCAddress.split(",");
       String masterIp = ipAndPorts[0].split(":")[0];
       int masterPort = Integer.parseInt(ipAndPorts[0].split(":")[1]);
       String slaveIp = ipAndPorts[1].split(":")[0];

@@ -39,7 +39,7 @@ public class MasterBootStrap {
       //启动Cat
       Cat.initialize(new File("/data/appdatas/cat/client.xml"));
 
-      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-cServer.xml" });
+      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumerserver.xml" });
       final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
       consumerWorkerManager.init(isSlave);
       //      try {
