@@ -223,7 +223,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
          //一定不会捕获到该异常
       } catch (NetException e){
          //网络异常，不抛出，以保证用户可以拿到Producer
-         logger.warn("[Network error, couldn't send greet now.]", e);
+         logger.warn("[Network error, couldn't send greet now.]");
       }
       return producerImpl;
    }

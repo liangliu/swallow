@@ -51,7 +51,7 @@ public class ProducerImpl implements Producer {
    private Destination               destination;                                                    //Producer消息目的
    private ProducerMode              producerMode             = DEFAULT_PRODUCER_MODE;               //Producer工作模式
    private int                       retryTimes               = DEFAULT_RETRY_TIMES;                 //Producer重试次数
-   private boolean                   zipMessage               = DEFAULT_ZIP_MESSAGE;
+   private boolean                   zipMessage               = DEFAULT_ZIP_MESSAGE;                 //是否启动消息压缩
    private int                       threadPoolSize           = DEFAULT_THREAD_POOL_SIZE;            //异步处理对象的线程池大小
    private boolean                   continueSend             = DEFAULT_CONTINUE_SEND;               //异步模式是否允许续传
 

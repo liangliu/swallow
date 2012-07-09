@@ -39,7 +39,8 @@ public class AppTest {
          Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
 
          pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-         pOptions.put(ProducerOptionKey.RETRY_TIMES, 0);
+         pOptions.put(ProducerOptionKey.RETRY_TIMES, 2);
+         pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, true);
 
          pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
          pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
@@ -62,29 +63,29 @@ public class AppTest {
          String strRet = ""; //发送消息的返回值
 
          //发送消息
-         try {
-            for (int i = 0; i < MAX_NUM; i++) {
-               //            while (true) {
+         //            while (true) {
+         for (int i = 0; i < MAX_NUM; i++) {
+            try {
                //发送消息
                strRet = producer.sendMessage("" + (++sentNum));
-
-               //发送频率
-               try {
-                  Thread.sleep(5000);
-               } catch (Exception e) {
-               }
-
-               //打印内容
-               System.out.println(sentNum + ": " + strRet);
+            } catch (ServerDaoException e1) {
+               e1.printStackTrace();
+            } catch (FileQueueClosedException e1) {
+               e1.printStackTrace();
+            } catch (RemoteServiceDownException e1) {
+               System.out.println("Network is down.");
+            } catch (NullContentException e1) {
+               e1.printStackTrace();
             }
-         } catch (ServerDaoException e1) {
-            e1.printStackTrace();
-         } catch (FileQueueClosedException e1) {
-            e1.printStackTrace();
-         } catch (RemoteServiceDownException e1) {
-            e1.printStackTrace();
-         } catch (NullContentException e1) {
-            e1.printStackTrace();
+            
+            //发送频率
+            try {
+               Thread.sleep(5000);
+            } catch (Exception e) {
+            }
+            
+            //打印内容
+            System.out.println(sentNum + ": " + strRet);
          }
       }
    }
