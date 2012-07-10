@@ -68,11 +68,14 @@ public class IPUtil {
    }
 
    public String getIpFromChannel(Channel channel, String defaultIP) {
+      if (channel == null)
+         return defaultIP;
       String channelIP = defaultIP;
       String str = channel.getRemoteAddress().toString();
       int beginIdx = str.indexOf("/") + 1;
       int endIdx = str.indexOf(":");
-      if(beginIdx<0) beginIdx = 0;
+      if (beginIdx < 0)
+         beginIdx = 0;
       try {
          if (endIdx < 0) {
             channelIP = str.substring(beginIdx).trim();
