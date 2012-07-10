@@ -10,6 +10,6 @@ public interface AckDAO {
    /**
     * 添加一条topicName，consumerId，messageId记录
     */
-   void add(String topicName, String consumerId, Long messageId);
+   void add(String topicName, String consumerId, Long messageId, String sourceConsumerIp);
 
 }

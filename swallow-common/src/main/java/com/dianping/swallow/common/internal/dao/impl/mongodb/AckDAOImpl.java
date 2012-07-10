@@ -1,5 +1,7 @@
 package com.dianping.swallow.common.internal.dao.impl.mongodb;
 
+import java.util.Date;
+
 import org.bson.types.BSONTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,10 +16,12 @@ import com.mongodb.DBObject;
 public class AckDAOImpl implements AckDAO {
 
    @SuppressWarnings("unused")
-   private static final Logger LOG         = LoggerFactory.getLogger(AckDAOImpl.class);
+   private static final Logger LOG             = LoggerFactory.getLogger(AckDAOImpl.class);
 
-   public static final String  MSG_ID      = "mid";
-   public static final String  CONSUMER_ID = "cid";
+   public static final String  MSG_ID          = "mid";
+   public static final String  CONSUMER_ID     = "cid";
+   public static final String  SRC_CONSUMER_IP = "cip";
+   public static final String  TICK            = "t";
 
    private MongoClient         mongoClient;
 
@@ -46,11 +50,13 @@ public class AckDAOImpl implements AckDAO {
    }
 
    @Override
-   public void add(String topicName, String consumerId, Long messageId) {
+   public void add(String topicName, String consumerId, Long messageId, String sourceConsumerIp) {
       DBCollection collection = this.mongoClient.getAckCollection(topicName, consumerId);
 
       BSONTimestamp timestamp = MongoUtils.longToBSONTimestamp(messageId);
-      DBObject add = BasicDBObjectBuilder.start().add(CONSUMER_ID, consumerId).add(MSG_ID, timestamp).get();
+      Date curTime = new Date();
+      DBObject add = BasicDBObjectBuilder.start().add(CONSUMER_ID, consumerId).add(MSG_ID, timestamp)
+            .add(SRC_CONSUMER_IP, sourceConsumerIp).add(TICK, curTime).get();
       collection.insert(add);
    }
 
