@@ -22,7 +22,7 @@ class TempClassForTest {
 
    public String getA() {
       if (i++ < 1) {
-         throw new RuntimeException("abc");
+         throw new RuntimeException("this is a exception from UnitTest.");
       }
       return c;
    }
