@@ -285,8 +285,8 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       public String getConnectedChannels() {
          StringBuilder sb = new StringBuilder();
          if (connectedChannels != null) {
-            for (Map.Entry<Channel,String> entry : connectedChannels.entrySet()) {
-               sb.append(entry.getKey().getRemoteAddress()).append("(isConnected:").append(entry.getKey().isConnected()).append(')');
+            for (Channel channel : connectedChannels.keySet()) {
+               sb.append(channel.getRemoteAddress()).append("(isConnected:").append(channel.isConnected()).append(')');
             }
          }
          return sb.toString();

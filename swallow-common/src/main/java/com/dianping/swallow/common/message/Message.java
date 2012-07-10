@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * Swallow消息接口。
+ * Swallow消息接口。(由Swallow内部实现该接口的具体类，API用户请勿实现该接口。)
  * 
  * @author wukezhu
  */

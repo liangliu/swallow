@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.codec.binary.Base64;
+
 public class ZipUtil {
    /**
     * 压缩字符串
@@ -24,7 +26,7 @@ public class ZipUtil {
       } finally {
          gzip.close();
       }
-      return out.toString("ISO-8859-1");
+      return Base64.encodeBase64String(out.toByteArray());
    }
 
    /**
@@ -34,11 +36,11 @@ public class ZipUtil {
     * @return 解压缩后的字符串
     * @throws IOException IO处理出错
     */
-   public static String unzip(String str) throws IOException {
-      if (str == null || str.length() == 0)
-         return str;
+   public static String unzip(String zipedBase64String) throws IOException {
+      if (zipedBase64String == null || zipedBase64String.length() == 0)
+         return zipedBase64String;
       ByteArrayOutputStream out = new ByteArrayOutputStream();
-      ByteArrayInputStream in = new ByteArrayInputStream(str.getBytes("ISO-8859-1"));
+      ByteArrayInputStream in = new ByteArrayInputStream(Base64.decodeBase64(zipedBase64String));
       GZIPInputStream gunzip = new GZIPInputStream(in);
       try {
          byte[] buffer = new byte[256];
