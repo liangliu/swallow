@@ -26,10 +26,7 @@ public class ConsumerWorkerManager {
    private Heartbeater                     heartbeater;
    private SwallowBuffer                   swallowBuffer;
    private MessageDAO                      messageDAO;
-   private AckDAO                          ackDAOWithRetryMechanism;
-   private MessageDAO                      messageDAOWithRetryMechanism;
    
-
    private ConfigManager                   configManager             = ConfigManager.getInstance();
 
    private MQThreadFactory                 threadFactory             = new MQThreadFactory();
@@ -40,8 +37,7 @@ public class ConsumerWorkerManager {
    private volatile boolean closed = false;
    
    public void setAckDAO(AckDAO ackDAO) {
-      this.ackDAO = ackDAO;
-      this.ackDAOWithRetryMechanism = ProxyUtil.createProxyWithRetryMechanism(ackDAO, configManager.getRetryIntervalWhenMongoException());
+      this.ackDAO = ProxyUtil.createProxyWithRetryMechanism(ackDAO, configManager.getRetryIntervalWhenMongoException());
    }
 
    public MQThreadFactory getThreadFactory() {
@@ -57,8 +53,7 @@ public class ConsumerWorkerManager {
    }
 
    public void setMessageDAO(MessageDAO messageDAO) {
-      this.messageDAO = messageDAO;
-      this.messageDAOWithRetryMechanism = ProxyUtil.createProxyWithRetryMechanism(messageDAO,configManager.getRetryIntervalWhenMongoException());
+      this.messageDAO = ProxyUtil.createProxyWithRetryMechanism(messageDAO,configManager.getRetryIntervalWhenMongoException());
    }
 
    public ConfigManager getConfigManager() {
@@ -196,12 +191,5 @@ public class ConsumerWorkerManager {
       return messageDAO;
    }
 
-   public AckDAO getAckDAOWithRetryMechanism() {
-      return ackDAOWithRetryMechanism;
-   }
-
-   public MessageDAO getMessageDAOWithRetryMechanism() {
-      return messageDAOWithRetryMechanism;
-   }
 
 }
