@@ -65,6 +65,10 @@
 			<groupId>com.dianping.lion</groupId>
 			<artifactId>lion-${env}</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+		</dependency>
 		<!-- 监控 -->
 		<dependency>
 			<groupId>com.dianping.cat</groupId>
