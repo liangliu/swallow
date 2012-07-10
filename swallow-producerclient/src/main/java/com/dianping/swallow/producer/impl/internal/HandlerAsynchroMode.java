@@ -66,7 +66,7 @@ public class HandlerAsynchroMode {
       @Override
       public void run() {
          //异步模式下，每个线程单独有一个延时策略，以保证不同的线程不会互相冲突
-         DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, 10 * delayBase);
+         DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, 5 * delayBase);
          
          while (true) {
             //从filequeue获取message，如果filequeue无元素则阻塞            

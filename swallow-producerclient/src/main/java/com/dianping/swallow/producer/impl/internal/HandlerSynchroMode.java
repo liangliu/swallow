@@ -17,7 +17,7 @@ public class HandlerSynchroMode {
    private MQService           remoteService;
    private int                 retryTimes;
    private int                 delayBase           = ProducerFactoryImpl.getRemoteServiceTimeout();
-   private DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, 10 * delayBase);
+   private DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, 5 * delayBase);
 
    public HandlerSynchroMode(ProducerImpl producer) {
       this.remoteService = producer.getRemoteService();
