@@ -38,9 +38,9 @@ public class AppTest {
          //设置Producer选项
          Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
 
-         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
+         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
          pOptions.put(ProducerOptionKey.RETRY_TIMES, 3);
-         pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, false);
+         pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, true);
 
          pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 3);
          pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
@@ -52,7 +52,7 @@ public class AppTest {
          //构造Producer
          ProducerImpl producer = null;
          try {
-            producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("songtong"), pOptions);
+            producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("xx"), pOptions);
          } catch (Exception e) {
             e.printStackTrace();
          }
@@ -64,12 +64,11 @@ public class AppTest {
          int i = 0;
 
          //发送消息
-                  while (true) {
-//         for (i = 0, strRet = ""; i < MAX_NUM; i++) {
-            System.out.println("Send " + (sentNum+1) + " now:");
+         //while (true) {
+         for (i = 0, strRet = ""; i < MAX_NUM; i++) {
             try {
                //发送消息
-               strRet = producer.sendMessage("" + (++sentNum), properties);
+               strRet = producer.sendMessage("" + (++sentNum));
             } catch (ServerDaoException e1) {
                e1.printStackTrace();
             } catch (FileQueueClosedException e1) {
@@ -79,10 +78,9 @@ public class AppTest {
             } catch (NullContentException e1) {
                e1.printStackTrace();
             }
-
             //发送频率
             try {
-               Thread.sleep(10);
+               Thread.sleep(1000);
             } catch (Exception e) {
             }
 

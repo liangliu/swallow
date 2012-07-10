@@ -39,10 +39,11 @@ import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 public class ProducerExample {
    public static void main(String[] args) {
 
-      String message = "message";
-      ProducerFactory producerFactory = null;
+      //待发送消息
+      String message = "Example";
 
       //获取Producer工厂实例
+      ProducerFactory producerFactory = null;
       try {
          //OR: producerFactory = ProducerFactory.getInstance()//默认远程调用timeout为5000;
          producerFactory = ProducerFactoryImpl.getInstance(5000);
@@ -50,20 +51,22 @@ public class ProducerExample {
          //远程调用初始化失败抛出此异常
       }
 
-      //设置Producer选项
+      //配置Producer选项，如果配置项出错则使用默认配置
+      //默认配置的Producer为同步模式（SYNC_MODE）、失败重试次数为5、压缩选项为假
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
-      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);//如果不设置该项，默认为SYNC_MODE
-      pOptions.put(ProducerOptionKey.RETRY_TIMES, 5);//如果不设置该项，默认为5
-      pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, false);//如果希望存入DB前对消息进行压缩，此项设置为true，默认为false
-      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);//如果不设置该项，默认为5
-      pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);//如果不设置该项，默认为false
-      Producer producer = null;
+      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);//Producer工作模式（同步/异步）
+      pOptions.put(ProducerOptionKey.RETRY_TIMES, 3);//发送失败重试次数
+      pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, false);//是否对待发送消息执行压缩
+      //以下配置中，标*的选项只在异步模式生效
+      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 3);//*线程池大小，默认为5
+      pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);//*是否续传，默认为否
 
       //获取Producer实例
+      Producer producer = null;
       try {
          //OR: producer = producerFactory.getProducer(Destination.topic("example"));//使用默认设置获取Producer
          //默认Producer设置为：ProducerMode=SYNC_MODE，RetryTimes=5
-         producer = producerFactory.getProducer(Destination.topic("example"), pOptions);
+         producer = producerFactory.getProducer(Destination.topic("Example"), pOptions);
       } catch (TopicNameInvalidException e) {
          //Topic名称非法抛出此异常
       }
