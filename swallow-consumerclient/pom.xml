@@ -29,12 +29,12 @@
 			<artifactId>netty</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.dianping.swallow</groupId>
-			<artifactId>${swallow-common.aid}</artifactId>
+			<groupId>commons-codec</groupId><!-- use the Base64 codec function -->
+			<artifactId>commons-codec</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongo-java-driver</artifactId>
+			<groupId>com.dianping.swallow</groupId>
+			<artifactId>${swallow-common.aid}</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.lion</groupId>
