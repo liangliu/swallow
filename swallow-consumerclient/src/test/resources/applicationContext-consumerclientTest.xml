@@ -14,8 +14,14 @@
 		<constructor-arg>
 			<value>xx</value> 
 		</constructor-arg>
-		<property name="threadCount" value="10" />
+		<property name="threadCount" value="5" />
 		<property name="consumerType" value="AT_LEAST" />
+		<!--  property name="neededMessageType" >
+		<set>  
+                <value>zhangyu</value>
+                <value>laoma</value>
+            </set>  
+        </property>  -->
 	</bean>
 
 	<bean id="nonDurableConsumerClient" class="com.dianping.swallow.consumer.impl.ConsumerClientImpl">

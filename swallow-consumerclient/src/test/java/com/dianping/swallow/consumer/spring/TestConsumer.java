@@ -12,19 +12,24 @@ public class TestConsumer {
 
    /**
     * @param args
+    * @throws InterruptedException 
     */
-   public static void main(String[] args) {
+   public static void main(String[] args) throws InterruptedException {
       ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumerclientTest.xml" });
-      final ConsumerClient consumerClient = (ConsumerClientImpl) ctx.getBean("consumerClient");      
+      final ConsumerClient consumerClient = (ConsumerClientImpl) ctx.getBean("consumerClient");  
       consumerClient.setListener(new MessageListener() {
-
+         int i = 0;
          @Override
          public void onMessage(Message swallowMessage) {
+            
             //用户得到SwallowMessage
-
-            System.out.println(swallowMessage.getMessageId() + ":" + swallowMessage.getContent());
+            i++;
+            if(i==500){
+               ((ConsumerClientImpl)consumerClient).setNeedClose(Boolean.TRUE);
+            }
+            System.out.println(swallowMessage.getMessageId() + ":" + swallowMessage.getContent()+ ":" + swallowMessage.getType());
             try {
-               Thread.sleep(100);
+               Thread.sleep(500);
             } catch (InterruptedException e) {
                // TODO Auto-generated catch block
                e.printStackTrace();
@@ -32,7 +37,7 @@ public class TestConsumer {
          }
       });
       consumerClient.start();
-
+      
    }
 
 }
