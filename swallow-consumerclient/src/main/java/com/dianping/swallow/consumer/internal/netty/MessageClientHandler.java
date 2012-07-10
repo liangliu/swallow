@@ -1,5 +1,6 @@
 package com.dianping.swallow.consumer.internal.netty;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,6 +19,7 @@ import com.dianping.swallow.common.internal.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
+import com.dianping.swallow.common.internal.util.ZipUtil;
 import com.dianping.swallow.consumer.impl.ConsumerClientImpl;
 
 /**
@@ -72,6 +74,16 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                event.addData(swallowMessage.toString());
 
                //处理消息
+             //如果是压缩后的消息，则进行解压缩
+               if (swallowMessage.getInternalProperties() != null) {
+                  if ("gzip".equals(swallowMessage.getInternalProperties().get("compress"))) {
+                     try {
+                        swallowMessage.setContent(ZipUtil.unzip(swallowMessage.getContent()));
+                     } catch (IOException e) {
+                        LOG.error("ZipUtil.unzip error!", e);
+                     }
+                  }
+               }
                cClient.getListener().onMessage(swallowMessage);
 
                event.setStatus(Event.SUCCESS);
