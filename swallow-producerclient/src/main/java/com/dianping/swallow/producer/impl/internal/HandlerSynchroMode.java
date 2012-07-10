@@ -42,6 +42,8 @@ public class HandlerSynchroMode {
                }
                continue;
             } else {
+               //重置超时
+               defaultPullStrategy.succeess();
                throw e;
             }
          } catch (NetException e) {
@@ -54,6 +56,8 @@ public class HandlerSynchroMode {
                }
                continue;
             } else {
+               //重置超时
+               defaultPullStrategy.succeess();
                throw new RemoteServiceDownException();
             }
          } catch (Exception e) {
@@ -65,10 +69,10 @@ public class HandlerSynchroMode {
             }
             continue;
          }
-         defaultPullStrategy.succeess();
          break;
       }
-
+      //能跳出循环，重试次数消耗完OR消息发送成功，循环break，此时重置超时时间
+      defaultPullStrategy.succeess();
       return pktRet;
    }
 }

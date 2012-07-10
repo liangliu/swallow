@@ -38,21 +38,21 @@ public class AppTest {
          //设置Producer选项
          Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
 
-         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-         pOptions.put(ProducerOptionKey.RETRY_TIMES, 2);
-         pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, true);
+         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
+         pOptions.put(ProducerOptionKey.RETRY_TIMES, 3);
+         pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, false);
 
-         pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 5);
+         pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 3);
          pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
 
          //设置发送消息时的选项
          Map<String, String> properties = new HashMap<String, String>();
-         properties.put("zip", "false");
+         properties.put("test", "true");
 
          //构造Producer
          ProducerImpl producer = null;
          try {
-            producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("xx"), pOptions);
+            producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("songtong"), pOptions);
          } catch (Exception e) {
             e.printStackTrace();
          }
@@ -61,31 +61,33 @@ public class AppTest {
          final int MAX_NUM = 100; //可发送消息的最大数量
          int sentNum = 0; //已发送消息数量
          String strRet = ""; //发送消息的返回值
+         int i = 0;
 
          //发送消息
-//                  while (true) {
-         for (int i = 0; i < MAX_NUM; i++) {
+                  while (true) {
+//         for (i = 0, strRet = ""; i < MAX_NUM; i++) {
+            System.out.println("Send " + (sentNum+1) + " now:");
             try {
                //发送消息
-               strRet = producer.sendMessage("" + (++sentNum));
+               strRet = producer.sendMessage("" + (++sentNum), properties);
             } catch (ServerDaoException e1) {
                e1.printStackTrace();
             } catch (FileQueueClosedException e1) {
                e1.printStackTrace();
             } catch (RemoteServiceDownException e1) {
-               System.out.println("Network is down.");
+               System.out.println("\tNetwork is down.");
             } catch (NullContentException e1) {
                e1.printStackTrace();
             }
 
             //发送频率
             try {
-               Thread.sleep(1000);
+               Thread.sleep(10);
             } catch (Exception e) {
             }
 
             //打印内容
-            System.out.println(sentNum + ": " + strRet);
+            System.out.println("\t" + sentNum + ": " + strRet);
          }
       }
    }
