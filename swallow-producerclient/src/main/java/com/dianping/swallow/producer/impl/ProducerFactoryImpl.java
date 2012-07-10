@@ -36,7 +36,7 @@ import com.dianping.swallow.producer.ProducerOptionKey;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 
 /**
- * Producer工厂类
+ * 实现ProducerFactory接口的工厂类
  * 
  * @author tong.song
  */
@@ -56,7 +56,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    //远程调用相关变量
    @SuppressWarnings("rawtypes")
    private static final ProxyFactory  pigeon          = new ProxyFactory();                                //pigeon代理对象
-   private static MQService           remoteService;                                                       //远程调用对象
+   private MQService           remoteService;                                                       //远程调用对象
 
    /**
     * Producer工厂类构造函数
@@ -71,10 +71,11 @@ public class ProducerFactoryImpl implements ProducerFactory {
    }
 
    /**
-    * 初始化远程调用服务，如果远程服务端连接失败，抛出异常
+    * 初始化远程调用服务（pigeon）
     * 
-    * @return 远程调用服务的接口
-    * @throws RemoteServiceInitFailedException 远程调用初始化失败
+    * @param remoteServiceTimeout 远程调用超时：APP可以忍受的远程调用的最长返回时间
+    * @return 实现MQService接口的类，此版本中为pigeon返回的一个远程调用服务代理
+    * @throws RemoteServiceInitFailedException 远程调用服务（pigeon）初始化失败
     */
    private MQService initRemoteService(int remoteServiceTimeout) throws RemoteServiceInitFailedException {
       pigeon.setServiceName("remoteService");
@@ -104,7 +105,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    }
 
    /**
-    * 获取Producer工厂类单例，默认超时
+    * 以默认远程调用超时获取Producer工厂类单例，如果单例已存在，则使用已存在单例的超时
     * 
     * @return Producer工厂类单例
     * @throws RemoteServiceInitFailedException 远程调用初始化失败
@@ -114,7 +115,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    }
 
    /**
-    * 获取Producer工厂类单例，指定超时，如果单例已存在，则指定的超时无效
+    * 获取Producer工厂类单例，指定超时，如果单例已存在，则指定的超时失效
     * 
     * @param remoteServiceTimeout 远程调用超时
     * @return Producer工厂类单例
@@ -220,7 +221,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
          remoteService.sendMessage(pktProducerGreet);
       } catch (ServerDaoException e) {
          //一定不会捕获到该异常
-      } catch (NetException e){
+      } catch (NetException e) {
          //网络异常，不抛出，以保证用户可以拿到Producer
          logger.warn("[Network error, couldn't send greet now.]");
       }
@@ -228,7 +229,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    }
 
    public void setRemoteService(MQService remoteService) {
-      ProducerFactoryImpl.remoteService = remoteService;
+      this.remoteService = remoteService;
    }
 
    public static int getRemoteServiceTimeout() {

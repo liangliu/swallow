@@ -16,13 +16,13 @@
 package com.dianping.swallow.producer;
 
 /**
- * Producer选项
+ * 配置Producer的选项
  * 
  * @author tong.song
  */
 public enum ProducerOptionKey {
    /**
-    * Producer工作模式：同步/异步；前缀为ASYNC_的选项：异步模式生效，同步模式忽略 类型：{@link ProducerMode}
+    * Producer工作模式：同步/异步；前缀为ASYNC_的选项：异步模式生效，同步模式忽略，类型为：{@link ProducerMode}
     */
    PRODUCER_MODE,
    /**

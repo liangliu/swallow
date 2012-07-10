@@ -46,16 +46,15 @@ class ExampleTask implements Runnable {
       try {
          producer.sendMessage("Hello World.");
       } catch (ServerDaoException e) {
-         //保存至数据库失败则抛出此异常
+         //*只存在于同步模式，保存至数据库失败则抛出此异常
+      } catch (FileQueueClosedException e) {
+         //*只存在于异步模式，保存至filequeue失败则抛出此异常
       } catch (RemoteServiceDownException e) {
          //远程调用失败则抛出此异常
       } catch (NullContentException e) {
          //待发送消息体为空则抛出此异常
-      } catch (FileQueueClosedException e) {
-         //*只存在于异步模式，保存至filequeue失败则抛出此异常
       }
    }
-
 }
 
 /**

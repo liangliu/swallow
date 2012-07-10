@@ -75,7 +75,7 @@ public class ProducerExample {
       try {
          producer.sendMessage(message);
       } catch (ServerDaoException e) {
-         //消息保存到数据库出错
+         //只存在于同步模式：消息保存到数据库出错
       } catch (FileQueueClosedException e) {
          //只存在于异步模式：消息保存到filequeue出错
       } catch (RemoteServiceDownException e) {

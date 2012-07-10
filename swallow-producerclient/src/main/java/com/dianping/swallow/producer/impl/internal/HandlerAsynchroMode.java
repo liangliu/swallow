@@ -24,20 +24,21 @@ public class HandlerAsynchroMode {
    private static final Logger          logger                 = LoggerFactory.getLogger(ProducerImpl.class);
    private static final MQThreadFactory threadFactory          = new MQThreadFactory();
 
-   private static final int             DEFAULT_FILEQUEUE_SIZE = 512 * 1024 * 1024;
+   private static final int             DEFAULT_FILEQUEUE_SIZE = 512 * 1024 * 1024;                            //默认的filequeue切片大小，512MB
+   private static final int             DELAY_BASE             = ProducerFactoryImpl.getRemoteServiceTimeout();
 
-   private ProducerImpl                 producer;
-   private FileQueue<Packet>            messageQueue;                                                               //filequeue
-
-   private int                          delayBase              = ProducerFactoryImpl.getRemoteServiceTimeout();
+   private final ProducerImpl           producer;
+   private final FileQueue<Packet>      messageQueue;                                                          //filequeue
 
    //构造函数
    public HandlerAsynchroMode(ProducerImpl producer) {
-      FileQueueConfigHolder fileQueueConfig = new FileQueueConfigHolder();
       this.producer = producer;
+
+      FileQueueConfigHolder fileQueueConfig = new FileQueueConfigHolder();
       fileQueueConfig.setMaxDataFileSize(DEFAULT_FILEQUEUE_SIZE);
       messageQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, producer.getDestination().getName(),
             producer.isContinueSend());
+
       this.start();
    }
 
@@ -55,30 +56,26 @@ public class HandlerAsynchroMode {
       }
    }
 
-   //从filequeue队列获取并发送Message的runnable
+   //从filequeue队列获取并发送Message
    private class TskGetAndSend implements Runnable {
 
-      private final int defaultRetryTimes = producer.getRetryTimes() + 1;
-      private int       leftRetryTimes    = defaultRetryTimes;
+      private final int sendTimes = producer.getRetryTimes() + 1;
+      private int       leftRetryTimes    = sendTimes;
       private Packet    message           = null;
       private MQService remoteService     = producer.getRemoteService();
 
       @Override
       public void run() {
          //异步模式下，每个线程单独有一个延时策略，以保证不同的线程不会互相冲突
-         DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, 5 * delayBase);
-         
+         DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(DELAY_BASE, 5 * DELAY_BASE);
+
          while (true) {
             //从filequeue获取message，如果filequeue无元素则阻塞            
             message = messageQueue.get();
             //发送message，重试次数从Producer获取
-            for (leftRetryTimes = defaultRetryTimes; leftRetryTimes > 0;) {
+            for (leftRetryTimes = sendTimes; leftRetryTimes > 0;) {
                try {
                   leftRetryTimes--;
-                  //TODO 去除debug状态
-                  //                  if(logger.isDebugEnabled()){
-                  //                     logger.debug("[AsyncroModeHandler]:[" + (defaultRetryTimes - leftRetryTimes) + " th send.]");
-                  //                  }
                   remoteService.sendMessage(message);
                } catch (ServerDaoException e) {
                   //如果剩余重试次数>0，超时重试
@@ -92,10 +89,6 @@ public class HandlerAsynchroMode {
                      continue;
                   }
                   logger.error("[AsyncHandler]:[Message sent failed.][Reason=DAO]", e);
-                  //TODO 去除debug状态
-                  //                  if (logger.isDebugEnabled()) {
-                  //                     logger.debug("Can not save message to DB.");
-                  //                  }
                } catch (NetException e) {
                   if (leftRetryTimes > 0) {
                      try {
@@ -107,10 +100,6 @@ public class HandlerAsynchroMode {
                      continue;
                   }
                   logger.error("[AsyncHandler]:[Message sent failed.][Reason=Network]", e);
-                  //TODO 去除debug状态
-                  //                  if (logger.isDebugEnabled()) {
-                  //                     logger.debug("Network is down.");
-                  //                  }
                } catch (Exception e) {
                   //捕获到未知异常，记录
                   logger.error("[AsyncHandler]:[Unknow Exception]", e);

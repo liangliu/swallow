@@ -27,6 +27,11 @@ import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
 
+/**
+ * 实现Producer接口的类
+ * 
+ * @author Icloud
+ */
 public class ProducerImpl implements Producer {
    //变量定义
    private MQService                 remoteService;                                                  //远程调用对象
@@ -58,11 +63,10 @@ public class ProducerImpl implements Producer {
    /**
     * 构造函数
     * 
-    * @param producerFactoryImpl.getRemoteService() 远程调用服务
-    * @param dest topic的名称
-    * @param pOptions producer选项
-    * @throws TopicNameInvalidException topic名称非法//topic名称只能由字母、数字、下划线组成
-    * @throws RemoteServiceDownException 初始化远程连接失败
+    * @param producerFactory Producer工厂类对象
+    * @param dest Topic的Destination
+    * @param pOptions producer配置选项
+    * @throws TopicNameInvalidException topic名称非法时抛出此异常
     */
    public ProducerImpl(ProducerFactory producerFactory, Destination dest, Map<ProducerOptionKey, Object> pOptions)
          throws TopicNameInvalidException {

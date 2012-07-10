@@ -15,20 +15,20 @@ import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
  */
 public class HandlerSynchroMode {
    private MQService           remoteService;
-   private int                 retryTimes;
+   private int                 sendTimes;
    private int                 delayBase           = ProducerFactoryImpl.getRemoteServiceTimeout();
    private DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, 5 * delayBase);
 
    public HandlerSynchroMode(ProducerImpl producer) {
       this.remoteService = producer.getRemoteService();
-      this.retryTimes = producer.getRetryTimes() +1;//初始值等于用户要求的retryTimes+1，这样可以保证至少执行一次
+      this.sendTimes = producer.getRetryTimes() +1;//初始值等于用户要求的retryTimes+1，这样可以保证至少执行一次
    }
 
    //对外接口
    public Packet doSendMsg(Packet pkt) throws ServerDaoException, RemoteServiceDownException {
       Packet pktRet = null;
       int leftRetryTimes;
-      for (leftRetryTimes = retryTimes; leftRetryTimes > 0;) {
+      for (leftRetryTimes = sendTimes; leftRetryTimes > 0;) {
          try {
             leftRetryTimes--;
             pktRet = remoteService.sendMessage(pkt);

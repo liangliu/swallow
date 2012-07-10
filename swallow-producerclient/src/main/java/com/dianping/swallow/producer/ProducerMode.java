@@ -13,5 +13,5 @@ public enum ProducerMode {
    /**
     * Producer工作模式：异步模式，APP等待SwallowMessage放入队列
     */
-   ASYNC_MODE,
+   ASYNC_MODE
 }
