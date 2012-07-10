@@ -13,10 +13,10 @@ public class ProxyUtil {
     * @return 返回代理的targetClass
     */
    @SuppressWarnings("unchecked")
-   public static <T> T createProxyWithRetryMechanism(Class<T> targetClass, long retryIntervalWhenException) {
+   public static <T> T createProxyWithRetryMechanism(T targetClass, long retryIntervalWhenException) {
       Enhancer enhancer = new Enhancer();
-      enhancer.setSuperclass(targetClass);
-      enhancer.setCallback(new RetryMethodInterceptor(retryIntervalWhenException));
+      enhancer.setSuperclass(targetClass.getClass());
+      enhancer.setCallback(new RetryMethodInterceptor(targetClass, retryIntervalWhenException));
       return (T) enhancer.create();
    }
 

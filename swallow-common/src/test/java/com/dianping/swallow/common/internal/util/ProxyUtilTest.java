@@ -8,19 +8,22 @@ public class ProxyUtilTest {
 
    @Test
    public void testCreateProxyWithRetryMechanism() {
-      TempClassForTest proxyTarget = ProxyUtil.createProxyWithRetryMechanism(TempClassForTest.class, 1000);
-      assertEquals("A", proxyTarget.getA());
+      TempClassForTest target = new TempClassForTest();
+      target.c = "test";
+      TempClassForTest proxyTarget = ProxyUtil.createProxyWithRetryMechanism(target, 1000);
+      assertEquals(target.c, proxyTarget.getA());
    }
 
 }
 
 class TempClassForTest {
-   int i = 0;
+   int    i = 0;
+   String c = null;
 
    public String getA() {
       if (i++ < 1) {
          throw new RuntimeException("abc");
       }
-      return "A";
+      return c;
    }
 }

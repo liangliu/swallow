@@ -17,8 +17,10 @@ import org.slf4j.LoggerFactory;
 class RetryMethodInterceptor implements MethodInterceptor {
    private static final Logger LOG = LoggerFactory.getLogger(RetryMethodInterceptor.class);
    private long                retryIntervalWhenException;
+   private Object              target;
 
-   public RetryMethodInterceptor(long retryIntervalWhenException) {
+   public RetryMethodInterceptor(Object target, long retryIntervalWhenException) {
+      this.target = target;
       this.retryIntervalWhenException = retryIntervalWhenException;
    }
 
@@ -26,9 +28,10 @@ class RetryMethodInterceptor implements MethodInterceptor {
    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
       while (true) {
          try {
-            return proxy.invokeSuper(obj, args);
+            return proxy.invoke(this.target, args);
          } catch (Exception e) {
-            LOG.error("Error in Proxy of " + obj + ", wait " + retryIntervalWhenException + "ms before retry. ", e);
+            LOG.error(
+                  "Error in Proxy of " + this.target + ", wait " + retryIntervalWhenException + "ms before retry. ", e);
             Thread.sleep(retryIntervalWhenException);
          }
       }
