@@ -56,7 +56,6 @@ public class ProducerFactoryImpl implements ProducerFactory {
    //远程调用相关变量
    @SuppressWarnings("rawtypes")
    private static final ProxyFactory  pigeon          = new ProxyFactory();                                //pigeon代理对象
-   //TODO 为了单元测试，先将final设定去除掉了，后面有别的办法再补回来，或者就直接给Factory类提供一个setMQService方法？
    private static MQService           remoteService;                                                       //远程调用对象
 
    /**
@@ -223,7 +222,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
          //一定不会捕获到该异常
       } catch (NetException e){
          //网络异常，不抛出，以保证用户可以拿到Producer
-         logger.warn("[Network error, couldn't send greet now.]", e);
+         logger.warn("[Network error, couldn't send greet now.]");
       }
       return producerImpl;
    }

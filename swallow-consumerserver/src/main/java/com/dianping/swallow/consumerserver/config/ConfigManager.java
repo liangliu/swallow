@@ -18,21 +18,17 @@ public class ConfigManager {
 
    private static ConfigManager ins                             = new ConfigManager();
 
-   private int                  freeChannelBlockQueueSize       = 10;
    // time related
    private int                  pullFailDelayBase               = 500;
    private int                  pullFailDelayUpperBound         = 3000;
    private long                 checkConnectedChannelInterval   = 2000L;
    private long                 retryIntervalWhenMongoException = 2000L;
-   private long                 waitAckTimeWhenCloseSwc         = 10000L;
+   private long                 waitAckTimeWhenCloseSwc         = 15000L;
    private long                 waitSlaveShutDown               = 30000L;
-   private long                 closeChannelMaxWaitingTime      = 20000L;
+   private long                 closeChannelMaxWaitingTime      = 10000L;
    private int                  heartbeatCheckInterval          = 3000;
    private int                  heartbeatMaxStopTime            = 10000;
    private int                  heartbeatUpdateInterval         = 4000;
-   private int                  blockQueueFailoverSleepTime     = 1000;
-   private int                  pullingTime                     = 1000;
-   private long                 freeChannelBlockQueueOutTime    = 120000;
    private int                  masterPort                      = 8081;
    private int                  slavePort                       = 8082;
 
@@ -75,10 +71,6 @@ public class ConfigManager {
       return waitSlaveShutDown;
    }
 
-   public int getBlockQueueFailoverSleepTime() {
-      return blockQueueFailoverSleepTime;
-   }
-
    public String getMasterIp() {
       return masterIp;
    }
@@ -87,17 +79,6 @@ public class ConfigManager {
       return heartbeatCheckInterval;
    }
 
-   public long getFreeChannelBlockQueueOutTime() {
-      return freeChannelBlockQueueOutTime;
-   }
-
-   public int getFreeChannelBlockQueueSize() {
-      return freeChannelBlockQueueSize;
-   }
-
-   public int getPullingTime() {
-      return pullingTime;
-   }
 
    /***
     * @return master consumer心跳最长的停止时间

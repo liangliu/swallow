@@ -2,6 +2,7 @@ package com.dianping.swallow.consumerserver.netty;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.UUID;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -141,8 +142,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    }
  //生成唯一consumerId
    private String fakeCid(){
-      Date now = new Date();
-      return Long.toString(now.getTime());
+      return UUID.randomUUID().toString();
    }
 
 }

@@ -57,12 +57,12 @@ public class HandlerSynchroMode {
                throw new RemoteServiceDownException();
             }
          } catch (Exception e) {
+            e.printStackTrace();
             try {
                defaultPullStrategy.fail(true);
             } catch (InterruptedException ie) {
                //睡眠失败则不睡眠直接发送
             }
-            e.printStackTrace();
             continue;
          }
          defaultPullStrategy.succeess();

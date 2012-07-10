@@ -59,7 +59,7 @@ public class HandlerAsynchroMode {
    //从filequeue队列获取并发送Message的runnable
    private class TskGetAndSend implements Runnable {
 
-      private final int defaultRetryTimes = producer.getRetryTimes();
+      private final int defaultRetryTimes = producer.getRetryTimes() + 1;
       private int       leftRetryTimes    = defaultRetryTimes;
       private Packet    message           = null;
       private MQService remoteService     = producer.getRemoteService();
@@ -70,33 +70,47 @@ public class HandlerAsynchroMode {
             //从filequeue获取message，如果filequeue无元素则阻塞            
             message = messageQueue.get();
             //发送message，重试次数从Producer获取
-            for (leftRetryTimes = defaultRetryTimes; leftRetryTimes > 0; leftRetryTimes--) {
+            for (leftRetryTimes = defaultRetryTimes; leftRetryTimes > 0;) {
                try {
+                  leftRetryTimes--;
+                  //TODO 去除debug状态
+//                  if(logger.isDebugEnabled()){
+//                     logger.debug("[AsyncroModeHandler]:[" + (defaultRetryTimes - leftRetryTimes) + " th send.]");
+//                  }
                   remoteService.sendMessage(message);
                } catch (ServerDaoException e) {
-                  //如果剩余重试次数<=1，将终止重试，记日志。
-                  if (leftRetryTimes <= 1) {
-                     logger.error("[AsyncHandler]:[Message sent failed.][Reason=DAO]", e);
+                  //如果剩余重试次数>0，超时重试
+                  if (leftRetryTimes > 0) {
+                     try {
+                        defaultPullStrategy.fail(true);
+                     } catch (InterruptedException ie) {
+                        //睡眠失败则不睡眠直接发送
+                     }
+                     //发送失败，重发
+                     continue;
                   }
-                  try {
-                     defaultPullStrategy.fail(true);
-                  } catch (InterruptedException ie) {
-                     //睡眠失败则不睡眠直接发送
-                  }
-                  //发送失败，重发
-                  continue;
+                  logger.error("[AsyncHandler]:[Message sent failed.][Reason=DAO]", e);
+                  //TODO 去除debug状态
+//                  if (logger.isDebugEnabled()) {
+//                     logger.debug("Can not save message to DB.");
+//                  }
                } catch (NetException e) {
-                  if (leftRetryTimes <= 1) {
-                     logger.error("[AsyncHandler]:[Message sent failed.][Reason=Network]", e);
+                  if (leftRetryTimes > 0) {
+                     try {
+                        defaultPullStrategy.fail(true);
+                     } catch (InterruptedException ie) {
+                        //睡眠失败则不睡眠直接发送
+                     }
+                     //发送失败，重发
+                     continue;
                   }
-                  try {
-                     defaultPullStrategy.fail(true);
-                  } catch (InterruptedException ie) {
-                     //睡眠失败则不睡眠直接发送
-                  }
-                  //发送失败，重发
-                  continue;
+                  logger.error("[AsyncHandler]:[Message sent failed.][Reason=Network]", e);
+                  //TODO 去除debug状态
+//                  if (logger.isDebugEnabled()) {
+//                     logger.debug("Network is down.");
+//                  }
                } catch (Exception e) {
+                  e.printStackTrace();
                   try {
                      defaultPullStrategy.fail(true);
                   } catch (InterruptedException ie) {
@@ -106,7 +120,7 @@ public class HandlerAsynchroMode {
                   continue;
                }
                defaultPullStrategy.succeess();
-               //如果发送成功则跳出循环//TODO 需要日志记录消息重发的次数吗？发送成功需要记日志吗？
+               //如果发送成功则跳出循环
                break;
             }
          }
