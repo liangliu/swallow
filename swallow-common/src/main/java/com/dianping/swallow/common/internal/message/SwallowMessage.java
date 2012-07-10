@@ -45,6 +45,11 @@ public class SwallowMessage implements Serializable, Message {
       this.messageId = messageId;
    }
 
+   /**
+    * 获取消息<em>发送方</em>使用的Swallow的版本号
+    * 
+    * @return
+    */
    public String getVersion() {
       return version;
    }
@@ -110,7 +115,6 @@ public class SwallowMessage implements Serializable, Message {
    public void setSourceIp(String sourceIp) {
       this.sourceIp = sourceIp;
    }
-
 
    @Override
    public String toString() {

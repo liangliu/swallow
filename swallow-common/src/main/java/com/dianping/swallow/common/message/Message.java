@@ -3,6 +3,11 @@ package com.dianping.swallow.common.message;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * Swallow消息接口。
+ * 
+ * @author wukezhu
+ */
 public interface Message {
 
    /**
@@ -20,11 +25,11 @@ public interface Message {
    Date getGeneratedTime();
 
    /**
-    * 获取消息<em>发送方</em>使用的Swallow的版本号
+    * 获取消息类型
     * 
     * @return
     */
-   String getVersion();
+   String getType();
 
    /**
     * 获取消息<em>发送方</em>添加的消息属性(以key-value形式存储)
