@@ -61,7 +61,7 @@ public class SlaveBootStrap {
       final Thread mainThread = Thread.currentThread();
       
       CloseMonitor closeMonitor = new CloseMonitor();
-      int port = Integer.parseInt(System.getProperty("closeMonitorPort", "17555"));
+      int port = Integer.parseInt(System.getProperty("closeMonitorPort", "17556"));
       closeMonitor.start(port, new CloseHook() {
 
          @Override

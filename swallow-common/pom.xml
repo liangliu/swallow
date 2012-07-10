@@ -57,6 +57,11 @@
 			<artifactId>log4j</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+			<optional>true</optional>
+		</dependency>
 		<!-- 监控 -->
 		<dependency>
 			<groupId>com.dianping.cat</groupId>

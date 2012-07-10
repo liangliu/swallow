@@ -24,7 +24,7 @@ public class ConfigManager {
    private long                 checkConnectedChannelInterval   = 2000L;
    private long                 retryIntervalWhenMongoException = 2000L;
    private long                 waitAckTimeWhenCloseSwc         = 15000L;
-   private long                 waitSlaveShutDown               = 30000L;
+   private long                 waitSlaveShutDown               = 3000L;
    private long                 closeChannelMaxWaitingTime      = 10000L;
    private int                  heartbeatCheckInterval          = 3000;
    private int                  heartbeatMaxStopTime            = 10000;
