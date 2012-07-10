@@ -1,7 +1,6 @@
 package com.dianping.swallow.consumerserver.netty;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.UUID;
 
 import org.jboss.netty.channel.Channel;
