@@ -45,6 +45,8 @@ public class MongoClient implements ConfigChangeListener {
    private static final String           LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE        = "swallow.mongo.heartbeatCappedCollectionSize";
    private static final String           LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM = "swallow.mongo.heartbeatCappedCollectionMaxDocNum";
 
+   private static final int              MILLION                                          = 1000000;
+
    //serverURI的名字可配置(consumer和producer在Lion上的名字是不同的)
    private final String                  severURILionKey;
 
@@ -507,10 +509,10 @@ public class MongoClient implements ConfigChangeListener {
       DBObject options = new BasicDBObject();
       options.put("capped", true);
       if (size > 0) {
-         options.put("size", size);//max db file size in bytes
+         options.put("size", size * MILLION);//max db file size in bytes
       }
       if (cappedCollectionMaxDocNum > 0) {
-         options.put("max", cappedCollectionMaxDocNum);//max row count
+         options.put("max", cappedCollectionMaxDocNum * MILLION);//max row count
       }
       try {
          DBCollection collection = db.createCollection(collectionName, options);

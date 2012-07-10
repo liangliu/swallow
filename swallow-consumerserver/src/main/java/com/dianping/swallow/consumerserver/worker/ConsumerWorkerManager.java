@@ -12,6 +12,7 @@ import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
 import com.dianping.swallow.common.internal.dao.AckDAO;
 import com.dianping.swallow.common.internal.dao.MessageDAO;
 import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
+import com.dianping.swallow.common.internal.util.ProxyUtil;
 import com.dianping.swallow.consumerserver.Heartbeater;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
@@ -25,7 +26,7 @@ public class ConsumerWorkerManager {
    private Heartbeater                     heartbeater;
    private SwallowBuffer                   swallowBuffer;
    private MessageDAO                      messageDAO;
-
+   
    private ConfigManager                   configManager             = ConfigManager.getInstance();
 
    private MQThreadFactory                 threadFactory             = new MQThreadFactory();
@@ -36,7 +37,7 @@ public class ConsumerWorkerManager {
    private volatile boolean closed = false;
    
    public void setAckDAO(AckDAO ackDAO) {
-      this.ackDAO = ackDAO;
+      this.ackDAO = ProxyUtil.createProxyWithRetryMechanism(ackDAO, configManager.getRetryIntervalWhenMongoException());
    }
 
    public MQThreadFactory getThreadFactory() {
@@ -52,7 +53,7 @@ public class ConsumerWorkerManager {
    }
 
    public void setMessageDAO(MessageDAO messageDAO) {
-      this.messageDAO = messageDAO;
+      this.messageDAO = ProxyUtil.createProxyWithRetryMechanism(messageDAO,configManager.getRetryIntervalWhenMongoException());
    }
 
    public ConfigManager getConfigManager() {
@@ -189,5 +190,6 @@ public class ConsumerWorkerManager {
    public MessageDAO getMessageDAO() {
       return messageDAO;
    }
+
 
 }

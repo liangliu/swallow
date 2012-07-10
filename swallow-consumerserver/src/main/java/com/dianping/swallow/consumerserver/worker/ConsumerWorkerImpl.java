@@ -29,6 +29,7 @@ import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
 import com.dianping.swallow.common.internal.threadfactory.PullStrategy;
+import com.dianping.swallow.common.internal.util.IPUtil;
 import com.dianping.swallow.common.internal.util.MongoUtils;
 import com.dianping.swallow.common.internal.util.ZipUtil;
 import com.dianping.swallow.common.message.Message;
@@ -40,8 +41,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    private ConsumerInfo                           consumerInfo;
    private BlockingQueue<Channel>                 freeChannels      = new LinkedBlockingQueue<Channel>();
-   private Set<Channel>                           connectedChannels = Collections
-                                                                          .synchronizedSet(new HashSet<Channel>());
+   private Map<Channel, String>                   connectedChannels = new ConcurrentHashMap<Channel, String>();
    private BlockingQueue<Message>                 messageQueue      = null;
    private AckDAO                                 ackDao;
    private SwallowBuffer                          swallowBuffer;
@@ -56,11 +56,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private PullStrategy                           pullStgy;
    private ConfigManager                          configManager;
    private Map<Channel, Map<PktMessage, Boolean>> waitAckMessages   = new ConcurrentHashMap<Channel, Map<PktMessage, Boolean>>();
-   private Set<String> messageType;
-
-   public Set<Channel> getConnectedChannels() {
-      return connectedChannels;
-   }
+   private Set<String>                            messageType;
 
    public ConsumerWorkerImpl(ConsumerInfo consumerInfo, ConsumerWorkerManager workerManager, Set<String> messageType) {
       this.consumerInfo = consumerInfo;
@@ -75,7 +71,8 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       pullStgy = new DefaultPullStrategy(configManager.getPullFailDelayBase(),
             configManager.getPullFailDelayUpperBound());
 
-      ackExecutor = new ThreadPoolExecutor(1, 1, Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(), new MQThreadFactory("swallow-ack-"));
+      ackExecutor = new ThreadPoolExecutor(1, 1, Long.MAX_VALUE, TimeUnit.DAYS, new LinkedBlockingQueue<Runnable>(),
+            new MQThreadFactory("swallow-ack-"));
 
       startMessageFetcherThread();
 
@@ -92,7 +89,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
             while (true) {
                try {
                   updateWaitAckMessages(channel, ackedMsgId);
-                  updateMaxMessageId(ackedMsgId);
+                  updateMaxMessageId(ackedMsgId, channel);
                   break;
                } catch (Exception e) {
                   LOG.error("updateMaxMessageId wrong!", e);
@@ -124,9 +121,9 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    }
 
-   private void updateMaxMessageId(Long ackedMsgId) {
+   private void updateMaxMessageId(Long ackedMsgId, Channel channel) {
       if (ackedMsgId != null && ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
-         ackDao.add(topicName, consumerid, ackedMsgId);
+         ackDao.add(topicName, consumerid, ackedMsgId, connectedChannels.get(channel));
       }
    }
 
@@ -165,7 +162,8 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       ackExecutor.execute(new Runnable() {
          @Override
          public void run() {
-            connectedChannels.add(channel);
+            
+            connectedChannels.put(channel, IPUtil.getIpFromChannel(channel, "127.0.0.1"));
             started = true;
             for (int i = 0; i < clientThreadCount; i++) {
                freeChannels.add(channel);
@@ -187,68 +185,46 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    }
 
-   private long getMessageIdOfTailMessage(String topicName, String consumerId) {
+   private long getMessageIdOfTailMessage(String topicName, String consumerId, Channel channel) {
       Long maxMessageId = null;
-      try{
-         while(true){
-            try{
-               maxMessageId = ackDao.getMaxMessageId(topicName, consumerId);
-               break;
-            }catch(Exception e){
-               LOG.error("ackDao.getMaxMessageId wrong!", e);
-               Thread.sleep(configManager.getRetryIntervalWhenMongoException());
-            }
-         }
-         if (maxMessageId == null) {
-            while(true){
-               try{
-                  maxMessageId = messageDao.getMaxMessageId(topicName);
-                  break;
-               }catch(Exception e){
-                  LOG.error("ackDao.getMaxMessageId wrong!", e);
-                  Thread.sleep(configManager.getRetryIntervalWhenMongoException());
-               }
-            }           
+      if (!ConsumerType.NON_DURABLE.equals(consumerInfo.getConsumerType())) {
+         maxMessageId = ackDao.getMaxMessageId(topicName, consumerId);
+      }
+      if (maxMessageId == null) {
+         while (true) {
+            maxMessageId = messageDao.getMaxMessageId(topicName);
+
             if (maxMessageId == null) {
                int time = (int) (System.currentTimeMillis() / 1000);
                BSONTimestamp bst = new BSONTimestamp(time, 1);
                maxMessageId = MongoUtils.BSONTimestampToLong(bst);
             }
-            while(true){
-               try{
-                  ackDao.add(topicName, consumerId, maxMessageId);
-                  break;
-               }catch(Exception e){
-                  LOG.error("add count wrong!", e);
-                  Thread.sleep(configManager.getRetryIntervalWhenMongoException());
-               }
-            }  
-            
+            if (!ConsumerType.NON_DURABLE.equals(consumerInfo.getConsumerType())) {
+               //consumer连接上后，以此时为时间基准，以后的消息都可以收到，因此需要插入ack。
+               ackDao.add(topicName, consumerId, maxMessageId, connectedChannels.get(channel));
+            }
          }
-         
-      }catch (InterruptedException e) {
-         LOG.info("getMessageIdOfTailMessage thread InterruptedException", e);
       }
-      return maxMessageId;     
+      return maxMessageId;
    }
 
-   public void sendMessageByPollFreeChannelQueue() {
-      //创建消息缓冲QUEUE
-      if (messageQueue == null) {
-         long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid);
-         messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage, messageType);
-      }
+   public void sendMessageByPollFreeChannelQueue() {     
       try {
          while (getMessageisAlive) {
             Channel channel = freeChannels.take();
             //如果未连接，则不做处理
             if (channel.isConnected()) {
+               //创建消息缓冲QUEUE
+               if (messageQueue == null) {
+                  long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid, channel);
+                  messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage, messageType);
+               }
                if (cachedMessages.isEmpty()) {
-                  putMsg2CachedMsgFromMsgQueue();                  
+                  putMsg2CachedMsgFromMsgQueue();
                }
                //收到close命令后,可能没有取得消息,此时,cachedMessages仍然可能为null
                if (!cachedMessages.isEmpty()) {
-                  sendMsgFromCachedMessages(channel);                 
+                  sendMsgFromCachedMessages(channel);
                }
 
             }
@@ -257,21 +233,15 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
          LOG.info("get message from messageQueue thread InterruptedException", e);
       }
    }
-   
+
    private void sendMsgFromCachedMessages(Channel channel) throws InterruptedException {
       PktMessage preparedMessage = cachedMessages.poll();
       Long messageId = preparedMessage.getContent().getMessageId();
       //如果是AT_MOST模式，收到ACK之前更新messageId的类型
       if (ConsumerType.AT_MOST.equals(consumerInfo.getConsumerType())) {
-         while (true) {
-            try {
-               ackDao.add(topicName, consumerid, messageId);
-               break;
-            } catch (Exception e) {
-               LOG.error("ackDao.add wrong!", e);
-               Thread.sleep(configManager.getRetryIntervalWhenMongoException());
-            }
-         }
+
+         ackDao.add(topicName, consumerid, messageId, connectedChannels.get(channel));
+
       }
       try {
          channel.write(preparedMessage);
@@ -288,7 +258,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
          LOG.error(consumerInfo.toString() + "：channel write error.", e);
          cachedMessages.add(preparedMessage);
       }
-      
+
    }
 
    private void putMsg2CachedMsgFromMsgQueue() throws InterruptedException {
@@ -303,18 +273,18 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       }
       if (message != null) {
          //如果是压缩后的消息，则进行解压缩
-         if(message.getInternalProperties() != null){
-            if("gzip".equals(message.getInternalProperties().get("compress"))){
+         if (message.getInternalProperties() != null) {
+            if ("gzip".equals(message.getInternalProperties().get("compress"))) {
                try {
                   message.setContent(ZipUtil.unzip(message.getContent()));
                } catch (IOException e) {
                   LOG.error("ZipUtil.unzip error!", e);
                }
             }
-         }        
+         }
          cachedMessages.add(new PktMessage(consumerInfo.getConsumerId().getDest(), message));
       }
-      
+
    }
 
    @Override
@@ -329,7 +299,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       public String getConnectedChannels() {
          StringBuilder sb = new StringBuilder();
          if (connectedChannels != null) {
-            for (Channel channel : connectedChannels) {
+            for (Channel channel : connectedChannels.keySet()) {
                sb.append(channel.getRemoteAddress()).append("(isConnected:").append(channel.isConnected()).append(')');
             }
          }

@@ -27,7 +27,6 @@ import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
 public class MasterBootStrap {
 
-   @SuppressWarnings("unused")
    private static final Logger LOG     = LoggerFactory.getLogger(MasterBootStrap.class);
 
    private static boolean      isSlave = false;
@@ -42,11 +41,11 @@ public class MasterBootStrap {
       ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumerserver.xml" });
       final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
       consumerWorkerManager.init(isSlave);
-      //      try {
-      //         Thread.sleep(consumerWorkerManager.getConfigManager().getWaitSlaveShutDown());//主机启动的时候睡眠一会，给时间给slave关闭。
-      //      } catch (InterruptedException e) {
-      //         LOG.error("thread InterruptedException", e);
-      //      }
+            try {
+               Thread.sleep(consumerWorkerManager.getConfigManager().getWaitSlaveShutDown());//主机启动的时候睡眠一会，给时间给slave关闭。
+            } catch (InterruptedException e) {
+               LOG.error("thread InterruptedException", e);
+            }
 
       // Configure the server.
       final ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(

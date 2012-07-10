@@ -30,7 +30,6 @@ public class HandlerAsynchroMode {
    private FileQueue<Packet>            messageQueue;                                                               //filequeue
 
    private int                          delayBase              = ProducerFactoryImpl.getRemoteServiceTimeout();
-   private DefaultPullStrategy          defaultPullStrategy    = new DefaultPullStrategy(delayBase, 10 * delayBase);
 
    //构造函数
    public HandlerAsynchroMode(ProducerImpl producer) {
@@ -38,7 +37,7 @@ public class HandlerAsynchroMode {
       this.producer = producer;
       fileQueueConfig.setMaxDataFileSize(DEFAULT_FILEQUEUE_SIZE);
       messageQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, producer.getDestination().getName(),
-            !producer.isContinueSend());
+            producer.isContinueSend());
       this.start();
    }
 
@@ -66,6 +65,9 @@ public class HandlerAsynchroMode {
 
       @Override
       public void run() {
+         //异步模式下，每个线程单独有一个延时策略，以保证不同的线程不会互相冲突
+         DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, 5 * delayBase);
+         
          while (true) {
             //从filequeue获取message，如果filequeue无元素则阻塞            
             message = messageQueue.get();
@@ -74,9 +76,9 @@ public class HandlerAsynchroMode {
                try {
                   leftRetryTimes--;
                   //TODO 去除debug状态
-//                  if(logger.isDebugEnabled()){
-//                     logger.debug("[AsyncroModeHandler]:[" + (defaultRetryTimes - leftRetryTimes) + " th send.]");
-//                  }
+                  //                  if(logger.isDebugEnabled()){
+                  //                     logger.debug("[AsyncroModeHandler]:[" + (defaultRetryTimes - leftRetryTimes) + " th send.]");
+                  //                  }
                   remoteService.sendMessage(message);
                } catch (ServerDaoException e) {
                   //如果剩余重试次数>0，超时重试
@@ -91,9 +93,9 @@ public class HandlerAsynchroMode {
                   }
                   logger.error("[AsyncHandler]:[Message sent failed.][Reason=DAO]", e);
                   //TODO 去除debug状态
-//                  if (logger.isDebugEnabled()) {
-//                     logger.debug("Can not save message to DB.");
-//                  }
+                  //                  if (logger.isDebugEnabled()) {
+                  //                     logger.debug("Can not save message to DB.");
+                  //                  }
                } catch (NetException e) {
                   if (leftRetryTimes > 0) {
                      try {
@@ -106,23 +108,24 @@ public class HandlerAsynchroMode {
                   }
                   logger.error("[AsyncHandler]:[Message sent failed.][Reason=Network]", e);
                   //TODO 去除debug状态
-//                  if (logger.isDebugEnabled()) {
-//                     logger.debug("Network is down.");
-//                  }
+                  //                  if (logger.isDebugEnabled()) {
+                  //                     logger.debug("Network is down.");
+                  //                  }
                } catch (Exception e) {
-                  e.printStackTrace();
+                  //捕获到未知异常，记录
+                  logger.error("[AsyncHandler]:[Unknow Exception]", e);
                   try {
                      defaultPullStrategy.fail(true);
                   } catch (InterruptedException ie) {
                      //睡眠失败则不睡眠直接发送
                   }
-                  //捕获到未知异常，不管
                   continue;
                }
-               defaultPullStrategy.succeess();
                //如果发送成功则跳出循环
                break;
             }
+            //跳出循环，说明消息发送成功break，或重试次数消耗完，此时重置延时
+            defaultPullStrategy.succeess();
          }
       }
    }
