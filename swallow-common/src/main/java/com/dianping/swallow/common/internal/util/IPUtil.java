@@ -67,7 +67,7 @@ public class IPUtil {
       }
    }
 
-   public String getIpFromChannel(Channel channel, String defaultIP) {
+   public static String getIpFromChannel(Channel channel, String defaultIP) {
       if (channel == null)
          return defaultIP;
       String channelIP = defaultIP;
