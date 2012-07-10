@@ -189,16 +189,19 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    private long getMessageIdOfTailMessage(String topicName, String consumerId) {
       Long maxMessageId = null;
+      
       try{
-         while(true){
-            try{
-               maxMessageId = ackDao.getMaxMessageId(topicName, consumerId);
-               break;
-            }catch(Exception e){
-               LOG.error("ackDao.getMaxMessageId wrong!", e);
-               Thread.sleep(configManager.getRetryIntervalWhenMongoException());
+         if (!ConsumerType.NON_DURABLE.equals(consumerInfo.getConsumerType())) {
+            while(true){
+               try{
+                  maxMessageId = ackDao.getMaxMessageId(topicName, consumerId);
+                  break;
+               }catch(Exception e){
+                  LOG.error("ackDao.getMaxMessageId wrong!", e);
+                  Thread.sleep(configManager.getRetryIntervalWhenMongoException());
+               }
             }
-         }
+         }         
          if (maxMessageId == null) {
             while(true){
                try{
@@ -214,16 +217,17 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                BSONTimestamp bst = new BSONTimestamp(time, 1);
                maxMessageId = MongoUtils.BSONTimestampToLong(bst);
             }
-            while(true){
-               try{
-                  ackDao.add(topicName, consumerId, maxMessageId);
-                  break;
-               }catch(Exception e){
-                  LOG.error("add count wrong!", e);
-                  Thread.sleep(configManager.getRetryIntervalWhenMongoException());
-               }
-            }  
-            
+            if (!ConsumerType.NON_DURABLE.equals(consumerInfo.getConsumerType())) {
+               while(true){//consumer连接上后，以此时为时间基准，以后的消息都可以收到，因此需要插入ack。
+                  try{
+                     ackDao.add(topicName, consumerId, maxMessageId);
+                     break;
+                  }catch(Exception e){
+                     LOG.error("add count wrong!", e);
+                     Thread.sleep(configManager.getRetryIntervalWhenMongoException());
+                  }
+               }  
+            }           
          }
          
       }catch (InterruptedException e) {
