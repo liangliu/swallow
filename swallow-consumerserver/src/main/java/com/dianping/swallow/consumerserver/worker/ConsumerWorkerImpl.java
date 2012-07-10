@@ -190,10 +190,8 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
          while (true) {
             maxMessageId = messageDao.getMaxMessageId(topicName);
 
-            if (maxMessageId == null) {
-               int time = (int) (System.currentTimeMillis() / 1000);
-               BSONTimestamp bst = new BSONTimestamp(time, 1);
-               maxMessageId = MongoUtils.BSONTimestampToLong(bst);
+            if (maxMessageId == null) {               
+               maxMessageId = MongoUtils.getLongByCurTime();
             }
             if (!ConsumerType.NON_DURABLE.equals(consumerInfo.getConsumerType())) {
                //consumer连接上后，以此时为时间基准，以后的消息都可以收到，因此需要插入ack。
