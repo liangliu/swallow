@@ -13,35 +13,35 @@ public interface Message {
    /**
     * 获取消息id
     * 
-    * @return
+    * @return 消息id
     */
    Long getMessageId();
 
    /**
     * 获取消息创建时间
     * 
-    * @return
+    * @return 消息创建时间
     */
    Date getGeneratedTime();
 
    /**
     * 获取消息类型
     * 
-    * @return
+    * @return 消息类型
     */
    String getType();
 
    /**
     * 获取消息<em>发送方</em>添加的消息属性(以key-value形式存储)
     * 
-    * @return
+    * @return 消息<em>发送方</em>添加的消息属性
     */
    Map<String, String> getProperties();
 
    /**
-    * 以字符串的格式获取消息内容(如果<em>发送方</em>发送的消息内容非String类型，将被转化成json字符串)
+    * 返回字符串格式的消息内容(如果<em>发送方</em>发送的消息内容非String类型，将被转化成json字符串)
     * 
-    * @return
+    * @return 消息内容
     */
    String getContent();
 
@@ -59,14 +59,14 @@ public interface Message {
     * 获取<em>消息内容</em>的经过<em>Sha1</em>算法生成的消息摘要。此方法为辅助方法，在适当场景可以用于检验<em>消息内容</em>
     * 是否重复。
     * 
-    * @return
+    * @return 经过<em>Sha1</em>算法生成的消息摘要
     */
    String getSha1();
 
    /**
     * 获取消息<em>发送方</em>的IP地址
     * 
-    * @return
+    * @return 消息<em>发送方</em>的IP地址
     */
    String getSourceIp();
 }
