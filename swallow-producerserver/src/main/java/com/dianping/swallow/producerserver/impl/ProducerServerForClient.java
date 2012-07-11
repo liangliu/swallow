@@ -13,13 +13,13 @@ import com.dianping.swallow.common.internal.packet.Packet;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktProducerGreet;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
-import com.dianping.swallow.common.internal.producer.SwallowService;
+import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.util.IPUtil;
 import com.dianping.swallow.common.internal.util.SHAUtil;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 
-public class ProducerServerForClient implements SwallowService {
+public class ProducerServerForClient implements ProducerSwallowService {
 
    private static final Logger logger             = Logger.getLogger(ProducerServerForClient.class);
    private static final int    DEFAULT_PORT       = 4000;

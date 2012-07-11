@@ -103,12 +103,14 @@ public final class PigeonConfigure {
 
    private void checkParams() {
       if (!"hessian".equals(serialize) && !"java".equals(serialize) && !"protobuf".equals(serialize)
-            && !"thrift".equals(serialize))
+            && !"thrift".equals(serialize)) {
          logger.warn("[Unrecognized serialize, use default value: " + DEFAULT_SERIALIZE + ".]");
-//      if (!hosts
-//            .matches("[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5}"))
-//         //[[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5},][[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5}]
-//         logger.warn("[Unrecognized hosts, use default value: " + DEFAULT_HOSTS + ".]");
+         serialize = DEFAULT_SERIALIZE;
+      }
+      //      if (!hosts
+      //            .matches("[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5}"))
+      //         //[[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5},][[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5}]
+      //         logger.warn("[Unrecognized hosts, use default value: " + DEFAULT_HOSTS + ".]");
    }
 
    public String getServiceName() {

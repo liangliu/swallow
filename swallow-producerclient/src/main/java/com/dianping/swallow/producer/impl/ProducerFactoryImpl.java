@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.dianping.dpsf.api.ProxyFactory;
 import com.dianping.dpsf.exception.NetException;
 import com.dianping.swallow.common.internal.packet.PktProducerGreet;
-import com.dianping.swallow.common.internal.producer.SwallowService;
+import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.util.IPUtil;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
@@ -55,7 +55,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    //远程调用相关变量
    @SuppressWarnings("rawtypes")
    private final ProxyFactory         pigeon          = new ProxyFactory();                                //pigeon代理对象
-   private SwallowService             remoteService;                                                       //远程调用对象
+   private ProducerSwallowService             remoteService;                                                       //远程调用对象
    private PigeonConfigure            pigeonConfigure;
 
    /**
@@ -78,9 +78,9 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @return 实现MQService接口的类，此版本中为pigeon返回的一个远程调用服务代理
     * @throws RemoteServiceInitFailedException 远程调用服务（pigeon）初始化失败
     */
-   private SwallowService initPigeon(PigeonConfigure pigeonConfigure) throws RemoteServiceInitFailedException {
+   private ProducerSwallowService initPigeon(PigeonConfigure pigeonConfigure) throws RemoteServiceInitFailedException {
 
-      pigeon.setIface(SwallowService.class);
+      pigeon.setIface(ProducerSwallowService.class);
       pigeon.setCallMethod("sync");
 
       pigeon.setServiceName(pigeonConfigure.getServiceName());
@@ -90,12 +90,12 @@ public class ProducerFactoryImpl implements ProducerFactory {
       pigeon.setHosts(pigeonConfigure.getHosts());
       pigeon.setWeight(pigeonConfigure.getWeights());
 
-      SwallowService remoteService = null;
+      ProducerSwallowService remoteService = null;
       try {
          pigeon.init();
          logger.info("[Initialize pigeon successfully.]");
 
-         remoteService = (SwallowService) pigeon.getProxy();
+         remoteService = (ProducerSwallowService) pigeon.getProxy();
          logger.info("[Get remoteService successfully.]:[" + "RemoteService's timeout is: " + remoteServiceTimeout
                + ".]");
       } catch (Exception e) {
@@ -122,11 +122,11 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @return 获取远程调用服务接口
     */
    @Override
-   public SwallowService getRemoteService() {
+   public ProducerSwallowService getRemoteService() {
       return remoteService;
    }
 
-   public void setRemoteService(SwallowService remoteService) {
+   public void setRemoteService(ProducerSwallowService remoteService) {
       this.remoteService = remoteService;
    }
 
