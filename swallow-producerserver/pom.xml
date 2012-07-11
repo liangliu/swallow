@@ -87,15 +87,9 @@
 				<executions>
 					<execution>
 						<configuration>
-							<useProjectArtifact>true</useProjectArtifact>
-							<descriptorRefs>
-								<descriptorRef>jar-with-dependencies</descriptorRef>
-							</descriptorRefs>
-							<archive>
-								<manifest>
-									<mainClass>com.dianping.swallow.producerserver.bootstrap.ProducerServerBootstrap</mainClass>
-								</manifest>
-							</archive>
+							<descriptors>
+								<descriptor>src/main/resources/META-INF/assembly/assembly.xml</descriptor>
+							</descriptors>
 						</configuration>
 						<phase>package</phase>
 						<goals>

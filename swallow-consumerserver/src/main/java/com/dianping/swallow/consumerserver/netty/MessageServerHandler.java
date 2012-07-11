@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
@@ -111,31 +112,31 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
       
       //只有IOException的时候才需要处理。
       if (e.getCause() instanceof IOException) {
-         channelGroup.remove(e.getChannel());
+         channelImproper(e);
          LOG.error("Client disconnected!", e.getCause());
-         Channel channel = e.getChannel();
-         workerManager.handleChannelDisconnect(channel, consumerInfo);
-         channel.close();
+         e.getChannel().close();
       }
       LOG.info("something exception happened!", e.getCause());
    }
    
    @Override
    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-      channelGroup.remove(e.getChannel());
-      Channel channel = e.getChannel();
-      workerManager.handleChannelDisconnect(channel, consumerInfo);
+      channelImproper(e);
       super.channelDisconnected(ctx, e);
    }
 
    @Override
    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-      channelGroup.remove(e.getChannel());
-      Channel channel = e.getChannel();
-      workerManager.handleChannelDisconnect(channel, consumerInfo);
+      channelImproper(e);
       super.channelClosed(ctx, e);
    }
 
+   private void channelImproper(ChannelEvent e){
+      channelGroup.remove(e.getChannel());
+      Channel channel = e.getChannel();
+      workerManager.handleChannelDisconnect(channel, consumerInfo);
+   }
+   
    public static ChannelGroup getChannelGroup() {
       return channelGroup;
    }
