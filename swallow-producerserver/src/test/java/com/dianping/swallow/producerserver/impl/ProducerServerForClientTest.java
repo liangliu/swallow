@@ -2,11 +2,11 @@ package com.dianping.swallow.producerserver.impl;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.Date;
-import static org.mockito.Mockito.*;
 
 import jmockmongo.MockMongo;
 import junit.framework.Assert;
@@ -28,7 +28,6 @@ import com.dianping.swallow.common.internal.packet.PktProducerGreet;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
 import com.dianping.swallow.common.internal.util.SHAUtil;
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 
 public class ProducerServerForClientTest {
