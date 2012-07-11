@@ -13,13 +13,13 @@ import com.dianping.swallow.common.internal.packet.Packet;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktProducerGreet;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
-import com.dianping.swallow.common.internal.producer.MQService;
+import com.dianping.swallow.common.internal.producer.SwallowService;
 import com.dianping.swallow.common.internal.util.IPUtil;
 import com.dianping.swallow.common.internal.util.SHAUtil;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 
-public class ProducerServerForClient implements MQService {
+public class ProducerServerForClient implements SwallowService {
 
    private static final Logger logger             = Logger.getLogger(ProducerServerForClient.class);
    private static final int    DEFAULT_PORT       = 4000;
@@ -90,10 +90,10 @@ public class ProducerServerForClient implements MQService {
                throw new ServerDaoException();
             }
             //TODO 去除debug状态
-//            if (logger.isDebugEnabled()) {
-//               //               logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getContent() + "]");
-//               logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getSha1() + "]");
-//            }
+            //            if (logger.isDebugEnabled()) {
+            //               //               logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getContent() + "]");
+            //               logger.debug("[Received]:[NO." + (++receivedMessageNum) + "][" + swallowMessage.getSha1() + "]");
+            //            }
             break;
          default:
             logger.warn("[Received unrecognized packet.]");

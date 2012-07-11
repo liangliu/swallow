@@ -28,7 +28,7 @@ import org.mockito.Matchers;
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.internal.packet.Packet;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
-import com.dianping.swallow.common.internal.producer.MQService;
+import com.dianping.swallow.common.internal.producer.SwallowService;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.NullContentException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
@@ -50,7 +50,7 @@ public class ProducerTest {
    public void testProducerFactoryImpl() {
       ProducerFactoryImpl producerFactory = null;
 
-      MQService normalRemoteService = mock(MQService.class);
+      SwallowService normalRemoteService = mock(SwallowService.class);
 
       //获取Producer工厂实例
       producerFactory = ProducerFactoryImpl.getInstance(5000);
@@ -110,12 +110,12 @@ public class ProducerTest {
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
 
       //正常的mock
-      MQService normalRemoteServiceMock = mock(MQService.class);
+      SwallowService normalRemoteServiceMock = mock(SwallowService.class);
       PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
       when(normalRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenReturn(pktSwallowACK);
 
       //抛异常的mock
-      MQService exceptionRemoteServiceMock = mock(MQService.class);
+      SwallowService exceptionRemoteServiceMock = mock(SwallowService.class);
 
       //Normal ProducerFactory mock
       ProducerFactory normalProducerFactory = mock(ProducerFactory.class);
@@ -180,12 +180,12 @@ public class ProducerTest {
    public void testSyncProducerImpl() throws ServerDaoException {
 
       //正常的mock
-      MQService normalRemoteServiceMock = mock(MQService.class);
+      SwallowService normalRemoteServiceMock = mock(SwallowService.class);
       PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
       when(normalRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenReturn(pktSwallowACK);
 
       //抛异常的mock
-      MQService exceptionRemoteServiceMock = mock(MQService.class);
+      SwallowService exceptionRemoteServiceMock = mock(SwallowService.class);
 
       //Normal ProducerFactory mock
       ProducerFactory normalProducerFactory = mock(ProducerFactory.class);
