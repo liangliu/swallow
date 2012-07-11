@@ -57,7 +57,7 @@ public class ProducerTest {
       SwallowService normalRemoteService = mock(SwallowService.class);
 
       //获取Producer工厂实例
-      producerFactory = ProducerFactoryImpl.getInstance(100);
+      producerFactory = ProducerFactoryImpl.getInstance();
       producerFactory.setRemoteService(normalRemoteService);
 
       Assert.assertNotNull(producerFactory);

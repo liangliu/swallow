@@ -28,6 +28,7 @@ public class ProducerServerForClient implements SwallowService {
    private int                 port               = DEFAULT_PORT;
    private long                receivedMessageNum = 0;
    private MessageDAO          messageDAO;
+   private String              remoteServiceName;
 
    public ProducerServerForClient() {
       //Hawk监控
@@ -46,7 +47,7 @@ public class ProducerServerForClient implements SwallowService {
          ServiceRegistry remoteService = null;
          remoteService = new ServiceRegistry(getPort());
          Map<String, Object> services = new HashMap<String, Object>();
-         services.put("remoteService", this);
+         services.put(remoteServiceName, this);
          remoteService.setServices(services);
          remoteService.init();
          logger.info("[Initialize pigeon sucessfully, Producer service for client is ready.]");
@@ -107,6 +108,14 @@ public class ProducerServerForClient implements SwallowService {
 
    public void setMessageDAO(MessageDAO messageDAO) {
       this.messageDAO = messageDAO;
+   }
+
+   public String getRemoteServiceName() {
+      return remoteServiceName;
+   }
+
+   public void setRemoteServiceName(String remoteServiceName) {
+      this.remoteServiceName = remoteServiceName;
    }
 
    /**

@@ -1,0 +1,170 @@
+package com.dianping.swallow.producer.impl.internal;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public final class PigeonConfigure {
+
+   private static final Logger  logger               = LoggerFactory.getLogger(PigeonConfigure.class);
+
+   private static final String  DEFAULT_SERVICE_NAME = "remoteService";
+   private static final String  DEFAULT_SERIALIZE    = "hessian";
+   private static final int     DEFAULT_TIMEOUT      = 5000;
+   private static final boolean DEFAULT_IS_USE_LION  = false;
+   private static final String  DEFAULT_HOSTS        = "127.0.0.1:4000";
+   private static final String  DEFAULT_WEIGHTS      = "1";
+
+   private String               serviceName          = DEFAULT_SERVICE_NAME;
+   private String               serialize            = DEFAULT_SERIALIZE;
+   private int                  timeout              = DEFAULT_TIMEOUT;
+   private boolean              useLion              = DEFAULT_IS_USE_LION;
+   private String               hosts                = DEFAULT_HOSTS;
+   private String               weights              = DEFAULT_WEIGHTS;
+
+   public PigeonConfigure() {
+      //默认配置
+   }
+
+   @SuppressWarnings("rawtypes")
+   public PigeonConfigure(String configFile) {
+      Properties props = new Properties();
+      Class clazz = this.getClass();
+      InputStream in = null;
+      in = PigeonConfigure.class.getClassLoader().getResourceAsStream(configFile);
+
+      try {
+         props.load(in);
+      } catch (IOException e) {
+         logger.error("[Load property file failed.]", e);
+      } finally {
+         if (in != null) {
+            try {
+               in.close();
+            } catch (IOException e) {
+               logger.error("[Close inputstream failed.]", e);
+            }
+         }
+      }
+
+      for (String key : props.stringPropertyNames()) {
+         Field field = null;
+         try {
+            field = clazz.getDeclaredField(key.trim());
+         } catch (Exception e) {
+            logger.warn("[Unknow property found in " + configFile + ": " + key + ".]", e);
+            continue;
+         }
+         field.setAccessible(true);
+
+         if (field.getType().equals(Integer.TYPE)) {
+            try {
+               field.set(this, Integer.parseInt(props.getProperty(key).trim()));
+            } catch (Exception e) {
+               logger.warn("[Can not parse property " + key + ".]", e);
+               continue;
+            }
+         } else if (field.getType().equals(Boolean.TYPE)) {
+            try {
+               field.set(this, Boolean.parseBoolean(props.getProperty(key).trim()));
+            } catch (Exception e) {
+               logger.warn("[Can not parse property " + key + ".]", e);
+               continue;
+            }
+         } else if (field.getType().equals(String.class)) {
+            try {
+               field.set(this, props.getProperty(key).trim());
+            } catch (Exception e) {
+               logger.warn("[Can not parse property " + key + ".]", e);
+               continue;
+            }
+         }
+      }
+      if (logger.isDebugEnabled()) {
+         Field[] fields = clazz.getDeclaredFields();
+         for (int i = 0; i < fields.length; i++) {
+            Field f = fields[i];
+            f.setAccessible(true);
+            if (!Modifier.isStatic(f.getModifiers())) {
+               try {
+                  logger.debug(f.getName() + "=" + f.get(this));
+               } catch (Exception e) {
+               }
+            }
+         }
+      }
+      checkParams();
+   }
+
+   private void checkParams() {
+      if (!"hessian".equals(serialize) && !"java".equals(serialize) && !"protobuf".equals(serialize)
+            && !"thrift".equals(serialize))
+         logger.warn("[Unrecognized serialize, use default value: " + DEFAULT_SERIALIZE + ".]");
+//      if (!hosts
+//            .matches("[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5}"))
+//         //[[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5},][[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5}]
+//         logger.warn("[Unrecognized hosts, use default value: " + DEFAULT_HOSTS + ".]");
+   }
+
+   public String getServiceName() {
+      return serviceName;
+   }
+
+   public void setServiceName(String serviceName) {
+      this.serviceName = serviceName;
+   }
+
+   public String getSerialize() {
+      return serialize;
+   }
+
+   public void setSerialize(String serialize) {
+      this.serialize = serialize;
+   }
+
+   public int getTimeout() {
+      return timeout;
+   }
+
+   public void setTimeout(int timeout) {
+      this.timeout = timeout;
+   }
+
+   public boolean isUseLion() {
+      return useLion;
+   }
+
+   public void setUseLion(boolean useLion) {
+      this.useLion = useLion;
+   }
+
+   public String getHosts() {
+      return hosts;
+   }
+
+   public void setHosts(String hosts) {
+      this.hosts = hosts;
+   }
+
+   public String getWeights() {
+      return weights;
+   }
+
+   public void setWeights(String weights) {
+      this.weights = weights;
+   }
+
+   public static void main(String[] args) {
+      PigeonConfigure pigeonConfigure = new PigeonConfigure("pigeon.properties");
+      System.out.println(pigeonConfigure.getHosts());
+      System.out.println(pigeonConfigure.getSerialize());
+      System.out.println(pigeonConfigure.getServiceName());
+      System.out.println(pigeonConfigure.getTimeout());
+      System.out.println(pigeonConfigure.getWeights());
+   }
+}

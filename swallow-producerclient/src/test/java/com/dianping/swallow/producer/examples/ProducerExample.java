@@ -45,8 +45,7 @@ public class ProducerExample {
       //获取Producer工厂实例
       ProducerFactory producerFactory = null;
       try {
-         //OR: producerFactory = ProducerFactory.getInstance()//默认远程调用timeout为5000;
-         producerFactory = ProducerFactoryImpl.getInstance(5000);
+         producerFactory = ProducerFactoryImpl.getInstance();
 
          //配置Producer选项，如果配置项出错则使用默认配置
          //默认配置的Producer为同步模式（SYNC_MODE）、失败重试次数为5、压缩选项为假
