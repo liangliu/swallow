@@ -344,4 +344,7 @@ public class ProducerImpl implements Producer {
       return retryTimes;
    }
 
+   public boolean isZipMessage() {
+      return zipMessage;
+   }
 }
