@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.dianping.dpsf.api.ProxyFactory;
 import com.dianping.dpsf.exception.NetException;
 import com.dianping.swallow.common.internal.packet.PktProducerGreet;
-import com.dianping.swallow.common.internal.producer.MQService;
+import com.dianping.swallow.common.internal.producer.SwallowService;
 import com.dianping.swallow.common.internal.util.IPUtil;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
@@ -42,21 +42,20 @@ import com.dianping.swallow.producer.impl.internal.ProducerImpl;
  */
 public class ProducerFactoryImpl implements ProducerFactory {
 
-   private static final Logger        logger          = LoggerFactory.getLogger(ProducerFactoryImpl.class);
-
-   private static final String        producerIP      = IPUtil.getFirstNoLoopbackIP4Address();             //Producer IP地址
-   private static final String        producerVersion = "0.6.0";                                           //Producer版本号
-
    private static ProducerFactoryImpl instance;                                                            //Producer工厂类单例
 
+   private final Logger               logger          = LoggerFactory.getLogger(ProducerFactoryImpl.class);
+   private final String               producerIP      = IPUtil.getFirstNoLoopbackIP4Address();             //Producer IP地址
+   private final String               producerVersion = "0.6.0";                                           //Producer版本号
+
    //远程调用相关设置
-   private static int                 remoteServiceTimeout;                                                //远程调用超时
    private static final int           DEFAULT_TIMEOUT = 5000;                                              //远程调用默认超时
+   private static int                 remoteServiceTimeout;                                                //远程调用超时
 
    //远程调用相关变量
    @SuppressWarnings("rawtypes")
-   private static final ProxyFactory  pigeon          = new ProxyFactory();                                //pigeon代理对象
-   private MQService           remoteService;                                                       //远程调用对象
+   private final ProxyFactory         pigeon          = new ProxyFactory();                                //pigeon代理对象
+   private SwallowService             remoteService;                                                       //远程调用对象
 
    /**
     * Producer工厂类构造函数
@@ -77,9 +76,9 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @return 实现MQService接口的类，此版本中为pigeon返回的一个远程调用服务代理
     * @throws RemoteServiceInitFailedException 远程调用服务（pigeon）初始化失败
     */
-   private MQService initRemoteService(int remoteServiceTimeout) throws RemoteServiceInitFailedException {
+   private SwallowService initRemoteService(int remoteServiceTimeout) throws RemoteServiceInitFailedException {
       pigeon.setServiceName("remoteService");
-      pigeon.setIface(MQService.class);
+      pigeon.setIface(SwallowService.class);
       pigeon.setSerialize("hessian");
       pigeon.setCallMethod("sync");
       pigeon.setTimeout(remoteServiceTimeout);
@@ -89,12 +88,12 @@ public class ProducerFactoryImpl implements ProducerFactory {
       pigeon.setHosts("127.0.0.1:4000");
       pigeon.setWeight("1");
 
-      MQService remoteService = null;
+      SwallowService remoteService = null;
       try {
          pigeon.init();
          logger.info("[Initialize pigeon successfully.]");
 
-         remoteService = (MQService) pigeon.getProxy();
+         remoteService = (SwallowService) pigeon.getProxy();
          logger.info("[Get remoteService successfully.]:[" + "RemoteService's timeout is: " + remoteServiceTimeout
                + ".]");
       } catch (Exception e) {
@@ -146,7 +145,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @return 获取远程调用服务接口
     */
    @Override
-   public MQService getRemoteService() {
+   public SwallowService getRemoteService() {
       return remoteService;
    }
 
@@ -157,6 +156,10 @@ public class ProducerFactoryImpl implements ProducerFactory {
    public String getProducerIP() {
       return producerIP;
    }
+   
+   public void setRemoteService(SwallowService remoteService) {
+      this.remoteService = remoteService;
+   }
 
    /**
     * @return 获取Producer的版本号
@@ -165,7 +168,11 @@ public class ProducerFactoryImpl implements ProducerFactory {
    public String getProducerVersion() {
       return producerVersion;
    }
-
+   
+   public static int getRemoteServiceTimeout() {
+      return remoteServiceTimeout;
+   }
+   
    /**
     * 获取默认配置的Producer，默认Producer工作模式为同步，重试次数为5
     * 
@@ -176,7 +183,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    public Producer getProducer(Destination dest) throws TopicNameInvalidException {
       return getProducer(dest, null);
    }
-
+   
    /**
     * 获取Producer实现类对象，通过Map指定Producer的选项，未指定的项使用Producer默认配置， Producer默认配置如下：
     * producerMode:ProducerMode.SYNC_MODE; threadPoolSize:10;
@@ -227,13 +234,4 @@ public class ProducerFactoryImpl implements ProducerFactory {
       }
       return producerImpl;
    }
-
-   public void setRemoteService(MQService remoteService) {
-      this.remoteService = remoteService;
-   }
-
-   public static int getRemoteServiceTimeout() {
-      return remoteServiceTimeout;
-   }
-
 }
