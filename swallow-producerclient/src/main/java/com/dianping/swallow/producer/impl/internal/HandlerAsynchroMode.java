@@ -59,10 +59,10 @@ public class HandlerAsynchroMode {
    //从filequeue队列获取并发送Message
    private class TskGetAndSend implements Runnable {
 
-      private final int sendTimes = producer.getRetryTimes() + 1;
-      private int       leftRetryTimes    = sendTimes;
-      private Packet    message           = null;
-      private SwallowService remoteService     = producer.getRemoteService();
+      private final int      sendTimes      = producer.getRetryTimes() + 1;
+      private int            leftRetryTimes = sendTimes;
+      private Packet         message        = null;
+      private SwallowService remoteService  = producer.getRemoteService();
 
       @Override
       public void run() {

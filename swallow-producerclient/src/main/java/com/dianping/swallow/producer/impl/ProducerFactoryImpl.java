@@ -156,7 +156,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    public String getProducerIP() {
       return producerIP;
    }
-   
+
    public void setRemoteService(SwallowService remoteService) {
       this.remoteService = remoteService;
    }
@@ -168,11 +168,11 @@ public class ProducerFactoryImpl implements ProducerFactory {
    public String getProducerVersion() {
       return producerVersion;
    }
-   
+
    public static int getRemoteServiceTimeout() {
       return remoteServiceTimeout;
    }
-   
+
    /**
     * 获取默认配置的Producer，默认Producer工作模式为同步，重试次数为5
     * 
@@ -183,7 +183,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    public Producer getProducer(Destination dest) throws TopicNameInvalidException {
       return getProducer(dest, null);
    }
-   
+
    /**
     * 获取Producer实现类对象，通过Map指定Producer的选项，未指定的项使用Producer默认配置， Producer默认配置如下：
     * producerMode:ProducerMode.SYNC_MODE; threadPoolSize:10;

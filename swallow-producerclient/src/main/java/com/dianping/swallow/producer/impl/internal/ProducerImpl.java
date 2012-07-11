@@ -34,7 +34,7 @@ import com.dianping.swallow.producer.ProducerOptionKey;
  */
 public class ProducerImpl implements Producer {
    //变量定义
-   private SwallowService                 remoteService;                                                  //远程调用对象
+   private SwallowService            remoteService;                                                  //远程调用对象
    private HandlerAsynchroMode       asyncHandler;                                                   //异步处理对象
    private HandlerSynchroMode        syncHandler;                                                    //同步处理对象
 
