@@ -1,7 +1,9 @@
-package com.dianping.swallow.consumer;
+package com.dianping.swallow.consumer.example;
 
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Message;
+import com.dianping.swallow.consumer.ConsumerClient;
+import com.dianping.swallow.consumer.MessageListener;
 import com.dianping.swallow.consumer.impl.ConsumerClientImpl;
 
 public class TestConsumerWithThreadPool {
