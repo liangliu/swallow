@@ -180,22 +180,20 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    }
 
-   private long getMessageIdOfTailMessage(String topicName, String consumerId, Channel channel) {
+   public long getMessageIdOfTailMessage(String topicName, String consumerId, Channel channel) {
       Long maxMessageId = null;
       if (!ConsumerType.NON_DURABLE.equals(consumerInfo.getConsumerType())) {
          maxMessageId = ackDao.getMaxMessageId(topicName, consumerId);
       }
       if (maxMessageId == null) {
-         while (true) {
-            maxMessageId = messageDao.getMaxMessageId(topicName);
+         maxMessageId = messageDao.getMaxMessageId(topicName);
 
-            if (maxMessageId == null) {
-               maxMessageId = MongoUtils.getLongByCurTime();
-            }
-            if (!ConsumerType.NON_DURABLE.equals(consumerInfo.getConsumerType())) {
-               //consumer连接上后，以此时为时间基准，以后的消息都可以收到，因此需要插入ack。
-               ackDao.add(topicName, consumerId, maxMessageId, connectedChannels.get(channel));
-            }
+         if (maxMessageId == null) {
+            maxMessageId = MongoUtils.getLongByCurTime();
+         }
+         if (!ConsumerType.NON_DURABLE.equals(consumerInfo.getConsumerType())) {
+            //consumer连接上后，以此时为时间基准，以后的消息都可以收到，因此需要插入ack。
+            ackDao.add(topicName, consumerId, maxMessageId, connectedChannels.get(channel));
          }
       }
       return maxMessageId;
