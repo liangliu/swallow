@@ -11,7 +11,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.bson.types.BSONTimestamp;
 import org.jboss.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,7 +157,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       ackExecutor.execute(new Runnable() {
          @Override
          public void run() {
-            
+
             connectedChannels.put(channel, IPUtil.getIpFromChannel(channel, "127.0.0.1"));
             started = true;
             for (int i = 0; i < clientThreadCount; i++) {
@@ -190,7 +189,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
          while (true) {
             maxMessageId = messageDao.getMaxMessageId(topicName);
 
-            if (maxMessageId == null) {               
+            if (maxMessageId == null) {
                maxMessageId = MongoUtils.getLongByCurTime();
             }
             if (!ConsumerType.NON_DURABLE.equals(consumerInfo.getConsumerType())) {
@@ -202,25 +201,28 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       return maxMessageId;
    }
 
-   public void sendMessageByPollFreeChannelQueue() {     
+   public void sendMessageByPollFreeChannelQueue() {
       try {
          while (getMessageisAlive) {
             Channel channel = freeChannels.take();
             //如果未连接，则不做处理
-            if (channel.isConnected()) {
-               //创建消息缓冲QUEUE
-               if (messageQueue == null) {
-                  long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid, channel);
-                  messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage, messageType);
-               }
-               if (cachedMessages.isEmpty()) {
-                  putMsg2CachedMsgFromMsgQueue();
-               }
-               //收到close命令后,可能没有取得消息,此时,cachedMessages仍然可能为null
-               if (!cachedMessages.isEmpty()) {
-                  sendMsgFromCachedMessages(channel);
-               }
+            if (channel != null) {
+               if (channel.isConnected()) {
+                  //创建消息缓冲QUEUE
+                  if (messageQueue == null) {
+                     long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid, channel);
+                     messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage,
+                           messageType);
+                  }
+                  if (cachedMessages.isEmpty()) {
+                     putMsg2CachedMsgFromMsgQueue();
+                  }
+                  //收到close命令后,可能没有取得消息,此时,cachedMessages仍然可能为null
+                  if (!cachedMessages.isEmpty()) {
+                     sendMsgFromCachedMessages(channel);
+                  }
 
+               }
             }
          }
       } catch (InterruptedException e) {
@@ -265,7 +267,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
             break;
          }
       }
-      if (message != null) {        
+      if (message != null) {
          cachedMessages.add(new PktMessage(consumerInfo.getConsumerId().getDest(), message));
       }
 
