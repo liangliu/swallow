@@ -99,9 +99,7 @@ public final class PktConsumerMessage extends Packet {
 	public Integer getThreadCount() {
       return threadCount;
    }
-   public void setThreadCount(int threadCount) {
-      this.threadCount = threadCount;
-   }
+	
    public PktConsumerMessage() {
 		super();
 		
