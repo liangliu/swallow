@@ -29,20 +29,35 @@ public class PktMessage extends Packet implements Message {
    public Destination getDestination() {
       return dest;
    }
-   
-   @Override
-   public int hashCode() {
-      return content.hashCode();
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      return content.equals(obj);
-   }
 
    @Override
    public String toString() {
       return String.format("PktMessage [content=%s, dest=%s]", content, dest);
+   }
+
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((content == null) ? 0 : content.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (!(obj instanceof PktMessage))
+         return false;
+      PktMessage other = (PktMessage) obj;
+      if (content == null) {
+         if (other.content != null)
+            return false;
+      } else if (!content.equals(other.content))
+         return false;
+      return true;
    }
 
 }

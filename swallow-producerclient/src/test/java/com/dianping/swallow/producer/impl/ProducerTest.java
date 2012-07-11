@@ -53,13 +53,8 @@ public class ProducerTest {
       MQService normalRemoteService = mock(MQService.class);
 
       //获取Producer工厂实例
-      try {
-         producerFactory = ProducerFactoryImpl.getInstance(5000);
-      } catch (Exception e) {
-      }
-
+      producerFactory = ProducerFactoryImpl.getInstance(5000);
       producerFactory.setRemoteService(normalRemoteService);
-
       Assert.assertNotNull(producerFactory);
 
       //设置Producer选项
@@ -69,19 +64,11 @@ public class ProducerTest {
 
       ProducerImpl producer = null;
 
-      try {
-         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello:Unit_Test"), pOptions);
-      } catch (TopicNameInvalidException e) {
-         e.printStackTrace();
-      } 
+      producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello:Unit_Test"), pOptions);
 
       Assert.assertNull(producer);
 
-      try {
-         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello_Unit_Test"), pOptions);
-      } catch (TopicNameInvalidException e) {
-         e.printStackTrace();
-      } 
+      producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello_Unit_Test"), pOptions);
 
       Assert.assertNotNull(producer);
 
@@ -101,14 +88,14 @@ public class ProducerTest {
       } catch (TopicNameInvalidException e) {
          //捕获到TopicNameInvalid异常
       }
-      
+
       Assert.assertNull(producer);
 
       try {
          producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello"), pOptions);
       } catch (TopicNameInvalidException e) {
          //捕获到TopicNameInvalid异常
-      } 
+      }
 
       Assert.assertNotNull(producer);
 
@@ -129,7 +116,7 @@ public class ProducerTest {
 
       //抛异常的mock
       MQService exceptionRemoteServiceMock = mock(MQService.class);
-      
+
       //Normal ProducerFactory mock
       ProducerFactory normalProducerFactory = mock(ProducerFactory.class);
       when(normalProducerFactory.getRemoteService()).thenReturn(normalRemoteServiceMock);
@@ -211,7 +198,7 @@ public class ProducerTest {
       when(exceptionProducerFactory.getRemoteService()).thenReturn(exceptionRemoteServiceMock);
       when(exceptionProducerFactory.getProducerIP()).thenReturn("127.0.0.1");
       when(exceptionProducerFactory.getProducerVersion()).thenReturn("0.6.0");
-      
+
       //同步模式的options
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
       pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);

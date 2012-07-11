@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.message.Message;
 
-public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
+public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
 
    private static final long           serialVersionUID = -633276713494338593L;
    private static final Logger         LOG              = LoggerFactory.getLogger(MessageBlockingQueue.class);
@@ -130,8 +130,8 @@ public class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       public void run() {
          LOG.info("thread start:" + this.getName());
          while (!this.isInterrupted()) {
+            reentrantLock.lock();
             try {
-               reentrantLock.lock();
                condition.await();
                retriveMessage();
             } catch (InterruptedException e) {

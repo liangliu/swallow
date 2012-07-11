@@ -25,7 +25,7 @@ public abstract class AbstractDAOImplTest extends AbstractJUnit4SpringContextTes
    private static MockMongo      mock;
 
    @BeforeClass
-   public static void setUpClass() throws Exception {
+   public synchronized static void setUpClass() throws Exception {
       if (mock == null) {
          mock = new MockMongo(24521);
          mock.start();

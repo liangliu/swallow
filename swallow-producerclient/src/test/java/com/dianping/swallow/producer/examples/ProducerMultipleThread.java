@@ -89,24 +89,25 @@ public class ProducerMultipleThread {
       Producer producerAsync = null;
       try {
          producerAsync = producerFactory.getProducer(Destination.topic("Example"), pOptions);
+
+         //重新配置Producer选项
+         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
+         pOptions.put(ProducerOptionKey.RETRY_TIMES, 2);
+         pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, true);
+
+         //获取Producer实例（同步模式）
+         Producer producerSync = null;
+         try {
+            producerSync = producerFactory.getProducer(Destination.topic("Example"), pOptions);
+
+            threadPool.execute(new ExampleTask(producerAsync));
+            threadPool.execute(new ExampleTask(producerSync));
+         } catch (TopicNameInvalidException e) {
+            //TopicName非法则抛出此异常
+         }
+
       } catch (TopicNameInvalidException e) {
          //TopicName非法则抛出此异常
       }
-
-      //重新配置Producer选项
-      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-      pOptions.put(ProducerOptionKey.RETRY_TIMES, 2);
-      pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, true);
-
-      //获取Producer实例（同步模式）
-      Producer producerSync = null;
-      try {
-         producerSync = producerFactory.getProducer(Destination.topic("Example"), pOptions);
-      } catch (TopicNameInvalidException e) {
-         //TopicName非法则抛出此异常
-      }
-
-      threadPool.execute(new ExampleTask(producerAsync));
-      threadPool.execute(new ExampleTask(producerSync));
    }
 }
