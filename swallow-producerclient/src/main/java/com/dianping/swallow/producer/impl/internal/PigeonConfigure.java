@@ -100,7 +100,7 @@ public final class PigeonConfigure {
       }
       checkParams();
    }
-
+   //T
    private void checkParams() {
       if (!"hessian".equals(serialize) && !"java".equals(serialize) && !"protobuf".equals(serialize)
             && !"thrift".equals(serialize)) {
