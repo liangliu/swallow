@@ -9,34 +9,34 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class PigeonConfigure {
+public final class SwallowPigeonConfiguration {
 
-   private static final Logger  logger               = LoggerFactory.getLogger(PigeonConfigure.class);
+   private static final Logger logger               = LoggerFactory.getLogger(SwallowPigeonConfiguration.class);
 
-   private static final String  DEFAULT_SERVICE_NAME = "remoteService";
-   private static final String  DEFAULT_SERIALIZE    = "hessian";
-   private static final int     DEFAULT_TIMEOUT      = 5000;
-   private static final boolean DEFAULT_IS_USE_LION  = false;
-   private static final String  DEFAULT_HOSTS        = "127.0.0.1:4000";
-   private static final String  DEFAULT_WEIGHTS      = "1";
+   public static final String  DEFAULT_SERVICE_NAME = "remoteService";
+   public static final String  DEFAULT_SERIALIZE    = "hessian";
+   public static final int     DEFAULT_TIMEOUT      = 5000;
+   public static final boolean DEFAULT_IS_USE_LION  = false;
+   public static final String  DEFAULT_HOSTS        = "127.0.0.1:4000";
+   public static final String  DEFAULT_WEIGHTS      = "1";
 
-   private String               serviceName          = DEFAULT_SERVICE_NAME;
-   private String               serialize            = DEFAULT_SERIALIZE;
-   private int                  timeout              = DEFAULT_TIMEOUT;
-   private boolean              useLion              = DEFAULT_IS_USE_LION;
-   private String               hosts                = DEFAULT_HOSTS;
-   private String               weights              = DEFAULT_WEIGHTS;
+   private String              serviceName          = DEFAULT_SERVICE_NAME;
+   private String              serialize            = DEFAULT_SERIALIZE;
+   private int                 timeout              = DEFAULT_TIMEOUT;
+   private boolean             useLion              = DEFAULT_IS_USE_LION;
+   private String              hosts                = DEFAULT_HOSTS;
+   private String              weights              = DEFAULT_WEIGHTS;
 
-   public PigeonConfigure() {
+   public SwallowPigeonConfiguration() {
       //默认配置
    }
 
    @SuppressWarnings("rawtypes")
-   public PigeonConfigure(String configFile) {
+   public SwallowPigeonConfiguration(String configFile) {
       Properties props = new Properties();
       Class clazz = this.getClass();
       InputStream in = null;
-      in = PigeonConfigure.class.getClassLoader().getResourceAsStream(configFile);
+      in = SwallowPigeonConfiguration.class.getClassLoader().getResourceAsStream(configFile);
 
       try {
          props.load(in);
@@ -192,7 +192,7 @@ public final class PigeonConfigure {
    }
 
    public static void main(String[] args) {
-      PigeonConfigure pigeonConfigure = new PigeonConfigure("pigeon.properties");
+      SwallowPigeonConfiguration pigeonConfigure = new SwallowPigeonConfiguration("pigeon.properties");
       System.out.println(pigeonConfigure.getHosts());
       System.out.println(pigeonConfigure.getWeights());
    }

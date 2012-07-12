@@ -33,7 +33,7 @@ import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
-import com.dianping.swallow.producer.impl.internal.PigeonConfigure;
+import com.dianping.swallow.producer.impl.internal.SwallowPigeonConfiguration;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 
 /**
@@ -56,7 +56,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    @SuppressWarnings("rawtypes")
    private final ProxyFactory         pigeon          = new ProxyFactory();                                //pigeon代理对象
    private ProducerSwallowService             remoteService;                                                       //远程调用对象
-   private PigeonConfigure            pigeonConfigure;
+   private SwallowPigeonConfiguration            pigeonConfigure;
 
    /**
     * Producer工厂类构造函数
@@ -66,7 +66,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
     */
    private ProducerFactoryImpl() throws RemoteServiceInitFailedException {
       //初始化远程调用
-      pigeonConfigure = new PigeonConfigure("pigeon.properties");
+      pigeonConfigure = new SwallowPigeonConfiguration("pigeon.properties");
       remoteServiceTimeout = pigeonConfigure.getTimeout();
       remoteService = initPigeon(pigeonConfigure);
    }
@@ -78,7 +78,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @return 实现MQService接口的类，此版本中为pigeon返回的一个远程调用服务代理
     * @throws RemoteServiceInitFailedException 远程调用服务（pigeon）初始化失败
     */
-   private ProducerSwallowService initPigeon(PigeonConfigure pigeonConfigure) throws RemoteServiceInitFailedException {
+   private ProducerSwallowService initPigeon(SwallowPigeonConfiguration pigeonConfigure) throws RemoteServiceInitFailedException {
 
       pigeon.setIface(ProducerSwallowService.class);
       pigeon.setCallMethod("sync");

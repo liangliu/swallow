@@ -15,8 +15,8 @@
  */
 package com.dianping.swallow.producer.impl;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
@@ -25,13 +25,22 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.Test;
+import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.internal.packet.Packet;
+import com.dianping.swallow.common.internal.packet.PacketType;
+import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
+import com.dianping.swallow.common.internal.util.SHAUtil;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.NullContentException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
@@ -59,9 +68,7 @@ public class ProducerTest {
       //获取Producer工厂实例
       producerFactory = ProducerFactoryImpl.getInstance();
       producerFactory.setRemoteService(normalRemoteService);
-
-      Assert.assertNotNull(producerFactory);
-      Assert.assertEquals(100, ProducerFactoryImpl.getRemoteServiceTimeout());
+      assertNotNull(producerFactory);
 
       //设置Producer选项
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
@@ -74,17 +81,17 @@ public class ProducerTest {
          producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello:Unit_Test"), pOptions);
       } catch (TopicNameInvalidException e) {
       }
-      Assert.assertNull(producer);
+      assertNull(producer);
 
       try {
          producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello_Unit_Test"), pOptions);
       } catch (TopicNameInvalidException e) {
       }
 
-      Assert.assertNotNull(producer);
-      Assert.assertEquals(ProducerMode.SYNC_MODE, producer.getProducerMode());
-      Assert.assertEquals(2, producer.getRetryTimes());
-      Assert.assertEquals(true, producer.isZipMessage());
+      assertNotNull(producer);
+      assertEquals(ProducerMode.SYNC_MODE, producer.getProducerMode());
+      assertEquals(2, producer.getRetryTimes());
+      assertEquals(true, producer.isZipMessage());
 
       producer = null;
       pOptions = new HashMap<ProducerOptionKey, Object>();
@@ -99,12 +106,13 @@ public class ProducerTest {
          //捕获到TopicNameInvalid异常
       }
 
-      Assert.assertNotNull(producer);
+      assertNotNull(producer);
 
-      Assert.assertEquals("0.6.0", producerFactory.getProducerVersion());
-      Assert.assertEquals(true, producer.isContinueSend());
-      Assert.assertEquals(100, producer.getThreadPoolSize());
-      Assert.assertEquals(Inet4Address.getLocalHost().getHostAddress(), producerFactory.getProducerIP());
+      assertEquals("0.6.0", producerFactory.getProducerVersion());
+      assertEquals(Inet4Address.getLocalHost().getHostAddress(), producerFactory.getProducerIP());
+
+      assertEquals(true, producer.isContinueSend());
+      assertEquals(100, producer.getThreadPoolSize());
    }
 
    @Test
@@ -114,7 +122,28 @@ public class ProducerTest {
       //正常的mock
       ProducerSwallowService normalRemoteServiceMock = mock(ProducerSwallowService.class);
       PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
-      when(normalRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenReturn(pktSwallowACK);
+      
+      when(normalRemoteServiceMock.sendMessage(argThat(new Matcher<Packet>() {
+         @Override
+         public void describeTo(Description arg0) {
+         }
+         @Override
+         public void _dont_implement_Matcher___instead_extend_BaseMatcher_() {
+         }
+         @Override
+         public boolean matches(Object arg0) {
+            assertEquals(PacketType.OBJECT_MSG, ((Packet)arg0).getPacketType());
+            System.out.println(((PktMessage)arg0).getContent().toString());
+            return true;
+         }
+      }))).thenReturn(pktSwallowACK);
+      Answer<PktSwallowPACK> answer = new Answer<PktSwallowPACK>() {
+         @Override
+         public PktSwallowPACK answer(InvocationOnMock invocation) throws Throwable {
+            return null;
+         }
+      };
+      when(normalRemoteServiceMock.sendMessage((Packet)anyObject())).then(answer);
 
       //抛异常的mock
       ProducerSwallowService exceptionRemoteServiceMock = mock(ProducerSwallowService.class);
@@ -122,8 +151,10 @@ public class ProducerTest {
       //Normal ProducerFactory mock
       ProducerFactory normalProducerFactory = mock(ProducerFactory.class);
       when(normalProducerFactory.getRemoteService()).thenReturn(normalRemoteServiceMock);
+      when(normalProducerFactory.getRemoteService()).thenReturn(normalRemoteServiceMock);
       when(normalProducerFactory.getProducerIP()).thenReturn("127.0.0.1");
       when(normalProducerFactory.getProducerVersion()).thenReturn("0.6.0");
+
 
       //Exception ProducerFactory mock
       ProducerFactory exceptionProducerFactory = mock(ProducerFactory.class);
@@ -149,19 +180,19 @@ public class ProducerTest {
       } catch (Exception e) {
       }
       
-      Assert.assertNotNull(normalProducer);
-      Assert.assertNotNull(exceptionProducer);
-      Assert.assertEquals(ProducerMode.ASYNC_MODE, normalProducer.getProducerMode());
-      Assert.assertEquals(ProducerMode.ASYNC_MODE, exceptionProducer.getProducerMode());
-      Assert.assertEquals(2, normalProducer.getRetryTimes());
-      Assert.assertEquals(2, exceptionProducer.getRetryTimes());
-      Assert.assertEquals(false, normalProducer.isZipMessage());
-      Assert.assertEquals(false, exceptionProducer.isZipMessage());
-      Assert.assertEquals(false, normalProducer.isContinueSend());
-      Assert.assertEquals(false, exceptionProducer.isContinueSend());
-      Assert.assertEquals(2, normalProducer.getThreadPoolSize());
-      Assert.assertEquals(2, exceptionProducer.getThreadPoolSize());
-
+      assertNotNull(normalProducer);
+      assertNotNull(exceptionProducer);
+      assertEquals(ProducerMode.ASYNC_MODE, normalProducer.getProducerMode());
+      assertEquals(ProducerMode.ASYNC_MODE, exceptionProducer.getProducerMode());
+      assertEquals(2, normalProducer.getRetryTimes());
+      assertEquals(2, exceptionProducer.getRetryTimes());
+      assertEquals(false, normalProducer.isZipMessage());
+      assertEquals(false, exceptionProducer.isZipMessage());
+      assertEquals(false, normalProducer.isContinueSend());
+      assertEquals(false, exceptionProducer.isContinueSend());
+      assertEquals(2, normalProducer.getThreadPoolSize());
+      assertEquals(2, exceptionProducer.getThreadPoolSize());
+      
       //测试异步模式下抛出异常的Producer
       String strRet = "";
       //设置异常remoteServiceMock的行为
@@ -169,7 +200,7 @@ public class ProducerTest {
       try {
          for (int i = 0; i < 100; i++) {
             strRet = exceptionProducer.sendMessage("Hello World.");
-            Assert.assertNull(strRet);
+            assertNull(strRet);
          }
       } catch (FileQueueClosedException e) {
       } catch (RemoteServiceDownException e) {
@@ -181,7 +212,7 @@ public class ProducerTest {
       try {
          for (int i = 0; i < 100; i++) {
             strRet = normalProducer.sendMessage("Hello World.");
-            Assert.assertNull(strRet);
+            assertNull(strRet);
          }
       } catch (FileQueueClosedException e) {
       } catch (RemoteServiceDownException e) {
@@ -225,8 +256,8 @@ public class ProducerTest {
          exceptionProducer = new ProducerImpl(exceptionProducerFactory, Destination.topic("UnitTest"), pOptions);
       } catch (Exception e) {
       }
-      Assert.assertNotNull(normalProducer);
-      Assert.assertNotNull(exceptionProducer);
+      assertNotNull(normalProducer);
+      assertNotNull(exceptionProducer);
 
       //测试同步模式正常情况下的Producer
       String strRet = null;
@@ -237,7 +268,7 @@ public class ProducerTest {
       } catch (NullContentException e) {
       } catch (ServerDaoException e) {
       }
-      Assert.assertEquals(pktSwallowACK.getShaInfo(), strRet);
+      assertEquals(pktSwallowACK.getShaInfo(), strRet);
 
       //测试同步模式下抛异常的Producer
       strRet = null;
@@ -250,7 +281,7 @@ public class ProducerTest {
       } catch (NullContentException e) {
       } catch (ServerDaoException e) {
       }
-      Assert.assertNull(strRet);
+      assertNull(strRet);
    }
 
 }
