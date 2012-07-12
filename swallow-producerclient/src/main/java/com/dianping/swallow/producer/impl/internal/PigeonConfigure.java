@@ -102,15 +102,41 @@ public final class PigeonConfigure {
    }
 
    private void checkParams() {
+      //检查序列化方式
       if (!"hessian".equals(serialize) && !"java".equals(serialize) && !"protobuf".equals(serialize)
             && !"thrift".equals(serialize)) {
          logger.warn("[Unrecognized serialize, use default value: " + DEFAULT_SERIALIZE + ".]");
          serialize = DEFAULT_SERIALIZE;
       }
-      //      if (!hosts
-      //            .matches("[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5}"))
-      //         //[[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5},][[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5}]
-      //         logger.warn("[Unrecognized hosts, use default value: " + DEFAULT_HOSTS + ".]");
+      
+      //检查hosts和weights
+      String[] hostSet = hosts.trim().split(",");
+      String[] weightSet = weights.trim().split(",");
+      String realHosts = "";
+      String realWeights = "";
+      String host;
+      String weight;
+      for (int idx = 0; idx < hostSet.length; idx++) {
+         host = hostSet[idx];
+         if (idx >= weightSet.length) {
+            weight = "-1";
+         } else {
+            weight = weightSet[idx];
+         }
+         if (!host.matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}") || !weight.matches("\\d+")) {
+            logger.warn("[Unrecognized host address: " + host + ", or weight: " + weight + ", ignored it.]");
+            continue;
+         }
+         realHosts += host + ",";
+         realWeights += weight + ",";
+      }
+      if (realHosts == "") {
+         hosts = DEFAULT_HOSTS;
+         weights = DEFAULT_WEIGHTS;
+      } else {
+         hosts = realHosts.substring(0, realHosts.length() - 1);
+         weights = realWeights.substring(0, realWeights.length() - 1);
+      }
    }
 
    public String getServiceName() {
@@ -164,9 +190,6 @@ public final class PigeonConfigure {
    public static void main(String[] args) {
       PigeonConfigure pigeonConfigure = new PigeonConfigure("pigeon.properties");
       System.out.println(pigeonConfigure.getHosts());
-      System.out.println(pigeonConfigure.getSerialize());
-      System.out.println(pigeonConfigure.getServiceName());
-      System.out.println(pigeonConfigure.getTimeout());
       System.out.println(pigeonConfigure.getWeights());
    }
 }
