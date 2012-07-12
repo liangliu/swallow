@@ -43,10 +43,18 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    }
 
    private BlockingQueue<Message>                 messageQueue      = null;
+   public void setMessageQueue(BlockingQueue<Message> messageQueue) {
+      this.messageQueue = messageQueue;
+   }
+
    private AckDAO                                 ackDao;
    private SwallowBuffer                          swallowBuffer;
    private MessageDAO                             messageDao;
    private Queue<PktMessage>                      cachedMessages    = new ConcurrentLinkedQueue<PktMessage>();
+   public Queue<PktMessage> getCachedMessages() {
+      return cachedMessages;
+   }
+
    private MQThreadFactory                        threadFactory;
    private String                                 consumerid;
    private String                                 topicName;
@@ -56,6 +64,10 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private PullStrategy                           pullStgy;
    private ConfigManager                          configManager;
    private Map<Channel, Map<PktMessage, Boolean>> waitAckMessages   = new ConcurrentHashMap<Channel, Map<PktMessage, Boolean>>();
+   public Map<Channel, Map<PktMessage, Boolean>> getWaitAckMessages() {
+      return waitAckMessages;
+   }
+
    private Set<String>                            messageType;
 
    public ConsumerWorkerImpl(ConsumerInfo consumerInfo, ConsumerWorkerManager workerManager, Set<String> messageType) {
@@ -113,10 +125,13 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private void updateWaitAckMessages(Channel channel, Long ackedMsgId) {
       if (ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
          Map<PktMessage, Boolean> messages = waitAckMessages.get(channel);
-         SwallowMessage swallowMsg = new SwallowMessage();
-         swallowMsg.setMessageId(ackedMsgId);
-         PktMessage mockPktMessage = new PktMessage(consumerInfo.getConsumerId().getDest(), swallowMsg);
-         messages.remove(mockPktMessage);
+         if(messages != null){
+            SwallowMessage swallowMsg = new SwallowMessage();
+            swallowMsg.setMessageId(ackedMsgId);
+            PktMessage mockPktMessage = new PktMessage(consumerInfo.getConsumerId().getDest(), swallowMsg);
+            messages.remove(mockPktMessage);
+         }
+         
       }
 
    }
@@ -135,8 +150,8 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
          if (messageMap != null) {
             for (Map.Entry<PktMessage, Boolean> messageEntry : messageMap.entrySet()) {
                cachedMessages.add(messageEntry.getKey());
-
             }
+            waitAckMessages.remove(channel);
          }
       }
 
@@ -204,7 +219,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       return maxMessageId;
    }
 
-   public void sendMessageByPollFreeChannelQueue() {
+   private void sendMessageByPollFreeChannelQueue() {
       try {
          while (getMessageisAlive) {
             Channel channel = freeChannels.take();
