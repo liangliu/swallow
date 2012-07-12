@@ -123,7 +123,7 @@ public final class SwallowPigeonConfiguration {
          } else {
             weight = weightSet[idx];
          }
-         if (!host.matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}") || !weight.matches("\\d+")) {
+         if (!host.matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}") || !weight.matches("[1-9]|10")) {
             logger.warn("[Unrecognized host address: " + host + ", or weight: " + weight + ", ignored it.]");
             continue;
          }
@@ -189,11 +189,5 @@ public final class SwallowPigeonConfiguration {
 
    public void setWeights(String weights) {
       this.weights = weights;
-   }
-
-   public static void main(String[] args) {
-      SwallowPigeonConfiguration pigeonConfigure = new SwallowPigeonConfiguration("pigeon.properties");
-      System.out.println(pigeonConfigure.getHosts());
-      System.out.println(pigeonConfigure.getWeights());
    }
 }
