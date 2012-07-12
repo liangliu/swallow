@@ -37,7 +37,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 
    private ConsumerInfo          consumerInfo;
 
-   private int                   clientThreadCount = 1;
+   private int                   clientThreadCount;
 
    private boolean               readyClose        = Boolean.FALSE;
 
@@ -68,7 +68,8 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
                consumerInfo = new ConsumerInfo(consumerId, consumerPacket.getConsumerType());
             }     
             workerManager.handleGreet(channel, consumerInfo, clientThreadCount, consumerPacket.getMessageType());
-         } else {
+         } 
+         if(ConsumerMessageType.ACK.equals(consumerPacket.getType())){
             if (consumerPacket.getNeedClose() || readyClose) {
                //第一次接到channel的close命令后,server启一个后台线程,当一定时间后channel仍未关闭,则强制关闭.
                if(!readyClose){
@@ -100,7 +101,6 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
                      ACKHandlerType.SEND_MESSAGE);
             }
          }
-
       } else {
          LOG.error("the received message is not PktConsumerMessage");
       }

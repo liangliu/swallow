@@ -103,7 +103,7 @@ public class ConfigManager {
    }
 
    private ConfigManager() {
-      this("cServer.properties");
+      this("swallow-consumerserver.properties");
    }
 
    @SuppressWarnings("rawtypes")

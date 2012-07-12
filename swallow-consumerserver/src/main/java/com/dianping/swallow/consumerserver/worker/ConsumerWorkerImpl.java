@@ -32,11 +32,16 @@ import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 
 public class ConsumerWorkerImpl implements ConsumerWorker {
-   private static final Logger                    LOG               = LoggerFactory.getLogger(ConsumerWorkerImpl.class);
+   private static final Logger    LOG               = LoggerFactory.getLogger(ConsumerWorkerImpl.class);
 
-   private ConsumerInfo                           consumerInfo;
-   private BlockingQueue<Channel>                 freeChannels      = new LinkedBlockingQueue<Channel>();
-   private Map<Channel, String>                   connectedChannels = new ConcurrentHashMap<Channel, String>();
+   private ConsumerInfo           consumerInfo;
+   private BlockingQueue<Channel> freeChannels      = new LinkedBlockingQueue<Channel>();
+   private Map<Channel, String>   connectedChannels = new ConcurrentHashMap<Channel, String>();
+
+   public Map<Channel, String> getConnectedChannels() {
+      return connectedChannels;
+   }
+
    private BlockingQueue<Message>                 messageQueue      = null;
    private AckDAO                                 ackDao;
    private SwallowBuffer                          swallowBuffer;
@@ -180,22 +185,20 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    }
 
-   private long getMessageIdOfTailMessage(String topicName, String consumerId, Channel channel) {
+   public long getMessageIdOfTailMessage(String topicName, String consumerId, Channel channel) {
       Long maxMessageId = null;
       if (!ConsumerType.NON_DURABLE.equals(consumerInfo.getConsumerType())) {
          maxMessageId = ackDao.getMaxMessageId(topicName, consumerId);
       }
       if (maxMessageId == null) {
-         while (true) {
-            maxMessageId = messageDao.getMaxMessageId(topicName);
+         maxMessageId = messageDao.getMaxMessageId(topicName);
 
-            if (maxMessageId == null) {
-               maxMessageId = MongoUtils.getLongByCurTime();
-            }
-            if (!ConsumerType.NON_DURABLE.equals(consumerInfo.getConsumerType())) {
-               //consumer连接上后，以此时为时间基准，以后的消息都可以收到，因此需要插入ack。
-               ackDao.add(topicName, consumerId, maxMessageId, connectedChannels.get(channel));
-            }
+         if (maxMessageId == null) {
+            maxMessageId = MongoUtils.getLongByCurTime();
+         }
+         if (!ConsumerType.NON_DURABLE.equals(consumerInfo.getConsumerType())) {
+            //consumer连接上后，以此时为时间基准，以后的消息都可以收到，因此需要插入ack。
+            ackDao.add(topicName, consumerId, maxMessageId, connectedChannels.get(channel));
          }
       }
       return maxMessageId;
@@ -206,24 +209,23 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
          while (getMessageisAlive) {
             Channel channel = freeChannels.take();
             //如果未连接，则不做处理
-            if (channel != null) {
-               if (channel.isConnected()) {
-                  //创建消息缓冲QUEUE
-                  if (messageQueue == null) {
-                     long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid, channel);
-                     messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage,
-                           messageType);
-                  }
-                  if (cachedMessages.isEmpty()) {
-                     putMsg2CachedMsgFromMsgQueue();
-                  }
-                  //收到close命令后,可能没有取得消息,此时,cachedMessages仍然可能为null
-                  if (!cachedMessages.isEmpty()) {
-                     sendMsgFromCachedMessages(channel);
-                  }
-
+            if (channel.isConnected()) {
+               //创建消息缓冲QUEUE
+               if (messageQueue == null) {
+                  long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid, channel);
+                  messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage,
+                        messageType);
                }
+               if (cachedMessages.isEmpty()) {
+                  putMsg2CachedMsgFromMsgQueue();
+               }
+               //收到close命令后,可能没有取得消息,此时,cachedMessages仍然可能为null
+               if (!cachedMessages.isEmpty()) {
+                  sendMsgFromCachedMessages(channel);
+               }
+
             }
+
          }
       } catch (InterruptedException e) {
          LOG.info("get message from messageQueue thread InterruptedException", e);

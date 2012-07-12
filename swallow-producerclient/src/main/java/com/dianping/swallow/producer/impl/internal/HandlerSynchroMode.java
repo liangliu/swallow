@@ -2,7 +2,7 @@ package com.dianping.swallow.producer.impl.internal;
 
 import com.dianping.dpsf.exception.NetException;
 import com.dianping.swallow.common.internal.packet.Packet;
-import com.dianping.swallow.common.internal.producer.SwallowService;
+import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
@@ -14,14 +14,14 @@ import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
  * @author tong.song
  */
 public class HandlerSynchroMode {
-   private SwallowService           remoteService;
+   private ProducerSwallowService      remoteService;
    private int                 sendTimes;
    private int                 delayBase           = ProducerFactoryImpl.getRemoteServiceTimeout();
    private DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, 5 * delayBase);
 
    public HandlerSynchroMode(ProducerImpl producer) {
       this.remoteService = producer.getRemoteService();
-      this.sendTimes = producer.getRetryTimes() +1;//初始值等于用户要求的retryTimes+1，这样可以保证至少执行一次
+      this.sendTimes = producer.getRetryTimes() + 1;//初始值等于用户要求的retryTimes+1，这样可以保证至少执行一次
    }
 
    //对外接口

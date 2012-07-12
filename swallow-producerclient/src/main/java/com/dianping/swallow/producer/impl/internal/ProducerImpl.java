@@ -14,7 +14,7 @@ import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
-import com.dianping.swallow.common.internal.producer.SwallowService;
+import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.util.NameCheckUtil;
 import com.dianping.swallow.common.internal.util.ZipUtil;
 import com.dianping.swallow.common.message.Destination;
@@ -34,7 +34,7 @@ import com.dianping.swallow.producer.ProducerOptionKey;
  */
 public class ProducerImpl implements Producer {
    //变量定义
-   private SwallowService                 remoteService;                                                  //远程调用对象
+   private ProducerSwallowService            remoteService;                                                  //远程调用对象
    private HandlerAsynchroMode       asyncHandler;                                                   //异步处理对象
    private HandlerSynchroMode        syncHandler;                                                    //同步处理对象
 
@@ -305,7 +305,7 @@ public class ProducerImpl implements Producer {
    /**
     * @return 返回远程调用接口
     */
-   public SwallowService getRemoteService() {
+   public ProducerSwallowService getRemoteService() {
       return remoteService;
    }
 
@@ -344,4 +344,7 @@ public class ProducerImpl implements Producer {
       return retryTimes;
    }
 
+   public boolean isZipMessage() {
+      return zipMessage;
+   }
 }

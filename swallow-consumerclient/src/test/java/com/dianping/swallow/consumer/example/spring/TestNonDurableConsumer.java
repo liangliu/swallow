@@ -1,4 +1,4 @@
-package com.dianping.swallow.consumer.spring;
+package com.dianping.swallow.consumer.example.spring;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
