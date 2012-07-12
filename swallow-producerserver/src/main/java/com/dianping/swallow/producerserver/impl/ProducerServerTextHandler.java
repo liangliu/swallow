@@ -52,6 +52,12 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       logger.info("[Connection from " + e.getChannel().getRemoteAddress() + "]");
       super.channelConnected(ctx, e);
    }
+   
+   @Override
+   public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+      logger.info("[Disconnection from " + e.getChannel().getRemoteAddress() + "]");
+      super.channelDisconnected(ctx, e);
+   }
 
    @Override
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {

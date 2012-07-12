@@ -42,6 +42,7 @@ public class ProducerServerForClientTest {
 
       int port = 4000;
       producerServerForClient.setPort(port);
+      producerServerForClient.setRemoteServiceName("remoteService");
 
       Assert.assertEquals(port, producerServerForClient.getPort());
 
