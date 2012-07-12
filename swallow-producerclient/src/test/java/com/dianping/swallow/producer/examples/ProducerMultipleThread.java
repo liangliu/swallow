@@ -70,8 +70,7 @@ public class ProducerMultipleThread {
       //获取Producer工厂实例
       ProducerFactory producerFactory = null;
       try {
-         //Or: producerFactory = ProducerFactoryImpl.getInstance()//默认远程调用timeout为5000;
-         producerFactory = ProducerFactoryImpl.getInstance(5000);
+         producerFactory = ProducerFactoryImpl.getInstance();
       } catch (RemoteServiceInitFailedException e) {
          throw e;
          //远程调用初始化失败抛出此异常

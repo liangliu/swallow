@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 import com.dianping.dpsf.api.ProxyFactory;
 import com.dianping.dpsf.exception.NetException;
 import com.dianping.swallow.common.internal.packet.PktProducerGreet;
-import com.dianping.swallow.common.internal.producer.SwallowService;
+import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.util.IPUtil;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
@@ -33,6 +33,7 @@ import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
+import com.dianping.swallow.producer.impl.internal.PigeonConfigure;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 
 /**
@@ -49,13 +50,13 @@ public class ProducerFactoryImpl implements ProducerFactory {
    private final String               producerVersion = "0.6.0";                                           //Producer版本号
 
    //远程调用相关设置
-   private static final int           DEFAULT_TIMEOUT = 5000;                                              //远程调用默认超时
    private static int                 remoteServiceTimeout;                                                //远程调用超时
 
    //远程调用相关变量
    @SuppressWarnings("rawtypes")
    private final ProxyFactory         pigeon          = new ProxyFactory();                                //pigeon代理对象
-   private SwallowService             remoteService;                                                       //远程调用对象
+   private ProducerSwallowService             remoteService;                                                       //远程调用对象
+   private PigeonConfigure            pigeonConfigure;
 
    /**
     * Producer工厂类构造函数
@@ -63,10 +64,11 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @param timeout 远程调用超时
     * @throws RemoteServiceInitFailedException 远程调用初始化失败
     */
-   private ProducerFactoryImpl(int timeout) throws RemoteServiceInitFailedException {
-      remoteServiceTimeout = timeout;
+   private ProducerFactoryImpl() throws RemoteServiceInitFailedException {
       //初始化远程调用
-      remoteService = initRemoteService(timeout);
+      pigeonConfigure = new PigeonConfigure("pigeon.properties");
+      remoteServiceTimeout = pigeonConfigure.getTimeout();
+      remoteService = initPigeon(pigeonConfigure);
    }
 
    /**
@@ -76,24 +78,24 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @return 实现MQService接口的类，此版本中为pigeon返回的一个远程调用服务代理
     * @throws RemoteServiceInitFailedException 远程调用服务（pigeon）初始化失败
     */
-   private SwallowService initRemoteService(int remoteServiceTimeout) throws RemoteServiceInitFailedException {
-      pigeon.setServiceName("remoteService");
-      pigeon.setIface(SwallowService.class);
-      pigeon.setSerialize("hessian");
+   private ProducerSwallowService initPigeon(PigeonConfigure pigeonConfigure) throws RemoteServiceInitFailedException {
+
+      pigeon.setIface(ProducerSwallowService.class);
       pigeon.setCallMethod("sync");
-      pigeon.setTimeout(remoteServiceTimeout);
 
-      //TODO 配置Lion支持
-      pigeon.setUseLion(false);
-      pigeon.setHosts("127.0.0.1:4000");
-      pigeon.setWeight("1");
+      pigeon.setServiceName(pigeonConfigure.getServiceName());
+      pigeon.setSerialize(pigeonConfigure.getSerialize());
+      pigeon.setTimeout(pigeonConfigure.getTimeout());
+      pigeon.setUseLion(pigeonConfigure.isUseLion());
+      pigeon.setHosts(pigeonConfigure.getHosts());
+      pigeon.setWeight(pigeonConfigure.getWeights());
 
-      SwallowService remoteService = null;
+      ProducerSwallowService remoteService = null;
       try {
          pigeon.init();
          logger.info("[Initialize pigeon successfully.]");
 
-         remoteService = (SwallowService) pigeon.getProxy();
+         remoteService = (ProducerSwallowService) pigeon.getProxy();
          logger.info("[Get remoteService successfully.]:[" + "RemoteService's timeout is: " + remoteServiceTimeout
                + ".]");
       } catch (Exception e) {
@@ -104,40 +106,15 @@ public class ProducerFactoryImpl implements ProducerFactory {
    }
 
    /**
-    * 以默认远程调用超时获取Producer工厂类单例，如果单例已存在，则使用已存在单例的超时
-    * 
-    * @return Producer工厂类单例
-    * @throws RemoteServiceInitFailedException 远程调用初始化失败
-    */
-   public static ProducerFactoryImpl getInstance() throws RemoteServiceInitFailedException {
-      return doGetInstance(-1);
-   }
-
-   /**
-    * 获取Producer工厂类单例，指定超时，如果单例已存在，则指定的超时失效
-    * 
-    * @param remoteServiceTimeout 远程调用超时
-    * @return Producer工厂类单例
-    * @throws RemoteServiceInitFailedException 远程调用初始化失败
-    */
-   public static ProducerFactoryImpl getInstance(int remoteServiceTimeout) throws RemoteServiceInitFailedException {
-      return doGetInstance(remoteServiceTimeout);
-   }
-
-   /**
-    * 实际获取Producer工厂类单例的函数
+    * 获取Producer工厂类单例的函数
     * 
     * @param timeout 远程调用超时，如果小于零，则使用默认超时
     * @return Producer工程类单例
     * @throws RemoteServiceInitFailedException 远程调用初始化失败
     */
-   private static synchronized ProducerFactoryImpl doGetInstance(int timeout) throws RemoteServiceInitFailedException {
-      if (instance == null) {
-         if (timeout < 0)
-            instance = new ProducerFactoryImpl(DEFAULT_TIMEOUT);
-         else
-            instance = new ProducerFactoryImpl(timeout);
-      }
+   public static synchronized ProducerFactoryImpl getInstance() throws RemoteServiceInitFailedException {
+      if (instance == null)
+         instance = new ProducerFactoryImpl();
       return instance;
    }
 
@@ -145,8 +122,12 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @return 获取远程调用服务接口
     */
    @Override
-   public SwallowService getRemoteService() {
+   public ProducerSwallowService getRemoteService() {
       return remoteService;
+   }
+
+   public void setRemoteService(ProducerSwallowService remoteService) {
+      this.remoteService = remoteService;
    }
 
    /**
@@ -157,9 +138,6 @@ public class ProducerFactoryImpl implements ProducerFactory {
       return producerIP;
    }
 
-   public void setRemoteService(SwallowService remoteService) {
-      this.remoteService = remoteService;
-   }
 
    /**
     * @return 获取Producer的版本号

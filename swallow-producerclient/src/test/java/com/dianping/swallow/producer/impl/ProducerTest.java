@@ -31,7 +31,7 @@ import org.mockito.Matchers;
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.internal.packet.Packet;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
-import com.dianping.swallow.common.internal.producer.SwallowService;
+import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.NullContentException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
@@ -54,10 +54,10 @@ public class ProducerTest {
    public void testProducerFactoryImpl() throws UnknownHostException {
       ProducerFactoryImpl producerFactory = null;
 
-      SwallowService normalRemoteService = mock(SwallowService.class);
+      ProducerSwallowService normalRemoteService = mock(ProducerSwallowService.class);
 
       //获取Producer工厂实例
-      producerFactory = ProducerFactoryImpl.getInstance(100);
+      producerFactory = ProducerFactoryImpl.getInstance();
       producerFactory.setRemoteService(normalRemoteService);
 
       Assert.assertNotNull(producerFactory);
@@ -112,12 +112,12 @@ public class ProducerTest {
       Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
 
       //正常的mock
-      SwallowService normalRemoteServiceMock = mock(SwallowService.class);
+      ProducerSwallowService normalRemoteServiceMock = mock(ProducerSwallowService.class);
       PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
       when(normalRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenReturn(pktSwallowACK);
 
       //抛异常的mock
-      SwallowService exceptionRemoteServiceMock = mock(SwallowService.class);
+      ProducerSwallowService exceptionRemoteServiceMock = mock(ProducerSwallowService.class);
 
       //Normal ProducerFactory mock
       ProducerFactory normalProducerFactory = mock(ProducerFactory.class);
@@ -193,12 +193,12 @@ public class ProducerTest {
    public void testSyncProducerImpl() throws ServerDaoException {
 
       //正常的mock
-      SwallowService normalRemoteServiceMock = mock(SwallowService.class);
+      ProducerSwallowService normalRemoteServiceMock = mock(ProducerSwallowService.class);
       PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
       when(normalRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenReturn(pktSwallowACK);
 
       //抛异常的mock
-      SwallowService exceptionRemoteServiceMock = mock(SwallowService.class);
+      ProducerSwallowService exceptionRemoteServiceMock = mock(ProducerSwallowService.class);
 
       //Normal ProducerFactory mock
       ProducerFactory normalProducerFactory = mock(ProducerFactory.class);

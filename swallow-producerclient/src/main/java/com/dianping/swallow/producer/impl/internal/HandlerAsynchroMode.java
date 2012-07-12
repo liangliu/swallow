@@ -9,7 +9,7 @@ import com.dianping.filequeue.DefaultFileQueueImpl;
 import com.dianping.filequeue.FileQueue;
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.internal.packet.Packet;
-import com.dianping.swallow.common.internal.producer.SwallowService;
+import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
@@ -62,7 +62,7 @@ public class HandlerAsynchroMode {
       private final int      sendTimes      = producer.getRetryTimes() + 1;
       private int            leftRetryTimes = sendTimes;
       private Packet         message        = null;
-      private SwallowService remoteService  = producer.getRemoteService();
+      private ProducerSwallowService remoteService  = producer.getRemoteService();
 
       @Override
       public void run() {

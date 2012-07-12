@@ -17,7 +17,7 @@ package com.dianping.swallow.producer;
 
 import java.util.Map;
 
-import com.dianping.swallow.common.internal.producer.SwallowService;
+import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
@@ -41,7 +41,7 @@ public interface ProducerFactory {
    /**
     * @return 获取远程调用
     */
-   public SwallowService getRemoteService();
+   public ProducerSwallowService getRemoteService();
 
    /**
     * 获取默认配置的Producer实例
