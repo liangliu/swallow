@@ -102,7 +102,7 @@ public class ConsumerWorkerManager {
       return consumerId2ConsumerWorker;
    }
 
-   private ConsumerWorker findOrCreateConsumerWorker(ConsumerInfo consumerInfo,Set<String> messageType) {
+   public ConsumerWorker findOrCreateConsumerWorker(ConsumerInfo consumerInfo,Set<String> messageType) {
       ConsumerWorker worker = findConsumerWorker(consumerInfo);
       ConsumerId consumerId = consumerInfo.getConsumerId();
       if (worker == null) {
