@@ -108,7 +108,7 @@ public final class PigeonConfigure {
          logger.warn("[Unrecognized serialize, use default value: " + DEFAULT_SERIALIZE + ".]");
          serialize = DEFAULT_SERIALIZE;
       }
-      
+
       //检查hosts和weights
       String[] hostSet = hosts.trim().split(",");
       String[] weightSet = weights.trim().split(",");
@@ -137,6 +137,10 @@ public final class PigeonConfigure {
          hosts = realHosts.substring(0, realHosts.length() - 1);
          weights = realWeights.substring(0, realWeights.length() - 1);
       }
+
+      //检查Timeout
+      if (timeout <= 0)
+         timeout = DEFAULT_TIMEOUT;
    }
 
    public String getServiceName() {
