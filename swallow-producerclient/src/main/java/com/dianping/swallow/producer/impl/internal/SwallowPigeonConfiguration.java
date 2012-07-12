@@ -9,34 +9,34 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class PigeonConfigure {
+public final class SwallowPigeonConfiguration {
 
-   private static final Logger  logger               = LoggerFactory.getLogger(PigeonConfigure.class);
+   private static final Logger logger               = LoggerFactory.getLogger(SwallowPigeonConfiguration.class);
 
-   private static final String  DEFAULT_SERVICE_NAME = "remoteService";
-   private static final String  DEFAULT_SERIALIZE    = "hessian";
-   private static final int     DEFAULT_TIMEOUT      = 5000;
-   private static final boolean DEFAULT_IS_USE_LION  = false;
-   private static final String  DEFAULT_HOSTS        = "127.0.0.1:4000";
-   private static final String  DEFAULT_WEIGHTS      = "1";
+   public static final String  DEFAULT_SERVICE_NAME = "remoteService";
+   public static final String  DEFAULT_SERIALIZE    = "hessian";
+   public static final int     DEFAULT_TIMEOUT      = 5000;
+   public static final boolean DEFAULT_IS_USE_LION  = false;
+   public static final String  DEFAULT_HOSTS        = "127.0.0.1:4000";
+   public static final String  DEFAULT_WEIGHTS      = "1";
 
-   private String               serviceName          = DEFAULT_SERVICE_NAME;
-   private String               serialize            = DEFAULT_SERIALIZE;
-   private int                  timeout              = DEFAULT_TIMEOUT;
-   private boolean              useLion              = DEFAULT_IS_USE_LION;
-   private String               hosts                = DEFAULT_HOSTS;
-   private String               weights              = DEFAULT_WEIGHTS;
+   private String              serviceName          = DEFAULT_SERVICE_NAME;
+   private String              serialize            = DEFAULT_SERIALIZE;
+   private int                 timeout              = DEFAULT_TIMEOUT;
+   private boolean             useLion              = DEFAULT_IS_USE_LION;
+   private String              hosts                = DEFAULT_HOSTS;
+   private String              weights              = DEFAULT_WEIGHTS;
 
-   public PigeonConfigure() {
+   public SwallowPigeonConfiguration() {
       //默认配置
    }
 
    @SuppressWarnings("rawtypes")
-   public PigeonConfigure(String configFile) {
+   public SwallowPigeonConfiguration(String configFile) {
       Properties props = new Properties();
       Class clazz = this.getClass();
       InputStream in = null;
-      in = PigeonConfigure.class.getClassLoader().getResourceAsStream(configFile);
+      in = SwallowPigeonConfiguration.class.getClassLoader().getResourceAsStream(configFile);
 
       try {
          props.load(in);
@@ -102,15 +102,45 @@ public final class PigeonConfigure {
    }
 
    private void checkParams() {
+      //检查序列化方式
       if (!"hessian".equals(serialize) && !"java".equals(serialize) && !"protobuf".equals(serialize)
             && !"thrift".equals(serialize)) {
          logger.warn("[Unrecognized serialize, use default value: " + DEFAULT_SERIALIZE + ".]");
          serialize = DEFAULT_SERIALIZE;
       }
-      //      if (!hosts
-      //            .matches("[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5}"))
-      //         //[[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5},][[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}:[0-9]{1,5}]
-      //         logger.warn("[Unrecognized hosts, use default value: " + DEFAULT_HOSTS + ".]");
+
+      //检查hosts和weights
+      String[] hostSet = hosts.trim().split(",");
+      String[] weightSet = weights.trim().split(",");
+      String realHosts = "";
+      String realWeights = "";
+      String host;
+      String weight;
+      for (int idx = 0; idx < hostSet.length; idx++) {
+         host = hostSet[idx];
+         if (idx >= weightSet.length) {
+            weight = "-1";
+         } else {
+            weight = weightSet[idx];
+         }
+         if (!host.matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}") || !weight.matches("[1-9]|10")) {
+            logger.warn("[Unrecognized host address: " + host + ", or weight: " + weight + ", ignored it.]");
+            continue;
+         }
+         realHosts += host + ",";
+         realWeights += weight + ",";
+      }
+      if (realHosts == "") {
+         hosts = DEFAULT_HOSTS;
+         weights = DEFAULT_WEIGHTS;
+      } else {
+         hosts = realHosts.substring(0, realHosts.length() - 1);
+         weights = realWeights.substring(0, realWeights.length() - 1);
+      }
+
+      //检查Timeout
+      if (timeout <= 0)
+         timeout = DEFAULT_TIMEOUT;
    }
 
    public String getServiceName() {
@@ -159,14 +189,5 @@ public final class PigeonConfigure {
 
    public void setWeights(String weights) {
       this.weights = weights;
-   }
-
-   public static void main(String[] args) {
-      PigeonConfigure pigeonConfigure = new PigeonConfigure("pigeon.properties");
-      System.out.println(pigeonConfigure.getHosts());
-      System.out.println(pigeonConfigure.getSerialize());
-      System.out.println(pigeonConfigure.getServiceName());
-      System.out.println(pigeonConfigure.getTimeout());
-      System.out.println(pigeonConfigure.getWeights());
    }
 }
