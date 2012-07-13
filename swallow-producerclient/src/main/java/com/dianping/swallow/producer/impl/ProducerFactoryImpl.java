@@ -156,8 +156,8 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
     */
    @Override
-   public Producer getProducer(Destination dest) throws TopicNameInvalidException {
-      return getProducer(dest, null);
+   public Producer createProducer(Destination dest) throws TopicNameInvalidException {
+      return createProducer(dest, null);
    }
 
    /**
@@ -169,7 +169,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
     */
    @Override
-   public Producer getProducer(Destination dest, ProducerConfig config)
+   public Producer createProducer(Destination dest, ProducerConfig config)
          throws TopicNameInvalidException {
       ProducerImpl producerImpl = null;
       try {

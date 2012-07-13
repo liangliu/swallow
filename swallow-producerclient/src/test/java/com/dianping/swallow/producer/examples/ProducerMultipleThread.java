@@ -87,7 +87,7 @@ public class ProducerMultipleThread {
       //获取Producer实例（异步模式）
       Producer producerAsync = null;
       try {
-         producerAsync = producerFactory.getProducer(Destination.topic("Example"), config);
+         producerAsync = producerFactory.createProducer(Destination.topic("Example"), config);
       } catch (TopicNameInvalidException e) {
          //TopicName非法则抛出此异常
       }
@@ -99,7 +99,7 @@ public class ProducerMultipleThread {
       //获取Producer实例（同步模式）
       Producer producerSync = null;
       try {
-         producerSync = producerFactory.getProducer(Destination.topic("Example"), config);
+         producerSync = producerFactory.createProducer(Destination.topic("Example"), config);
       } catch (TopicNameInvalidException e) {
          //TopicName非法则抛出此异常
       }

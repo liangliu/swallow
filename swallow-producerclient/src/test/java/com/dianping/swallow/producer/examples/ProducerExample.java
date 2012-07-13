@@ -59,7 +59,7 @@ public class ProducerExample {
          try {
             //OR: producer = producerFactory.getProducer(Destination.topic("example"));//使用默认设置获取Producer
             //默认Producer设置为：ProducerMode=SYNC_MODE，RetryTimes=5
-            producer = producerFactory.getProducer(Destination.topic("Example"), config);
+            producer = producerFactory.createProducer(Destination.topic("Example"), config);
 
             //发送message
             try {

@@ -48,7 +48,7 @@ public interface ProducerFactory {
     * @return 实现Producer接口的对象，用于发送消息，此版本中类型为{@link ProducerImpl}
     * @throws TopicNameInvalidException 目的地名称非法，则抛出异常
     */
-   public Producer getProducer(Destination dest) throws TopicNameInvalidException;
+   public Producer createProducer(Destination dest) throws TopicNameInvalidException;
 
    /**
     * 获取指定配置的Producer实例
@@ -58,6 +58,6 @@ public interface ProducerFactory {
     * @return 实现Producer接口的对象，用于发送消息，此版本中类型为{@link ProducerImpl}
     * @throws TopicNameInvalidException 目的地名称非法，则抛出异常
     */
-   public Producer getProducer(Destination dest, ProducerConfig config)
+   public Producer createProducer(Destination dest, ProducerConfig config)
          throws TopicNameInvalidException;
 }

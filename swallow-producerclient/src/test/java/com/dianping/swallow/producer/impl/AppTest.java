@@ -49,7 +49,7 @@ public class AppTest {
          //构造Producer
          ProducerImpl producer = null;
          try {
-            producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("songtong"), config);
+            producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("songtong"), config);
          } catch (Exception e) {
             e.printStackTrace();
          }
