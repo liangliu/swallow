@@ -46,7 +46,6 @@ import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
-import com.dianping.swallow.producer.ProducerOptionKey;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 import com.dianping.swallow.producer.impl.internal.SwallowPigeonConfiguration;
 

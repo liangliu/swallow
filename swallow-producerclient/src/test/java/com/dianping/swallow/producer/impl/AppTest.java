@@ -10,8 +10,6 @@ import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownExceptio
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerMode;
-import com.dianping.swallow.producer.ProducerOptionKey;
-import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 
 public class AppTest {
@@ -38,7 +36,7 @@ public class AppTest {
       public void run() {
          //设置Producer选项
          ProducerConfig config = new ProducerConfig();
-         config.setMode(ProducerMode.ASYNC_MODE);
+         config.setMode(ProducerMode.SYNC_MODE);
          config.setRetryTimes(3);
          config.setZipped(true);
          config.setThreadPoolSize(3);

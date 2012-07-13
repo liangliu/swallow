@@ -15,9 +15,6 @@
  */
 package com.dianping.swallow.producer.examples;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.NullContentException;
@@ -29,7 +26,6 @@ import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
-import com.dianping.swallow.producer.ProducerOptionKey;
 import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 
 /**

@@ -25,8 +25,6 @@ import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerFactory;
-import com.dianping.swallow.producer.ProducerMode;
-import com.dianping.swallow.producer.ProducerOptionKey;
 
 /**
  * 实现Producer接口的类
@@ -35,22 +33,22 @@ import com.dianping.swallow.producer.ProducerOptionKey;
  */
 public class ProducerImpl implements Producer {
    //变量定义
-   private ProducerSwallowService            remoteService;                                                  //远程调用对象
-   private HandlerAsynchroMode       asyncHandler;                                                   //异步处理对象
-   private HandlerSynchroMode        syncHandler;                                                    //同步处理对象
+   private ProducerSwallowService remoteService;                                  //远程调用对象
+   private HandlerAsynchroMode    asyncHandler;                                   //异步处理对象
+   private HandlerSynchroMode     syncHandler;                                    //同步处理对象
 
    //常量定义
-   private static final String       CAT_TYPE                 = "swallow";                           //cat监控使用的type
-   private static final String       CAT_NAME                 = "produceMessage";                    //cat监控使用的name
-   private static final Logger       logger                   = Logger.getLogger(ProducerImpl.class); //日志
-   private final String              producerIP;                                                     //Producer IP地址
-   private final String              producerVersion;                                                //Producer版本号
+   private static final String    CAT_TYPE = "swallow";                           //cat监控使用的type
+   private static final String    CAT_NAME = "produceMessage";                    //cat监控使用的name
+   private static final Logger    logger   = Logger.getLogger(ProducerImpl.class); //日志
+   private final String           producerIP;                                     //Producer IP地址
+   private final String           producerVersion;                                //Producer版本号
 
    //Producer配置默认值
-   private ProducerConfig config;
+   private ProducerConfig         config;
 
    //Producer配置变量
-   private Destination               destination;                                                    //Producer消息目的
+   private Destination            destination;                                    //Producer消息目的
 
    /**
     * 构造函数
