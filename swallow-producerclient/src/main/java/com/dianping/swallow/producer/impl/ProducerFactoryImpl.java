@@ -15,8 +15,6 @@
  */
 package com.dianping.swallow.producer.impl;
 
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +31,8 @@ import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
-import com.dianping.swallow.producer.ProducerOptionKey;
-import com.dianping.swallow.producer.impl.internal.SwallowPigeonConfiguration;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
+import com.dianping.swallow.producer.impl.internal.SwallowPigeonConfiguration;
 
 /**
  * 实现ProducerFactory接口的工厂类
@@ -159,8 +156,8 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
     */
    @Override
-   public Producer getProducer(Destination dest) throws TopicNameInvalidException {
-      return getProducer(dest, null);
+   public Producer createProducer(Destination dest) throws TopicNameInvalidException {
+      return createProducer(dest, null);
    }
 
    /**
@@ -172,7 +169,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
     */
    @Override
-   public Producer getProducer(Destination dest, ProducerConfig config)
+   public Producer createProducer(Destination dest, ProducerConfig config)
          throws TopicNameInvalidException {
       ProducerImpl producerImpl = null;
       try {

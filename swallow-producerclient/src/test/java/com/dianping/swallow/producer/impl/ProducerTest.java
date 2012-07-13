@@ -77,13 +77,13 @@ public class ProducerTest {
       
       ProducerImpl producer = null;
       try {
-         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello:Unit_Test"), config);
+         producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("Hello:Unit_Test"), config);
       } catch (TopicNameInvalidException e) {
       }
       assertNull(producer);
 
       try {
-         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello_Unit_Test"), config);
+         producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("Hello_Unit_Test"), config);
       } catch (TopicNameInvalidException e) {
       }
 
@@ -99,13 +99,13 @@ public class ProducerTest {
       config.setThreadPoolSize(100);
 
       try {
-         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello:Unit_Test"), config);
+         producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("Hello:Unit_Test"), config);
       } catch (TopicNameInvalidException e) {
       }
       assertNull(producer);
 
       try {
-         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello"), config);
+         producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("Hello"), config);
       } catch (TopicNameInvalidException e) {
          //捕获到TopicNameInvalid异常
       }

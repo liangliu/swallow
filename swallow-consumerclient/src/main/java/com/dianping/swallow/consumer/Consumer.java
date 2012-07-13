@@ -11,4 +11,6 @@ public interface Consumer {
     * @param listener
     */
    public void setListener(MessageListener listener);
+   
+   public void close();
 }
