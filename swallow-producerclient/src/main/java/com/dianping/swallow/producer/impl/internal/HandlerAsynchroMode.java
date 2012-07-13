@@ -37,7 +37,7 @@ public class HandlerAsynchroMode {
       FileQueueConfigHolder fileQueueConfig = new FileQueueConfigHolder();
       fileQueueConfig.setMaxDataFileSize(DEFAULT_FILEQUEUE_SIZE);
       messageQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, producer.getDestination().getName(),
-            producer.isContinueSend());
+            producer.getProducerConfig().isSendMsgLeftLastSession());
 
       this.start();
    }
@@ -50,7 +50,7 @@ public class HandlerAsynchroMode {
    //启动处理线程
    private void start() {
       int idx;
-      int threadPoolSize = producer.getThreadPoolSize();
+      int threadPoolSize = producer.getProducerConfig().getThreadPoolSize();
       for (idx = 0; idx < threadPoolSize; idx++) {
          threadFactory.newThread(new TskGetAndSend(), "AsyncProducer_" + idx).start();
       }
@@ -59,7 +59,7 @@ public class HandlerAsynchroMode {
    //从filequeue队列获取并发送Message
    private class TskGetAndSend implements Runnable {
 
-      private final int      sendTimes      = producer.getRetryTimes() + 1;
+      private final int      sendTimes      = producer.getProducerConfig().getRetryTimes() + 1;
       private int            leftRetryTimes = sendTimes;
       private Packet         message        = null;
       private ProducerSwallowService remoteService  = producer.getRemoteService();

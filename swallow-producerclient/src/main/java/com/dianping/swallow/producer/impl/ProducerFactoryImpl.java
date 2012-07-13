@@ -30,6 +30,7 @@ import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedEx
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.Producer;
+import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
@@ -171,28 +172,28 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
     */
    @Override
-   public Producer getProducer(Destination dest, Map<ProducerOptionKey, Object> pOptions)
+   public Producer getProducer(Destination dest, ProducerConfig config)
          throws TopicNameInvalidException {
       ProducerImpl producerImpl = null;
       try {
-         producerImpl = new ProducerImpl(this, dest, pOptions);
+         producerImpl = new ProducerImpl(this, dest, config);
          logger.info("[New producer instance was created.]:[topicName=" + dest.getName() + 
-               "][ProducerMode=" + producerImpl.getProducerMode() + 
-               "][RetryTimes=" + producerImpl.getRetryTimes() +
-               "][IfZipMessage=" + producerImpl.isZipMessage() + 
-               (producerImpl.getProducerMode().equals(ProducerMode.ASYNC_MODE) ? 
-                     "][ThreadPoolSize=" + producerImpl.getThreadPoolSize() + 
-                     "][IfContinueSend=" + producerImpl.isContinueSend() + "]" 
+               "][ProducerMode=" + producerImpl.getProducerConfig().getMode() + 
+               "][RetryTimes=" + producerImpl.getProducerConfig().getRetryTimes() +
+               "][IfZipMessage=" + producerImpl.getProducerConfig().isZipped() + 
+               (producerImpl.getProducerConfig().getMode().equals(ProducerMode.ASYNC_MODE) ? 
+                     "][ThreadPoolSize=" + producerImpl.getProducerConfig().getThreadPoolSize() + 
+                     "][IfContinueSend=" + producerImpl.getProducerConfig().isSendMsgLeftLastSession() + "]" 
                      : "]"));
       } catch (TopicNameInvalidException e) {
          logger.error(
                "[Can not get producer instance.]:[topicName=" + dest.getName() + 
-               "][ProducerMode=" + pOptions.get(ProducerOptionKey.PRODUCER_MODE) + 
-               "][RetryTimes=" + pOptions.get(ProducerOptionKey.RETRY_TIMES) +
-               "][IfZipMessage=" + pOptions.get(ProducerOptionKey.IS_ZIP_MESSAGE) + 
-               ((pOptions.get(ProducerOptionKey.PRODUCER_MODE) == ProducerMode.ASYNC_MODE) ? 
-                     "][ThreadPoolSize=" + pOptions.get(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE) + 
-                     "][IfContinueSend=" + pOptions.get(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND) + "]"
+               "][ProducerMode=" + producerImpl.getProducerConfig().getMode() + 
+               "][RetryTimes=" + producerImpl.getProducerConfig().getRetryTimes() +
+               "][IfZipMessage=" + producerImpl.getProducerConfig().isZipped() + 
+               ((producerImpl.getProducerConfig().getMode() == ProducerMode.ASYNC_MODE) ? 
+                     "][ThreadPoolSize=" + producerImpl.getProducerConfig().getThreadPoolSize() + 
+                     "][IfContinueSend=" + producerImpl.getProducerConfig().isSendMsgLeftLastSession() + "]"
                      : "]"), e);
          throw e;
       }

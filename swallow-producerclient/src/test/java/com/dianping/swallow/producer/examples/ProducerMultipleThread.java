@@ -28,6 +28,7 @@ import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedEx
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.Producer;
+import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
@@ -76,32 +77,32 @@ public class ProducerMultipleThread {
          //远程调用初始化失败抛出此异常
       }
 
-      //设置Producer选项
-      Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
-      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
-      pOptions.put(ProducerOptionKey.RETRY_TIMES, 3);
-      pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, false);
-
-      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 3);
-      pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
+      ProducerConfig config = new ProducerConfig();
+      //配置Producer选项，如果配置项出错则使用默认配置
+      //默认配置的Producer为同步模式（SYNC_MODE）、失败重试次数为5、压缩选项为假
+      config.setMode(ProducerMode.ASYNC_MODE);//Producer工作模式（同步/异步）
+      config.setRetryTimes(3);//发送失败重试次数
+      config.setZipped(false);//是否对待发送消息执行压缩
+      //以下配置中，标*的选项只在异步模式生效
+      config.setThreadPoolSize(3);//*线程池大小，默认为5
+      config.setSendMsgLeftLastSession(false);//*是否续传，默认为否
 
       //获取Producer实例（异步模式）
       Producer producerAsync = null;
       try {
-         producerAsync = producerFactory.getProducer(Destination.topic("Example"), pOptions);
+         producerAsync = producerFactory.getProducer(Destination.topic("Example"), config);
       } catch (TopicNameInvalidException e) {
          //TopicName非法则抛出此异常
       }
 
       //重新配置Producer选项
-      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-      pOptions.put(ProducerOptionKey.RETRY_TIMES, 2);
-      pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, true);
-
+      config.setMode(ProducerMode.SYNC_MODE);
+      config.setZipped(true);
+      
       //获取Producer实例（同步模式）
       Producer producerSync = null;
       try {
-         producerSync = producerFactory.getProducer(Destination.topic("Example"), pOptions);
+         producerSync = producerFactory.getProducer(Destination.topic("Example"), config);
       } catch (TopicNameInvalidException e) {
          //TopicName非法则抛出此异常
       }

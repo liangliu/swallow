@@ -8,6 +8,7 @@ import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.NullContentException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
+import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
 import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
@@ -36,14 +37,12 @@ public class AppTest {
       @Override
       public void run() {
          //设置Producer选项
-         Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
-
-         pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-         pOptions.put(ProducerOptionKey.RETRY_TIMES, 3);
-         pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, true);
-
-         pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 3);
-         pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
+         ProducerConfig config = new ProducerConfig();
+         config.setMode(ProducerMode.ASYNC_MODE);
+         config.setRetryTimes(3);
+         config.setZipped(true);
+         config.setThreadPoolSize(3);
+         config.setSendMsgLeftLastSession(false);
 
          //设置发送消息时的选项
          Map<String, String> properties = new HashMap<String, String>();
@@ -52,7 +51,7 @@ public class AppTest {
          //构造Producer
          ProducerImpl producer = null;
          try {
-            producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("songtong"), pOptions);
+            producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("songtong"), config);
          } catch (Exception e) {
             e.printStackTrace();
          }

@@ -43,6 +43,7 @@ import com.dianping.swallow.common.producer.exceptions.NullContentException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
+import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.ProducerOptionKey;
@@ -68,44 +69,43 @@ public class ProducerTest {
       producerFactory.setRemoteService(normalRemoteService);
       assertNotNull(producerFactory);
 
-      //设置Producer选项
-      Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
-      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-      pOptions.put(ProducerOptionKey.RETRY_TIMES, 2);
-      pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, true);
-
+    //设置Producer选项
+      ProducerConfig config = new ProducerConfig();
+      config.setMode(ProducerMode.SYNC_MODE);
+      config.setRetryTimes(2);
+      config.setZipped(true);
+      
       ProducerImpl producer = null;
       try {
-         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello:Unit_Test"), pOptions);
+         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello:Unit_Test"), config);
       } catch (TopicNameInvalidException e) {
       }
       assertNull(producer);
 
       try {
-         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello_Unit_Test"), pOptions);
+         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello_Unit_Test"), config);
       } catch (TopicNameInvalidException e) {
       }
 
       assertNotNull(producer);
-      assertEquals(ProducerMode.SYNC_MODE, producer.getProducerMode());
-      assertEquals(2, producer.getRetryTimes());
-      assertEquals(true, producer.isZipMessage());
+      assertEquals(ProducerMode.SYNC_MODE, producer.getProducerConfig().getMode());
+      assertEquals(2, producer.getProducerConfig().getRetryTimes());
+      assertEquals(true, producer.getProducerConfig().isZipped());
 
       producer = null;
-      pOptions = new HashMap<ProducerOptionKey, Object>();
 
-      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
-      pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, true);
-      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 100);
+      config.setMode(ProducerMode.ASYNC_MODE);
+      config.setSendMsgLeftLastSession(true);
+      config.setThreadPoolSize(100);
 
       try {
-         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello:Unit_Test"), pOptions);
+         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello:Unit_Test"), config);
       } catch (TopicNameInvalidException e) {
       }
       assertNull(producer);
 
       try {
-         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello"), pOptions);
+         producer = (ProducerImpl) producerFactory.getProducer(Destination.topic("Hello"), config);
       } catch (TopicNameInvalidException e) {
          //捕获到TopicNameInvalid异常
       }
@@ -115,8 +115,8 @@ public class ProducerTest {
       assertEquals("0.6.0", producerFactory.getProducerVersion());
       assertEquals(Inet4Address.getLocalHost().getHostAddress(), producerFactory.getProducerIP());
 
-      assertEquals(true, producer.isContinueSend());
-      assertEquals(100, producer.getThreadPoolSize());
+      assertEquals(true, producer.getProducerConfig().isSendMsgLeftLastSession());
+      assertEquals(100, producer.getProducerConfig().getThreadPoolSize());
    }
 
    @Test
@@ -161,8 +161,6 @@ public class ProducerTest {
    
    @Test
    public void testAsyncProducerImpl() throws ServerDaoException {
-      Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
-
       //正常的mock
       ProducerSwallowService normalRemoteServiceMock = mock(ProducerSwallowService.class);
       PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
@@ -202,11 +200,12 @@ public class ProducerTest {
       when(exceptionProducerFactory.getProducerVersion()).thenReturn("0.6.0");
 
       //异步模式的pOptions
-      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.ASYNC_MODE);
-      pOptions.put(ProducerOptionKey.RETRY_TIMES, 2);
-      pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, false);
-      pOptions.put(ProducerOptionKey.ASYNC_IS_CONTINUE_SEND, false);
-      pOptions.put(ProducerOptionKey.ASYNC_THREAD_POOL_SIZE, 2);
+      ProducerConfig config = new ProducerConfig();
+      config.setMode(ProducerMode.ASYNC_MODE);
+      config.setRetryTimes(2);
+      config.setZipped(false);
+      config.setSendMsgLeftLastSession(false);
+      config.setThreadPoolSize(2);
 
       //异步模式的Producer
       ProducerImpl normalProducer = null;
@@ -214,23 +213,23 @@ public class ProducerTest {
 
       //构造异步模式的Producer
       try {
-         normalProducer = new ProducerImpl(normalProducerFactory, Destination.topic("UnitTest"), pOptions);
-         exceptionProducer = new ProducerImpl(exceptionProducerFactory, Destination.topic("UnitTest"), pOptions);
+         normalProducer = new ProducerImpl(normalProducerFactory, Destination.topic("UnitTest"), config);
+         exceptionProducer = new ProducerImpl(exceptionProducerFactory, Destination.topic("UnitTest"), config);
       } catch (Exception e) {
       }
       
       assertNotNull(normalProducer);
       assertNotNull(exceptionProducer);
-      assertEquals(ProducerMode.ASYNC_MODE, normalProducer.getProducerMode());
-      assertEquals(ProducerMode.ASYNC_MODE, exceptionProducer.getProducerMode());
-      assertEquals(2, normalProducer.getRetryTimes());
-      assertEquals(2, exceptionProducer.getRetryTimes());
-      assertEquals(false, normalProducer.isZipMessage());
-      assertEquals(false, exceptionProducer.isZipMessage());
-      assertEquals(false, normalProducer.isContinueSend());
-      assertEquals(false, exceptionProducer.isContinueSend());
-      assertEquals(2, normalProducer.getThreadPoolSize());
-      assertEquals(2, exceptionProducer.getThreadPoolSize());
+      assertEquals(ProducerMode.ASYNC_MODE, normalProducer.getProducerConfig().getMode());
+      assertEquals(ProducerMode.ASYNC_MODE, exceptionProducer.getProducerConfig().getMode());
+      assertEquals(2, normalProducer.getProducerConfig().getRetryTimes());
+      assertEquals(2, exceptionProducer.getProducerConfig().getRetryTimes());
+      assertEquals(false, normalProducer.getProducerConfig().isZipped());
+      assertEquals(false, exceptionProducer.getProducerConfig().isZipped());
+      assertEquals(false, normalProducer.getProducerConfig().isSendMsgLeftLastSession());
+      assertEquals(false, exceptionProducer.getProducerConfig().isSendMsgLeftLastSession());
+      assertEquals(2, normalProducer.getProducerConfig().getThreadPoolSize());
+      assertEquals(2, exceptionProducer.getProducerConfig().getThreadPoolSize());
       
       //测试异步模式下抛出异常的Producer
       String strRet = "";
@@ -296,30 +295,30 @@ public class ProducerTest {
       when(exceptionProducerFactory.getProducerVersion()).thenReturn("0.6.0");
 
       //同步模式的options
-      Map<ProducerOptionKey, Object> pOptions = new HashMap<ProducerOptionKey, Object>();
-      pOptions.put(ProducerOptionKey.PRODUCER_MODE, ProducerMode.SYNC_MODE);
-      pOptions.put(ProducerOptionKey.RETRY_TIMES, 1);
-      pOptions.put(ProducerOptionKey.IS_ZIP_MESSAGE, true);
+      ProducerConfig config = new ProducerConfig();
+      config.setMode(ProducerMode.SYNC_MODE);
+      config.setRetryTimes(1);
+      config.setZipped(true);
 
       //构造Producer
       ProducerImpl normalProducer = null;
       ProducerImpl exceptionProducer = null;
       try {
-         normalProducer = new ProducerImpl(normalProducerFactory, Destination.topic("UnitTest"), pOptions);
-         exceptionProducer = new ProducerImpl(exceptionProducerFactory, Destination.topic("UnitTest"), pOptions);
+         normalProducer = new ProducerImpl(normalProducerFactory, Destination.topic("UnitTest"), config);
+         exceptionProducer = new ProducerImpl(exceptionProducerFactory, Destination.topic("UnitTest"), config);
       } catch (TopicNameInvalidException e) {
          System.out.println(e.getMessage());
       }
 
       assertNotNull(normalProducer);
-      assertEquals(true, normalProducer.isZipMessage());
-      assertEquals(ProducerMode.SYNC_MODE, normalProducer.getProducerMode());
-      assertEquals(1, normalProducer.getRetryTimes());
+      assertEquals(true, normalProducer.getProducerConfig().isZipped());
+      assertEquals(ProducerMode.SYNC_MODE, normalProducer.getProducerConfig().getMode());
+      assertEquals(1, normalProducer.getProducerConfig().getRetryTimes());
 
       assertNotNull(exceptionProducer);
-      assertEquals(true, exceptionProducer.isZipMessage());
-      assertEquals(ProducerMode.SYNC_MODE, exceptionProducer.getProducerMode());
-      assertEquals(1, exceptionProducer.getRetryTimes());
+      assertEquals(true, exceptionProducer.getProducerConfig().isZipped());
+      assertEquals(ProducerMode.SYNC_MODE, exceptionProducer.getProducerConfig().getMode());
+      assertEquals(1, exceptionProducer.getProducerConfig().getRetryTimes());
 
       Map<String, String> properties = new HashMap<String, String>();
       properties.put("hello", "kitty");
