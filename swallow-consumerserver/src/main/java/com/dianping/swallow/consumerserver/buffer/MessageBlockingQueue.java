@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dianping.hawk.jmx.HawkJMXUtil;
+import com.dianping.swallow.common.consumer.MessageFilter;
 import com.dianping.swallow.common.message.Message;
 
 public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
@@ -31,7 +32,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
    private Condition                   condition        = reentrantLock.newCondition();
 
    protected volatile Long             tailMessageId;
-   protected Set<String>               messageTypeSet;
+   protected MessageFilter messageFilter;
 
    public MessageBlockingQueue(String cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage) {
       super(capacity);
@@ -51,7 +52,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
    }
 
    public MessageBlockingQueue(String cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage,
-                               Set<String> messageTypeSet) {
+                               MessageFilter messageFilter) {
       super(capacity);
       //能运行到这里，说明capacity>0
       this.cid = cid;
@@ -62,7 +63,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
       if (messageIdOfTailMessage == null)
          throw new IllegalArgumentException("messageIdOfTailMessage is null.");
       this.tailMessageId = messageIdOfTailMessage;
-      this.messageTypeSet = messageTypeSet;
+      this.messageFilter = messageFilter;
       messageRetriverThread = new MessageRetriverThread();
       messageRetriverThread.start();
       //Hawk监控
@@ -149,7 +150,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
          }
          try {
             List<Message> messages = messageRetriever.retriveMessage(MessageBlockingQueue.this.topicName,
-                  MessageBlockingQueue.this.tailMessageId, MessageBlockingQueue.this.messageTypeSet);
+                  MessageBlockingQueue.this.tailMessageId, MessageBlockingQueue.this.messageFilter);
             if (messages != null) {
                int size = messages.size();
                for (int i = 0; i < size; i++) {
@@ -199,8 +200,8 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
          return tailMessageId;
       }
 
-      public Set<String> getMessageTypeSet() {
-         return messageTypeSet;
+      public MessageFilter getMessageFilter() {
+         return messageFilter;
       }
 
       public int getSize() {

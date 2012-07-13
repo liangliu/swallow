@@ -8,6 +8,8 @@ import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.cat.message.spi.MessageAnalyzer;
+import com.dianping.swallow.common.consumer.MessageFilter;
 import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
 import com.dianping.swallow.common.internal.dao.AckDAO;
 import com.dianping.swallow.common.internal.dao.MessageDAO;
@@ -60,8 +62,8 @@ public class ConsumerWorkerManager {
       return configManager;
    }
 
-   public void handleGreet(Channel channel, ConsumerInfo consumerInfo, int clientThreadCount, Set<String> messageType) {
-      findOrCreateConsumerWorker(consumerInfo, messageType).handleGreet(channel, clientThreadCount);
+   public void handleGreet(Channel channel, ConsumerInfo consumerInfo, int clientThreadCount, MessageFilter messageFilter) {
+      findOrCreateConsumerWorker(consumerInfo, messageFilter).handleGreet(channel, clientThreadCount);
    }
 
    public void handleAck(Channel channel, ConsumerInfo consumerInfo, Long ackedMsgId, ACKHandlerType type) {
@@ -102,13 +104,13 @@ public class ConsumerWorkerManager {
       return consumerId2ConsumerWorker;
    }
 
-   public ConsumerWorker findOrCreateConsumerWorker(ConsumerInfo consumerInfo,Set<String> messageType) {
+   public ConsumerWorker findOrCreateConsumerWorker(ConsumerInfo consumerInfo,MessageFilter messageFilter) {
       ConsumerWorker worker = findConsumerWorker(consumerInfo);
       ConsumerId consumerId = consumerInfo.getConsumerId();
       if (worker == null) {
          synchronized (this) {
             if (worker == null) {
-               worker = new ConsumerWorkerImpl(consumerInfo, this, messageType);
+               worker = new ConsumerWorkerImpl(consumerInfo, this, messageFilter);
                consumerId2ConsumerWorker.put(consumerId, worker);
             }
          }

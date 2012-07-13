@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.consumer.ConsumerType;
+import com.dianping.swallow.common.consumer.MessageFilter;
 import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
 import com.dianping.swallow.common.internal.dao.AckDAO;
 import com.dianping.swallow.common.internal.dao.MessageDAO;
@@ -68,16 +69,16 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       return waitAckMessages;
    }
 
-   private Set<String>                            messageType;
+   private MessageFilter messageFilter;
 
-   public ConsumerWorkerImpl(ConsumerInfo consumerInfo, ConsumerWorkerManager workerManager, Set<String> messageType) {
+   public ConsumerWorkerImpl(ConsumerInfo consumerInfo, ConsumerWorkerManager workerManager, MessageFilter messageFilter) {
       this.consumerInfo = consumerInfo;
       this.configManager = workerManager.getConfigManager();
       this.ackDao = workerManager.getAckDAO();
       this.messageDao = workerManager.getMessageDAO();
       this.swallowBuffer = workerManager.getSwallowBuffer();
       this.threadFactory = workerManager.getThreadFactory();
-      this.messageType = messageType;
+      this.messageFilter = messageFilter;
       topicName = consumerInfo.getConsumerId().getDest().getName();
       consumerid = consumerInfo.getConsumerId().getConsumerId();
       pullStgy = new DefaultPullStrategy(configManager.getPullFailDelayBase(),
@@ -123,7 +124,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    }
 
    private void updateWaitAckMessages(Channel channel, Long ackedMsgId) {
-      if (ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
+      if (ConsumerType.AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
          Map<PktMessage, Boolean> messages = waitAckMessages.get(channel);
          if(messages != null){
             SwallowMessage swallowMsg = new SwallowMessage();
@@ -137,7 +138,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    }
 
    private void updateMaxMessageId(Long ackedMsgId, Channel channel) {
-      if (ackedMsgId != null && ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
+      if (ackedMsgId != null && ConsumerType.AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
          ackDao.add(topicName, consumerid, ackedMsgId, connectedChannels.get(channel));
       }
    }
@@ -145,7 +146,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    @Override
    public void handleChannelDisconnect(Channel channel) {
       connectedChannels.remove(channel);
-      if (ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
+      if (ConsumerType.AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
          Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
          if (messageMap != null) {
             for (Map.Entry<PktMessage, Boolean> messageEntry : messageMap.entrySet()) {
@@ -229,7 +230,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                if (messageQueue == null) {
                   long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid, channel);
                   messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage,
-                        messageType);
+                        messageFilter);
                }
                if (cachedMessages.isEmpty()) {
                   putMsg2CachedMsgFromMsgQueue();
@@ -251,7 +252,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       PktMessage preparedMessage = cachedMessages.poll();
       Long messageId = preparedMessage.getContent().getMessageId();
       //如果是AT_MOST模式，收到ACK之前更新messageId的类型
-      if (ConsumerType.AT_MOST.equals(consumerInfo.getConsumerType())) {
+      if (ConsumerType.AT_MOST_ONCE.equals(consumerInfo.getConsumerType())) {
 
          ackDao.add(topicName, consumerid, messageId, connectedChannels.get(channel));
 
@@ -259,7 +260,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       try {
          channel.write(preparedMessage);
          //如果是AT_LEAST模式，发送完后，在server端记录已发送但未收到ACK的消息记录
-         if (ConsumerType.AT_LEAST.equals(consumerInfo.getConsumerType())) {
+         if (ConsumerType.AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
             Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
             if (messageMap == null) {
                messageMap = new ConcurrentHashMap<PktMessage, Boolean>();

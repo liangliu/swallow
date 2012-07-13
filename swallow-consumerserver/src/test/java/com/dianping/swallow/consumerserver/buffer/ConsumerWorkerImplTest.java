@@ -83,7 +83,7 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
       }))).thenReturn(null);
       
       ConsumerId consumerId2 = new ConsumerId("zhangyu2", Destination.topic("zhangyuxx2"));
-      ConsumerInfo consumerInfo2 = new ConsumerInfo(consumerId2, ConsumerType.AT_MOST);      
+      ConsumerInfo consumerInfo2 = new ConsumerInfo(consumerId2, ConsumerType.AT_MOST_ONCE);      
       consumerWorker2 = (ConsumerWorkerImpl)consumerWorkerManager.findOrCreateConsumerWorker(consumerInfo2, null);
       consumerWorker2.setMessageQueue(messageQueue);
       consumerWorkerManager.handleGreet(channel, consumerInfo2, 50, null);
@@ -102,7 +102,7 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
       
       makeMessages();
       ConsumerId consumerId1 = new ConsumerId("zhangyu1", Destination.topic("zhangyuxx1"));
-      ConsumerInfo consumerInfo1 = new ConsumerInfo(consumerId1, ConsumerType.AT_LEAST);      
+      ConsumerInfo consumerInfo1 = new ConsumerInfo(consumerId1, ConsumerType.AT_LEAST_ONCE);      
       consumerWorker1 = (ConsumerWorkerImpl)consumerWorkerManager.findOrCreateConsumerWorker(consumerInfo1, null);
       consumerWorker1.setMessageQueue(messageQueue);
       consumerWorkerManager.handleGreet(channel, consumerInfo1, 30, null);

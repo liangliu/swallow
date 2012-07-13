@@ -16,6 +16,7 @@ import org.kubek2k.springockito.annotations.SpringockitoContextLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
+import com.dianping.swallow.common.consumer.MessageFilter;
 import com.dianping.swallow.common.internal.dao.impl.mongodb.AbstractDAOImplTest;
 import com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl;
 import com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient;
@@ -76,7 +77,7 @@ public class SwallowBufferTest extends AbstractDAOImplTest {
    public void testCreateMessageQueue2() throws InterruptedException {
       Set<String> messageTypeSet = new HashSet<String>();
       messageTypeSet.add(TYPE);
-      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, MessageFilter.createInSetMessageFilter(messageTypeSet));
 
       Message m;
       while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
@@ -89,7 +90,7 @@ public class SwallowBufferTest extends AbstractDAOImplTest {
       Set<String> messageTypeSet = new HashSet<String>();
       messageTypeSet.add(TYPE);
 
-      swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
+      swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, MessageFilter.createInSetMessageFilter(messageTypeSet));
       BlockingQueue<Message> queue = swallowBuffer.getMessageQueue(TOPIC_NAME, cid);
       Message m;
       while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
@@ -103,7 +104,7 @@ public class SwallowBufferTest extends AbstractDAOImplTest {
    public void testPoll1() throws InterruptedException {
       Set<String> messageTypeSet = new HashSet<String>();
       messageTypeSet.add(TYPE);
-      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, MessageFilter.createInSetMessageFilter(messageTypeSet));
 
       Message m = queue.poll();
       while (m == null) {
@@ -116,7 +117,7 @@ public class SwallowBufferTest extends AbstractDAOImplTest {
    public void testPoll2() throws InterruptedException {
       Set<String> messageTypeSet = new HashSet<String>();
       messageTypeSet.add(TYPE);
-      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, MessageFilter.createInSetMessageFilter(messageTypeSet));
 
       Message m = queue.poll(500, TimeUnit.MILLISECONDS);
       while (m == null) {

@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.dianping.swallow.common.consumer.MessageFilter;
 import com.dianping.swallow.common.message.Message;
 
 public class SwallowBuffer {
@@ -73,8 +74,8 @@ public class SwallowBuffer {
     * @return
     */
    public BlockingQueue<Message> createMessageQueue(String topicName, String cid, Long tailMessageId,
-                                                    Set<String> messageTypeSet) {
-      return this.getTopicBuffer(topicName).createMessageQueue(cid, tailMessageId, messageTypeSet);
+                                                    MessageFilter messageFilter) {
+      return this.getTopicBuffer(topicName).createMessageQueue(cid, tailMessageId, messageFilter);
    }
 
    /**
@@ -152,7 +153,7 @@ public class SwallowBuffer {
        * @param tailMessageId 从messageId大于messageIdOfTailMessage的消息开始消费
        * @return
        */
-      public BlockingQueue<Message> createMessageQueue(String cid, Long tailMessageId, Set<String> messageTypeSet) {
+      public BlockingQueue<Message> createMessageQueue(String cid, Long tailMessageId, MessageFilter messageFilter) {
          if (cid == null) {
             throw new IllegalArgumentException("cid is null.");
          }
@@ -160,9 +161,9 @@ public class SwallowBuffer {
             throw new IllegalArgumentException("messageIdOfTailMessage is null.");
          }
          MessageBlockingQueue messageBlockingQueue;
-         if (messageTypeSet != null) {
+         if (messageFilter != null) {
             messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue,
-                  tailMessageId, messageTypeSet);
+                  tailMessageId, messageFilter);
          } else {
             messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue,
                   tailMessageId);

@@ -3,6 +3,7 @@ package com.dianping.swallow.consumerserver.buffer;
 import java.util.List;
 import java.util.Set;
 
+import com.dianping.swallow.common.consumer.MessageFilter;
 import com.dianping.swallow.common.message.Message;
 
 public interface MessageRetriever {
@@ -16,7 +17,7 @@ public interface MessageRetriever {
     * @return
     * @throws Exception
     */
-   List<Message> retriveMessage(String topicName, Long tailMessageId, Set<String> messageTypeSet) throws Exception;
+   List<Message> retriveMessage(String topicName, Long tailMessageId, MessageFilter messageFilter) throws Exception;
 
    void setFetchSize(int fetchSize);
 
