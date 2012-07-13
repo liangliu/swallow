@@ -15,9 +15,8 @@
  */
 package com.dianping.swallow.common.internal.packet;
 
-import java.util.Set;
-
 import com.dianping.swallow.common.consumer.ConsumerType;
+import com.dianping.swallow.common.consumer.MessageFilter;
 import com.dianping.swallow.common.internal.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.message.Destination;
 
@@ -49,15 +48,9 @@ public final class PktConsumerMessage extends Packet {
 	
 	private Integer threadCount;
 	
-	private Set<String> messageType;
-
-	public Set<String> getMessageType() {
-      return messageType;
-   }
-   public void setMessageType(Set<String> messageType) {
-      this.messageType = messageType;
-   }
-   public Boolean getNeedClose() {
+   private MessageFilter messageFilter;
+	
+	public Boolean getNeedClose() {
 		return needClose;
 	}
 	public void setNeedClose(boolean needClose) {
@@ -100,18 +93,21 @@ public final class PktConsumerMessage extends Packet {
       return threadCount;
    }
 	
+   public MessageFilter getMessageFilter() {
+      return messageFilter;
+   }
    public PktConsumerMessage() {
 		super();
 		
 	}
-	public PktConsumerMessage(ConsumerMessageType type, String consumerId, Destination dest, ConsumerType consumerType, int threadCount, Set<String> messageType){
+	public PktConsumerMessage(ConsumerMessageType type, String consumerId, Destination dest, ConsumerType consumerType, int threadCount, MessageFilter messageFilter){
 		this.setPacketType(PacketType.CONSUMER_GREET);
 		this.type = type;
 		this.dest = dest;
 		this.consumerId = consumerId;
 		this.consumerType = consumerType;
 		this.threadCount = threadCount;
-		this.messageType = messageType;
+		this.messageFilter = messageFilter;
 	}
 	public PktConsumerMessage(ConsumerMessageType type, Long messageId, boolean needClose){
 		this.setPacketType(PacketType.CONSUMER_ACK);
