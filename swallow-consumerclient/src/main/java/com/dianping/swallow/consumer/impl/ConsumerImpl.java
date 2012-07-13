@@ -23,23 +23,22 @@ import com.dianping.swallow.common.internal.config.impl.LionDynamicConfig;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.consumer.ConsumerClient;
+import com.dianping.swallow.consumer.Consumer;
+import com.dianping.swallow.consumer.ConsumerConfig;
 import com.dianping.swallow.consumer.MessageListener;
 import com.dianping.swallow.consumer.internal.ConsumerSlaveThread;
 import com.dianping.swallow.consumer.internal.config.ConfigManager;
 import com.dianping.swallow.consumer.internal.netty.MessageClientHandler;
 
-public class ConsumerClientImpl implements ConsumerClient{
+public class ConsumerImpl implements Consumer{
 
-   private static final Logger LOG                          = LoggerFactory.getLogger(ConsumerClientImpl.class);
+   private static final Logger LOG                          = LoggerFactory.getLogger(ConsumerImpl.class);
 
    private static final String LION_CONFIG_FILENAME         = "swallow-consumerclient-lion.properties";
 
    private static final String TOPICNAME_DEFAULT            = "default";
 
    private String              consumerId;
-
-   private Set<String>         neededMessageType;
 
    private Destination         dest;
 
@@ -49,7 +48,7 @@ public class ConsumerClientImpl implements ConsumerClient{
 
    private final static String LION_KEY_CONSUMER_SERVER_URI = "swallow.consumer.consumerServerURI";
 
-   private ConsumerType        consumerType                 = ConsumerType.AT_MOST;
+   private ConsumerType        consumerType                 = ConsumerType.AT_MOST_ONCE;
 
    private InetSocketAddress   masterAddress;
 
@@ -58,16 +57,8 @@ public class ConsumerClientImpl implements ConsumerClient{
    private ConfigManager       configManager                = ConfigManager.getInstance();
 
    private boolean             needClose                    = false;
-   //consumerClient默认是1个线程处理，如需线程池处理，则另外设置线程数目。
-   private int                 threadCount                  = 1;
-
-   public Set<String> getNeededMessageType() {
-      return neededMessageType;
-   }
-
-   public void setNeededMessageType(Set<String> neededMessageType) {
-      this.neededMessageType = neededMessageType;
-   }
+   
+   private ConsumerConfig config;
 
    public boolean getNeedClose() {
       return needClose;
@@ -117,22 +108,11 @@ public class ConsumerClientImpl implements ConsumerClient{
       this.listener = listener;
    }
 
-   public int getThreadCount() {
-      return threadCount;
+   public ConsumerConfig getConfig() {
+      return config;
    }
 
-   public void setThreadCount(int threadCount) {
-      this.threadCount = threadCount;
-   }
-
-   public ConsumerClientImpl(String cid, String topicName) {
-      this.consumerId = cid;
-      this.dest = Destination.topic(topicName);
-      String swallowCAddress = getSwallowCAddress(topicName);
-      string2Address(swallowCAddress);
-   }
-
-   public ConsumerClientImpl(String topicName) {
+   public ConsumerImpl(Destination dest, String topicName, ConsumerConfig config) {
       this.dest = Destination.topic(topicName);
       String swallowCAddress = getSwallowCAddress(topicName);
       string2Address(swallowCAddress);
@@ -170,7 +150,7 @@ public class ConsumerClientImpl implements ConsumerClient{
    private void init() {
       bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(),
             Executors.newCachedThreadPool()));
-      final ConsumerClientImpl cc = this;
+      final ConsumerImpl cc = this;
       bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
          @Override
          public ChannelPipeline getPipeline() throws Exception {

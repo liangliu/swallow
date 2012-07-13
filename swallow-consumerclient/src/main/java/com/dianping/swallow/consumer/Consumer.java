@@ -1,7 +1,7 @@
 package com.dianping.swallow.consumer;
 
 
-public interface ConsumerClient {
+public interface Consumer {
    /**
     * consumerClient开始工作
     */

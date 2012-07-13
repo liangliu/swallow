@@ -20,7 +20,7 @@ import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.util.ZipUtil;
-import com.dianping.swallow.consumer.impl.ConsumerClientImpl;
+import com.dianping.swallow.consumer.impl.ConsumerImpl;
 
 /**
  * <em>Internal-use-only</em> used by Swallow. <strong>DO NOT</strong> access
@@ -35,15 +35,15 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    private static final String CAT_TYPE = "swallow";
    private static final String CAT_NAME = "consumeMessage";
 
-   private ConsumerClientImpl      cClient;
+   private ConsumerImpl      cClient;
 
    private PktConsumerMessage  consumermessage;
 
    private ExecutorService     service;
 
-   public MessageClientHandler(ConsumerClientImpl cClient) {
+   public MessageClientHandler(ConsumerImpl cClient) {
       this.cClient = cClient;
-      service = Executors.newFixedThreadPool(cClient.getThreadCount());
+      service = Executors.newFixedThreadPool(cClient.getConfig().getThreadPoolSize());
 
    }
 
@@ -51,7 +51,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
 
       consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET, cClient.getConsumerId(), cClient.getDest(),
-            cClient.getConsumerType(), cClient.getThreadCount(), cClient.getNeededMessageType());
+            cClient.getConsumerType(), cClient.getConfig().getThreadPoolSize(), cClient.getConfig().getMessageFilter());
 
       e.getChannel().write(consumermessage);
    }
