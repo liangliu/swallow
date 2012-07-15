@@ -1,6 +1,6 @@
 @echo off
 
-set JAVA_OPTS=-Xmx2g -cp .:*
+set JAVA_OPTS=-Xmx2g -cp .;*
 set MASTER_CLASS=com.dianping.swallow.consumerserver.bootstrap.MasterBootStrap
 set SLAVE_CLASS=com.dianping.swallow.consumerserver.bootstrap.SlaveBootStrap
 
