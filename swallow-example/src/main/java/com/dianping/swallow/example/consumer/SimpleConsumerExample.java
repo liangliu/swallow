@@ -16,6 +16,7 @@ public class SimpleConsumerExample {
          
          @Override
          public void onMessage(Message msg) {
+            System.out.println(msg.getContent());
 //            System.out.println(msg.transferContentToBean(MsgClass.class));
          }
       });
