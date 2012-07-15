@@ -11,6 +11,10 @@ public class ConsumerConfig {
       return threadPoolSize;
    }
 
+   /**
+    * 设置consumer处理消息的线程池线程数，默认为1
+    * @param threadPoolSize
+    */
    public void setThreadPoolSize(int threadPoolSize) {
       this.threadPoolSize = threadPoolSize;
    }
@@ -19,6 +23,10 @@ public class ConsumerConfig {
       return messageFilter;
    }
 
+   /**
+    * 设置消息过滤方式
+    * @param messageFilter
+    */
    public void setMessageFilter(MessageFilter messageFilter) {
       this.messageFilter = messageFilter;
    }
