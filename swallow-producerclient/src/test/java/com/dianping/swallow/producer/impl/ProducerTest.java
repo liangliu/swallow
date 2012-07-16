@@ -32,15 +32,14 @@ import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.mockito.Matchers;
 
-import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.internal.packet.Packet;
 import com.dianping.swallow.common.internal.packet.PacketType;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.common.producer.exceptions.NullContentException;
-import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
+import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
+import com.dianping.swallow.common.producer.exceptions.SendFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.ProducerConfig;
@@ -58,13 +57,17 @@ public class ProducerTest {
 
    //测试ProducerFactory
    @Test
-   public void testProducerFactoryImpl() throws UnknownHostException {
+   public void testProducerFactoryImpl() throws UnknownHostException, RemoteServiceInitFailedException {
       ProducerFactoryImpl producerFactory = null;
 
       ProducerSwallowService normalRemoteService = mock(ProducerSwallowService.class);
 
       //获取Producer工厂实例
-      producerFactory = ProducerFactoryImpl.getInstance();
+      try {
+         producerFactory = ProducerFactoryImpl.getInstance();
+      } catch (RemoteServiceInitFailedException e1) {
+         throw e1;
+      }
       producerFactory.setRemoteService(normalRemoteService);
       assertNotNull(producerFactory);
 
@@ -128,12 +131,11 @@ public class ProducerTest {
       assertEquals(SwallowPigeonConfiguration.DEFAULT_TIMEOUT, defaultConfig.getTimeout());
       assertEquals(SwallowPigeonConfiguration.DEFAULT_WEIGHTS, defaultConfig.getWeights());
       
-      defaultConfig.setHosts("127.0.0.1:4999");
+      defaultConfig.setHostsAndWeights("127.0.0.1:4999", "99");
       defaultConfig.setSerialize("what");
       defaultConfig.setServiceName("hello");
       defaultConfig.setTimeout(2222);
       defaultConfig.setUseLion(true);
-      defaultConfig.setWeights("99");
       
       assertEquals("127.0.0.1:4999", defaultConfig.getHosts());
       assertEquals(true, defaultConfig.isUseLion());
@@ -237,9 +239,7 @@ public class ProducerTest {
             strRet = exceptionProducer.sendMessage("Hello World.");
             assertNull(strRet);
          }
-      } catch (FileQueueClosedException e) {
-      } catch (RemoteServiceDownException e) {
-      } catch (NullContentException e) {
+      } catch (SendFailedException e) {
       }
 
       //测试异步模式下情况正常的Producer
@@ -249,9 +249,7 @@ public class ProducerTest {
             strRet = normalProducer.sendMessage("Hello World.");
             assertNull(strRet);
          }
-      } catch (FileQueueClosedException e) {
-      } catch (RemoteServiceDownException e) {
-      } catch (NullContentException e) {
+      } catch (SendFailedException e) {
       }
    }
 
@@ -330,13 +328,7 @@ public class ProducerTest {
          assertEquals(pktSwallowACK.getShaInfo(), strRet);
          strRet = normalProducer.sendMessage("Hello world.", properties);
          assertEquals(pktSwallowACK.getShaInfo(), strRet);
-      } catch (FileQueueClosedException e) {
-         System.out.println(e.getMessage());
-      } catch (RemoteServiceDownException e) {
-         System.out.println(e.getMessage());
-      } catch (NullContentException e) {
-         System.out.println(e.getMessage());
-      } catch (ServerDaoException e) {
+      } catch (SendFailedException e) {
          System.out.println(e.getMessage());
       }
 
@@ -344,10 +336,7 @@ public class ProducerTest {
       strRet = null;
       try {
          strRet = exceptionProducer.sendMessage("Hello world.");
-      } catch (FileQueueClosedException e) {
-      } catch (RemoteServiceDownException e) {
-      } catch (NullContentException e) {
-      } catch (ServerDaoException e) {
+      } catch (SendFailedException e) {
          assertNotNull(e);
       }
       assertNull(strRet);

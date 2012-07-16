@@ -1,6 +1,6 @@
 package com.dianping.swallow.common.producer.exceptions;
 
-public class SendFailedException extends RuntimeException{
+public class SendFailedException extends Exception{
    private static final long serialVersionUID = -5152719369298952439L;
    
    private String info = "Message saved failed. Reason: ";

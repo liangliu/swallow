@@ -14,10 +14,10 @@ import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
  * @author tong.song
  */
 public class HandlerSynchroMode {
-   private ProducerSwallowService      remoteService;
-   private int                 sendTimes;
-   private int                 delayBase           = ProducerFactoryImpl.getRemoteServiceTimeout();
-   private DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, 5 * delayBase);
+   private ProducerSwallowService remoteService;
+   private int                    sendTimes;
+   private int                    delayBase           = ProducerFactoryImpl.getRemoteServiceTimeout();
+   private DefaultPullStrategy    defaultPullStrategy = new DefaultPullStrategy(delayBase, 5 * delayBase);
 
    public HandlerSynchroMode(ProducerImpl producer) {
       this.remoteService = producer.getRemoteService();
@@ -25,7 +25,7 @@ public class HandlerSynchroMode {
    }
 
    //对外接口
-   public Packet doSendMsg(Packet pkt)  {
+   public Packet doSendMsg(Packet pkt) {
       Packet pktRet = null;
       int leftRetryTimes;
       for (leftRetryTimes = sendTimes; leftRetryTimes > 0;) {

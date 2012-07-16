@@ -5,7 +5,7 @@ package com.dianping.swallow.common.producer.exceptions;
  * 
  * @author tong.song
  */
-public class TopicNameInvalidException extends RuntimeException {
+public class TopicNameInvalidException extends Exception {
 
    private static final long serialVersionUID = 5536528063495154789L;
 

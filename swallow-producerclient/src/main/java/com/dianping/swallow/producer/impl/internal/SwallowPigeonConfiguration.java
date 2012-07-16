@@ -37,7 +37,8 @@ public final class SwallowPigeonConfiguration {
       Class clazz = this.getClass();
       InputStream in = null;
       in = SwallowPigeonConfiguration.class.getClassLoader().getResourceAsStream(configFile);
-      if(in == null) return;
+      if (in == null)
+         return;
       try {
          props.load(in);
       } catch (IOException e) {
@@ -158,6 +159,7 @@ public final class SwallowPigeonConfiguration {
 
    public void setSerialize(String serialize) {
       this.serialize = serialize;
+      checkParams();
    }
 
    public int getTimeout() {
@@ -166,6 +168,7 @@ public final class SwallowPigeonConfiguration {
 
    public void setTimeout(int timeout) {
       this.timeout = timeout;
+      checkParams();
    }
 
    public boolean isUseLion() {
@@ -180,15 +183,13 @@ public final class SwallowPigeonConfiguration {
       return hosts;
    }
 
-   public void setHosts(String hosts) {
-      this.hosts = hosts;
-   }
-
    public String getWeights() {
       return weights;
    }
 
-   public void setWeights(String weights) {
+   public void setHostsAndWeights(String hosts, String weights) {
+      this.hosts = hosts;
       this.weights = weights;
+      checkParams();
    }
 }

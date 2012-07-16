@@ -53,8 +53,8 @@ public class ProducerFactoryImpl implements ProducerFactory {
    //远程调用相关变量
    @SuppressWarnings("rawtypes")
    private final ProxyFactory         pigeon          = new ProxyFactory();                                //pigeon代理对象
-   private ProducerSwallowService             remoteService;                                                       //远程调用对象
-   private SwallowPigeonConfiguration            pigeonConfigure;
+   private ProducerSwallowService     remoteService;                                                       //远程调用对象
+   private SwallowPigeonConfiguration pigeonConfigure;
 
    /**
     * Producer工厂类构造函数
@@ -76,7 +76,8 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @return 实现MQService接口的类，此版本中为pigeon返回的一个远程调用服务代理
     * @throws RemoteServiceInitFailedException 远程调用服务（pigeon）初始化失败
     */
-   private ProducerSwallowService initPigeon(SwallowPigeonConfiguration pigeonConfigure) throws RemoteServiceInitFailedException {
+   private ProducerSwallowService initPigeon(SwallowPigeonConfiguration pigeonConfigure)
+         throws RemoteServiceInitFailedException {
 
       pigeon.setIface(ProducerSwallowService.class);
       pigeon.setCallMethod("sync");
@@ -136,7 +137,6 @@ public class ProducerFactoryImpl implements ProducerFactory {
       return producerIP;
    }
 
-
    /**
     * @return 获取Producer的版本号
     */
@@ -169,29 +169,34 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
     */
    @Override
-   public Producer createProducer(Destination dest, ProducerConfig config)
-         throws TopicNameInvalidException {
+   public Producer createProducer(Destination dest, ProducerConfig config) throws TopicNameInvalidException {
       ProducerImpl producerImpl = null;
       try {
          producerImpl = new ProducerImpl(this, dest, config);
-         logger.info("[New producer instance was created.]:[topicName=" + dest.getName() + 
-               "][ProducerMode=" + producerImpl.getProducerConfig().getMode() + 
-               "][RetryTimes=" + producerImpl.getProducerConfig().getRetryTimes() +
-               "][IfZipMessage=" + producerImpl.getProducerConfig().isZipped() + 
-               (producerImpl.getProducerConfig().getMode().equals(ProducerMode.ASYNC_MODE) ? 
-                     "][ThreadPoolSize=" + producerImpl.getProducerConfig().getThreadPoolSize() + 
-                     "][IfContinueSend=" + producerImpl.getProducerConfig().isSendMsgLeftLastSession() + "]" 
-                     : "]"));
+         logger.info("[New producer instance was created.]:[topicName="
+               + dest.getName()
+               + "][ProducerMode="
+               + producerImpl.getProducerConfig().getMode()
+               + "][RetryTimes="
+               + producerImpl.getProducerConfig().getRetryTimes()
+               + "][IfZipMessage="
+               + producerImpl.getProducerConfig().isZipped()
+               + (producerImpl.getProducerConfig().getMode().equals(ProducerMode.ASYNC_MODE) ? "][ThreadPoolSize="
+                     + producerImpl.getProducerConfig().getThreadPoolSize() + "][IfContinueSend="
+                     + producerImpl.getProducerConfig().isSendMsgLeftLastSession() + "]" : "]"));
       } catch (TopicNameInvalidException e) {
          logger.error(
-               "[Can not get producer instance.]:[topicName=" + dest.getName() + 
-               "][ProducerMode=" + producerImpl.getProducerConfig().getMode() + 
-               "][RetryTimes=" + producerImpl.getProducerConfig().getRetryTimes() +
-               "][IfZipMessage=" + producerImpl.getProducerConfig().isZipped() + 
-               ((producerImpl.getProducerConfig().getMode() == ProducerMode.ASYNC_MODE) ? 
-                     "][ThreadPoolSize=" + producerImpl.getProducerConfig().getThreadPoolSize() + 
-                     "][IfContinueSend=" + producerImpl.getProducerConfig().isSendMsgLeftLastSession() + "]"
-                     : "]"), e);
+               "[Can not get producer instance.]:[topicName="
+                     + dest.getName()
+                     + "][ProducerMode="
+                     + config.getMode()
+                     + "][RetryTimes="
+                     + config.getRetryTimes()
+                     + "][IfZipMessage="
+                     + config.isZipped()
+                     + ((config.getMode() == ProducerMode.ASYNC_MODE) ? "][ThreadPoolSize="
+                           + config.getThreadPoolSize() + "][IfContinueSend=" + config.isSendMsgLeftLastSession() + "]"
+                           : "]"), e);
          throw e;
       }
 
@@ -203,7 +208,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
       } catch (ServerDaoException e) {
          //一定不会捕获到该异常
       } catch (NetException e) {
-         //网络异常，不抛出，以保证用户可以拿到Producer
+         //网络异常，只记录，不抛出，以保证用户可以拿到Producer
          logger.warn("[Network error, couldn't send greet now.]");
       }
       return producerImpl;

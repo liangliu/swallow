@@ -66,7 +66,11 @@ public class ProducerImpl implements Producer {
       if (!NameCheckUtil.isTopicNameValid(dest.getName()))
          throw new TopicNameInvalidException();
       destination = dest;
-      this.config = config;
+      if (config != null) {
+         this.config = config;
+      } else {
+         this.config = new ProducerConfig();
+      }
 
       //设置Producer的IP地址及版本号,设置远程调用
       this.producerIP = producerFactory.getProducerIP();
@@ -74,7 +78,7 @@ public class ProducerImpl implements Producer {
       this.remoteService = producerFactory.getRemoteService();
 
       //设置Producer工作模式
-      switch (config.getMode()) {
+      switch (this.config.getMode()) {
          case SYNC_MODE:
             syncHandler = new HandlerSynchroMode(this);
             break;
@@ -90,13 +94,10 @@ public class ProducerImpl implements Producer {
     * 
     * @param content 待发送的消息内容
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
-    * @throws ServerDaoException 只存在于同步模式，保存message到数据库失败
-    * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
-    * @throws NullContentException 如果待发送的消息content为空指针，则抛出该异常
+    * @throws SendFailedException 发送失败则抛出此异常
     */
    @Override
-   public String sendMessage(Object content) throws ServerDaoException, FileQueueClosedException,
-         RemoteServiceDownException, NullContentException {
+   public String sendMessage(Object content) throws SendFailedException {
       return sendMessage(content, null, null);
    }
 
@@ -106,13 +107,10 @@ public class ProducerImpl implements Producer {
     * @param content 待发送的消息内容
     * @param messageType 消息类型，用于消息过滤
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
-    * @throws ServerDaoException 只存在于同步模式，保存message到数据库失败
-    * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
-    * @throws NullContentException 如果待发送的消息content为空指针，则抛出该异常
+    * @throws SendFailedException 发送失败则抛出此异常
     */
    @Override
-   public String sendMessage(Object content, String messageType) throws ServerDaoException, FileQueueClosedException,
-         RemoteServiceDownException, NullContentException {
+   public String sendMessage(Object content, String messageType) throws SendFailedException {
       return sendMessage(content, null, messageType);
    }
 
@@ -122,13 +120,10 @@ public class ProducerImpl implements Producer {
     * @param content 待发送的消息内容
     * @param properties 消息属性，留作后用
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
-    * @throws ServerDaoException 只存在于同步模式，保存message到数据库失败
-    * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
-    * @throws NullContentException 如果待发送的消息content为空指针，则抛出该异常
+    * @throws SendFailedException 发送失败则抛出此异常
     */
    @Override
-   public String sendMessage(Object content, Map<String, String> properties) throws ServerDaoException,
-         FileQueueClosedException, RemoteServiceDownException, NullContentException {
+   public String sendMessage(Object content, Map<String, String> properties) throws SendFailedException {
       return sendMessage(content, properties, null);
    }
 
@@ -139,11 +134,11 @@ public class ProducerImpl implements Producer {
     * @param properties 消息属性，留作后用
     * @param messageType 消息类型，用于消息过滤
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
-    * @throws NullContentException 如果待发送的消息content为空指针，则抛出该异常
+    * @throws SendFailedException 发送失败则抛出此异常
     */
    @Override
    public String sendMessage(Object content, Map<String, String> properties, String messageType)
-         throws SendFailedException, NullContentException {
+         throws SendFailedException {
       String ret = null;
       if (content == null) {
          throw new NullContentException();

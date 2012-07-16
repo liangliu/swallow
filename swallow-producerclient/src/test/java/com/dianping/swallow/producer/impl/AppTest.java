@@ -3,11 +3,8 @@ package com.dianping.swallow.producer.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.common.producer.exceptions.NullContentException;
-import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
-import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
+import com.dianping.swallow.common.producer.exceptions.SendFailedException;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
@@ -66,14 +63,8 @@ public class AppTest {
             try {
                //发送消息
                strRet = producer.sendMessage("" + (++sentNum));
-            } catch (ServerDaoException e1) {
-               e1.printStackTrace();
-            } catch (FileQueueClosedException e1) {
-               e1.printStackTrace();
-            } catch (RemoteServiceDownException e1) {
-               System.out.println("\tNetwork is down.");
-            } catch (NullContentException e1) {
-               e1.printStackTrace();
+            } catch (SendFailedException e) {
+               e.printStackTrace();
             }
             //发送频率
             try {

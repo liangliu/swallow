@@ -28,6 +28,7 @@ import com.dianping.swallow.common.internal.packet.PktProducerGreet;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
 import com.dianping.swallow.common.internal.util.SHAUtil;
 import com.dianping.swallow.common.message.Destination;
+import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 
 public class ProducerServerForClientTest {
@@ -36,7 +37,7 @@ public class ProducerServerForClientTest {
    static MockMongo mockMongo2;
 
    @Test
-   public void testProducerServerForClient() throws UnknownHostException {
+   public void testProducerServerForClient() throws UnknownHostException, RemoteServiceInitFailedException {
       //初始化ProducerServerForClient对象
       ProducerServerForClient producerServerForClient = new ProducerServerForClient();
 

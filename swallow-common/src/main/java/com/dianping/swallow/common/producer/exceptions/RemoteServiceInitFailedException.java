@@ -5,7 +5,7 @@ package com.dianping.swallow.common.producer.exceptions;
  * 
  * @author Icloud
  */
-public class RemoteServiceInitFailedException extends RuntimeException {
+public class RemoteServiceInitFailedException extends Exception {
    private static final long serialVersionUID = 8096198828080692568L;
 
    @Override

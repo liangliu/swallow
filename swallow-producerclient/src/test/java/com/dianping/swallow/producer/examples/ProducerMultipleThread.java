@@ -18,12 +18,9 @@ package com.dianping.swallow.producer.examples;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.common.producer.exceptions.NullContentException;
-import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
-import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
+import com.dianping.swallow.common.producer.exceptions.SendFailedException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
@@ -43,14 +40,9 @@ class ExampleTask implements Runnable {
    public void run() {
       try {
          producer.sendMessage("Hello World.");
-      } catch (ServerDaoException e) {
-         //*只存在于同步模式，保存至数据库失败则抛出此异常
-      } catch (FileQueueClosedException e) {
-         //*只存在于异步模式，保存至filequeue失败则抛出此异常
-      } catch (RemoteServiceDownException e) {
-         //远程调用失败则抛出此异常
-      } catch (NullContentException e) {
-         //待发送消息体为空则抛出此异常
+      } catch (SendFailedException e) {
+         //发送失败则抛出此异常
+         e.printStackTrace();
       }
    }
 }
@@ -61,7 +53,7 @@ class ExampleTask implements Runnable {
  * @author tong.song
  */
 public class ProducerMultipleThread {
-   public static void main(String[] args) {
+   public static void main(String[] args) throws RemoteServiceInitFailedException {
 
       ExecutorService threadPool = Executors.newCachedThreadPool();
 
@@ -70,8 +62,8 @@ public class ProducerMultipleThread {
       try {
          producerFactory = ProducerFactoryImpl.getInstance();
       } catch (RemoteServiceInitFailedException e) {
-         throw e;
          //远程调用初始化失败抛出此异常
+         throw e;
       }
 
       ProducerConfig config = new ProducerConfig();
@@ -90,18 +82,20 @@ public class ProducerMultipleThread {
          producerAsync = producerFactory.createProducer(Destination.topic("Example"), config);
       } catch (TopicNameInvalidException e) {
          //TopicName非法则抛出此异常
+         e.printStackTrace();
       }
 
       //重新配置Producer选项
       config.setMode(ProducerMode.SYNC_MODE);
       config.setZipped(true);
-      
+
       //获取Producer实例（同步模式）
       Producer producerSync = null;
       try {
          producerSync = producerFactory.createProducer(Destination.topic("Example"), config);
       } catch (TopicNameInvalidException e) {
          //TopicName非法则抛出此异常
+         e.printStackTrace();
       }
       if (producerAsync != null && producerSync != null) {
          threadPool.execute(new ExampleTask(producerAsync));
