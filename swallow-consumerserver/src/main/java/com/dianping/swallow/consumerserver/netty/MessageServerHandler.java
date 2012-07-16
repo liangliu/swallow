@@ -103,7 +103,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
             }
          }
       } else {
-         LOG.error("the received message is not PktConsumerMessage");
+         LOG.warn("the received message is not PktConsumerMessage");
       }
 
    }
