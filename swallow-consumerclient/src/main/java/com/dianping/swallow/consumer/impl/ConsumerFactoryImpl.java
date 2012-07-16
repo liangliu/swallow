@@ -24,7 +24,16 @@ public class ConsumerFactoryImpl implements ConsumerFactory {
    @Override
    public Consumer createConsumer(Destination dest, String consumerId) {
       return new ConsumerImpl(dest, consumerId, new ConsumerConfig());
+   }
 
+   @Override
+   public Consumer createConsumer(Destination dest, ConsumerConfig config) {
+      return new ConsumerImpl(dest, config);
+   }
+
+   @Override
+   public Consumer createConsumer(Destination dest) {
+      return new ConsumerImpl(dest, new ConsumerConfig());
    }
 
 }
