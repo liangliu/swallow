@@ -27,7 +27,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
 
    protected MessageRetriever          messageRetriever;
 
-   private ReentrantLock               reentrantLock    = new ReentrantLock();
+   private ReentrantLock               reentrantLock    = new ReentrantLock(true);
    private Condition                   condition        = reentrantLock.newCondition();
 
    protected volatile Long             tailMessageId;

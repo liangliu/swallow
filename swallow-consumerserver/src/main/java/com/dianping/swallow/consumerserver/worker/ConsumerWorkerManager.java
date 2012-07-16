@@ -91,6 +91,13 @@ public class ConsumerWorkerManager {
          entry.getValue().closeAckExecutor();
       }
       closed = true;
+      if (idleWorkerManagerCheckerThread != null) {
+         try {
+            idleWorkerManagerCheckerThread.join();
+         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+         }
+      }
    }
 
    private ConsumerWorker findConsumerWorker(ConsumerInfo consumerInfo) {

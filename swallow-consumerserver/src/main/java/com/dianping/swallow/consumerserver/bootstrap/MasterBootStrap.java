@@ -38,14 +38,15 @@ public class MasterBootStrap {
       //启动Cat
       Cat.initialize(new File("/data/appdatas/cat/client.xml"));
 
-      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumerserver.xml" });
+      ApplicationContext ctx = new ClassPathXmlApplicationContext(
+            new String[] { "applicationContext-consumerserver.xml" });
       final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
       consumerWorkerManager.init(isSlave);
-            try {
-               Thread.sleep(consumerWorkerManager.getConfigManager().getWaitSlaveShutDown());//主机启动的时候睡眠一会，给时间给slave关闭。
-            } catch (InterruptedException e) {
-               LOG.error("thread InterruptedException", e);
-            }
+      try {
+         Thread.sleep(consumerWorkerManager.getConfigManager().getWaitSlaveShutDown());//主机启动的时候睡眠一会，给时间给slave关闭。
+      } catch (InterruptedException e) {
+         LOG.error("thread InterruptedException", e);
+      }
 
       // Configure the server.
       final ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
@@ -69,17 +70,34 @@ public class MasterBootStrap {
       CloseMonitor closeMonitor = new CloseMonitor();
       int port = Integer.parseInt(System.getProperty("closeMonitorPort", "17555"));
       closeMonitor.start(port, new CloseHook() {
-
          @Override
          public void onClose() {
-            consumerWorkerManager.close();
-            MessageServerHandler.getChannelGroup().unbind();
-            MessageServerHandler.getChannelGroup().close();
-            MessageServerHandler.getChannelGroup().clear();
-            bootstrap.releaseExternalResources();
+            try {
+               LOG.info("consumerWorkerManager.close()-started");
+               consumerWorkerManager.close();
+               LOG.info("consumerWorkerManager.close()-finished");
 
+               LOG.info("MessageServerHandler.getChannelGroup().unbind()-started");
+               MessageServerHandler.getChannelGroup().unbind().await();
+               LOG.info("MessageServerHandler.getChannelGroup().unbind()-finished");
+
+               LOG.info("MessageServerHandler.getChannelGroup().close()-started");
+               MessageServerHandler.getChannelGroup().close().await();
+               LOG.info("MessageServerHandler.getChannelGroup().close()-finished");
+
+               LOG.info("MessageServerHandler.getChannelGroup().clear()-started");
+               MessageServerHandler.getChannelGroup().clear();
+               LOG.info("MessageServerHandler.getChannelGroup().unbind()-finished");
+
+               LOG.info("bootstrap.releaseExternalResources()-started");
+               bootstrap.releaseExternalResources();
+               LOG.info("bootstrap.releaseExternalResources()-finished");
+            } catch (InterruptedException e) {
+               LOG.error("Interrupted when onClose()", e);
+               Thread.currentThread().interrupt();
+            }
+            LOG.info("MasterBootStrap-closed");
          }
-
       });
 
    }
