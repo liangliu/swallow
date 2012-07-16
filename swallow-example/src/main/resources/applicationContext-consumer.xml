@@ -13,9 +13,12 @@
 	<bean id="dest" class="com.dianping.swallow.common.message.Destination"
 		factory-method="topic">
 		<constructor-arg>
-			<value>spring-queue</value>
+			<value>xx</value>
 		</constructor-arg>
 	</bean>
+	<bean id="messageListener"
+		class="com.dianping.swallow.example.consumer.spring.listener.MessageListenerImpl" />
+
 
 	<bean id="consumerClient" factory-bean="consumerFactory"
 		factory-method="createConsumer">
@@ -28,6 +31,9 @@
 		<constructor-arg>
 			<ref bean="consumerConfig" />
 		</constructor-arg>
+		<property name="listener">
+			<ref local="messageListener" />
+		</property>
 	</bean>
 	<bean id="nonDurableConsumerClient" factory-bean="consumerFactory"
 		factory-method="createConsumer">
@@ -37,6 +43,9 @@
 		<constructor-arg>
 			<ref bean="consumerConfig" />
 		</constructor-arg>
+		<property name="listener">
+			<ref local="messageListener" />
+		</property>
 	</bean>
 
 </beans>
