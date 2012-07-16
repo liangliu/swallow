@@ -10,9 +10,9 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.dianping.swallow</groupId>
-	<artifactId>${swallow-0.5adapter.aid}</artifactId>
-	<name>${swallow-0.5adapter.name}</name>
-	<version>${swallow-0.5adapter.version}</version>
+	<artifactId>${swallow-example.aid}</artifactId>
+	<name>${swallow-example.name}</name>
+	<version>${swallow-example.version}</version>
 	<packaging>jar</packaging>
 
 	<url>http://maven.apache.org</url>

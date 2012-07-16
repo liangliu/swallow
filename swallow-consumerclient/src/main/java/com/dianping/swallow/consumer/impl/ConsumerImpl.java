@@ -1,7 +1,6 @@
 package com.dianping.swallow.consumer.impl;
 
 import java.net.InetSocketAddress;
-import java.util.Set;
 import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
@@ -56,20 +55,16 @@ public class ConsumerImpl implements Consumer{
 
    private ConfigManager       configManager                = ConfigManager.getInstance();
 
-   private boolean             needClose                    = false;
+   private volatile boolean             closed                    = false;
    
    private ConsumerConfig config;
 
-   public boolean getNeedClose() {
-      return needClose;
+   public boolean isClosed() {
+      return closed;
    }
 
    public ConfigManager getConfigManager() {
       return configManager;
-   }
-
-   public void setNeedClose(boolean needClose) {
-      this.needClose = needClose;
    }
 
    public ConsumerType getConsumerType() {
@@ -112,9 +107,11 @@ public class ConsumerImpl implements Consumer{
       return config;
    }
 
-   public ConsumerImpl(Destination dest, String topicName, ConsumerConfig config) {
-      this.dest = Destination.topic(topicName);
-      String swallowCAddress = getSwallowCAddress(topicName);
+   public ConsumerImpl(Destination dest, String consumerId, ConsumerConfig config) {
+      this.dest = dest;
+      this.consumerId = consumerId;
+      this.config = config;
+      String swallowCAddress = getSwallowCAddress(dest.getName());
       string2Address(swallowCAddress);
    }
 
@@ -200,5 +197,10 @@ public class ConsumerImpl implements Consumer{
          }
       }
       return swallowAddress;
+   }
+
+   @Override
+   public void close() {
+      closed = true;
    }
 }

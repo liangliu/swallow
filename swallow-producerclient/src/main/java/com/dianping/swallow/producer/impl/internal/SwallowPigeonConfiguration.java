@@ -37,11 +37,12 @@ public final class SwallowPigeonConfiguration {
       Class clazz = this.getClass();
       InputStream in = null;
       in = SwallowPigeonConfiguration.class.getClassLoader().getResourceAsStream(configFile);
-
+      if(in == null) return;
       try {
          props.load(in);
       } catch (IOException e) {
          logger.error("[Load property file failed.]", e);
+         e.printStackTrace();
       } finally {
          if (in != null) {
             try {

@@ -24,7 +24,7 @@
 		<module>swallow-consumerserver</module>
 		<module>swallow-producerclient</module>
 		<module>swallow-producerserver</module>
-		<module>swallow-0.5adapter</module>
+		<module>swallow-example</module>
 	</modules>
 
 	<properties>
@@ -44,9 +44,9 @@
 		<swallow-producerserver.aid>swallow-producerserver</swallow-producerserver.aid>
 		<swallow-producerserver.version>${swallow-all.version}</swallow-producerserver.version>
 		<swallow-producerserver.name>swallow-producerserverv${swallow-all.version}</swallow-producerserver.name>
-		<swallow-0.5adapter.aid>swallow-0.5adapter</swallow-0.5adapter.aid>
-		<swallow-0.5adapter.version>${swallow-all.version}</swallow-0.5adapter.version>
-		<swallow-0.5adapter.name>swallow-0.5adapter${swallow-all.version}</swallow-0.5adapter.name>
+		<swallow-example.aid>swallow-example</swallow-example.aid>
+		<swallow-example.version>${swallow-all.version}</swallow-example.version>
+		<swallow-example.name>swallow-example${swallow-all.version}</swallow-example.name>
 	</properties>
 
 	<description>swallow is a message service!</description>

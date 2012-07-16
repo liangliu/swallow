@@ -15,8 +15,6 @@
  */
 package com.dianping.swallow.producer.examples;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -31,7 +29,6 @@ import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
-import com.dianping.swallow.producer.ProducerOptionKey;
 import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 
 class ExampleTask implements Runnable {
@@ -90,7 +87,7 @@ public class ProducerMultipleThread {
       //获取Producer实例（异步模式）
       Producer producerAsync = null;
       try {
-         producerAsync = producerFactory.getProducer(Destination.topic("Example"), config);
+         producerAsync = producerFactory.createProducer(Destination.topic("Example"), config);
       } catch (TopicNameInvalidException e) {
          //TopicName非法则抛出此异常
       }
@@ -102,7 +99,7 @@ public class ProducerMultipleThread {
       //获取Producer实例（同步模式）
       Producer producerSync = null;
       try {
-         producerSync = producerFactory.getProducer(Destination.topic("Example"), config);
+         producerSync = producerFactory.createProducer(Destination.topic("Example"), config);
       } catch (TopicNameInvalidException e) {
          //TopicName非法则抛出此异常
       }
