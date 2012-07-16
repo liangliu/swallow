@@ -20,6 +20,7 @@ import com.dianping.swallow.common.internal.util.ZipUtil;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.NullContentException;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
+import com.dianping.swallow.common.producer.exceptions.SendFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.Producer;
@@ -138,13 +139,11 @@ public class ProducerImpl implements Producer {
     * @param properties 消息属性，留作后用
     * @param messageType 消息类型，用于消息过滤
     * @return 异步模式返回null，同步模式返回content的SHA-1字符串
-    * @throws ServerDaoException 只存在于同步模式，保存message到数据库失败
-    * @throws FileQueueClosedException 只存在于异步模式，保存message到队列失败
     * @throws NullContentException 如果待发送的消息content为空指针，则抛出该异常
     */
    @Override
    public String sendMessage(Object content, Map<String, String> properties, String messageType)
-         throws ServerDaoException, FileQueueClosedException, RemoteServiceDownException, NullContentException {
+         throws SendFailedException, NullContentException {
       String ret = null;
       if (content == null) {
          throw new NullContentException();
@@ -195,22 +194,19 @@ public class ProducerImpl implements Producer {
                      ret = pktSwallowPACK.getShaInfo();
                   }
                } catch (ServerDaoException e) {
-                  logger.error("[Can not save message to DB, DB is busy or connection to DB is down.]", e);
-                  throw e;
+                  logger.error("[Save to DB failed.]", e);
+                  throw new SendFailedException("save to DB failed.");
                } catch (RemoteServiceDownException e) {
-                  logger.error(
-                        "[Can not connect to remote service, configuration on LION is incorrect or network is instability now.]",
-                        e);
-                  throw e;
+                  logger.error("[Remote call failed.]", e);
+                  throw new SendFailedException("remote call failed.");
                }
                break;
             case ASYNC_MODE://异步模式
                try {
                   asyncHandler.doSendMsg(pktMessage);
                } catch (FileQueueClosedException e) {
-                  logger.error(
-                        "[Can not save message to FileQueue, please contact to Swallow-Team for more information.]", e);
-                  throw e;
+                  logger.error("[Add to filequeue failed.]", e);
+                  throw new SendFailedException("add to filequeue failed.");
                }
                break;
          }
