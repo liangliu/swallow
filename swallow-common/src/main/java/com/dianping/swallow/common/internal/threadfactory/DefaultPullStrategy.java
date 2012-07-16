@@ -42,8 +42,10 @@ public class DefaultPullStrategy implements PullStrategy {
 		failCnt++;
 		long sleepTime = failCnt * delayBase;
 		sleepTime = sleepTime > delayUpperbound ? delayUpperbound : sleepTime;
-		log.debug("no message, consumer sleep " + sleepTime);
 		if(shouldSleep) {
+		   if(log.isDebugEnabled()) {
+	         log.debug("sleep " + sleepTime + " at " + this.getClass().getSimpleName());
+	      }
 		   Thread.sleep(sleepTime);
 		}
 		return sleepTime;
