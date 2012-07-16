@@ -122,7 +122,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
    private class MessageRetriverThread extends Thread {
 
       public MessageRetriverThread() {
-         this.setName("MessageRetriever-(topic=" + topicName + ",cid=" + cid + ")");
+         this.setName("swallow-MessageRetriever-(topic=" + topicName + ",cid=" + cid + ")");
          this.setDaemon(true);
       }
 

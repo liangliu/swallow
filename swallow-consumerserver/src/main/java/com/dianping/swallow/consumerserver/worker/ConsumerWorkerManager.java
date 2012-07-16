@@ -151,7 +151,7 @@ public class ConsumerWorkerManager {
             LOG.info("idle ConsumerWorker checker thread closed");
          }
 
-      }, "-idleConsumerWorkerChecker-");
+      }, "idleConsumerWorkerChecker-");
       idleWorkerManagerCheckerThread.start();
    }
 
