@@ -7,7 +7,6 @@ import com.dianping.swallow.consumer.Consumer;
 import com.dianping.swallow.consumer.ConsumerFactory;
 import com.dianping.swallow.consumer.MessageListener;
 import com.dianping.swallow.consumer.impl.ConsumerFactoryImpl;
-import com.dianping.swallow.consumer.impl.ConsumerImpl;
 
 public class TestConsumerWithThreadPool {
 
