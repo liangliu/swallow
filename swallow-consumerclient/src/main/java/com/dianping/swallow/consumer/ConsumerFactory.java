@@ -6,6 +6,10 @@ public interface ConsumerFactory {
 
    Consumer createConsumer(Destination dest, String consumerId, ConsumerConfig config);
    
+   Consumer createConsumer(Destination dest, ConsumerConfig config);
+   
    Consumer createConsumer(Destination dest, String consumerId);
+   
+   Consumer createConsumer(Destination dest);
    
 }
