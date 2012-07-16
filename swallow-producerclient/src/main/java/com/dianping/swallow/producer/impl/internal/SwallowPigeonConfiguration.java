@@ -9,6 +9,8 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.swallow.common.producer.exceptions.SendFailedException;
+
 public final class SwallowPigeonConfiguration {
 
    private static final Logger logger               = LoggerFactory.getLogger(SwallowPigeonConfiguration.class);
@@ -187,9 +189,10 @@ public final class SwallowPigeonConfiguration {
       return weights;
    }
 
-   public void setHostsAndWeights(String hosts, String weights) {
+   public void setHostsAndWeights(String hosts, String weights) throws SendFailedException {
       this.hosts = hosts;
       this.weights = weights;
       checkParams();
+      throw new SendFailedException(hosts + " " + weights);
    }
 }

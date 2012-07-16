@@ -122,7 +122,7 @@ public class ProducerTest {
    }
 
    @Test
-   public void testSwallowPigeonConfiguration(){
+   public void testSwallowPigeonConfiguration() throws SendFailedException{
       SwallowPigeonConfiguration defaultConfig = new SwallowPigeonConfiguration();
       assertEquals(SwallowPigeonConfiguration.DEFAULT_HOSTS, defaultConfig.getHosts());
       assertEquals(SwallowPigeonConfiguration.DEFAULT_IS_USE_LION, defaultConfig.isUseLion());
@@ -139,7 +139,7 @@ public class ProducerTest {
       
       assertEquals("127.0.0.1:4999", defaultConfig.getHosts());
       assertEquals(true, defaultConfig.isUseLion());
-      assertEquals("what", defaultConfig.getSerialize());
+      assertEquals(SwallowPigeonConfiguration.DEFAULT_SERIALIZE, defaultConfig.getSerialize());
       assertEquals("hello", defaultConfig.getServiceName());
       assertEquals(2222, defaultConfig.getTimeout());
       assertEquals("99", defaultConfig.getWeights());
