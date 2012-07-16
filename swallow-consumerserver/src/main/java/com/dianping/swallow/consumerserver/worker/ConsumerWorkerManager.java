@@ -1,14 +1,12 @@
 package com.dianping.swallow.consumerserver.worker;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.cat.message.spi.MessageAnalyzer;
 import com.dianping.swallow.common.consumer.MessageFilter;
 import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
 import com.dianping.swallow.common.internal.dao.AckDAO;

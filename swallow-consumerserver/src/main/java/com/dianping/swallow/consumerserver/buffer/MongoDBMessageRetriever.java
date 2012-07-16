@@ -2,7 +2,6 @@ package com.dianping.swallow.consumerserver.buffer;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,11 +29,12 @@ public class MongoDBMessageRetriever implements MessageRetriever {
       messages = messageDAO.getMessagesGreaterThan(topicName, messageId, fetchSize);
       //过滤type
       //TODO refactor filter logic to enable different filter type
-      if (messageFilter != null && messageFilter.getType() == FilterType.InSet && !messageFilter.getParam().isEmpty() && messages!=null) {
-         Iterator<SwallowMessage> iterator= messages.iterator();
-         while(iterator.hasNext()){
+      if (messageFilter != null && messageFilter.getType() == FilterType.InSet && !messageFilter.getParam().isEmpty()
+            && messages != null) {
+         Iterator<SwallowMessage> iterator = messages.iterator();
+         while (iterator.hasNext()) {
             SwallowMessage msg = iterator.next();
-            if(!messageFilter.getParam().contains(msg.getType())){
+            if (!messageFilter.getParam().contains(msg.getType())) {
                iterator.remove();
             }
          }
