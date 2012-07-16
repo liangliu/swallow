@@ -1,11 +1,11 @@
-package com.dianping.swallow.consumer.example.spring;
+package com.dianping.swallow.example.consumer.spring;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.dianping.swallow.common.message.Message;
+import com.dianping.swallow.consumer.Consumer;
 import com.dianping.swallow.consumer.MessageListener;
-import com.dianping.swallow.consumer.impl.ConsumerImpl;
 
 public class TestNonDurableConsumer {
 
@@ -13,8 +13,8 @@ public class TestNonDurableConsumer {
     * @param args
     */
    public static void main(String[] args) {
-      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumerclientTest.xml" });
-      final ConsumerImpl ConsumerClient = (ConsumerImpl) ctx.getBean("nonDurableConsumerClient");
+      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumer.xml" });
+      final Consumer ConsumerClient = (Consumer) ctx.getBean("nonDurableConsumerClient");
       ConsumerClient.setListener(new MessageListener() {
 
          @Override

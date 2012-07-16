@@ -14,7 +14,6 @@ import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.internal.codec.JsonDecoder;
 import com.dianping.swallow.common.internal.codec.JsonEncoder;
 import com.dianping.swallow.common.internal.config.DynamicConfig;
@@ -47,8 +46,6 @@ public class ConsumerImpl implements Consumer{
 
    private final static String LION_KEY_CONSUMER_SERVER_URI = "swallow.consumer.consumerServerURI";
 
-   private ConsumerType        consumerType                 = ConsumerType.AT_MOST_ONCE;
-
    private InetSocketAddress   masterAddress;
 
    private InetSocketAddress   slaveAddress;
@@ -65,14 +62,6 @@ public class ConsumerImpl implements Consumer{
 
    public ConfigManager getConfigManager() {
       return configManager;
-   }
-
-   public ConsumerType getConsumerType() {
-      return consumerType;
-   }
-
-   public void setConsumerType(ConsumerType consumerType) {
-      this.consumerType = consumerType;
    }
 
    public ClientBootstrap getBootstrap() {

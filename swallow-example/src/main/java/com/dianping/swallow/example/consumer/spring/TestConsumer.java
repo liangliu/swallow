@@ -1,4 +1,4 @@
-package com.dianping.swallow.consumer.example.spring;
+package com.dianping.swallow.example.consumer.spring;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -15,8 +15,8 @@ public class TestConsumer {
     * @throws InterruptedException 
     */
    public static void main(String[] args) throws InterruptedException {
-      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumerclientTest.xml" });
-      final Consumer consumerClient = (ConsumerImpl) ctx.getBean("consumerClient");  
+      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumer.xml" });
+      final Consumer consumerClient = (Consumer) ctx.getBean("consumerClient");  
       consumerClient.setListener(new MessageListener() {
          int i = 0;
          @Override

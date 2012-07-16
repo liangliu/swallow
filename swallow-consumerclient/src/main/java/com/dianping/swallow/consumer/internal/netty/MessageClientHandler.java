@@ -51,7 +51,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
 
       consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET, cClient.getConsumerId(), cClient.getDest(),
-            cClient.getConsumerType(), cClient.getConfig().getThreadPoolSize(), cClient.getConfig().getMessageFilter());
+            cClient.getConfig().getConsumerType(), cClient.getConfig().getThreadPoolSize(), cClient.getConfig().getMessageFilter());
 
       e.getChannel().write(consumermessage);
    }

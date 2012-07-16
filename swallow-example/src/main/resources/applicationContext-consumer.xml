@@ -5,38 +5,38 @@
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-3.0.xsd">
-	
+
 	<bean id="consumerFactory" class="com.dianping.swallow.consumer.impl.ConsumerFactoryImpl" />
-	
-	<bean id="consumerClient" factory-bean="consumerFactory" factory-method="createConsumer">
+
+	<bean id="consumerConfig" class="com.dianping.swallow.consumer.ConsumerConfig" />
+
+	<bean id="dest" class="com.dianping.swallow.common.message.Destination"
+		factory-method="topic">
 		<constructor-arg>
-			<value>laoma</value>
+			<value>spring-queue</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="consumerClient" factory-bean="consumerFactory"
+		factory-method="createConsumer">
+		<constructor-arg>
+			<ref bean="dest" />
 		</constructor-arg>
 		<constructor-arg>
 			<value>xx</value>
+		</constructor-arg>
+		<constructor-arg>
+			<ref bean="consumerConfig" />
+		</constructor-arg>
 	</bean>
-	
-	<bean id="consumerClient"
-		class="com.dianping.swallow.consumer.impl.ConsumerClientImpl">
+	<bean id="nonDurableConsumerClient" factory-bean="consumerFactory"
+		factory-method="createConsumer">
 		<constructor-arg>
-			<value>laoma</value>
+			<ref bean="dest" />
 		</constructor-arg>
 		<constructor-arg>
-			<value>xx</value> 
+			<ref bean="consumerConfig" />
 		</constructor-arg>
-		<property name="threadCount" value="5" />
-		<property name="consumerType" value="AT_LEAST" />
-		<!--  property name="neededMessageType" >
-		<set>  
-                <value>zhangyu</value>
-                <value>laoma</value>
-            </set>  
-        </property>  -->
 	</bean>
 
-	<bean id="nonDurableConsumerClient" class="com.dianping.swallow.consumer.impl.ConsumerClientImpl">
-        <constructor-arg>
-            <value>xx</value>
-        </constructor-arg>
-     </bean>
 </beans>
