@@ -1,7 +1,6 @@
 package com.dianping.swallow.consumerserver.buffer;
 
 import java.util.List;
-import java.util.Set;
 
 import com.dianping.swallow.common.consumer.MessageFilter;
 import com.dianping.swallow.common.message.Message;

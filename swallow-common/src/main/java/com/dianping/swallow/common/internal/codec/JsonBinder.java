@@ -5,10 +5,13 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 /**
  * 简单封装Jackson，实现JSON String<->Java Object的Mapper.
@@ -36,8 +39,12 @@ public class JsonBinder {
       mapper = new ObjectMapper();
       //设置输出时包含属性的风格
       mapper.setSerializationInclusion(include);
-      //设置输入时忽略在JSON字符串中存在但Java对象实际没有的属性
+      //序列化时，忽略空的bean(即沒有任何Field)
+      mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+      //序列化时，忽略在JSON字符串中存在但Java对象实际没有的属性
       mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+      //make all member fields serializable without further annotations, instead of just public fields (default setting).
+      mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
    }
 
    /**

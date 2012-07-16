@@ -16,8 +16,8 @@ public class SwallowMessageTest {
       //自定义bean
       SwallowMessage msg = createMessage();
       DemoBean demoBean = new DemoBean();
-      demoBean.setA(1);
-      demoBean.setB("b");
+      demoBean.a = 1;
+      demoBean.b = "b";
       msg.setContent(demoBean);
       Assert.assertEquals("{\"a\":1,\"b\":\"b\"}", msg.getContent());
       Assert.assertEquals(demoBean, msg.transferContentToBean(DemoBean.class));
@@ -28,8 +28,8 @@ public class SwallowMessageTest {
       //自定义bean
       SwallowMessage msg = createMessage();
       DemoBean demoBean = new DemoBean();
-      demoBean.setA(1);
-      demoBean.setB("b");
+      demoBean.a = 1;
+      demoBean.b = "b";
       msg.setGeneratedTime(null);
       msg.setContent(demoBean);
       Assert.assertEquals(32, msg.hashCode());
@@ -40,8 +40,8 @@ public class SwallowMessageTest {
       //自定义bean
       SwallowMessage msg = createMessage();
       DemoBean demoBean = new DemoBean();
-      demoBean.setA(1);
-      demoBean.setB("b");
+      demoBean.a = 1;
+      demoBean.b = "b";
       msg.setGeneratedTime(null);
       msg.setContent(demoBean);
       Assert.assertEquals(
@@ -105,64 +105,48 @@ public class SwallowMessageTest {
 
    }
 
-}
+   static class DemoBean {
 
-class DemoBean {
+      private int    a;
+      private String b;
 
-   private int    a;
-   private String b;
+      public DemoBean() {
+         super();
+      }
 
-   public DemoBean() {
-      super();
-   }
+      @Override
+      public String toString() {
+         return String.format("DemoBean [a=%s, b=%s]", a, b);
+      }
 
-   public int getA() {
-      return a;
-   }
+      @Override
+      public int hashCode() {
+         final int prime = 31;
+         int result = 1;
+         result = prime * result + a;
+         result = prime * result + ((b == null) ? 0 : b.hashCode());
+         return result;
+      }
 
-   public void setA(int a) {
-      this.a = a;
-   }
-
-   public String getB() {
-      return b;
-   }
-
-   public void setB(String b) {
-      this.b = b;
-   }
-
-   @Override
-   public String toString() {
-      return String.format("DemoBean [a=%s, b=%s]", a, b);
-   }
-
-   @Override
-   public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + a;
-      result = prime * result + ((b == null) ? 0 : b.hashCode());
-      return result;
-   }
-
-   @Override
-   public boolean equals(Object obj) {
-      if (this == obj)
-         return true;
-      if (obj == null)
-         return false;
-      if (!(obj instanceof DemoBean))
-         return false;
-      DemoBean other = (DemoBean) obj;
-      if (a != other.a)
-         return false;
-      if (b == null) {
-         if (other.b != null)
+      @Override
+      public boolean equals(Object obj) {
+         if (this == obj)
+            return true;
+         if (obj == null)
             return false;
-      } else if (!b.equals(other.b))
-         return false;
-      return true;
+         if (!(obj instanceof DemoBean))
+            return false;
+         DemoBean other = (DemoBean) obj;
+         if (a != other.a)
+            return false;
+         if (b == null) {
+            if (other.b != null)
+               return false;
+         } else if (!b.equals(other.b))
+            return false;
+         return true;
+      }
+
    }
 
 }

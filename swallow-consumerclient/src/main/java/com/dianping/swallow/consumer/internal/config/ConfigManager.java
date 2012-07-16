@@ -20,7 +20,7 @@ public class ConfigManager {
    private static final Logger  LOG                   = LoggerFactory.getLogger(ConfigManager.class);
 
    private static ConfigManager ins                   = new ConfigManager();
-
+   // 连接master的间隔，下面是连接slave的间隔
    private long                 connectMasterInterval = 5000L;
    private long                 connectSlaveInterval  = 5000L;
 

@@ -157,7 +157,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
     */
    @Override
    public Producer createProducer(Destination dest) throws TopicNameInvalidException {
-      return createProducer(dest, null);
+      return createProducer(dest, new ProducerConfig());
    }
 
    /**

@@ -12,5 +12,8 @@ public interface Consumer {
     */
    public void setListener(MessageListener listener);
    
+   /**
+    * 发送关闭channel的信号
+    */
    public void close();
 }

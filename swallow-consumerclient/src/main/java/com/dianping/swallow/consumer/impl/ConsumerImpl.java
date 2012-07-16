@@ -107,6 +107,10 @@ public class ConsumerImpl implements Consumer{
       return config;
    }
 
+   public ConsumerImpl(Destination dest, ConsumerConfig config) {
+      this(dest, null, config);
+   }
+   
    public ConsumerImpl(Destination dest, String consumerId, ConsumerConfig config) {
       this.dest = dest;
       this.consumerId = consumerId;
