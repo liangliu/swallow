@@ -16,7 +16,7 @@ public final class SwallowPigeonConfiguration {
    public static final String  DEFAULT_SERVICE_NAME = "remoteService";
    public static final String  DEFAULT_SERIALIZE    = "hessian";
    public static final int     DEFAULT_TIMEOUT      = 5000;
-   public static final boolean DEFAULT_IS_USE_LION  = false;
+   public static final boolean DEFAULT_IS_USE_LION  = true;
    public static final String  DEFAULT_HOSTS        = "127.0.0.1:4000";
    public static final String  DEFAULT_WEIGHTS      = "1";
 
