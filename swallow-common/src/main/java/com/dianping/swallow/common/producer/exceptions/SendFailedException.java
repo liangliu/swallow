@@ -1,16 +1,14 @@
 package com.dianping.swallow.common.producer.exceptions;
 
-public class SendFailedException extends Exception{
+public class SendFailedException extends Exception {
    private static final long serialVersionUID = -5152719369298952439L;
-   
-   private String info = "Message saved failed. Reason: ";
-   
-   public SendFailedException(String info){
-      this.info += info;
+
+   public SendFailedException(String message, Throwable cause) {
+      super(message, cause);
    }
-   
-   @Override
-   public String getMessage() {
-      return info;
+
+   public SendFailedException(Throwable cause) {
+      super(cause);
    }
+
 }

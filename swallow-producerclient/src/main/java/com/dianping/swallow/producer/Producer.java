@@ -42,7 +42,7 @@ public interface Producer {
 
    /**
     * @param content 消息体
-    * @param properties 用于消息过滤，留作后用
+    * @param properties key-value结构，作为消息的附加信息
     * @return 同步：content转化为json字符串后的SHA-1签名，异步：null
     * @throws SendFailedException 消息发送失败
     */
@@ -50,7 +50,7 @@ public interface Producer {
 
    /**
     * @param content 消息体
-    * @param properties 用于消息过滤，留作后用
+    * @param properties key-value结构，作为消息的附加信息
     * @param messageType 用于消息过滤，消息的类型
     * @return 同步：content转化为json字符串后的SHA-1签名，异步：null
     * @throws SendFailedException 消息发送失败

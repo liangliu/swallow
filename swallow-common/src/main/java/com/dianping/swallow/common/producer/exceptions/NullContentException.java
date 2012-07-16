@@ -5,6 +5,7 @@ package com.dianping.swallow.common.producer.exceptions;
  * 
  * @author tong.song
  */
+//TODO 修改构造方法
 public class NullContentException extends RuntimeException {
    private static final long serialVersionUID = -6251131303134970375L;
 

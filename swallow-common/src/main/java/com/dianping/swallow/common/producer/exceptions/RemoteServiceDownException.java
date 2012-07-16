@@ -5,6 +5,7 @@ package com.dianping.swallow.common.producer.exceptions;
  * 
  * @author Icloud
  */
+//TODO 修改构造方法
 public class RemoteServiceDownException extends RuntimeException {
    private static final long serialVersionUID = -8885826779834945921L;
 
