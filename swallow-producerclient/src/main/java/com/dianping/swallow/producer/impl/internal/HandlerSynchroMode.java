@@ -25,7 +25,7 @@ public class HandlerSynchroMode {
    }
 
    //对外接口
-   public Packet doSendMsg(Packet pkt) throws ServerDaoException, RemoteServiceDownException {
+   public Packet doSendMsg(Packet pkt)  {
       Packet pktRet = null;
       int leftRetryTimes;
       for (leftRetryTimes = sendTimes; leftRetryTimes > 0;) {

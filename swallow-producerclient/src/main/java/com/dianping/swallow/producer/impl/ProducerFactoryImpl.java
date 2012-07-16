@@ -64,7 +64,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
     */
    private ProducerFactoryImpl() throws RemoteServiceInitFailedException {
       //初始化远程调用
-      pigeonConfigure = new SwallowPigeonConfiguration("pigeon.properties");
+      pigeonConfigure = new SwallowPigeonConfiguration("swallow-producerclient-pigeon.properties");
       remoteServiceTimeout = pigeonConfigure.getTimeout();
       remoteService = initPigeon(pigeonConfigure);
    }
