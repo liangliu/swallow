@@ -20,7 +20,7 @@ class MongoConfig {
                                                                                   .getLogger(MongoConfig.class);
 
    // local config(mongo server options)
-   private boolean             slaveOk                                      = false;
+   private boolean             slaveOk                                      = true;
    private boolean             socketKeepAlive                              = false;
    private int                 socketTimeout                                = 500;
    private int                 connectionsPerHost                           = 30;
@@ -29,9 +29,9 @@ class MongoConfig {
    private int                 wtimeout                                     = 500;
    private boolean             fsync                                        = false;
    private int                 connectTimeout                               = 500;
-   private int                 maxWaitTime                                  = 1000;
+   private int                 maxWaitTime                                  = 1000 * 60 * 2;
    private boolean             autoConnectRetry                             = false;
-   private boolean             safe                                         = false;
+   private boolean             safe                                         = true;
 
    public MongoConfig() {
    }
