@@ -5,13 +5,19 @@ package com.dianping.swallow.common.producer.exceptions;
  * 
  * @author tong.song
  */
-//TODO 修改构造方法
 public class NullContentException extends RuntimeException {
    private static final long serialVersionUID = -6251131303134970375L;
 
-   @Override
-   public String getMessage() {
-      return "Content can not be null.";
+   public NullContentException(String message, Throwable cause) {
+      super(message, cause);
+   }
+
+   public NullContentException(Throwable cause) {
+      super("Content can not be null.", cause);
+   }
+   
+   public NullContentException(){
+      super("Content can not be null.");
    }
 
 }

@@ -12,7 +12,9 @@ import com.dianping.swallow.common.internal.packet.Packet;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
+import com.dianping.swallow.common.producer.exceptions.SendFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
+import com.dianping.swallow.producer.ProducerHandler;
 import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 
 /**
@@ -20,7 +22,7 @@ import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
  * 
  * @author tong.song
  */
-public class HandlerAsynchroMode {
+public class HandlerAsynchroMode implements ProducerHandler{
    private static final Logger          logger                 = LoggerFactory.getLogger(ProducerImpl.class);
    private static final MQThreadFactory threadFactory          = new MQThreadFactory();
 
@@ -43,8 +45,14 @@ public class HandlerAsynchroMode {
    }
 
    //对外的接口//异步处理只需将pkt放入filequeue即可，放入失败抛出异常
-   public void doSendMsg(Packet pkt) throws FileQueueClosedException {
-      messageQueue.add(pkt);
+   @Override
+   public Packet doSendMsg(Packet pkt) throws SendFailedException {
+      try {
+         messageQueue.add(pkt);
+      } catch (FileQueueClosedException e) {
+         throw new SendFailedException("Add message to filequeue failed.", e);
+      }
+      return null;
    }
 
    //启动处理线程

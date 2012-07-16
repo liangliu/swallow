@@ -26,7 +26,6 @@ public class ProducerServerForClient implements ProducerSwallowService {
    public static final String  producerServerIP   = IPUtil.getFirstNoLoopbackIP4Address();
 
    private int                 port               = DEFAULT_PORT;
-   private long                receivedMessageNum = 0;
    private MessageDAO          messageDAO;
    private String              remoteServiceName;
 
@@ -53,7 +52,7 @@ public class ProducerServerForClient implements ProducerSwallowService {
          logger.info("[Initialize pigeon sucessfully, Producer service for client is ready.]");
       } catch (Exception e) {
          logger.error("[Initialize pigeon failed.]", e);
-         throw new RemoteServiceInitFailedException();
+         throw new RemoteServiceInitFailedException(e);
       }
    }
 
@@ -88,7 +87,7 @@ public class ProducerServerForClient implements ProducerSwallowService {
                messageDAO.saveMessage(topicName, swallowMessage);
             } catch (Exception e) {
                logger.error("[Save message to DB failed.]", e);
-               throw new ServerDaoException();
+               throw new ServerDaoException(e);
             }
             break;
          default:
@@ -124,10 +123,6 @@ public class ProducerServerForClient implements ProducerSwallowService {
    public class HawkMBean {
       public String getProducerserverip() {
          return producerServerIP;
-      }
-
-      public long getReceivedMessageNum() {
-         return receivedMessageNum;
       }
 
       public int getPort() {

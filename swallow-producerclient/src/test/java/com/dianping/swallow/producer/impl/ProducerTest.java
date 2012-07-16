@@ -122,7 +122,7 @@ public class ProducerTest {
    }
 
    @Test
-   public void testSwallowPigeonConfiguration() throws SendFailedException{
+   public void testSwallowPigeonConfiguration() {
       SwallowPigeonConfiguration defaultConfig = new SwallowPigeonConfiguration();
       assertEquals(SwallowPigeonConfiguration.DEFAULT_HOSTS, defaultConfig.getHosts());
       assertEquals(SwallowPigeonConfiguration.DEFAULT_IS_USE_LION, defaultConfig.isUseLion());
@@ -131,7 +131,7 @@ public class ProducerTest {
       assertEquals(SwallowPigeonConfiguration.DEFAULT_TIMEOUT, defaultConfig.getTimeout());
       assertEquals(SwallowPigeonConfiguration.DEFAULT_WEIGHTS, defaultConfig.getWeights());
       
-      defaultConfig.setHostsAndWeights("127.0.0.1:4999", "99");
+      defaultConfig.setHostsAndWeights("127.0.0.1:4999", "9");
       defaultConfig.setSerialize("what");
       defaultConfig.setServiceName("hello");
       defaultConfig.setTimeout(2222);
@@ -142,7 +142,7 @@ public class ProducerTest {
       assertEquals(SwallowPigeonConfiguration.DEFAULT_SERIALIZE, defaultConfig.getSerialize());
       assertEquals("hello", defaultConfig.getServiceName());
       assertEquals(2222, defaultConfig.getTimeout());
-      assertEquals("99", defaultConfig.getWeights());
+      assertEquals("9", defaultConfig.getWeights());
       
       SwallowPigeonConfiguration normalConfig = new SwallowPigeonConfiguration("normalPigeon.properties");
       assertEquals("127.2.2.1:2000", normalConfig.getHosts());
@@ -184,7 +184,7 @@ public class ProducerTest {
       //抛异常的mock
       ProducerSwallowService exceptionRemoteServiceMock = mock(ProducerSwallowService.class);
       //设置异常remoteServiceMock的行为
-      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(new ServerDaoException());
+      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(new ServerDaoException(null));
 
       //Normal ProducerFactory mock
       ProducerFactory normalProducerFactory = mock(ProducerFactory.class);
@@ -277,7 +277,7 @@ public class ProducerTest {
       //抛异常的mock
       ProducerSwallowService exceptionRemoteServiceMock = mock(ProducerSwallowService.class);
       //设置异常remoteServiceMock的行为
-      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(new ServerDaoException());
+      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(new ServerDaoException(null));
 
       //Normal ProducerFactory mock
       ProducerFactory normalProducerFactory = mock(ProducerFactory.class);

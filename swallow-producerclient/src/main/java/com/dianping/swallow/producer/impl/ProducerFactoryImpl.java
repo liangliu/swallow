@@ -99,7 +99,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
                + ".]");
       } catch (Exception e) {
          logger.error("[Initialize remote service failed.]", e);
-         throw new RemoteServiceInitFailedException();
+         throw new RemoteServiceInitFailedException(e);
       }
       return remoteService;
    }
