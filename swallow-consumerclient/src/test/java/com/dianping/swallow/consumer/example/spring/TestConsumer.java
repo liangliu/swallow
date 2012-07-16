@@ -23,15 +23,15 @@ public class TestConsumer {
          public void onMessage(Message swallowMessage) {
             
             //用于测试客户端传关闭命令道服务器端
-//            i++;
-//            if(i==500){
-//               ((ConsumerClientImpl)consumerClient).setNeedClose(Boolean.TRUE);
-//            }
+            i++;
+            if(i==500){
+               ((ConsumerImpl)consumerClient).close();
+            }
             System.out.println(swallowMessage.getMessageId() + ":" + swallowMessage.getContent()+ ":" + swallowMessage.getType());
             try {
                Thread.sleep(500);
             } catch (InterruptedException e) {
-               // TODO Auto-generated catch block
+
                e.printStackTrace();
             }
          }
