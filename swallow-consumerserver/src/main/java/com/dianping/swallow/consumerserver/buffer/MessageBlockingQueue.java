@@ -1,7 +1,6 @@
 package com.dianping.swallow.consumerserver.buffer;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -32,7 +31,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
    private Condition                   condition        = reentrantLock.newCondition();
 
    protected volatile Long             tailMessageId;
-   protected MessageFilter messageFilter;
+   protected MessageFilter             messageFilter;
 
    public MessageBlockingQueue(String cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage) {
       super(capacity);

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.dianping.swallow.common.internal.codec.JsonBinder;
@@ -95,10 +96,13 @@ public class JsonBinderTest {
 
    @Test
    public void error() {
-      JsonBinder normalBinder = JsonBinder.getNonEmptyBinder();
+      JsonBinder binder = JsonBinder.getNonEmptyBinder();
       ErrorBean bean = new ErrorBean();
-      assertNull(normalBinder.toJson(bean));
-      assertNull(normalBinder.fromJson("error json string", ErrorBean.class));
+      Assert.assertNotNull(binder.toJson(bean));
+      Assert.assertEquals("{}", binder.toJson(bean));
+      Assert.assertNotNull(binder.fromJson("{}", ErrorBean.class));
+      assertNull(binder.fromJson("error json string", ErrorBean.class));
+
    }
 
    public static class ErrorBean {
@@ -118,30 +122,6 @@ public class JsonBinderTest {
 
       public TestBean(String name) {
          this.name = name;
-      }
-
-      public String getName() {
-         return name;
-      }
-
-      public void setName(String name) {
-         this.name = name;
-      }
-
-      public String getDefaultValue() {
-         return defaultValue;
-      }
-
-      public void setDefaultValue(String defaultValue) {
-         this.defaultValue = defaultValue;
-      }
-
-      public String getNullValue() {
-         return nullValue;
-      }
-
-      public void setNullValue(String nullValue) {
-         this.nullValue = nullValue;
       }
 
       @Override
