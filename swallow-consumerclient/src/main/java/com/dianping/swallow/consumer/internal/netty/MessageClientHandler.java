@@ -95,8 +95,12 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
             } finally {
                t.complete();
             }
-
-            e.getChannel().write(consumermessage);
+            try{
+               e.getChannel().write(consumermessage);
+            } catch (Exception e) {
+               LOG.warn("write to swallowC error.", e);
+            }
+            
          }
       };
 
@@ -106,8 +110,11 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
       // Close the connection when an exception is raised.
-
-      LOG.error("exception caught, disconnect from swallowC", e.getCause());
-      e.getChannel().close();
+      if (e.getCause() instanceof IOException) {
+         LOG.error("exception caught, disconnect from swallowC", e.getCause());
+         e.getChannel().close();
+      }else{
+         LOG.info("something exception happened!", e.getCause());
+      }
    }
 }

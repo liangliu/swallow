@@ -8,7 +8,11 @@
 
 	<bean id="consumerFactory" class="com.dianping.swallow.consumer.impl.ConsumerFactoryImpl" />
 
-	<bean id="consumerConfig" class="com.dianping.swallow.consumer.ConsumerConfig" />
+	<bean id="consumerConfig" class="com.dianping.swallow.consumer.ConsumerConfig" >
+	<property name="threadPoolSize">
+			<value>10</value>
+		</property>
+	</bean>
 
 	<bean id="dest" class="com.dianping.swallow.common.message.Destination"
 		factory-method="topic">
