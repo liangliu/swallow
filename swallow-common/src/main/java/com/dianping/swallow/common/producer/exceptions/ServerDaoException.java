@@ -6,6 +6,7 @@ package com.dianping.swallow.common.producer.exceptions;
  * @author Icloud
  *
  */
+//TODO 修改构造方法
 public class ServerDaoException extends RuntimeException {
 
    private static final long serialVersionUID = -35938089521851134L;

@@ -33,23 +33,24 @@ import com.dianping.swallow.producer.ProducerFactory;
  * @author Icloud
  */
 public class ProducerImpl implements Producer {
-   //变量定义
-   private ProducerSwallowService remoteService;                                  //远程调用对象
-   private HandlerAsynchroMode    asyncHandler;                                   //异步处理对象
-   private HandlerSynchroMode     syncHandler;                                    //同步处理对象
-
    //常量定义
-   private static final String    CAT_TYPE = "swallow";                           //cat监控使用的type
-   private static final String    CAT_NAME = "produceMessage";                    //cat监控使用的name
-   private static final Logger    logger   = Logger.getLogger(ProducerImpl.class); //日志
-   private final String           producerIP;                                     //Producer IP地址
-   private final String           producerVersion;                                //Producer版本号
+   private static final Logger          logger = Logger.getLogger(ProducerImpl.class); //日志
+
+   //变量定义
+   private final ProducerSwallowService remoteService;
+   //TODO HandlerAsynchroMode和HandlerSynchroMode添加父类，此处只使用一个父类
+   //远程调用对象
+   private HandlerAsynchroMode          asyncHandler;                                 //异步处理对象
+   private HandlerSynchroMode           syncHandler;                                  //同步处理对象
+
+   private final String                 producerIP;                                   //Producer IP地址
+   private final String                 producerVersion;                              //Producer版本号
 
    //Producer配置默认值
-   private ProducerConfig         config;
+   private final ProducerConfig         config;
 
    //Producer配置变量
-   private Destination            destination;                                    //Producer消息目的
+   private final Destination            destination;                                  //Producer消息目的
 
    /**
     * 构造函数
@@ -139,18 +140,18 @@ public class ProducerImpl implements Producer {
    @Override
    public String sendMessage(Object content, Map<String, String> properties, String messageType)
          throws SendFailedException {
-      String ret = null;
       if (content == null) {
          throw new NullContentException();
       }
+      String ret = null;
       //根据content生成SwallowMessage
       SwallowMessage swallowMsg = null;
       Map<String, String> zipProperties = null;
 
       //使用CAT监控处理消息的时间
-      Transaction t = Cat.getProducer().newTransaction(CAT_TYPE, CAT_NAME);
+      Transaction t = Cat.getProducer().newTransaction("Message", destination.getName());
       try {
-         Event event = Cat.getProducer().newEvent(CAT_TYPE, CAT_NAME);
+         Event event = Cat.getProducer().newEvent("Message", "Payload");
 
          //根据content生成SwallowMessage
          swallowMsg = new SwallowMessage();
@@ -172,11 +173,15 @@ public class ProducerImpl implements Producer {
                swallowMsg.setContent(ZipUtil.zip(swallowMsg.getContent()));
                zipProperties.put("compress", "gzip");
             } catch (IOException e) {
-               logger.error("[Compress message failed.]", e);
+               logger.warn("Compress message failed.", e);
                zipProperties.put("compress", "failed");
             }
             swallowMsg.setInternalProperties(zipProperties);
          }
+         //CAT
+         event.addData(swallowMsg.toKeyValuePairs());
+         event.setStatus(Event.SUCCESS);
+         event.complete();
 
          //构造packet
          PktMessage pktMessage = new PktMessage(destination, swallowMsg);
@@ -189,29 +194,31 @@ public class ProducerImpl implements Producer {
                      ret = pktSwallowPACK.getShaInfo();
                   }
                } catch (ServerDaoException e) {
-                  logger.error("[Save to DB failed.]", e);
-                  throw new SendFailedException("save to DB failed.");
+                  throw new SendFailedException("save to DB failed.", e);
                } catch (RemoteServiceDownException e) {
-                  logger.error("[Remote call failed.]", e);
-                  throw new SendFailedException("remote call failed.");
+                  throw new SendFailedException("remote call failed.", e);
                }
                break;
             case ASYNC_MODE://异步模式
                try {
                   asyncHandler.doSendMsg(pktMessage);
                } catch (FileQueueClosedException e) {
-                  logger.error("[Add to filequeue failed.]", e);
-                  throw new SendFailedException("add to filequeue failed.");
+                  throw new SendFailedException("add to filequeue failed.", e);
                }
                break;
          }
-
-         event.addData(swallowMsg.toString());
-         event.setStatus(Event.SUCCESS);
-         event.complete();
+         //CAT
          t.setStatus(Transaction.SUCCESS);
 
          return ret;
+      } catch (SendFailedException e) {
+         t.setStatus(e);
+         Cat.getProducer().logError(e);
+         throw e;
+      } catch (RuntimeException e) {
+         t.setStatus(e);
+         Cat.getProducer().logError(e);
+         throw e;
       } finally {
          t.complete();
       }

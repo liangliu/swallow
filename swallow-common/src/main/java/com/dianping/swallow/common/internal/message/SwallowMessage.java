@@ -123,6 +123,12 @@ public class SwallowMessage implements Serializable, Message {
             + content + ", sha1=" + sha1 + ", type=" + type + ", sourceIp=" + sourceIp + "]";
    }
 
+   public String toKeyValuePairs() {
+      return "generatedTime=" + generatedTime + "&messageId=" + messageId + "&properties=" + properties
+            + "&internalProperties=" + internalProperties + "&version=" + version + "&content=" + content + "&sha1="
+            + sha1 + "&type=" + type + "&sourceIp=" + sourceIp;
+   }
+
    @Override
    public int hashCode() {
       final int prime = 31;

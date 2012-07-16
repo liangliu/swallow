@@ -27,17 +27,17 @@ import com.dianping.swallow.producer.impl.internal.ProducerImpl;
  */
 public interface ProducerFactory {
    /**
-    * @return 获取当前可以生成的Producer的版本号
+    * @return 获取当前可以生成的Producer的版本号 TODO 宋通改
     */
    public String getProducerVersion();
 
    /**
-    * @return 获取当前Producer的本机IP地址
+    * @return 获取当前Producer的本机IP地址 TODO 宋通改
     */
    public String getProducerIP();
 
    /**
-    * @return 获取远程调用
+    * @return 获取远程调用 TODO 宋通改
     */
    public ProducerSwallowService getRemoteService();
 
@@ -58,6 +58,5 @@ public interface ProducerFactory {
     * @return 实现Producer接口的对象，用于发送消息，此版本中类型为{@link ProducerImpl}
     * @throws TopicNameInvalidException 目的地名称非法，则抛出异常
     */
-   public Producer createProducer(Destination dest, ProducerConfig config)
-         throws TopicNameInvalidException;
+   public Producer createProducer(Destination dest, ProducerConfig config) throws TopicNameInvalidException;
 }
