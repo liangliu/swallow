@@ -4,8 +4,9 @@ import com.dianping.dpsf.exception.NetException;
 import com.dianping.swallow.common.internal.packet.Packet;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
-import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
+import com.dianping.swallow.common.producer.exceptions.SendFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
+import com.dianping.swallow.producer.ProducerHandler;
 import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 
 /**
@@ -13,7 +14,7 @@ import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
  * 
  * @author tong.song
  */
-public class HandlerSynchroMode {
+public class HandlerSynchroMode implements ProducerHandler {
    private ProducerSwallowService remoteService;
    private int                    sendTimes;
    private int                    delayBase           = ProducerFactoryImpl.getRemoteServiceTimeout();
@@ -25,7 +26,8 @@ public class HandlerSynchroMode {
    }
 
    //对外接口
-   public Packet doSendMsg(Packet pkt) {
+   @Override
+   public Packet doSendMsg(Packet pkt) throws SendFailedException {
       Packet pktRet = null;
       int leftRetryTimes;
       for (leftRetryTimes = sendTimes; leftRetryTimes > 0;) {
@@ -44,7 +46,7 @@ public class HandlerSynchroMode {
             } else {
                //重置超时
                defaultPullStrategy.succeess();
-               throw e;
+               throw new SendFailedException("Can not save message to DB.", e);
             }
          } catch (NetException e) {
             //如果剩余重试次数>0，继续重试
@@ -58,7 +60,7 @@ public class HandlerSynchroMode {
             } else {
                //重置超时
                defaultPullStrategy.succeess();
-               throw new RemoteServiceDownException();
+               throw new SendFailedException("Can not send message to swallow.", e);
             }
          } catch (Exception e) {
             e.printStackTrace();

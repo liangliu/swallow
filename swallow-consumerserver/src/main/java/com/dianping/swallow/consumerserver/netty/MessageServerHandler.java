@@ -47,7 +47,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 
    @Override
    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-      LOG.info("one client connected!");
+      LOG.info(e.getChannel().getRemoteAddress() + " connected!");
       channelGroup.add(e.getChannel());
    }
 
@@ -82,6 +82,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
                         } catch (InterruptedException e) {
                            LOG.error("CloseChannelThread InterruptedException", e);
                         }
+                        channel.close();
                         workerManager.handleChannelDisconnect(channel, consumerInfo);
                      }
                   }, consumerInfo.toString() + "-CloseChannelThread-");
@@ -102,7 +103,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
             }
          }
       } else {
-         LOG.error("the received message is not PktConsumerMessage");
+         LOG.warn("the received message is not PktConsumerMessage");
       }
 
    }
@@ -112,26 +113,27 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
       
       //只有IOException的时候才需要处理。
       if (e.getCause() instanceof IOException) {
-         channelImproper(e);
+         removeChannel(e);
          LOG.error("Client disconnected!", e.getCause());
          e.getChannel().close();
+      }else{
+         LOG.info("something exception happened!", e.getCause());
       }
-      LOG.info("something exception happened!", e.getCause());
    }
    
    @Override
    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-      channelImproper(e);
+      removeChannel(e);
       super.channelDisconnected(ctx, e);
    }
 
    @Override
    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-      channelImproper(e);
+      removeChannel(e);
       super.channelClosed(ctx, e);
    }
 
-   private void channelImproper(ChannelEvent e){
+   private void removeChannel(ChannelEvent e){
       channelGroup.remove(e.getChannel());
       Channel channel = e.getChannel();
       workerManager.handleChannelDisconnect(channel, consumerInfo);

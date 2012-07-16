@@ -3,19 +3,20 @@ package com.dianping.swallow.consumerserver.worker;
 import org.jboss.netty.channel.Channel;
 
 import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
+import com.dianping.swallow.common.message.Destination;
 
 public interface ConsumerWorker{
    /**
     * 处理greet信息
-    * @param channel
-    * @param clientThreadCount
+    * @param channel 
+    * @param clientThreadCount consumer处理消息的线程池线程数
     */
    public void handleGreet(Channel channel, int clientThreadCount);
    /**
     * 处理ack信息
     * @param channel
-    * @param ackedMsgId
-    * @param type
+    * @param ackedMsgId 客户端返回的messageId
+    * @param type 接收到ack后的处理类型类型为{@link ACKHandlerType}
     */
    public void handleAck(Channel channel, Long ackedMsgId, ACKHandlerType type);
    /**

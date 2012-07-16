@@ -9,6 +9,8 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.lion.EnvZooKeeperConfig;
+
 public final class SwallowPigeonConfiguration {
 
    private static final Logger logger               = LoggerFactory.getLogger(SwallowPigeonConfiguration.class);
@@ -73,7 +75,7 @@ public final class SwallowPigeonConfiguration {
             }
          } else if (field.getType().equals(Boolean.TYPE)) {
             try {
-               field.set(this, Boolean.parseBoolean(props.getProperty(key).trim()));
+               field.set(this, ("false".equals(props.getProperty(key).trim())) ? false : true);
             } catch (Exception e) {
                logger.warn("[Can not parse property " + key + ".]", e);
                continue;
@@ -100,17 +102,23 @@ public final class SwallowPigeonConfiguration {
             }
          }
       }
-      checkParams();
+
+      checkHostsAndWeights();
+      checkSerialize();
+      checkTimeout();
+      checkUseLion();
    }
 
-   private void checkParams() {
+   private void checkSerialize() {
       //检查序列化方式
       if (!"hessian".equals(serialize) && !"java".equals(serialize) && !"protobuf".equals(serialize)
             && !"thrift".equals(serialize)) {
          logger.warn("[Unrecognized serialize, use default value: " + DEFAULT_SERIALIZE + ".]");
          serialize = DEFAULT_SERIALIZE;
       }
+   }
 
+   private void checkHostsAndWeights() {
       //检查hosts和weights
       String[] hostSet = hosts.trim().split(",");
       String[] weightSet = weights.trim().split(",");
@@ -139,10 +147,21 @@ public final class SwallowPigeonConfiguration {
          hosts = realHosts.substring(0, realHosts.length() - 1);
          weights = realWeights.substring(0, realWeights.length() - 1);
       }
+   }
 
+   private void checkTimeout() {
       //检查Timeout
       if (timeout <= 0)
          timeout = DEFAULT_TIMEOUT;
+   }
+
+   private void checkUseLion() {
+      //检查是否使用Lion
+      String env = EnvZooKeeperConfig.getEnv();
+      if (!"dev".equals(env)) {
+         logger.warn("[Not dev, set useLion=" + DEFAULT_IS_USE_LION + ".]");
+         useLion = DEFAULT_IS_USE_LION;
+      }
    }
 
    public String getServiceName() {
@@ -159,7 +178,7 @@ public final class SwallowPigeonConfiguration {
 
    public void setSerialize(String serialize) {
       this.serialize = serialize;
-      checkParams();
+      checkSerialize();
    }
 
    public int getTimeout() {
@@ -168,7 +187,7 @@ public final class SwallowPigeonConfiguration {
 
    public void setTimeout(int timeout) {
       this.timeout = timeout;
-      checkParams();
+      checkTimeout();
    }
 
    public boolean isUseLion() {
@@ -177,6 +196,7 @@ public final class SwallowPigeonConfiguration {
 
    public void setUseLion(boolean useLion) {
       this.useLion = useLion;
+      checkUseLion();
    }
 
    public String getHosts() {
@@ -190,6 +210,11 @@ public final class SwallowPigeonConfiguration {
    public void setHostsAndWeights(String hosts, String weights) {
       this.hosts = hosts;
       this.weights = weights;
-      checkParams();
+      checkHostsAndWeights();
+   }
+   
+   public static void main(String[] args) {
+      SwallowPigeonConfiguration config = new SwallowPigeonConfiguration("wrongPigeon.properties");
+      System.out.println(config.isUseLion());
    }
 }

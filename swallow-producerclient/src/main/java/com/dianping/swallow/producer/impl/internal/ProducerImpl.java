@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Transaction;
-import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
@@ -19,18 +18,17 @@ import com.dianping.swallow.common.internal.util.NameCheckUtil;
 import com.dianping.swallow.common.internal.util.ZipUtil;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.NullContentException;
-import com.dianping.swallow.common.producer.exceptions.RemoteServiceDownException;
 import com.dianping.swallow.common.producer.exceptions.SendFailedException;
-import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerFactory;
+import com.dianping.swallow.producer.ProducerHandler;
 
 /**
  * 实现Producer接口的类
  * 
- * @author Icloud
+ * @author tong.song
  */
 public class ProducerImpl implements Producer {
    //常量定义
@@ -38,10 +36,8 @@ public class ProducerImpl implements Producer {
 
    //变量定义
    private final ProducerSwallowService remoteService;
-   //TODO HandlerAsynchroMode和HandlerSynchroMode添加父类，此处只使用一个父类
    //远程调用对象
-   private HandlerAsynchroMode          asyncHandler;                                 //异步处理对象
-   private HandlerSynchroMode           syncHandler;                                  //同步处理对象
+   private final ProducerHandler        producerHandler;
 
    private final String                 producerIP;                                   //Producer IP地址
    private final String                 producerVersion;                              //Producer版本号
@@ -81,13 +77,13 @@ public class ProducerImpl implements Producer {
       //设置Producer工作模式
       switch (this.config.getMode()) {
          case SYNC_MODE:
-            syncHandler = new HandlerSynchroMode(this);
+         default:
+            producerHandler = new HandlerSynchroMode(this);
             break;
          case ASYNC_MODE:
-            asyncHandler = new HandlerAsynchroMode(this);
+            producerHandler = new HandlerAsynchroMode(this);
             break;
       }
-
    }
 
    /**
@@ -173,7 +169,7 @@ public class ProducerImpl implements Producer {
                swallowMsg.setContent(ZipUtil.zip(swallowMsg.getContent()));
                zipProperties.put("compress", "gzip");
             } catch (IOException e) {
-               logger.warn("Compress message failed.", e);
+               logger.warn("[Compress message failed.][content=" + swallowMsg.getContent() + "]", e);
                zipProperties.put("compress", "failed");
             }
             swallowMsg.setInternalProperties(zipProperties);
@@ -187,24 +183,13 @@ public class ProducerImpl implements Producer {
          PktMessage pktMessage = new PktMessage(destination, swallowMsg);
          switch (config.getMode()) {
             case SYNC_MODE://同步模式
-               try {
-                  PktSwallowPACK pktSwallowPACK = null;
-                  pktSwallowPACK = (PktSwallowPACK) syncHandler.doSendMsg(pktMessage);
-                  if (pktSwallowPACK != null) {
-                     ret = pktSwallowPACK.getShaInfo();
-                  }
-               } catch (ServerDaoException e) {
-                  throw new SendFailedException("save to DB failed.", e);
-               } catch (RemoteServiceDownException e) {
-                  throw new SendFailedException("remote call failed.", e);
+               PktSwallowPACK pktSwallowPACK = (PktSwallowPACK) producerHandler.doSendMsg(pktMessage);
+               if (pktSwallowPACK != null) {
+                  ret = pktSwallowPACK.getShaInfo();
                }
                break;
             case ASYNC_MODE://异步模式
-               try {
-                  asyncHandler.doSendMsg(pktMessage);
-               } catch (FileQueueClosedException e) {
-                  throw new SendFailedException("add to filequeue failed.", e);
-               }
+               producerHandler.doSendMsg(pktMessage);
                break;
          }
          //CAT
@@ -245,5 +230,4 @@ public class ProducerImpl implements Producer {
    public Destination getDestination() {
       return destination;
    }
-
 }

@@ -10,7 +10,6 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
-import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.internal.dao.MessageDAO;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.util.NameCheckUtil;
@@ -26,8 +25,6 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
 
    private static final Logger logger             = Logger.getLogger(ProducerServerForText.class);
 
-   private long                receivedMessageNum = 0;
-
    /**
     * 构造函数
     * 
@@ -35,8 +32,6 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
     */
    public ProducerServerTextHandler(MessageDAO messageDAO) {
       this.messageDAO = messageDAO;
-      //Hawk监控
-      HawkJMXUtil.registerMBean("ProducerServerTextHandler", new HawkMBean());
    }
 
    @Override
@@ -52,7 +47,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       logger.info("[Connection from " + e.getChannel().getRemoteAddress() + "]");
       super.channelConnected(ctx, e);
    }
-   
+
    @Override
    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
       logger.info("[Disconnection from " + e.getChannel().getRemoteAddress() + "]");
@@ -107,14 +102,5 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
       logger.error("[Netty]:[Unexpected exception from downstream.]", e.getCause());
       e.getChannel().close();
-   }
-
-   /**
-    * 用于Hawk监控
-    */
-   public class HawkMBean {
-      public long getReceivedMessageNum() {
-         return receivedMessageNum;
-      }
    }
 }
