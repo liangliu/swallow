@@ -16,6 +16,24 @@ public class ProducerConfig {
       mode = ("async".equals(producerModeString)) ? ProducerMode.ASYNC_MODE : ProducerMode.SYNC_MODE;
    }
 
+   /**
+    * 仅供Spring使用
+    * 
+    * @return
+    */
+   public String getProducerModeString() {
+      return producerModeString;
+   }
+
+   /**
+    * 仅供Spring使用
+    * 
+    * @param producerModeString
+    */
+   public void setProducerModeString(String producerModeString) {
+      this.producerModeString = producerModeString;
+   }
+
    public ProducerMode getMode() {
       return mode;
    }
@@ -80,24 +98,6 @@ public class ProducerConfig {
     */
    public void setSendMsgLeftLastSession(boolean sendMsgLeftLastSession) {
       this.sendMsgLeftLastSession = sendMsgLeftLastSession;
-   }
-
-   /**
-    * 仅供Spring使用
-    * 
-    * @return
-    */
-   public String getProducerModeString() {
-      return producerModeString;
-   }
-
-   /**
-    * 仅供Spring使用
-    * 
-    * @param producerModeString
-    */
-   public void setProducerModeString(String producerModeString) {
-      this.producerModeString = producerModeString;
    }
 
 }

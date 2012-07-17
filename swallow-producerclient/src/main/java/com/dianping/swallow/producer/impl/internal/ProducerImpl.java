@@ -24,6 +24,7 @@ import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerHandler;
 import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
+import com.dianping.swallow.producer.spring.ProducerFactoryImplSpring;
 
 /**
  * 实现Producer接口的类
@@ -57,6 +58,44 @@ public class ProducerImpl implements Producer {
     * @throws TopicNameInvalidException topic名称非法时抛出此异常
     */
    public ProducerImpl(ProducerFactoryImpl producerFactory, Destination dest, ProducerConfig config)
+         throws TopicNameInvalidException {
+
+      //初始化Producer目的地
+      if (!NameCheckUtil.isTopicNameValid(dest.getName()))
+         throw new TopicNameInvalidException();
+      destination = dest;
+      if (config != null) {
+         this.config = config;
+      } else {
+         this.config = new ProducerConfig();
+      }
+
+      //设置Producer的IP地址及版本号,设置远程调用
+      this.producerIP = producerFactory.getProducerIP();
+      this.producerVersion = producerFactory.getProducerVersion();
+      this.remoteService = producerFactory.getRemoteService();
+
+      //设置Producer工作模式
+      switch (this.config.getMode()) {
+         case SYNC_MODE:
+         default:
+            producerHandler = new HandlerSynchroMode(this);
+            break;
+         case ASYNC_MODE:
+            producerHandler = new HandlerAsynchroMode(this);
+            break;
+      }
+   }
+
+   /**
+    * 仅供Spring使用的构造函数
+    * 
+    * @param producerFactory Producer工厂类对象
+    * @param dest Topic的Destination
+    * @param pOptions producer配置选项
+    * @throws TopicNameInvalidException topic名称非法时抛出此异常
+    */
+   public ProducerImpl(ProducerFactoryImplSpring producerFactory, Destination dest, ProducerConfig config)
          throws TopicNameInvalidException {
 
       //初始化Producer目的地

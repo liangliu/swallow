@@ -62,21 +62,11 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @param timeout 远程调用超时
     * @throws RemoteServiceInitFailedException 远程调用初始化失败
     */
-   private ProducerFactoryImpl() throws RemoteServiceInitFailedException {
+   protected ProducerFactoryImpl() throws RemoteServiceInitFailedException {
       //初始化远程调用
-      setPigeonConfigure(new SwallowPigeonConfiguration("swallow-producerclient-pigeon.properties"));
-      remoteServiceTimeout = getPigeonConfigure().getTimeout();
-      remoteService = initPigeon(getPigeonConfigure());
-   }
-
-   /**
-    * 供Spring使用的初始化函数
-    * 
-    * @throws RemoteServiceInitFailedException 初始化失败抛出此异常
-    */
-   public void init() throws RemoteServiceInitFailedException {
-      remoteServiceTimeout = getPigeonConfigure().getTimeout();
-      remoteService = initPigeon(getPigeonConfigure());
+      pigeonConfigure = new SwallowPigeonConfiguration("swallow-producerclient-pigeon.properties");
+      remoteServiceTimeout = pigeonConfigure.getTimeout();
+      remoteService = initPigeon(pigeonConfigure);
    }
 
    /**
@@ -221,11 +211,4 @@ public class ProducerFactoryImpl implements ProducerFactory {
       return producerImpl;
    }
 
-   public SwallowPigeonConfiguration getPigeonConfigure() {
-      return pigeonConfigure;
-   }
-
-   public void setPigeonConfigure(SwallowPigeonConfiguration pigeonConfigure) {
-      this.pigeonConfigure = pigeonConfigure;
-   }
 }
