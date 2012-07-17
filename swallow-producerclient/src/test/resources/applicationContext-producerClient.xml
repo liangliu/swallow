@@ -12,7 +12,7 @@
 	</bean>
 
 	<bean id="producerFactoryConfig"
-		class="com.dianping.swallow.producer.impl.internal.SwallowPigeonConfiguration" init-method="init">
+		class="com.dianping.swallow.producer.spring.SwallowPigeonConfigurationSpring" init-method="init">
 		<property name="serviceName" value="http://service.dianping.com/swallowService/producerService_1.0.0" />
 		<property name="serialize" value="hessian" />
 		<property name="timeout" value="5000" />
