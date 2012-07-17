@@ -108,7 +108,16 @@ public final class SwallowPigeonConfiguration {
       checkTimeout();
       checkUseLion();
    }
-
+   
+   /**
+    * 仅供Spring使用
+    */
+   public void init(){
+      checkHostsAndWeights();
+      checkSerialize();
+      checkTimeout();
+      checkUseLion();
+   }
    private void checkSerialize() {
       //检查序列化方式
       if (!"hessian".equals(serialize) && !"java".equals(serialize) && !"protobuf".equals(serialize)
@@ -120,8 +129,8 @@ public final class SwallowPigeonConfiguration {
 
    private void checkHostsAndWeights() {
       //检查hosts和weights
-      String[] hostSet = hosts.trim().split(",");
-      String[] weightSet = weights.trim().split(",");
+      String[] hostSet = getHosts().trim().split(",");
+      String[] weightSet = getWeights().trim().split(",");
       String realHosts = "";
       String realWeights = "";
       String host;
@@ -141,11 +150,11 @@ public final class SwallowPigeonConfiguration {
          realWeights += weight + ",";
       }
       if (realHosts == "") {
-         hosts = DEFAULT_HOSTS;
-         weights = DEFAULT_WEIGHTS;
+         setHosts(DEFAULT_HOSTS);
+         setWeights(DEFAULT_WEIGHTS);
       } else {
-         hosts = realHosts.substring(0, realHosts.length() - 1);
-         weights = realWeights.substring(0, realWeights.length() - 1);
+         setHosts(realHosts.substring(0, realHosts.length() - 1));
+         setWeights(realWeights.substring(0, realWeights.length() - 1));
       }
    }
 
@@ -208,13 +217,27 @@ public final class SwallowPigeonConfiguration {
    }
 
    public void setHostsAndWeights(String hosts, String weights) {
-      this.hosts = hosts;
-      this.weights = weights;
+      this.setHosts(hosts);
+      this.setWeights(weights);
       checkHostsAndWeights();
    }
-   
-   public static void main(String[] args) {
-      SwallowPigeonConfiguration config = new SwallowPigeonConfiguration("wrongPigeon.properties");
-      System.out.println(config.isUseLion());
+
+   /**
+    * 仅供Spring使用
+    * 
+    * @param hosts
+    */
+   public void setHosts(String hosts) {
+      this.hosts = hosts;
    }
+
+   /**
+    * 仅供Spring使用
+    * 
+    * @param weights
+    */
+   public void setWeights(String weights) {
+      this.weights = weights;
+   }
+
 }

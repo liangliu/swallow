@@ -64,9 +64,19 @@ public class ProducerFactoryImpl implements ProducerFactory {
     */
    private ProducerFactoryImpl() throws RemoteServiceInitFailedException {
       //初始化远程调用
-      pigeonConfigure = new SwallowPigeonConfiguration("swallow-producerclient-pigeon.properties");
-      remoteServiceTimeout = pigeonConfigure.getTimeout();
-      remoteService = initPigeon(pigeonConfigure);
+      setPigeonConfigure(new SwallowPigeonConfiguration("swallow-producerclient-pigeon.properties"));
+      remoteServiceTimeout = getPigeonConfigure().getTimeout();
+      remoteService = initPigeon(getPigeonConfigure());
+   }
+
+   /**
+    * 供Spring使用的初始化函数
+    * 
+    * @throws RemoteServiceInitFailedException 初始化失败抛出此异常
+    */
+   public void init() throws RemoteServiceInitFailedException {
+      remoteServiceTimeout = getPigeonConfigure().getTimeout();
+      remoteService = initPigeon(getPigeonConfigure());
    }
 
    /**
@@ -120,7 +130,6 @@ public class ProducerFactoryImpl implements ProducerFactory {
    /**
     * @return 获取远程调用服务接口
     */
-   @Override
    public ProducerSwallowService getRemoteService() {
       return remoteService;
    }
@@ -132,7 +141,6 @@ public class ProducerFactoryImpl implements ProducerFactory {
    /**
     * @return 获取Producer本机IP地址
     */
-   @Override
    public String getProducerIP() {
       return producerIP;
    }
@@ -140,7 +148,6 @@ public class ProducerFactoryImpl implements ProducerFactory {
    /**
     * @return 获取Producer的版本号
     */
-   @Override
    public String getProducerVersion() {
       return producerVersion;
    }
@@ -212,5 +219,13 @@ public class ProducerFactoryImpl implements ProducerFactory {
          logger.warn("[Network error, couldn't send greet now.]");
       }
       return producerImpl;
+   }
+
+   public SwallowPigeonConfiguration getPigeonConfigure() {
+      return pigeonConfigure;
+   }
+
+   public void setPigeonConfigure(SwallowPigeonConfiguration pigeonConfigure) {
+      this.pigeonConfigure = pigeonConfigure;
    }
 }
