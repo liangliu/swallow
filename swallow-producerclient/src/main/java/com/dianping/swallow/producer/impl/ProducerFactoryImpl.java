@@ -202,12 +202,11 @@ public class ProducerFactoryImpl implements ProducerFactory {
 
       try {
          remoteService.sendMessage(pktProducerGreet);
-      } catch (ServerDaoException e) {
-         //一定不会捕获到该异常
-      } catch (NetException e) {
+      } catch (Exception e) {
          //网络异常，只记录，不抛出，以保证用户可以拿到Producer
-         logger.warn("[Network error, couldn't send greet now.]");
+         logger.warn("couldn't send greet now.", e);
       }
+      
       return producerImpl;
    }
 

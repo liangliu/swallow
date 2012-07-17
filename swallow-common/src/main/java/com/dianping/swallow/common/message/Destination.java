@@ -39,7 +39,8 @@ public class Destination implements Serializable {
    }
 
    private Destination(String name, Type type) {
-      this.name = name;
+      //TODO 将验证逻辑移到这里，删除其他验证逻辑
+      this.name = name.trim();
       this.type = type;
    }
 

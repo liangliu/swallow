@@ -10,6 +10,7 @@ public class ConsumerFactoryImpl implements ConsumerFactory {
    private static ConsumerFactoryImpl instance = new ConsumerFactoryImpl();
    
    private ConsumerFactoryImpl() {
+      //TODO 读取lion或本地配置，变成map，topicName trim()一下
    }
    
    public static ConsumerFactory getInstance() {
@@ -18,6 +19,7 @@ public class ConsumerFactoryImpl implements ConsumerFactory {
 
    @Override
    public Consumer createConsumer(Destination dest, String consumerId, ConsumerConfig config) {
+      // TODO 将dest对应的master/slave地址传给构造函数
       return new ConsumerImpl(dest, consumerId, config);
    }
 

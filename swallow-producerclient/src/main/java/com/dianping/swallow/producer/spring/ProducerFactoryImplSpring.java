@@ -19,7 +19,7 @@ import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 import com.dianping.swallow.producer.impl.internal.SwallowPigeonConfiguration;
-
+//TODO no need
 public class ProducerFactoryImplSpring implements ProducerFactory{
 
    private final Logger               logger          = LoggerFactory.getLogger(ProducerFactoryImpl.class);

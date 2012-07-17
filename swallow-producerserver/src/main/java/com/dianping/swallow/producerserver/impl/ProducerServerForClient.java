@@ -91,7 +91,7 @@ public class ProducerServerForClient implements ProducerSwallowService {
             }
             break;
          default:
-            logger.warn("[Received unrecognized packet.]");
+            logger.warn("[Received unrecognized packet.]" + pkt);
             break;
       }
       return pktRet;

@@ -22,59 +22,37 @@ public class HandlerSynchroMode implements ProducerHandler {
 
    public HandlerSynchroMode(ProducerImpl producer) {
       this.remoteService = producer.getRemoteService();
+      //TODO check retrytime>=0
       this.sendTimes = producer.getProducerConfig().getRetryTimes() + 1;//初始值等于用户要求的retryTimes+1，这样可以保证至少执行一次
    }
 
    //对外接口
    @Override
    public Packet doSendMsg(Packet pkt) throws SendFailedException {
+      defaultPullStrategy.succeess();
       Packet pktRet = null;
       int leftRetryTimes;
       for (leftRetryTimes = sendTimes; leftRetryTimes > 0;) {
          try {
             leftRetryTimes--;
             pktRet = remoteService.sendMessage(pkt);
-         } catch (ServerDaoException e) {
-            //如果剩余重试次数>0，继续重试
-            if (leftRetryTimes > 0) {
-               try {
-                  defaultPullStrategy.fail(true);
-               } catch (InterruptedException ie) {
-                  //睡眠失败则不睡眠直接发送
-               }
-               continue;
-            } else {
-               //重置超时
-               defaultPullStrategy.succeess();
-               throw new SendFailedException("Can not save message to DB.", e);
-            }
-         } catch (NetException e) {
-            //如果剩余重试次数>0，继续重试
-            if (leftRetryTimes > 0) {
-               try {
-                  defaultPullStrategy.fail(true);
-               } catch (InterruptedException ie) {
-                  //睡眠失败则不睡眠直接发送
-               }
-               continue;
-            } else {
-               //重置超时
-               defaultPullStrategy.succeess();
-               throw new SendFailedException("Can not send message to swallow.", e);
-            }
          } catch (Exception e) {
-            e.printStackTrace();
-            try {
-               defaultPullStrategy.fail(true);
-            } catch (InterruptedException ie) {
-               //睡眠失败则不睡眠直接发送
+            //如果剩余重试次数>0，继续重试
+            if (leftRetryTimes > 0) {
+               try {
+                  defaultPullStrategy.fail(true);
+               } catch (InterruptedException ie) {
+                  //睡眠失败则不睡眠直接发送
+               }
+               continue;
+            } else {
+               //重置超时
+               throw new SendFailedException("Message sent failed", e);
             }
-            continue;
          }
          break;
       }
       //能跳出循环，重试次数消耗完OR消息发送成功，循环break，此时重置超时时间
-      defaultPullStrategy.succeess();
       return pktRet;
    }
 }

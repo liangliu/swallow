@@ -40,8 +40,12 @@ public class ConsumerSlaveThread implements Runnable {
    public void run() {
       while (true) {
          synchronized (bootstrap) {
-            ChannelFuture future = bootstrap.connect(slaveAddress);
-            future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！              
+            try {
+               ChannelFuture future = bootstrap.connect(slaveAddress);
+               future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！
+            } catch (RuntimeException e) {
+               LOG.error("Unexpected exception", e);
+            }
          }
          try {
             Thread.sleep(configManager.getConnectSlaveInterval());

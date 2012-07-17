@@ -1,5 +1,8 @@
 package com.dianping.swallow.producer.impl.internal;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +12,7 @@ import com.dianping.filequeue.DefaultFileQueueImpl;
 import com.dianping.filequeue.FileQueue;
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.internal.packet.Packet;
+import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
@@ -23,6 +27,7 @@ import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
  * @author tong.song
  */
 public class HandlerAsynchroMode implements ProducerHandler{
+   //TODO logger class is self
    private static final Logger          logger                 = LoggerFactory.getLogger(ProducerImpl.class);
    private static final MQThreadFactory threadFactory          = new MQThreadFactory();
 
@@ -38,6 +43,9 @@ public class HandlerAsynchroMode implements ProducerHandler{
 
       FileQueueConfigHolder fileQueueConfig = new FileQueueConfigHolder();
       fileQueueConfig.setMaxDataFileSize(DEFAULT_FILEQUEUE_SIZE);
+      //TODO file queue 不允许两个实例指向同一个文件
+      //messageQueue = FileQueueHolder.get(..., producer.getDestination().getName(), ...);
+      //synchronized FileQueueHolder.get(){if(exist){return}else{create new}}
       messageQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, producer.getDestination().getName(), producer
             .getProducerConfig().isSendMsgLeftLastSession());
 
@@ -57,10 +65,11 @@ public class HandlerAsynchroMode implements ProducerHandler{
 
    //启动处理线程
    private void start() {
-      int idx;
       int threadPoolSize = producer.getProducerConfig().getThreadPoolSize();
-      for (idx = 0; idx < threadPoolSize; idx++) {
-         threadFactory.newThread(new TskGetAndSend(), "AsyncProducer_" + idx).start();
+      for (int idx = 0; idx < threadPoolSize; idx++) {
+         Thread t = threadFactory.newThread(new TskGetAndSend(), "swallow-AsyncProducer-");
+         t.setDaemon(true);
+         t.start();
       }
    }
 
@@ -82,41 +91,22 @@ public class HandlerAsynchroMode implements ProducerHandler{
             message = messageQueue.get();
             //发送message，重试次数从Producer获取
             for (leftRetryTimes = sendTimes; leftRetryTimes > 0;) {
+               leftRetryTimes--;
                try {
-                  leftRetryTimes--;
                   remoteService.sendMessage(message);
-               } catch (ServerDaoException e) {
+               } catch (Exception e) {
                   //如果剩余重试次数>0，超时重试
                   if (leftRetryTimes > 0) {
                      try {
                         defaultPullStrategy.fail(true);
                      } catch (InterruptedException ie) {
+                        return;
                         //睡眠失败则不睡眠直接发送
                      }
                      //发送失败，重发
                      continue;
                   }
-                  logger.error("[AsyncHandler]:[Message sent failed.][Reason=DAO]", e);
-               } catch (NetException e) {
-                  if (leftRetryTimes > 0) {
-                     try {
-                        defaultPullStrategy.fail(true);
-                     } catch (InterruptedException ie) {
-                        //睡眠失败则不睡眠直接发送
-                     }
-                     //发送失败，重发
-                     continue;
-                  }
-                  logger.error("[AsyncHandler]:[Message sent failed.][Reason=Network]", e);
-               } catch (Exception e) {
-                  //捕获到未知异常，记录
-                  logger.error("[AsyncHandler]:[Unknow Exception]", e);
-                  try {
-                     defaultPullStrategy.fail(true);
-                  } catch (InterruptedException ie) {
-                     //睡眠失败则不睡眠直接发送
-                  }
-                  continue;
+                  logger.error("Message sent failed: " + message.toString(), e);
                }
                //如果发送成功则跳出循环
                break;

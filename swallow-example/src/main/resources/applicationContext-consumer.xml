@@ -6,7 +6,7 @@
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-	<bean id="consumerFactory" class="com.dianping.swallow.consumer.impl.ConsumerFactoryImpl" />
+	<bean id="consumerFactory" class="com.dianping.swallow.consumer.impl.ConsumerFactoryImpl" factory-method="getInstance" />
 
 	<bean id="consumerConfig" class="com.dianping.swallow.consumer.ConsumerConfig" >
 	<property name="threadPoolSize">

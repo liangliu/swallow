@@ -9,6 +9,7 @@ public class ProducerConfig {
    private int          threadPoolSize         = 5;
    private boolean      sendMsgLeftLastSession = false;
 
+   //TODO not necessary
    /**
     * 供Spring配置使用
     */

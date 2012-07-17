@@ -2,6 +2,7 @@ package com.dianping.swallow.consumer.impl;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
@@ -54,6 +55,8 @@ public class ConsumerImpl implements Consumer{
 
    private volatile boolean             closed                    = false;
    
+   private volatile AtomicBoolean started = new AtomicBoolean(false);
+   
    private ConsumerConfig config;
 
    public boolean isClosed() {
@@ -103,7 +106,7 @@ public class ConsumerImpl implements Consumer{
    public ConsumerImpl(Destination dest, String consumerId, ConsumerConfig config) {
       this.dest = dest;
       this.consumerId = consumerId;
-      this.config = config;
+      this.config = config == null ? new ConsumerConfig() : config;
       String swallowCAddress = getSwallowCAddress(dest.getName());
       string2Address(swallowCAddress);
    }
@@ -112,26 +115,30 @@ public class ConsumerImpl implements Consumer{
     * 开始连接服务器，同时把连slave的线程启起来。
     */
    public void start() {
-      init();
-      ConsumerSlaveThread slave = new ConsumerSlaveThread();
-      slave.setBootstrap(bootstrap);
-      slave.setSlaveAddress(slaveAddress);
-      slave.setConfigManager(configManager);
-      Thread slaveThread = new Thread(slave);
-      slaveThread.start();
-      while (true) {
-         synchronized (bootstrap) {
-            ChannelFuture future = bootstrap.connect(masterAddress);
-            try {
-               future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！     
-            } catch (Exception e) {
-               LOG.info("something wrong!", e);
+      //TODO 检查MessageListener是否是null
+      if(started.compareAndSet(false, true)) {
+         init();
+         ConsumerSlaveThread slave = new ConsumerSlaveThread();
+         slave.setBootstrap(bootstrap);
+         slave.setSlaveAddress(slaveAddress);
+         slave.setConfigManager(configManager);
+         Thread slaveThread = new Thread(slave);
+         slaveThread.start();
+         while (true) {
+            synchronized (bootstrap) {
+               //TODO bootstrap是否能重用
+               try {
+                  ChannelFuture future = bootstrap.connect(masterAddress);
+                  future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！     
+               } catch (RuntimeException e) {
+                  LOG.error("Unexpected exception", e);
+               }
             }
-         }
-         try {
-            Thread.sleep(configManager.getConnectMasterInterval());
-         } catch (InterruptedException e) {
-            LOG.error("thread InterruptedException", e);
+            try {
+               Thread.sleep(configManager.getConnectMasterInterval());
+            } catch (InterruptedException e) {
+               LOG.error("thread InterruptedException", e);
+            }
          }
       }
    }
@@ -173,6 +180,12 @@ public class ConsumerImpl implements Consumer{
       return getAddressByParseLionValue(lionValue, topicName);
    }
 
+   /**
+    * 
+    * @param lionValue swallow.consumer.consumerServerURI=default=127.0.0.1:8081,127.0.0.1:8082;feed,topicForUnitTest=127.0.0.1:8083,127.0.0.1:8084
+    * @param topicName
+    * @return
+    */
    private String getAddressByParseLionValue(String lionValue, String topicName) {
       String swallowAddress = null;
       label: for (String topicNameToAddress : lionValue.split(";")) {

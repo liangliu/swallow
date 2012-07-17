@@ -87,6 +87,7 @@ public class ProducerImpl implements Producer {
       }
    }
 
+   //TODO no need
    /**
     * 仅供Spring使用的构造函数
     * 
@@ -176,7 +177,7 @@ public class ProducerImpl implements Producer {
    public String sendMessage(Object content, Map<String, String> properties, String messageType)
          throws SendFailedException {
       if (content == null) {
-         throw new InvalidParameterException("Message content can not be null.");
+         throw new IllegalArgumentException("Message content can not be null.");
       }
       String ret = null;
       //根据content生成SwallowMessage
@@ -207,7 +208,7 @@ public class ProducerImpl implements Producer {
             try {
                swallowMsg.setContent(ZipUtil.zip(swallowMsg.getContent()));
                zipProperties.put("compress", "gzip");
-            } catch (IOException e) {
+            } catch (Exception e) {
                logger.warn("[Compress message failed.][content=" + swallowMsg.getContent() + "]", e);
                zipProperties.put("compress", "failed");
             }

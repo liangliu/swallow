@@ -74,6 +74,7 @@ public class JsonBinder {
          return mapper.readValue(jsonString, clazz);
       } catch (IOException e) {
          logger.warn("parse json string error:" + jsonString, e);
+         //TODO throw CantDeserializeException
          return null;
       }
    }

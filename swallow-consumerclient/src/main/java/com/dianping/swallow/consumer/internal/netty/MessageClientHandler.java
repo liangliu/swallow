@@ -32,10 +32,11 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
    private static final Logger LOG      = LoggerFactory.getLogger(MessageClientHandler.class);
 
+   //TODO 统一cat_type
    private static final String CAT_TYPE = "swallow";
    private static final String CAT_NAME = "consumeMessage";
 
-   private ConsumerImpl      cClient;
+   private ConsumerImpl        cClient;
 
    private PktConsumerMessage  consumermessage;
 
@@ -51,7 +52,8 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
 
       consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET, cClient.getConsumerId(), cClient.getDest(),
-            cClient.getConfig().getConsumerType(), cClient.getConfig().getThreadPoolSize(), cClient.getConfig().getMessageFilter());
+            cClient.getConfig().getConsumerType(), cClient.getConfig().getThreadPoolSize(), cClient.getConfig()
+                  .getMessageFilter());
 
       e.getChannel().write(consumermessage);
    }
@@ -69,38 +71,37 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
             //使用CAT监控处理消息的时间
             Transaction t = Cat.getProducer().newTransaction(CAT_TYPE, CAT_NAME);
-            try {
-               Event event = Cat.getProducer().newEvent(CAT_TYPE, CAT_NAME);
-               event.addData(swallowMessage.toString());
+            Event event = Cat.getProducer().newEvent(CAT_TYPE, CAT_NAME);
+            event.addData(swallowMessage.toString());
 
-               //处理消息
-             //如果是压缩后的消息，则进行解压缩
+            //处理消息
+            //如果是压缩后的消息，则进行解压缩
+            try {
                if (swallowMessage.getInternalProperties() != null) {
                   if ("gzip".equals(swallowMessage.getInternalProperties().get("compress"))) {
-                     try {
-                        swallowMessage.setContent(ZipUtil.unzip(swallowMessage.getContent()));
-                     } catch (IOException e) {
-                        LOG.error("ZipUtil.unzip error!", e);
-                     }
+                     swallowMessage.setContent(ZipUtil.unzip(swallowMessage.getContent()));
                   }
                }
-               cClient.getListener().onMessage(swallowMessage);
-
+               try {
+                  cClient.getListener().onMessage(swallowMessage);
+               } catch (Exception e) {
+                  LOG.error("exception in MessageListener", e);
+               }
                event.setStatus(Event.SUCCESS);
-               event.complete();
-               t.setStatus(Transaction.SUCCESS);
-            } catch (Exception e) {
-               LOG.error("deal with message error!", e);
+            } catch (IOException e) {
+               LOG.error("can not uncompress message with messageId " + messageId, e);
                t.setStatus(e);
-            } finally {
-               t.complete();
             }
-            try{
+
+            event.complete();
+            t.setStatus(Transaction.SUCCESS);//TODO 使用哪个setStatus
+            t.complete();
+            try {
                e.getChannel().write(consumermessage);
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                LOG.warn("write to swallowC error.", e);
             }
-            
+
          }
       };
 
@@ -110,11 +111,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
       // Close the connection when an exception is raised.
-      if (e.getCause() instanceof IOException) {
-         LOG.error("exception caught, disconnect from swallowC", e.getCause());
-         e.getChannel().close();
-      }else{
-         LOG.info("something exception happened!", e.getCause());
-      }
+      LOG.error("exception caught, disconnect from swallowC", e.getCause());
+      e.getChannel().close();
    }
 }
