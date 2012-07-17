@@ -77,7 +77,8 @@ public class SwallowBufferTest extends AbstractDAOImplTest {
    public void testCreateMessageQueue2() throws InterruptedException {
       Set<String> messageTypeSet = new HashSet<String>();
       messageTypeSet.add(TYPE);
-      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, MessageFilter.createInSetMessageFilter(messageTypeSet));
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId,
+            MessageFilter.createInSetMessageFilter(messageTypeSet));
 
       Message m;
       while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
@@ -90,7 +91,8 @@ public class SwallowBufferTest extends AbstractDAOImplTest {
       Set<String> messageTypeSet = new HashSet<String>();
       messageTypeSet.add(TYPE);
 
-      swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, MessageFilter.createInSetMessageFilter(messageTypeSet));
+      swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId,
+            MessageFilter.createInSetMessageFilter(messageTypeSet));
       BlockingQueue<Message> queue = swallowBuffer.getMessageQueue(TOPIC_NAME, cid);
       Message m;
       while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
@@ -104,7 +106,8 @@ public class SwallowBufferTest extends AbstractDAOImplTest {
    public void testPoll1() throws InterruptedException {
       Set<String> messageTypeSet = new HashSet<String>();
       messageTypeSet.add(TYPE);
-      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, MessageFilter.createInSetMessageFilter(messageTypeSet));
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId,
+            MessageFilter.createInSetMessageFilter(messageTypeSet));
 
       Message m = queue.poll();
       while (m == null) {
@@ -117,13 +120,34 @@ public class SwallowBufferTest extends AbstractDAOImplTest {
    public void testPoll2() throws InterruptedException {
       Set<String> messageTypeSet = new HashSet<String>();
       messageTypeSet.add(TYPE);
-      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, MessageFilter.createInSetMessageFilter(messageTypeSet));
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId,
+            MessageFilter.createInSetMessageFilter(messageTypeSet));
 
       Message m = queue.poll(500, TimeUnit.MILLISECONDS);
       while (m == null) {
          m = queue.poll(500, TimeUnit.MILLISECONDS);
       }
       Assert.assertEquals("content2", m.getContent());
+   }
+
+   @Test
+   public void testPoll3() throws InterruptedException {
+      //插入1条消息
+      String myType = TYPE + "_";
+      SwallowMessage myTypeMsg = createMessage();
+      myTypeMsg.setType(myType);
+      messageDAO.saveMessage(TOPIC_NAME, myTypeMsg);
+
+      Set<String> messageTypeSet = new HashSet<String>();
+      messageTypeSet.add(myType);
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId,
+            MessageFilter.createInSetMessageFilter(messageTypeSet));
+
+      Message m = queue.poll(500, TimeUnit.MILLISECONDS);
+      while (m == null) {
+         m = queue.poll(50, TimeUnit.MILLISECONDS);
+      }
+      Assert.assertEquals(myType, m.getType());
    }
 
    private static SwallowMessage createMessage() {
