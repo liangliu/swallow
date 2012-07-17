@@ -3,10 +3,18 @@ package com.dianping.swallow.producer;
 public class ProducerConfig {
 
    private ProducerMode mode                   = ProducerMode.SYNC_MODE;
+   private String       producerModeString     = "sync";
    private int          retryTimes             = 5;
    private boolean      zipped                 = false;
    private int          threadPoolSize         = 5;
    private boolean      sendMsgLeftLastSession = false;
+
+   /**
+    * 供Spring配置使用
+    */
+   public void init() {
+      mode = ("async".equals(producerModeString)) ? ProducerMode.ASYNC_MODE : ProducerMode.SYNC_MODE;
+   }
 
    public ProducerMode getMode() {
       return mode;
@@ -72,6 +80,24 @@ public class ProducerConfig {
     */
    public void setSendMsgLeftLastSession(boolean sendMsgLeftLastSession) {
       this.sendMsgLeftLastSession = sendMsgLeftLastSession;
+   }
+
+   /**
+    * 仅供Spring使用
+    * 
+    * @return
+    */
+   public String getProducerModeString() {
+      return producerModeString;
+   }
+
+   /**
+    * 仅供Spring使用
+    * 
+    * @param producerModeString
+    */
+   public void setProducerModeString(String producerModeString) {
+      this.producerModeString = producerModeString;
    }
 
 }

@@ -1,6 +1,7 @@
 package com.dianping.swallow.producer.impl.internal;
 
 import java.io.IOException;
+import java.security.InvalidParameterException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,13 +18,12 @@ import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.util.NameCheckUtil;
 import com.dianping.swallow.common.internal.util.ZipUtil;
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.common.producer.exceptions.NullContentException;
 import com.dianping.swallow.common.producer.exceptions.SendFailedException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
-import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerHandler;
+import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 
 /**
  * 实现Producer接口的类
@@ -56,7 +56,7 @@ public class ProducerImpl implements Producer {
     * @param pOptions producer配置选项
     * @throws TopicNameInvalidException topic名称非法时抛出此异常
     */
-   public ProducerImpl(ProducerFactory producerFactory, Destination dest, ProducerConfig config)
+   public ProducerImpl(ProducerFactoryImpl producerFactory, Destination dest, ProducerConfig config)
          throws TopicNameInvalidException {
 
       //初始化Producer目的地
@@ -137,7 +137,7 @@ public class ProducerImpl implements Producer {
    public String sendMessage(Object content, Map<String, String> properties, String messageType)
          throws SendFailedException {
       if (content == null) {
-         throw new NullContentException();
+         throw new InvalidParameterException("Message content can not be null.");
       }
       String ret = null;
       //根据content生成SwallowMessage
