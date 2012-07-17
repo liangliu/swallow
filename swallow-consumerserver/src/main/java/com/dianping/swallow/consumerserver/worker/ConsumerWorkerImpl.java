@@ -42,15 +42,17 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       return connectedChannels;
    }
 
-   private BlockingQueue<Message>                 messageQueue      = null;
+   private BlockingQueue<Message> messageQueue = null;
+
    public void setMessageQueue(BlockingQueue<Message> messageQueue) {
       this.messageQueue = messageQueue;
    }
 
-   private AckDAO                                 ackDao;
-   private SwallowBuffer                          swallowBuffer;
-   private MessageDAO                             messageDao;
-   private Queue<PktMessage>                      cachedMessages    = new ConcurrentLinkedQueue<PktMessage>();
+   private AckDAO            ackDao;
+   private SwallowBuffer     swallowBuffer;
+   private MessageDAO        messageDao;
+   private Queue<PktMessage> cachedMessages = new ConcurrentLinkedQueue<PktMessage>();
+
    public Queue<PktMessage> getCachedMessages() {
       return cachedMessages;
    }
@@ -64,6 +66,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    private PullStrategy                           pullStgy;
    private ConfigManager                          configManager;
    private Map<Channel, Map<PktMessage, Boolean>> waitAckMessages   = new ConcurrentHashMap<Channel, Map<PktMessage, Boolean>>();
+
    public Map<Channel, Map<PktMessage, Boolean>> getWaitAckMessages() {
       return waitAckMessages;
    }
@@ -98,40 +101,33 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       ackExecutor.execute(new Runnable() {
          @Override
          public void run() {
-            while (true) {
-               try {
-                  updateWaitAckMessages(channel, ackedMsgId);
-                  updateMaxMessageId(ackedMsgId, channel);
-                  break;
-               } catch (Exception e) {
-                  LOG.error("updateMaxMessageId wrong!", e);
-                  try {
-                     Thread.sleep(configManager.getRetryIntervalWhenMongoException());
-                  } catch (InterruptedException e1) {
-                     break;
-                  }
+            try {
+               updateWaitAckMessages(channel, ackedMsgId);
+               updateMaxMessageId(ackedMsgId, channel);
+               if (ACKHandlerType.CLOSE_CHANNEL.equals(type)) {
+                  handleChannelDisconnect(channel);
+               } else if (ACKHandlerType.SEND_MESSAGE.equals(type)) {
+                  freeChannels.add(channel);
                }
-            }
-            if (ACKHandlerType.CLOSE_CHANNEL.equals(type)) {
-               handleChannelDisconnect(channel);
-            } else if (ACKHandlerType.SEND_MESSAGE.equals(type)) {
-               freeChannels.add(channel);
+            } catch (Exception e) {
+               LOG.error("handleAck wrong!", e);
             }
          }
       });
 
    }
 
+   //只有AT_LEAST_ONCE模式的consumer需要更新等待ack的message列表，AT_MOST_ONCE没有等待ack的message列表
    private void updateWaitAckMessages(Channel channel, Long ackedMsgId) {
       if (ConsumerType.AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
          Map<PktMessage, Boolean> messages = waitAckMessages.get(channel);
-         if(messages != null){
+         if (messages != null) {
             SwallowMessage swallowMsg = new SwallowMessage();
             swallowMsg.setMessageId(ackedMsgId);
             PktMessage mockPktMessage = new PktMessage(consumerInfo.getConsumerId().getDest(), swallowMsg);
             messages.remove(mockPktMessage);
          }
-         
+
       }
 
    }
@@ -227,14 +223,19 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
             if (channel.isConnected()) {
                //创建消息缓冲QUEUE
                if (messageQueue == null) {
-                  long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid, channel);
-                  messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage,
-                        messageFilter);
+                  try {
+                     long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid, channel);
+                     messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage,
+                           messageFilter);
+                  } catch (Exception e) {
+                     LOG.error("sendMessageByPollFreeChannelQueue error!", e);
+                     freeChannels.add(channel);
+                     continue;
+                  }
                }
                if (cachedMessages.isEmpty()) {
                   putMsg2CachedMsgFromMsgQueue();
                }
-               //收到close命令后,可能没有取得消息,此时,cachedMessages仍然可能为null
                if (!cachedMessages.isEmpty()) {
                   sendMsgFromCachedMessages(channel);
                }
@@ -252,9 +253,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       Long messageId = preparedMessage.getContent().getMessageId();
       //如果是AT_MOST模式，收到ACK之前更新messageId的类型
       if (ConsumerType.AT_MOST_ONCE.equals(consumerInfo.getConsumerType())) {
-
          ackDao.add(topicName, consumerid, messageId, connectedChannels.get(channel));
-
       }
       try {
          channel.write(preparedMessage);
@@ -276,6 +275,9 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    private void putMsg2CachedMsgFromMsgQueue() throws InterruptedException {
       SwallowMessage message = null;
+      if (messageQueue.isEmpty()) {
+         return;
+      }
       while (getMessageisAlive) {
          //从blockQueue中获取消息
          message = (SwallowMessage) messageQueue.poll(pullStgy.fail(false), TimeUnit.MILLISECONDS);
@@ -284,6 +286,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
             break;
          }
       }
+      //收到close命令后,可能没有取得消息,此时,message仍然可能为null
       if (message != null) {
          cachedMessages.add(new PktMessage(consumerInfo.getConsumerId().getDest(), message));
       }

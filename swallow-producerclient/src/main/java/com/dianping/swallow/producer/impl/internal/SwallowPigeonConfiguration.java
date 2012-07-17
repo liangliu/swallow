@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.lion.EnvZooKeeperConfig;
 
-public final class SwallowPigeonConfiguration {
+public class SwallowPigeonConfiguration {
 
    private static final Logger logger               = LoggerFactory.getLogger(SwallowPigeonConfiguration.class);
 
@@ -26,8 +26,8 @@ public final class SwallowPigeonConfiguration {
    private String              serialize            = DEFAULT_SERIALIZE;
    private int                 timeout              = DEFAULT_TIMEOUT;
    private boolean             useLion              = DEFAULT_IS_USE_LION;
-   private String              hosts                = DEFAULT_HOSTS;
-   private String              weights              = DEFAULT_WEIGHTS;
+   protected String            hosts                = DEFAULT_HOSTS;
+   protected String            weights              = DEFAULT_WEIGHTS;
 
    public SwallowPigeonConfiguration() {
       //默认配置
@@ -109,7 +109,17 @@ public final class SwallowPigeonConfiguration {
       checkUseLion();
    }
 
-   private void checkSerialize() {
+   /**
+    * 仅供Spring使用
+    */
+   public void init() {
+      checkHostsAndWeights();
+      checkSerialize();
+      checkTimeout();
+      checkUseLion();
+   }
+
+   protected void checkSerialize() {
       //检查序列化方式
       if (!"hessian".equals(serialize) && !"java".equals(serialize) && !"protobuf".equals(serialize)
             && !"thrift".equals(serialize)) {
@@ -118,10 +128,10 @@ public final class SwallowPigeonConfiguration {
       }
    }
 
-   private void checkHostsAndWeights() {
+   protected void checkHostsAndWeights() {
       //检查hosts和weights
-      String[] hostSet = hosts.trim().split(",");
-      String[] weightSet = weights.trim().split(",");
+      String[] hostSet = getHosts().trim().split(",");
+      String[] weightSet = getWeights().trim().split(",");
       String realHosts = "";
       String realWeights = "";
       String host;
@@ -141,21 +151,21 @@ public final class SwallowPigeonConfiguration {
          realWeights += weight + ",";
       }
       if (realHosts == "") {
-         hosts = DEFAULT_HOSTS;
-         weights = DEFAULT_WEIGHTS;
+         this.hosts = DEFAULT_HOSTS;
+         this.weights = DEFAULT_WEIGHTS;
       } else {
-         hosts = realHosts.substring(0, realHosts.length() - 1);
-         weights = realWeights.substring(0, realWeights.length() - 1);
+         this.hosts = realHosts.substring(0, realHosts.length() - 1);
+         this.weights = realWeights.substring(0, realWeights.length() - 1);
       }
    }
 
-   private void checkTimeout() {
+   protected void checkTimeout() {
       //检查Timeout
       if (timeout <= 0)
          timeout = DEFAULT_TIMEOUT;
    }
 
-   private void checkUseLion() {
+   protected void checkUseLion() {
       //检查是否使用Lion
       String env = EnvZooKeeperConfig.getEnv();
       if (!"dev".equals(env)) {
@@ -212,9 +222,5 @@ public final class SwallowPigeonConfiguration {
       this.weights = weights;
       checkHostsAndWeights();
    }
-   
-   public static void main(String[] args) {
-      SwallowPigeonConfiguration config = new SwallowPigeonConfiguration("wrongPigeon.properties");
-      System.out.println(config.isUseLion());
-   }
+
 }

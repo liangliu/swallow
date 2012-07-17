@@ -43,7 +43,6 @@ import com.dianping.swallow.common.producer.exceptions.SendFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.ProducerConfig;
-import com.dianping.swallow.producer.ProducerFactory;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 import com.dianping.swallow.producer.impl.internal.SwallowPigeonConfiguration;
@@ -187,7 +186,7 @@ public class ProducerTest {
       when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(new ServerDaoException(null));
 
       //Normal ProducerFactory mock
-      ProducerFactory normalProducerFactory = mock(ProducerFactory.class);
+      ProducerFactoryImpl normalProducerFactory = mock(ProducerFactoryImpl.class);
       when(normalProducerFactory.getRemoteService()).thenReturn(normalRemoteServiceMock);
       when(normalProducerFactory.getRemoteService()).thenReturn(normalRemoteServiceMock);
       when(normalProducerFactory.getProducerIP()).thenReturn("127.0.0.1");
@@ -195,7 +194,7 @@ public class ProducerTest {
 
 
       //Exception ProducerFactory mock
-      ProducerFactory exceptionProducerFactory = mock(ProducerFactory.class);
+      ProducerFactoryImpl exceptionProducerFactory = mock(ProducerFactoryImpl.class);
       when(exceptionProducerFactory.getRemoteService()).thenReturn(exceptionRemoteServiceMock);
       when(exceptionProducerFactory.getProducerIP()).thenReturn("127.0.0.1");
       when(exceptionProducerFactory.getProducerVersion()).thenReturn("0.6.0");
@@ -280,13 +279,13 @@ public class ProducerTest {
       when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(new ServerDaoException(null));
 
       //Normal ProducerFactory mock
-      ProducerFactory normalProducerFactory = mock(ProducerFactory.class);
+      ProducerFactoryImpl normalProducerFactory = mock(ProducerFactoryImpl.class);
       when(normalProducerFactory.getRemoteService()).thenReturn(normalRemoteServiceMock);
       when(normalProducerFactory.getProducerIP()).thenReturn("127.0.0.1");
       when(normalProducerFactory.getProducerVersion()).thenReturn("0.6.0");
 
       //Exception ProducerFactory mock
-      ProducerFactory exceptionProducerFactory = mock(ProducerFactory.class);
+      ProducerFactoryImpl exceptionProducerFactory = mock(ProducerFactoryImpl.class);
       when(exceptionProducerFactory.getRemoteService()).thenReturn(exceptionRemoteServiceMock);
       when(exceptionProducerFactory.getProducerIP()).thenReturn("127.0.0.1");
       when(exceptionProducerFactory.getProducerVersion()).thenReturn("0.6.0");

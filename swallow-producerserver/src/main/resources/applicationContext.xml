@@ -31,7 +31,7 @@
 		class="com.dianping.swallow.producerserver.impl.ProducerServerForClient"
 		init-method="start">
 		<property name="port" value="4000" />
-		<property name="remoteServiceName" value="remoteService" />
+		<property name="remoteServiceName" value="http://service.dianping.com/swallowService/producerService_1.0.0" />
 	</bean>
 
 	<bean id="producerServerForText"
