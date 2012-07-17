@@ -320,7 +320,7 @@ public class MongoClient implements ConfigChangeListener {
     * </p>
     */
    @Override
-   public void onConfigChange(String key, String value) {
+   public synchronized void onConfigChange(String key, String value) {
       if (LOG.isInfoEnabled()) {
          LOG.info("onChange() called.");
       }

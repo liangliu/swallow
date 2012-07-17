@@ -43,18 +43,14 @@
 			<groupId>com.dianping.dpsf</groupId>
 			<artifactId>dpsf-net</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>com.dianping.lion</groupId>
 			<artifactId>lion-client</artifactId>
-			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.lion</groupId>
 			<artifactId>lion-${env}</artifactId>
-			<optional>true</optional>
 		</dependency>
-		
 		<!-- 监控 -->
 		<dependency>
 			<groupId>com.dianping.cat</groupId>
