@@ -37,10 +37,26 @@ public class SlaveBootStrap {
    private static volatile boolean closed = false;
    
    private static void closeNettyRelatedResource() {
-      MessageServerHandler.getChannelGroup().unbind();
-      MessageServerHandler.getChannelGroup().close();
-      MessageServerHandler.getChannelGroup().clear();
-      bootstrap.releaseExternalResources();
+      try {
+         LOG.info("MessageServerHandler.getChannelGroup().unbind()-started");
+         MessageServerHandler.getChannelGroup().unbind().await();
+         LOG.info("MessageServerHandler.getChannelGroup().unbind()-finished");
+
+         LOG.info("MessageServerHandler.getChannelGroup().close()-started");
+         MessageServerHandler.getChannelGroup().close().await();
+         LOG.info("MessageServerHandler.getChannelGroup().close()-finished");
+
+         LOG.info("MessageServerHandler.getChannelGroup().clear()-started");
+         MessageServerHandler.getChannelGroup().clear();
+         LOG.info("MessageServerHandler.getChannelGroup().unbind()-finished");
+
+         LOG.info("bootstrap.releaseExternalResources()-started");
+         bootstrap.releaseExternalResources();
+         LOG.info("bootstrap.releaseExternalResources()-finished");
+      } catch (InterruptedException e) {
+         LOG.error("Interrupted when closeNettyRelatedResource()", e);
+         Thread.currentThread().interrupt();
+      }
    }
    
    /**
@@ -67,7 +83,9 @@ public class SlaveBootStrap {
          @Override
          public void onClose() {
             closed = true;
+            LOG.info("consumerWorkerManager.close()-started");
             consumerWorkerManager.close();
+            LOG.info("consumerWorkerManager.close()-finished");
             closeNettyRelatedResource();
             mainThread.interrupt();
          }

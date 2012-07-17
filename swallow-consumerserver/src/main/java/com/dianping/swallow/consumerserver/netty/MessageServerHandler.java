@@ -19,6 +19,7 @@ import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
 import com.dianping.swallow.common.internal.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
+import com.dianping.swallow.common.internal.util.NameCheckUtil;
 import com.dianping.swallow.consumerserver.impl.MongoHeartbeater;
 import com.dianping.swallow.consumerserver.worker.ConsumerId;
 import com.dianping.swallow.consumerserver.worker.ConsumerInfo;
@@ -58,12 +59,18 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
       final Channel channel = e.getChannel();
       if (e.getMessage() instanceof PktConsumerMessage) {
          PktConsumerMessage consumerPacket = (PktConsumerMessage) e.getMessage();
+         if (!NameCheckUtil.isTopicNameValid(consumerPacket.getDest().getName())) {
+            LOG.error("TopicName inValid from " + channel.getRemoteAddress());
+         }
          if (ConsumerMessageType.GREET.equals(consumerPacket.getType())) {
-            clientThreadCount = consumerPacket.getThreadCount();
+            clientThreadCount = consumerPacket.getThreadCount();            
             if(consumerPacket.getConsumerId() == null){
                consumerId = new ConsumerId(fakeCid(), consumerPacket.getDest());
                consumerInfo = new ConsumerInfo(consumerId, ConsumerType.NON_DURABLE);
             }else{
+               if(!NameCheckUtil.isConsumerIdValid(consumerPacket.getConsumerId())){
+                  LOG.error("ConsumerId inValid from " + channel.getRemoteAddress());
+               }
                consumerId = new ConsumerId(consumerPacket.getConsumerId(), consumerPacket.getDest());
                consumerInfo = new ConsumerInfo(consumerId, consumerPacket.getConsumerType());
             }     
