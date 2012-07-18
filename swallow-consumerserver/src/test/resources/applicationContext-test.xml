@@ -5,9 +5,9 @@
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-3.0.xsd"
-           default-autowire="byName">
+           default-autowire="byName" >
 
-<bean id="consumerWorkerManager"
+<bean id="consumerWorkerManager" scope="prototype"
 		class="com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager">
 	</bean>
 	
