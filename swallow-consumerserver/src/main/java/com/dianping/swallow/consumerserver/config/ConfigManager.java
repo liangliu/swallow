@@ -128,28 +128,28 @@ public class ConfigManager {
                   try {
                      field.set(this, Integer.parseInt(props.getProperty(key).trim()));
                   } catch (Exception e) {
-                     LOG.error("cat not parse property " + key, e);
+                     LOG.error("can not parse property " + key, e);
                      continue;
                   }
                } else if (field.getType().equals(Long.TYPE)) {
                   try {
                      field.set(this, Long.parseLong(props.getProperty(key).trim()));
                   } catch (Exception e) {
-                     LOG.error("cat not set property " + key, e);
+                     LOG.error("can not set property " + key, e);
                      continue;
                   }
                } else if (field.getType().equals(String.class)) {
                   try {
                      field.set(this, props.getProperty(key).trim());
                   } catch (Exception e) {
-                     LOG.error("cat not set property " + key, e);
+                     LOG.error("can not set property " + key, e);
                      continue;
                   }
                } else {
                   try {
                      field.set(this, Boolean.parseBoolean(props.getProperty(key).trim()));
                   } catch (Exception e) {
-                     LOG.error("cat not set property " + key, e);
+                     LOG.error("can not set property " + key, e);
                      continue;
                   }
                }

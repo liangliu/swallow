@@ -1,7 +1,5 @@
 package com.dianping.swallow.producer.impl.internal;
 
-import java.io.IOException;
-import java.security.InvalidParameterException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -186,9 +184,8 @@ public class ProducerImpl implements Producer {
 
       //使用CAT监控处理消息的时间
       Transaction t = Cat.getProducer().newTransaction("Message", destination.getName());
+      Event event = Cat.getProducer().newEvent("Message", "Payload");
       try {
-         Event event = Cat.getProducer().newEvent("Message", "Payload");
-
          //根据content生成SwallowMessage
          swallowMsg = new SwallowMessage();
          swallowMsg.setContent(content);
@@ -216,8 +213,6 @@ public class ProducerImpl implements Producer {
          }
          //CAT
          event.addData(swallowMsg.toKeyValuePairs());
-         event.setStatus(Event.SUCCESS);
-         event.complete();
 
          //构造packet
          PktMessage pktMessage = new PktMessage(destination, swallowMsg);
@@ -233,18 +228,22 @@ public class ProducerImpl implements Producer {
                break;
          }
          //CAT
+         event.setStatus(Event.SUCCESS);
          t.setStatus(Transaction.SUCCESS);
 
          return ret;
       } catch (SendFailedException e) {
+         event.setStatus(e);
          t.setStatus(e);
          Cat.getProducer().logError(e);
          throw e;
       } catch (RuntimeException e) {
+         event.setStatus(e);
          t.setStatus(e);
          Cat.getProducer().logError(e);
          throw e;
       } finally {
+         event.complete();
          t.complete();
       }
 

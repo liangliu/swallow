@@ -28,7 +28,6 @@ public class MongoDBMessageRetriever implements MessageRetriever {
       List<SwallowMessage> messages;
       messages = messageDAO.getMessagesGreaterThan(topicName, messageId, fetchSize);
       //过滤type
-      //TODO refactor filter logic to enable different filter type
       if (messageFilter != null && messageFilter.getType() == FilterType.InSet && messageFilter.getParam() != null
             && !messageFilter.getParam().isEmpty() && messages != null) {
          Iterator<SwallowMessage> iterator = messages.iterator();

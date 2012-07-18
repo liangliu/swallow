@@ -85,7 +85,7 @@ class MongoConfig {
             try {
                field.set(this, Boolean.parseBoolean(props.getProperty(key).trim()));
             } catch (Exception e) {
-               LOG.error("cat not set property " + key, e);
+               LOG.error("can not set property " + key, e);
                continue;
             }
          }
