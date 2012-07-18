@@ -116,16 +116,11 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    }
 
    @Override
-   public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
-      
-      //只有IOException的时候才需要处理。
-      if (e.getCause() instanceof IOException) {
+   public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {     
          removeChannel(e);
-         LOG.error("Client disconnected!", e.getCause());
+         LOG.error("Client disconnected from swallowC!", e.getCause());
          e.getChannel().close();
-      }else{
-         LOG.info("something exception happened!", e.getCause());
-      }
+
    }
    
    @Override
