@@ -1,5 +1,8 @@
 package com.dianping.swallow.producer.impl.internal;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,35 +30,30 @@ public class HandlerAsynchroMode implements ProducerHandler {
    private static final int                      DEFAULT_FILEQUEUE_SIZE = 512 * 1024 * 1024;                        //默认的filequeue切片大小，512MB
    private static final int                      DELAY_BASE_MULTI       = 5;
 
-//   private static Map<String, FileQueue<Packet>> messageQueues          = new HashMap<String, FileQueue<Packet>>();
+   private static Map<String, FileQueue<Packet>> messageQueues          = new HashMap<String, FileQueue<Packet>>();
 
    private final ProducerImpl                    producer;
    private final FileQueue<Packet>               messageQueue;                                                      //filequeue
    private final int                             delayBase;
 
-//   private static FileQueue<Packet> getMessageQueue(String topicName) {
-//      if (messageQueues.containsKey(topicName))
-//         return messageQueues.get(topicName);
-//
-//      FileQueueConfigHolder fileQueueConfig = new FileQueueConfigHolder();
-//      fileQueueConfig.setMaxDataFileSize(DEFAULT_FILEQUEUE_SIZE);
-//      FileQueue<Packet> newQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, topicName, producer
-//            .getProducerConfig().isSendMsgLeftLastSession());
-//   }
+   private synchronized static FileQueue<Packet> getMessageQueue(String topicName, boolean SendMsgLeftLastSessions) {
+      //如果Map里已经存在该filequeue，在要求“不续传”的情况下， 忽略该请求
+      if (messageQueues.containsKey(topicName))
+         return messageQueues.get(topicName);
+
+      FileQueueConfigHolder fileQueueConfig = new FileQueueConfigHolder();
+      fileQueueConfig.setMaxDataFileSize(DEFAULT_FILEQUEUE_SIZE);
+      //如果Map里不存在该filequeue，此handler又要求将之前的文件删除，则删除
+      FileQueue<Packet> newQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, topicName, SendMsgLeftLastSessions);
+      messageQueues.put(topicName, newQueue);
+      return messageQueues.get(topicName);
+   }
 
    //构造函数
    public HandlerAsynchroMode(ProducerImpl producer) {
       this.producer = producer;
       delayBase = producer.getRemoteServiceTimeout();
-
-      FileQueueConfigHolder fileQueueConfig = new FileQueueConfigHolder();
-      fileQueueConfig.setMaxDataFileSize(DEFAULT_FILEQUEUE_SIZE);
-      //TODO file queue 不允许两个实例指向同一个文件
-      //messageQueue = FileQueueHolder.get(..., producer.getDestination().getName(), ...);
-      //synchronized FileQueueHolder.get(){if(exist){return}else{create new}}
-      messageQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, producer.getDestination().getName(), producer
-            .getProducerConfig().isSendMsgLeftLastSession());
-
+      messageQueue = getMessageQueue(producer.getDestination().getName(), producer.getProducerConfig().isSendMsgLeftLastSession());
       this.start();
    }
 
