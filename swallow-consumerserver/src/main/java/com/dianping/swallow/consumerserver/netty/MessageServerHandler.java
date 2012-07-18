@@ -58,11 +58,11 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
       //收到PktConsumerACK，按照原流程解析
       final Channel channel = e.getChannel();
       if (e.getMessage() instanceof PktConsumerMessage) {
-         PktConsumerMessage consumerPacket = (PktConsumerMessage) e.getMessage();
-         if (!NameCheckUtil.isTopicNameValid(consumerPacket.getDest().getName())) {
-            LOG.error("TopicName inValid from " + channel.getRemoteAddress());
-         }
+         PktConsumerMessage consumerPacket = (PktConsumerMessage) e.getMessage();        
          if (ConsumerMessageType.GREET.equals(consumerPacket.getType())) {
+            if (!NameCheckUtil.isTopicNameValid(consumerPacket.getDest().getName())) {
+               LOG.error("TopicName inValid from " + channel.getRemoteAddress());
+            }
             clientThreadCount = consumerPacket.getThreadCount();            
             if(consumerPacket.getConsumerId() == null){
                consumerId = new ConsumerId(fakeCid(), consumerPacket.getDest());
