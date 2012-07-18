@@ -21,7 +21,6 @@ import java.util.concurrent.Executors;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.SendFailedException;
-import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerFactory;
@@ -77,26 +76,14 @@ public class ProducerMultipleThread {
       config.setSendMsgLeftLastSession(false);//*是否续传，默认为否
 
       //获取Producer实例（异步模式）
-      Producer producerAsync = null;
-      try {
-         producerAsync = producerFactory.createProducer(Destination.topic("Example"), config);
-      } catch (TopicNameInvalidException e) {
-         //TopicName非法则抛出此异常
-         e.printStackTrace();
-      }
+      Producer producerAsync = producerFactory.createProducer(Destination.topic("Example"), config);
 
       //重新配置Producer选项
       config.setMode(ProducerMode.SYNC_MODE);
       config.setZipped(true);
 
       //获取Producer实例（同步模式）
-      Producer producerSync = null;
-      try {
-         producerSync = producerFactory.createProducer(Destination.topic("Example"), config);
-      } catch (TopicNameInvalidException e) {
-         //TopicName非法则抛出此异常
-         e.printStackTrace();
-      }
+      Producer producerSync = producerFactory.createProducer(Destination.topic("Example"), config);
       if (producerAsync != null && producerSync != null) {
          threadPool.execute(new ExampleTask(producerAsync));
          threadPool.execute(new ExampleTask(producerSync));

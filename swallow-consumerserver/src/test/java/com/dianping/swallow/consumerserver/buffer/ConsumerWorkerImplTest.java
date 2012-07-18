@@ -5,10 +5,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -65,7 +68,7 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
 //   }
    private void mockDao(){
       SwallowBuffer swallowBuffer = mock(SwallowBuffer.class);
-      BlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>();
+      CloseableBlockingQueue<Message> messageQueue = new MockedCloseableBlockingQueue<Message>();
       
       makeMessages(messageQueue);
 //      when(swallowBuffer.createMessageQueue("xx", "dp1", 123456L,
@@ -237,5 +240,17 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
 //         maxMessageId = consumerWorker.getMessageIdOfTailMessage("xx","meiyoude",channel);
 //         Assert.assertTrue(maxMessageId>0);
 //      }
+   class MockedCloseableBlockingQueue<E> extends LinkedBlockingQueue<E> implements CloseableBlockingQueue<E> {
+      private static final long serialVersionUID = 1L;
+
+      @Override
+      public void close() {
+      }
+
+      @Override
+      public void isClosed() {
+      }
+   }
+
 
 }

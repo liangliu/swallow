@@ -1,5 +1,6 @@
 package com.dianping.swallow.producerserver.impl;
 
+import java.io.IOException;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -99,8 +100,10 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
 
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-      logger.error("[Netty]:[Unexpected exception from downstream.]", e.getCause());
-      //TODO 判断是否是IOException，是则关闭，否则大日志，不用关闭
-      e.getChannel().close();
+      if (e.getCause() instanceof IOException) {
+         e.getChannel().close();
+      } else {
+         logger.error("Unexpected exception from downstream.", e.getCause());
+      }
    }
 }

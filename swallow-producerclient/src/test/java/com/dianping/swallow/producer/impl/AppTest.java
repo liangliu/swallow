@@ -33,7 +33,7 @@ public class AppTest {
       public void run() {
          //设置Producer选项
          ProducerConfig config = new ProducerConfig();
-         config.setMode(ProducerMode.SYNC_MODE);
+         config.setMode(ProducerMode.ASYNC_MODE);
          config.setRetryTimes(3);
          config.setZipped(true);
          config.setThreadPoolSize(3);
