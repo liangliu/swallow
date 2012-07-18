@@ -1,7 +1,5 @@
 package com.dianping.swallow.producer.impl.internal;
 
-import java.io.IOException;
-import java.security.InvalidParameterException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,16 +13,12 @@ import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
-import com.dianping.swallow.common.internal.util.NameCheckUtil;
 import com.dianping.swallow.common.internal.util.ZipUtil;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.SendFailedException;
-import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerHandler;
-import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
-import com.dianping.swallow.producer.spring.ProducerFactoryImplSpring;
 
 /**
  * 实现Producer接口的类
@@ -36,18 +30,13 @@ public class ProducerImpl implements Producer {
    private static final Logger          logger = Logger.getLogger(ProducerImpl.class); //日志
 
    //变量定义
-   private final ProducerSwallowService remoteService;
-   //远程调用对象
-   private final ProducerHandler        producerHandler;
-
+   private final Destination            destination;                                  //Producer消息目的
+   private final ProducerConfig         producerConfig;
    private final String                 producerIP;                                   //Producer IP地址
    private final String                 producerVersion;                              //Producer版本号
-
-   //Producer配置默认值
-   private final ProducerConfig         config;
-
-   //Producer配置变量
-   private final Destination            destination;                                  //Producer消息目的
+   private final ProducerSwallowService remoteService;
+   private final int                    remoteServiceTimeout;
+   private final ProducerHandler        producerHandler;
 
    /**
     * 构造函数
@@ -57,65 +46,24 @@ public class ProducerImpl implements Producer {
     * @param pOptions producer配置选项
     * @throws TopicNameInvalidException topic名称非法时抛出此异常
     */
-   public ProducerImpl(ProducerFactoryImpl producerFactory, Destination dest, ProducerConfig config)
-         throws TopicNameInvalidException {
-
-      //初始化Producer目的地
-      if (!NameCheckUtil.isTopicNameValid(dest.getName()))
-         throw new TopicNameInvalidException();
-      destination = dest;
-      if (config != null) {
-         this.config = config;
+   public ProducerImpl(Destination destination, ProducerConfig producerConfig, String producerIP,
+                       String producerVersion, ProducerSwallowService remoteService, int remoteServiceTimeout) {
+      if (producerConfig != null) {
+         this.producerConfig = producerConfig;
       } else {
-         this.config = new ProducerConfig();
+         logger.warn("config is null, use default settings.");
+         this.producerConfig = new ProducerConfig();
       }
 
       //设置Producer的IP地址及版本号,设置远程调用
-      this.producerIP = producerFactory.getProducerIP();
-      this.producerVersion = producerFactory.getProducerVersion();
-      this.remoteService = producerFactory.getRemoteService();
+      this.destination = destination;
+      this.producerIP = producerIP;
+      this.producerVersion = producerVersion;
+      this.remoteService = remoteService;
+      this.remoteServiceTimeout = remoteServiceTimeout;
 
       //设置Producer工作模式
-      switch (this.config.getMode()) {
-         case SYNC_MODE:
-         default:
-            producerHandler = new HandlerSynchroMode(this);
-            break;
-         case ASYNC_MODE:
-            producerHandler = new HandlerAsynchroMode(this);
-            break;
-      }
-   }
-
-   //TODO no need
-   /**
-    * 仅供Spring使用的构造函数
-    * 
-    * @param producerFactory Producer工厂类对象
-    * @param dest Topic的Destination
-    * @param pOptions producer配置选项
-    * @throws TopicNameInvalidException topic名称非法时抛出此异常
-    */
-   public ProducerImpl(ProducerFactoryImplSpring producerFactory, Destination dest, ProducerConfig config)
-         throws TopicNameInvalidException {
-
-      //初始化Producer目的地
-      if (!NameCheckUtil.isTopicNameValid(dest.getName()))
-         throw new TopicNameInvalidException();
-      destination = dest;
-      if (config != null) {
-         this.config = config;
-      } else {
-         this.config = new ProducerConfig();
-      }
-
-      //设置Producer的IP地址及版本号,设置远程调用
-      this.producerIP = producerFactory.getProducerIP();
-      this.producerVersion = producerFactory.getProducerVersion();
-      this.remoteService = producerFactory.getRemoteService();
-
-      //设置Producer工作模式
-      switch (this.config.getMode()) {
+      switch (this.producerConfig.getMode()) {
          case SYNC_MODE:
          default:
             producerHandler = new HandlerSynchroMode(this);
@@ -179,7 +127,6 @@ public class ProducerImpl implements Producer {
       if (content == null) {
          throw new IllegalArgumentException("Message content can not be null.");
       }
-      String ret = null;
       //根据content生成SwallowMessage
       SwallowMessage swallowMsg = null;
       Map<String, String> zipProperties = null;
@@ -203,13 +150,13 @@ public class ProducerImpl implements Producer {
          //压缩选项为真：对通过SwallowMessage类转换过的json字符串进行压缩，压缩成功时将compress=gzip写入InternalProperties，
          //               压缩失败时将compress=failed写入InternalProperties
          //压缩选项为假：不做任何操作，InternalProperties中将不存在key为zip的项
-         if (config.isZipped()) {
+         if (producerConfig.isZipped()) {
             zipProperties = new HashMap<String, String>();
             try {
                swallowMsg.setContent(ZipUtil.zip(swallowMsg.getContent()));
                zipProperties.put("compress", "gzip");
             } catch (Exception e) {
-               logger.warn("[Compress message failed.][content=" + swallowMsg.getContent() + "]", e);
+               logger.warn("Compress message failed.Content=" + swallowMsg.getContent(), e);
                zipProperties.put("compress", "failed");
             }
             swallowMsg.setInternalProperties(zipProperties);
@@ -221,7 +168,9 @@ public class ProducerImpl implements Producer {
 
          //构造packet
          PktMessage pktMessage = new PktMessage(destination, swallowMsg);
-         switch (config.getMode()) {
+
+         String ret = null;
+         switch (producerConfig.getMode()) {
             case SYNC_MODE://同步模式
                PktSwallowPACK pktSwallowPACK = (PktSwallowPACK) producerHandler.doSendMsg(pktMessage);
                if (pktSwallowPACK != null) {
@@ -261,7 +210,7 @@ public class ProducerImpl implements Producer {
     * @return 返回ProducerConfig
     */
    public ProducerConfig getProducerConfig() {
-      return config;
+      return producerConfig;
    }
 
    /**
@@ -269,5 +218,9 @@ public class ProducerImpl implements Producer {
     */
    public Destination getDestination() {
       return destination;
+   }
+
+   public int getRemoteServiceTimeout() {
+      return remoteServiceTimeout;
    }
 }

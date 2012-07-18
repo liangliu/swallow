@@ -1,39 +1,18 @@
 package com.dianping.swallow.producer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ProducerConfig {
+   Logger                   logger                 = LoggerFactory.getLogger(ProducerConfig.class);
 
-   private ProducerMode mode                   = ProducerMode.SYNC_MODE;
-   private String       producerModeString     = "sync";
-   private int          retryTimes             = 5;
-   private boolean      zipped                 = false;
-   private int          threadPoolSize         = 5;
-   private boolean      sendMsgLeftLastSession = false;
+   private static final int MAX_THREADPOOL_SIZE    = 100;
 
-   //TODO not necessary
-   /**
-    * 供Spring配置使用
-    */
-   public void init() {
-      mode = ("async".equals(producerModeString)) ? ProducerMode.ASYNC_MODE : ProducerMode.SYNC_MODE;
-   }
-
-   /**
-    * 仅供Spring使用
-    * 
-    * @return
-    */
-   public String getProducerModeString() {
-      return producerModeString;
-   }
-
-   /**
-    * 仅供Spring使用
-    * 
-    * @param producerModeString
-    */
-   public void setProducerModeString(String producerModeString) {
-      this.producerModeString = producerModeString;
-   }
+   private ProducerMode     mode                   = ProducerMode.SYNC_MODE;
+   private int              retryTimes             = 5;
+   private boolean          zipped                 = false;
+   private int              threadPoolSize         = 5;
+   private boolean          sendMsgLeftLastSession = false;
 
    public ProducerMode getMode() {
       return mode;
@@ -58,6 +37,10 @@ public class ProducerConfig {
     * @param retryTimes
     */
    public void setRetryTimes(int retryTimes) {
+      if (retryTimes < 0) {
+         logger.warn("invalid retryTimes, use default value: " + this.retryTimes + ".");
+         return;
+      }
       this.retryTimes = retryTimes;
    }
 
@@ -85,6 +68,11 @@ public class ProducerConfig {
     * @param threadPoolSize
     */
    public void setThreadPoolSize(int threadPoolSize) {
+      if (threadPoolSize <= 0 || threadPoolSize > MAX_THREADPOOL_SIZE) {
+         logger.warn("invalid threadPoolSize, must between 1 - " + MAX_THREADPOOL_SIZE + ", use default value: "
+               + this.threadPoolSize + ".");
+         return;
+      }
       this.threadPoolSize = threadPoolSize;
    }
 
@@ -101,4 +89,15 @@ public class ProducerConfig {
       this.sendMsgLeftLastSession = sendMsgLeftLastSession;
    }
 
+   @Override
+   public String toString() {
+      return "Mode="
+            + getMode()
+            + "; RetryTimes="
+            + getRetryTimes()
+            + "; Zipped="
+            + isZipped()
+            + (getMode() == ProducerMode.ASYNC_MODE ? "; ThreadPoolSize=" + getThreadPoolSize()
+                  + "; SendMsgLeftLastSession=" + isSendMsgLeftLastSession() : "");
+   }
 }
