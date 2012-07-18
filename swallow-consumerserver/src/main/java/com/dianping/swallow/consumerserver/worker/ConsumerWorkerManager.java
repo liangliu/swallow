@@ -37,7 +37,8 @@ public class ConsumerWorkerManager {
    private volatile boolean closed = false;
    
    public void setAckDAO(AckDAO ackDAO) {
-      this.ackDAO = ProxyUtil.createMongoDaoProxyWithRetryMechanism(ackDAO, configManager.getRetryIntervalWhenMongoException());
+      //this.ackDAO = ProxyUtil.createMongoDaoProxyWithRetryMechanism(ackDAO, configManager.getRetryIntervalWhenMongoException());
+      this.ackDAO = ackDAO;
    }
 
    public MQThreadFactory getThreadFactory() {
@@ -53,7 +54,8 @@ public class ConsumerWorkerManager {
    }
 
    public void setMessageDAO(MessageDAO messageDAO) {
-      this.messageDAO = ProxyUtil.createMongoDaoProxyWithRetryMechanism(messageDAO,configManager.getRetryIntervalWhenMongoException());
+      //this.messageDAO = ProxyUtil.createMongoDaoProxyWithRetryMechanism(messageDAO,configManager.getRetryIntervalWhenMongoException());
+      this.messageDAO = messageDAO;
    }
 
    public ConfigManager getConfigManager() {
