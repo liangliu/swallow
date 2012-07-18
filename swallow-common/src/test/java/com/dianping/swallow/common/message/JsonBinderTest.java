@@ -69,6 +69,11 @@ public class JsonBinderTest {
       String nullBeanString = binder.toJson(nullBean);
       assertEquals("null", nullBeanString);
 
+      //Empty bean
+      EmptyBean bean = new EmptyBean();
+      Assert.assertNotNull(binder.toJson(bean));
+      Assert.assertEquals("{}", binder.toJson(bean));
+
       //Empty List
       List<String> emptyList = Lists.newArrayList();
       String emptyListString = binder.toJson(emptyList);
@@ -86,6 +91,7 @@ public class JsonBinderTest {
       //Null/Empty String for List
       List nullListResult = binder.fromJson(null, List.class);
       assertNull(nullListResult);
+      Assert.assertNotNull(binder.fromJson("{}", EmptyBean.class));
 
       nullListResult = binder.fromJson("null", List.class);
       assertNull(nullListResult);
@@ -97,15 +103,17 @@ public class JsonBinderTest {
    @Test
    public void error() {
       JsonBinder binder = JsonBinder.getNonEmptyBinder();
-      ErrorBean bean = new ErrorBean();
-      Assert.assertNotNull(binder.toJson(bean));
-      Assert.assertEquals("{}", binder.toJson(bean));
-      Assert.assertNotNull(binder.fromJson("{}", ErrorBean.class));
-      assertNull(binder.fromJson("error json string", ErrorBean.class));
+      // error json string
+      try {
+         binder.fromJson("error json string", EmptyBean.class);
+         Assert.fail();
+      } catch (Exception e) {
+         Assert.assertTrue(e instanceof JsonDeserializedException);
+      }
 
    }
 
-   public static class ErrorBean {
+   public static class EmptyBean {
       int getA() {
          return 5;
       }

@@ -73,6 +73,11 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
    }
 
    public Message take() throws InterruptedException {
+      //阻塞take()方法不让使用的原因是：防止当ensureLeftMessage()失败时，没法获取消息，而调用take()的代码将一直阻塞。
+      //不过，可以在后台线程中获取消息失败时不断重试，直到保证ensureLeftMessage。
+      //但是极端情况下，可能出现：
+      //  后台线程某时刻判断size()是足够的，所以wait；但在wait前，queue的元素又被取光了，外部调用者继续在take()上阻塞；而此时后台线程也wait，就‘死锁’了。
+      //  即，size()的判断和fetch消息的操作，比较作为同步块原子化。才能从根本上保证线程安全。
       throw new UnsupportedOperationException(
             "Don't call this operation, call 'poll(long timeout, TimeUnit unit)' instead.");
    }

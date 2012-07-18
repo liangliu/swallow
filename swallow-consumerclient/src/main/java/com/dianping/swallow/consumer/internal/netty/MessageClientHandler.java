@@ -32,10 +32,6 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
    private static final Logger LOG      = LoggerFactory.getLogger(MessageClientHandler.class);
 
-   //TODO 统一cat_type
-   private static final String CAT_TYPE = "swallow";
-   private static final String CAT_NAME = "consumeMessage";
-
    private ConsumerImpl        cClient;
 
    private PktConsumerMessage  consumermessage;
@@ -70,8 +66,8 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
             consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, messageId, cClient.isClosed());
 
             //使用CAT监控处理消息的时间
-            Transaction t = Cat.getProducer().newTransaction(CAT_TYPE, CAT_NAME);
-            Event event = Cat.getProducer().newEvent(CAT_TYPE, CAT_NAME);
+            Transaction t = Cat.getProducer().newTransaction("Message", cClient.getDest().getName());
+            Event event = Cat.getProducer().newEvent("Message", "payload");
             event.addData(swallowMessage.toString());
 
             //处理消息
@@ -88,14 +84,16 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                   LOG.error("exception in MessageListener", e);
                }
                event.setStatus(Event.SUCCESS);
+               t.setStatus(Transaction.SUCCESS);
             } catch (IOException e) {
                LOG.error("can not uncompress message with messageId " + messageId, e);
+               event.setStatus(e);
                t.setStatus(e);
+            } finally{
+               event.complete();
+               t.complete();
             }
 
-            event.complete();
-            t.setStatus(Transaction.SUCCESS);//TODO 使用哪个setStatus
-            t.complete();
             try {
                e.getChannel().write(consumermessage);
             } catch (RuntimeException e) {

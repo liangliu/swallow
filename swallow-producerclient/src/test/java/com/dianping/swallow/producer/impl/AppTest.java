@@ -28,14 +28,16 @@ public class AppTest {
    }
 
    private class TestTask implements Runnable {
-
+      private String pre;
+      public TestTask(String pre){
+         this.pre = pre;
+      }
       @Override
       public void run() {
          //设置Producer选项
          ProducerConfig config = new ProducerConfig();
          config.setMode(ProducerMode.ASYNC_MODE);
          config.setRetryTimes(3);
-         config.setZipped(true);
          config.setThreadPoolSize(3);
          config.setSendMsgLeftLastSession(false);
 
@@ -62,7 +64,7 @@ public class AppTest {
          for (i = 0, strRet = ""; i < MAX_NUM; i++) {
             try {
                //发送消息
-               strRet = producer.sendMessage("" + (++sentNum));
+               strRet = producer.sendMessage("new " + pre + (++sentNum));
             } catch (SendFailedException e) {
                e.printStackTrace();
             }
@@ -82,7 +84,7 @@ public class AppTest {
       final int THREAD_NUM = 1;//线程数量
 
       for (int i = 0; i < THREAD_NUM; i++) {
-         Thread task = new Thread(new TestTask());
+         Thread task = new Thread(new TestTask("thread " + i + ": "));
          task.start();
       }
    }
