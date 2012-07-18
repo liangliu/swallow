@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
 	<id>withDependencies</id>
 	<formats>
-		<format>tar.bz2</format>
+		<format>tar</format>
 	</formats>
 	<fileSets>
 		<fileSet>
@@ -18,6 +18,7 @@
 			</includes>
 			<excludes>
 				<exclude>assembly.xml</exclude>
+				<exclude>*lion.properties</exclude>
 			</excludes>
 		</fileSet>
 	</fileSets>

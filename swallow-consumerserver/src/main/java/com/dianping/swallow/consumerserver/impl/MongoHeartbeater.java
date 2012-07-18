@@ -26,6 +26,7 @@ public class MongoHeartbeater implements Heartbeater {
    public void waitUntilMasterDown(String ip, long checkInterval, long maxStopTime) throws InterruptedException {
       long startTime = System.currentTimeMillis();
       long lastBeatTime = startTime;
+      LOG.info("started to wait "+ip + " master stop beating");
       while (true) {
          Date beat = null;
          try {
@@ -52,7 +53,7 @@ public class MongoHeartbeater implements Heartbeater {
          }
          Thread.sleep(checkInterval);
       }
-      LOG.info(ip + " master stop beating, slave start");
+      LOG.info(ip + " master stop beating, slave waked up");
    }
 
    @Override

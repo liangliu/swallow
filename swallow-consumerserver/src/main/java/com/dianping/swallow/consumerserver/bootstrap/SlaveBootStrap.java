@@ -122,7 +122,7 @@ public class SlaveBootStrap {
          
          // Bind and start to accept incoming connections.
          bootstrap.bind(new InetSocketAddress(consumerWorkerManager.getConfigManager().getSlavePort()));
-         
+         LOG.info("Server started on port " + consumerWorkerManager.getConfigManager().getMasterPort());
          try {
             heartbeater.waitUntilMasterUp(configManager.getMasterIp(), configManager.getHeartbeatCheckInterval(),
                   configManager.getHeartbeatMaxStopTime());

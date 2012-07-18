@@ -64,9 +64,8 @@ public class MasterBootStrap {
             return pipeline;
          }
       });
-      // Bind and start to accept incoming connections.
-      bootstrap.bind(new InetSocketAddress(consumerWorkerManager.getConfigManager().getMasterPort()));
 
+      //启动close Monitor
       CloseMonitor closeMonitor = new CloseMonitor();
       int port = Integer.parseInt(System.getProperty("closeMonitorPort", "17555"));
       closeMonitor.start(port, new CloseHook() {
@@ -100,6 +99,10 @@ public class MasterBootStrap {
          }
       });
 
+      //启动服务 (Bind and start to accept incoming connections.)
+      int masterPort = consumerWorkerManager.getConfigManager().getMasterPort();
+      bootstrap.bind(new InetSocketAddress(masterPort));
+      LOG.info("Server started at port " + masterPort);
    }
 
 }

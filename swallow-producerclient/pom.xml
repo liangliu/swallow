@@ -61,4 +61,18 @@
 			<artifactId>hawk-client</artifactId>
 		</dependency>
 	</dependencies>
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/*.*</include>
+				</includes>
+				<excludes>
+					<exclude>**/*lion.properties</exclude>
+				</excludes>
+			</resource>
+		</resources>
+	</build>
 </project>
