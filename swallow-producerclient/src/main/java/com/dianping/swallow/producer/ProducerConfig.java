@@ -4,15 +4,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ProducerConfig {
-   Logger                   logger                 = LoggerFactory.getLogger(ProducerConfig.class);
+   Logger                           logger                             = LoggerFactory.getLogger(ProducerConfig.class);
 
-   private static final int MAX_THREADPOOL_SIZE    = 100;
-
-   private ProducerMode     mode                   = ProducerMode.SYNC_MODE;
-   private int              retryTimes             = 5;
-   private boolean          zipped                 = false;
-   private int              threadPoolSize         = 5;
-   private boolean          sendMsgLeftLastSession = false;
+   public static final int          MAX_THREADPOOL_SIZE                = 100;
+   public static final ProducerMode DEFAULT_PRODUCER_MODE              = ProducerMode.SYNC_MODE;
+   public static final int          DEFAULT_RETRY_TIMES                = 5;
+   public static final boolean      DEFAULT_ZIPPED                     = false;
+   public static final int          DEFAULT_THREADPOOL_SIZE            = 5;
+   public static final boolean      DEFAULT_SEND_MSG_LEFT_LAST_SESSION = false;
+   
+   private ProducerMode             mode                               = DEFAULT_PRODUCER_MODE;
+   private int                      retryTimes                         = DEFAULT_RETRY_TIMES;
+   private boolean                  zipped                             = DEFAULT_ZIPPED;
+   private int                      threadPoolSize                     = DEFAULT_THREADPOOL_SIZE;
+   private boolean                  sendMsgLeftLastSession             = DEFAULT_SEND_MSG_LEFT_LAST_SESSION;
 
    public ProducerMode getMode() {
       return mode;
@@ -38,6 +43,7 @@ public class ProducerConfig {
     */
    public void setRetryTimes(int retryTimes) {
       if (retryTimes < 0) {
+         this.retryTimes = DEFAULT_RETRY_TIMES;
          logger.warn("invalid retryTimes, use default value: " + this.retryTimes + ".");
          return;
       }
@@ -69,6 +75,7 @@ public class ProducerConfig {
     */
    public void setThreadPoolSize(int threadPoolSize) {
       if (threadPoolSize <= 0 || threadPoolSize > MAX_THREADPOOL_SIZE) {
+         this.threadPoolSize = DEFAULT_THREADPOOL_SIZE;
          logger.warn("invalid threadPoolSize, must between 1 - " + MAX_THREADPOOL_SIZE + ", use default value: "
                + this.threadPoolSize + ".");
          return;

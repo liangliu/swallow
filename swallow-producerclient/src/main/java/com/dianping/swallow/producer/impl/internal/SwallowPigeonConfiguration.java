@@ -15,7 +15,7 @@ public class SwallowPigeonConfiguration {
 
    private static final Logger logger               = LoggerFactory.getLogger(SwallowPigeonConfiguration.class);
 
-   public static final String  DEFAULT_SERVICE_NAME = "remoteService";
+   public static final String  DEFAULT_SERVICE_NAME = "http://service.dianping.com/swallowService/producerService_1.0.0";
    public static final String  DEFAULT_SERIALIZE    = "hessian";
    public static final int     DEFAULT_TIMEOUT      = 5000;
    public static final boolean DEFAULT_IS_USE_LION  = true;
@@ -103,16 +103,6 @@ public class SwallowPigeonConfiguration {
          }
       }
 
-      checkHostsAndWeights();
-      checkSerialize();
-      checkTimeout();
-      checkUseLion();
-   }
-
-   /**
-    * 仅供Spring使用
-    */
-   public void init() {
       checkHostsAndWeights();
       checkSerialize();
       checkTimeout();
@@ -222,5 +212,4 @@ public class SwallowPigeonConfiguration {
       this.weights = weights;
       checkHostsAndWeights();
    }
-
 }
