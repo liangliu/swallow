@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.consumer.MessageFilter;
+import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
 import com.dianping.swallow.common.internal.dao.AckDAO;
 import com.dianping.swallow.common.internal.dao.MessageDAO;
 import com.dianping.swallow.common.internal.dao.impl.mongodb.AbstractDAOImplTest;
@@ -29,6 +30,7 @@ import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.consumerserver.worker.ConsumerId;
 import com.dianping.swallow.consumerserver.worker.ConsumerInfo;
+import com.dianping.swallow.consumerserver.worker.ConsumerWorkerImpl;
 import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
 public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
@@ -43,7 +45,6 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
       for(long i=0;i<50;i++ ){
          SwallowMessage message = new SwallowMessage();
          message.setMessageId(i);
-         //messageSetChecker.add(message);
          messageQueue.add(message);
       }
       
@@ -54,28 +55,16 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
       }
       return true;
    }
-//   private void makeMessage(BlockingQueue<Message> messageQueue){
-//      
-//         SwallowMessage message = new SwallowMessage();
-//         message.setMessageId(123456L);
-//         messageSetChecker= new HashSet<SwallowMessage>();
-//         messageQueue.add(message);
-//      
-//      
-//   }
+   
    private void mockDao(){
       SwallowBuffer swallowBuffer = mock(SwallowBuffer.class);
       CloseableBlockingQueue<Message> messageQueue = new MockedCloseableBlockingQueue<Message>();
       
       makeMessages(messageQueue);
-//      when(swallowBuffer.createMessageQueue("xx", "dp1", 123456L,
-//            null)).thenReturn(messageQueue);
-//      when(swallowBuffer.createMessageQueue("xx", "dp11", 234567L,
-//            null)).thenReturn(messageQueue);
       when(swallowBuffer.createMessageQueue(Matchers.anyString(), Matchers.anyString(), Matchers.anyLong(),
             (MessageFilter)Matchers.anyObject())).thenReturn(messageQueue);
       AckDAO ackDAO = mock(AckDAO.class);
-      //doReturn(print()).when(ackDAO).add("", "", 123L, "");
+      //doReturn(print()).when(ackDAO).add(Matchers.anyString(), Matchers.anyString(), Matchers.anyLong(), Matchers.anyString());
       MessageDAO messageDAO = mock(MessageDAO.class);
       when(ackDAO.getMaxMessageId("xx", "dp1")).thenReturn(123456L);
       when(ackDAO.getMaxMessageId("xxx", "dp1")).thenReturn(null);
@@ -87,11 +76,6 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
       consumerWorkerManager.setMessageDAO(messageDAO);
       consumerWorkerManager.setSwallowBuffer(swallowBuffer);
    }
-   
-//   String print(){
-//      System.out.println("hello,world");
-//      return null;
-//   }
    
    private void mockChannel(){      
       channel = mock(Channel.class);
@@ -114,6 +98,25 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
       }))).thenReturn(null);
    }
    
+   /**
+    * consumerType 为NON_DURABLE
+    * @throws InterruptedException
+    */
+   @Test
+   public void testHandleGreet_NON_DURABLE() throws InterruptedException{
+      mockChannel();
+      mockDao();
+    ConsumerId consumerId2 = new ConsumerId("dp11", Destination.topic("xx"));
+    ConsumerInfo consumerInfo2 = new ConsumerInfo(consumerId2, ConsumerType.NON_DURABLE);      
+    consumerWorkerManager.handleGreet(channel, consumerInfo2, 50, null);
+    Thread.sleep(3000);
+    Assert.assertTrue(check(50));
+   }
+   
+   /**
+    * topic为xxx,xxx还没有消息
+    * @throws InterruptedException
+    */
    @Test
    public void testHandleGreet_topicFirst() throws InterruptedException{
       mockChannel();
@@ -124,6 +127,10 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
       Thread.sleep(3000);
       Assert.assertTrue(check(50));
    }
+   /**
+    * topic为xx，consumerId为dp11的第一次访问，但xx已经有消息产生了
+    * @throws InterruptedException
+    */
    @Test
    public void testHandleGreet_consumerFirst() throws InterruptedException{
       mockChannel();
@@ -134,7 +141,11 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
     Thread.sleep(3000);
     Assert.assertTrue(check(50));
    }
-   
+  
+   /**
+    * topic为xx，consumerId为dp1。从greet到ack,再到最后disconnect
+    * @throws InterruptedException
+    */
    @Test
    public void testHandleGreet() throws InterruptedException {
            
@@ -142,101 +153,28 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
       mockDao();
       
       ConsumerId consumerId1 = new ConsumerId("dp1", Destination.topic("xx"));
-      ConsumerInfo consumerInfo1 = new ConsumerInfo(consumerId1, ConsumerType.AT_MOST_ONCE);      
-      consumerWorkerManager.handleGreet(channel, consumerInfo1, 50, null);
+      ConsumerInfo consumerInfo1 = new ConsumerInfo(consumerId1, ConsumerType.AT_LEAST_ONCE);      
+      consumerWorkerManager.handleGreet(channel, consumerInfo1, 30, null);
       Thread.sleep(3000);
-      Assert.assertTrue(check(50));
+      Assert.assertTrue(check(30));
+      Assert.assertEquals(30,((ConsumerWorkerImpl)consumerWorkerManager.getConsumerId2ConsumerWorker().get(consumerId1)).getWaitAckMessages().get(channel).size());
+      
+      consumerWorkerManager.handleAck(channel, consumerInfo1, 20L, ACKHandlerType.SEND_MESSAGE);
+      Thread.sleep(3000);
+      Assert.assertEquals(30,((ConsumerWorkerImpl)consumerWorkerManager.getConsumerId2ConsumerWorker().get(consumerId1)).getWaitAckMessages().get(channel).size());
+      Assert.assertTrue(check(31));
+      Assert.assertEquals(0,((ConsumerWorkerImpl)consumerWorkerManager.getConsumerId2ConsumerWorker().get(consumerId1)).getCachedMessages().size());
+      
+      consumerWorkerManager.handleAck(channel, consumerInfo1, 19L, ACKHandlerType.CLOSE_CHANNEL);
+      Thread.sleep(3000);
+      Assert.assertEquals(0,((ConsumerWorkerImpl)consumerWorkerManager.getConsumerId2ConsumerWorker().get(consumerId1)).getConnectedChannels().size());
+      Assert.assertEquals(null,((ConsumerWorkerImpl)consumerWorkerManager.getConsumerId2ConsumerWorker().get(consumerId1)).getWaitAckMessages().get(channel));
+      Assert.assertEquals(29,((ConsumerWorkerImpl)consumerWorkerManager.getConsumerId2ConsumerWorker().get(consumerId1)).getCachedMessages().size());
+      
       
 
-      
-//
-//      consumerWorkerManager.handleAck(channel, consumerInfo2, 50L, ACKHandlerType.SEND_MESSAGE);
-//      Thread.sleep(3000);
-//      Assert.assertTrue(messageSetChecker.size() ==1);
-//      for(SwallowMessage message : messageSetChecker){
-//         Assert.assertTrue(message.getMessageId().equals(123456L));
-//      }
-//      
-//
-//      ConsumerId consumerId1 = new ConsumerId("zhangyu1", Destination.topic("zhangyuxx1"));
-//      ConsumerInfo consumerInfo1 = new ConsumerInfo(consumerId1, ConsumerType.AT_LEAST_ONCE);      
-//      consumerWorker1 = (ConsumerWorkerImpl)consumerWorkerManager.findOrCreateConsumerWorker(consumerInfo1, null);
-//      consumerWorker1.setMessageQueue(messageQueue);
-//      consumerWorkerManager.handleGreet(channel, consumerInfo1, 30, null);
-//      Thread.sleep(3000);
-//      Assert.assertTrue(consumerWorker1.getWaitAckMessages().get(channel).size()==30);
-//      
-//      
-//
-//      consumerWorkerManager.handleAck(channel, consumerInfo1, 50L, ACKHandlerType.SEND_MESSAGE);
-//      Thread.sleep(3000);
-//      Assert.assertTrue(messageSetChecker.size() ==1);
-//      for(SwallowMessage message : messageSetChecker){
-//         Assert.assertTrue(message.getMessageId().equals(30L));
-//      }
-//      Assert.assertTrue(consumerWorker1.getWaitAckMessages().get(channel).size()==31);
-//      
-//      
-//      consumerWorkerManager.handleChannelDisconnect(channel,consumerInfo1);
-//      Thread.sleep(3000);
-//      Assert.assertTrue(consumerWorker1.getCachedMessages().size() == 31);
-//      Assert.assertTrue(consumerWorker1.getWaitAckMessages().get(channel) == null);
    }
-   
-      
-   
-//   @Test
-//   public void testHandleAck() throws InterruptedException {
-//      makeMessages();
-//      Channel channel = mock(Channel.class);
-//      when(channel.getRemoteAddress()).thenReturn(new InetSocketAddress("127.0.0.1", 8081));
-//      when(channel.isConnected()).thenReturn(true);
-//      when(channel.write(argThat(new Matcher<Object>() {
-//         @Override
-//         public void describeTo(Description arg0) {
-//            // TODO Auto-generated method stub            
-//         }
-//         @Override
-//         public void _dont_implement_Matcher___instead_extend_BaseMatcher_() {
-//            // TODO Auto-generated method stub           
-//         }
-//         @Override
-//         public boolean matches(Object arg0) {
-//            messageSet2.add(((PktMessage)arg0).getContent());
-//            return true;
-//         }
-//      }))).thenReturn(null);
-//      ConsumerId consumerId2 = new ConsumerId("zhangyu2", Destination.topic("zhangyuxx2"));
-//      ConsumerInfo consumerInfo2 = new ConsumerInfo(consumerId2, ConsumerType.AT_MOST);      
-//      consumerWorker2 = (ConsumerWorkerImpl)consumerWorkerManager.findOrCreateConsumerWorker(consumerInfo2, null);
-//      consumerWorker2.setMessageQueue(messageQueue);
-//      consumerWorkerManager.handleAck(channel, consumerInfo2, 50L, ACKHandlerType.SEND_MESSAGE);
-//      Thread.sleep(5000);
-//      Assert.assertTrue(messageSet2.size() ==1);
-//      for(SwallowMessage message : messageSet2){
-//         Assert.assertTrue(message.getMessageId().equals(0L));
-//      }
-//      
-//   }
-   
-//      private void getConsumerWorkerImpl(){
-//
-//         consumerWorker = (ConsumerWorkerImpl)consumerWorkerManager.findOrCreateConsumerWorker(consumerInfo, null);
-//          
-//      }
-//      
-//      @Test
-//      public void testGetMessageIdOfTailMessage(){
-//         getConsumerWorkerImpl();
-//         Channel channel = mock(AbstractChannel.class);
-//         long maxMessageId;
-//         maxMessageId = consumerWorker.getMessageIdOfTailMessage("aaxx","zhangyu",channel);
-//         Assert.assertTrue(maxMessageId>0);
-//         maxMessageId = consumerWorker.getMessageIdOfTailMessage("xx","zhangyu",channel);
-//         Assert.assertTrue(maxMessageId>0);
-//         maxMessageId = consumerWorker.getMessageIdOfTailMessage("xx","meiyoude",channel);
-//         Assert.assertTrue(maxMessageId>0);
-//      }
+
    class MockedCloseableBlockingQueue<E> extends LinkedBlockingQueue<E> implements CloseableBlockingQueue<E> {
       private static final long serialVersionUID = 1L;
 

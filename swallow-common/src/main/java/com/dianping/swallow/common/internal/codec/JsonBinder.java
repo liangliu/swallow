@@ -2,9 +2,8 @@ package com.dianping.swallow.common.internal.codec;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.dianping.swallow.common.message.JsonDeserializedException;
+import com.dianping.swallow.common.message.JsonSerializedException;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -19,8 +18,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * @author wukezhu
  */
 public class JsonBinder {
-
-   private static Logger logger = LoggerFactory.getLogger(JsonBinder.class);
 
    private static class NonEmptySingletonHolder {
       public static final JsonBinder nonEmptyBinder = new JsonBinder(Include.NON_EMPTY);
@@ -54,8 +51,7 @@ public class JsonBinder {
       try {
          return mapper.writeValueAsString(object);
       } catch (IOException e) {
-         logger.warn("write to json string error:" + object, e);
-         return null;
+         throw new JsonSerializedException("Serialized Object to json string error : " + object, e);
       }
    }
 
@@ -73,9 +69,7 @@ public class JsonBinder {
       try {
          return mapper.readValue(jsonString, clazz);
       } catch (IOException e) {
-         logger.warn("parse json string error:" + jsonString, e);
-         //TODO throw CantDeserializeException
-         return null;
+         throw new JsonDeserializedException("Deserialized json string error : " + jsonString, e);
       }
    }
 }

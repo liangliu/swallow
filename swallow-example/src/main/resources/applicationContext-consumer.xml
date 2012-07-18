@@ -6,11 +6,25 @@
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
-	<bean id="consumerFactory" class="com.dianping.swallow.consumer.impl.ConsumerFactoryImpl" factory-method="getInstance" />
+	<bean id="consumerFactory" class="com.dianping.swallow.consumer.impl.ConsumerFactoryImpl"
+		factory-method="getInstance" />
 
-	<bean id="consumerConfig" class="com.dianping.swallow.consumer.ConsumerConfig" >
-	<property name="threadPoolSize">
+	<bean id="messageFilter" class="com.dianping.swallow.common.consumer.MessageFilter"
+		factory-method="createInSetMessageFilter">
+		<constructor-arg>
+			<set>
+				<value>宋通</value>
+				<value>张宇</value>
+			</set>
+		</constructor-arg>
+	</bean>
+
+	<bean id="consumerConfig" class="com.dianping.swallow.consumer.ConsumerConfig">
+		<property name="threadPoolSize">
 			<value>10</value>
+		</property>
+		<property name="messageFilter">
+			<ref bean="messageFilter" />
 		</property>
 	</bean>
 
