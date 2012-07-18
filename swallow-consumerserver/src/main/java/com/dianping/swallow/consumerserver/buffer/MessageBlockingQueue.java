@@ -3,6 +3,7 @@ package com.dianping.swallow.consumerserver.buffer;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -13,7 +14,7 @@ import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.consumer.MessageFilter;
 import com.dianping.swallow.common.message.Message;
 
-public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
+public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> implements CloseableBlockingQueue<Message> {
 
    private static final long           serialVersionUID = -633276713494338593L;
    private static final Logger         LOG              = LoggerFactory.getLogger(MessageBlockingQueue.class);
@@ -32,6 +33,8 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
 
    protected volatile Long             tailMessageId;
    protected MessageFilter             messageFilter;
+
+   private AtomicBoolean               isClosed         = new AtomicBoolean(false);
 
    public MessageBlockingQueue(String cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage) {
       super(capacity);
@@ -91,7 +94,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
    }
 
    /**
-    * 启动一个“获取DB数据的后台线程”去DB获取数据，并添加到Queue的尾部
+    * 唤醒“获取DB数据的后台线程”去DB获取数据，并添加到Queue的尾部
     */
    private void ensureLeftMessage() {
       if (messageRetriever == null) {
@@ -213,6 +216,24 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> {
 
       public String getMessageRetriverThreadStatus() {
          return messageRetriverThread.getState().toString();
+      }
+   }
+
+   /**
+    * 关闭BlockingQueue占用的资源。<br>
+    * <note> 注意:close()只是中断了内部的后台线程，并不会导致poll()和poll(long timeout, TimeUnit
+    * unit)方法不可用,您依然可以使用poll()和poll(long timeout, TimeUnit
+    * unit)方法获取MessageBlockingQueue中剩余的消息。不过，不会再有后台线程去从DB获取更多的消息。 </note>
+    */
+   public void close() {
+      if (isClosed.compareAndSet(false, true)) {
+         this.messageRetriverThread.interrupt();
+      }
+   }
+
+   public void isClosed() {
+      if (isClosed.get()) {
+         throw new RuntimeException("MessageBlockingQueue- already closed! ");
       }
    }
 

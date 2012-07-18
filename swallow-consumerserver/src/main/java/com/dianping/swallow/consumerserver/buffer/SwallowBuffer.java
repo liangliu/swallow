@@ -72,7 +72,7 @@ public class SwallowBuffer {
     * @param tailMessageId 从messageId大于messageIdOfTailMessage的消息开始消费
     * @return
     */
-   public BlockingQueue<Message> createMessageQueue(String topicName, String cid, Long tailMessageId,
+   public CloseableBlockingQueue<Message> createMessageQueue(String topicName, String cid, Long tailMessageId,
                                                     MessageFilter messageFilter) {
       return this.getTopicBuffer(topicName).createMessageQueue(cid, tailMessageId, messageFilter);
    }
@@ -152,7 +152,7 @@ public class SwallowBuffer {
        * @param tailMessageId 从messageId大于messageIdOfTailMessage的消息开始消费
        * @return
        */
-      public BlockingQueue<Message> createMessageQueue(String cid, Long tailMessageId, MessageFilter messageFilter) {
+      public CloseableBlockingQueue<Message> createMessageQueue(String cid, Long tailMessageId, MessageFilter messageFilter) {
          if (cid == null) {
             throw new IllegalArgumentException("cid is null.");
          }

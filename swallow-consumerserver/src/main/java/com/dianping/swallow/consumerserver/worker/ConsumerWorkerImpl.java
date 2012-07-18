@@ -28,6 +28,7 @@ import com.dianping.swallow.common.internal.threadfactory.PullStrategy;
 import com.dianping.swallow.common.internal.util.IPUtil;
 import com.dianping.swallow.common.internal.util.MongoUtils;
 import com.dianping.swallow.common.message.Message;
+import com.dianping.swallow.consumerserver.buffer.CloseableBlockingQueue;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 
@@ -42,11 +43,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       return connectedChannels;
    }
 
-   private BlockingQueue<Message> messageQueue = null;
-
-   public void setMessageQueue(BlockingQueue<Message> messageQueue) {
-      this.messageQueue = messageQueue;
-   }
+   private CloseableBlockingQueue<Message> messageQueue = null;
 
    private AckDAO            ackDao;
    private SwallowBuffer     swallowBuffer;
@@ -193,7 +190,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    public void close() {
       getMessageisAlive = false;
-
+      messageQueue.close();
    }
 
    public long getMessageIdOfTailMessage(String topicName, String consumerId, Channel channel) {
