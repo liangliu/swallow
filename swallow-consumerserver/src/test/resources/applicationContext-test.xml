@@ -11,13 +11,6 @@
 		class="com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager">
 	</bean>
 	
-	<bean id="ackDAO"
-		class="com.dianping.swallow.common.internal.dao.impl.mongodb.AckDAOImpl">
-	</bean>
-
-	<bean id="messageDAO"
-		class="com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl">
-	</bean>
 
 	<bean id="heartbeatDAO"
 		class="com.dianping.swallow.common.internal.dao.impl.mongodb.HeartbeatDAOImpl">
@@ -28,11 +21,7 @@
 		<property name="fetchSize" value="20" />
 	</bean>
 
-	<bean id="swallowBuffer"
-		class="com.dianping.swallow.consumerserver.buffer.SwallowBuffer">
-		<property name="threshold" value="2" />
-		<property name="capacity" value="1024" />
-	</bean>
+
 
 	<bean id="mongoClient"
 		class="com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient">

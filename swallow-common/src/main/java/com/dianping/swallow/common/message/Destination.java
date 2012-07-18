@@ -17,6 +17,8 @@ package com.dianping.swallow.common.message;
 
 import java.io.Serializable;
 
+import com.dianping.swallow.common.internal.util.NameCheckUtil;
+
 /***
  * 代表消息目的地。<br>
  * (可通过<code>Destination.topic(String name)</code>工厂方法创建一个Topic消息目的地。)
@@ -39,7 +41,6 @@ public class Destination implements Serializable {
    }
 
    private Destination(String name, Type type) {
-      //TODO 将验证逻辑移到这里，删除其他验证逻辑
       this.name = name.trim();
       this.type = type;
    }
@@ -62,6 +63,9 @@ public class Destination implements Serializable {
     * @return 消息目的地实例
     */
    public static Destination topic(String name) {
+      if (!NameCheckUtil.isTopicNameValid(name))
+         throw new IllegalArgumentException(
+               "Topic name is illegal, permitted set is [0-9,a-z,A-Z,'_','.'], start with a letter.");
       return new Destination(name, Type.TOPIC);
    }
 

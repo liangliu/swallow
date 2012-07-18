@@ -16,7 +16,6 @@
 package com.dianping.swallow.producer;
 
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 
 /**
@@ -30,9 +29,8 @@ public interface ProducerFactory {
     * 
     * @param dest Producer消息目的地，类型为{@link Destination}
     * @return 实现Producer接口的对象，用于发送消息，此版本中类型为{@link ProducerImpl}
-    * @throws TopicNameInvalidException 目的地名称非法，则抛出异常
     */
-   public Producer createProducer(Destination dest) throws TopicNameInvalidException;
+   public Producer createProducer(Destination dest);
 
    /**
     * 获取指定配置的Producer实例
@@ -40,7 +38,6 @@ public interface ProducerFactory {
     * @param dest Producer消息目的地，类型为{@link Destination}
     * @param config Producer选项，类型为{@link ProducerConfig}
     * @return 实现Producer接口的对象，用于发送消息，此版本中类型为{@link ProducerImpl}
-    * @throws TopicNameInvalidException 目的地名称非法，则抛出异常
     */
-   public Producer createProducer(Destination dest, ProducerConfig config) throws TopicNameInvalidException;
+   public Producer createProducer(Destination dest, ProducerConfig config);
 }

@@ -41,7 +41,6 @@ import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.SendFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
-import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
@@ -59,33 +58,26 @@ public class ProducerTest {
    public void testProducerFactoryImpl() throws UnknownHostException, RemoteServiceInitFailedException {
       ProducerFactoryImpl producerFactory = null;
 
-      ProducerSwallowService normalRemoteService = mock(ProducerSwallowService.class);
-
       //获取Producer工厂实例
       try {
          producerFactory = ProducerFactoryImpl.getInstance();
-      } catch (RemoteServiceInitFailedException e1) {
-         throw e1;
+      } catch (RemoteServiceInitFailedException e) {
+         throw e;
       }
-      producerFactory.setRemoteService(normalRemoteService);
       assertNotNull(producerFactory);
 
-    //设置Producer选项
+      //设置Producer选项
       ProducerConfig config = new ProducerConfig();
       config.setMode(ProducerMode.SYNC_MODE);
       config.setRetryTimes(2);
       config.setZipped(true);
-      
-      ProducerImpl producer = null;
-      try {
-         producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("Hello:Unit_Test"), config);
-      } catch (TopicNameInvalidException e) {
-      }
-      assertNull(producer);
 
+      ProducerImpl producer = null;
+      producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("Hello:Unit_Test"), config);
+      assertNull(producer);
       try {
          producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("Hello_Unit_Test"), config);
-      } catch (TopicNameInvalidException e) {
+      } catch (Exception e) {
       }
 
       assertNotNull(producer);
@@ -100,21 +92,14 @@ public class ProducerTest {
       config.setThreadPoolSize(100);
 
       try {
-         producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("Hello:Unit_Test"), config);
-      } catch (TopicNameInvalidException e) {
+         producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("Hello_Unit_Test"), config);
+      } catch (Exception e) {
       }
       assertNull(producer);
 
-      try {
-         producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("Hello"), config);
-      } catch (TopicNameInvalidException e) {
-         //捕获到TopicNameInvalid异常
-      }
+      producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("Hello"), config);
 
       assertNotNull(producer);
-
-      assertEquals("0.6.0", producerFactory.getProducerVersion());
-      assertEquals(Inet4Address.getLocalHost().getHostAddress(), producerFactory.getProducerIP());
 
       assertEquals(true, producer.getProducerConfig().isSendMsgLeftLastSession());
       assertEquals(100, producer.getProducerConfig().getThreadPoolSize());
@@ -129,20 +114,20 @@ public class ProducerTest {
       assertEquals(SwallowPigeonConfiguration.DEFAULT_SERVICE_NAME, defaultConfig.getServiceName());
       assertEquals(SwallowPigeonConfiguration.DEFAULT_TIMEOUT, defaultConfig.getTimeout());
       assertEquals(SwallowPigeonConfiguration.DEFAULT_WEIGHTS, defaultConfig.getWeights());
-      
+
       defaultConfig.setHostsAndWeights("127.0.0.1:4999", "9");
       defaultConfig.setSerialize("what");
       defaultConfig.setServiceName("hello");
       defaultConfig.setTimeout(2222);
       defaultConfig.setUseLion(true);
-      
+
       assertEquals("127.0.0.1:4999", defaultConfig.getHosts());
       assertEquals(true, defaultConfig.isUseLion());
       assertEquals(SwallowPigeonConfiguration.DEFAULT_SERIALIZE, defaultConfig.getSerialize());
       assertEquals("hello", defaultConfig.getServiceName());
       assertEquals(2222, defaultConfig.getTimeout());
       assertEquals("9", defaultConfig.getWeights());
-      
+
       SwallowPigeonConfiguration normalConfig = new SwallowPigeonConfiguration("normalPigeon.properties");
       assertEquals("127.2.2.1:2000", normalConfig.getHosts());
       assertEquals(true, normalConfig.isUseLion());
@@ -150,7 +135,7 @@ public class ProducerTest {
       assertEquals("helloworld", normalConfig.getServiceName());
       assertEquals(200, normalConfig.getTimeout());
       assertEquals("2", normalConfig.getWeights());
-      
+
       SwallowPigeonConfiguration wrongConfig = new SwallowPigeonConfiguration("wrongPigeon.properties");
       assertEquals(SwallowPigeonConfiguration.DEFAULT_SERIALIZE, wrongConfig.getSerialize());
       assertEquals(SwallowPigeonConfiguration.DEFAULT_TIMEOUT, wrongConfig.getTimeout());
@@ -158,24 +143,26 @@ public class ProducerTest {
       assertEquals("127.2.2.1:2000,125.36.321.123:1325", wrongConfig.getHosts());
       assertEquals("2,1", wrongConfig.getWeights());
    }
-   
+
    @Test
    public void testAsyncProducerImpl() throws ServerDaoException {
       //正常的mock
       ProducerSwallowService normalRemoteServiceMock = mock(ProducerSwallowService.class);
       PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
-      
+
       when(normalRemoteServiceMock.sendMessage(argThat(new Matcher<Packet>() {
          @Override
          public void describeTo(Description arg0) {
          }
+
          @Override
          public void _dont_implement_Matcher___instead_extend_BaseMatcher_() {
          }
+
          @Override
          public boolean matches(Object arg0) {
-            assertEquals(PacketType.OBJECT_MSG, ((Packet)arg0).getPacketType());
-            System.out.println(((PktMessage)arg0).getContent().toString());
+            assertEquals(PacketType.OBJECT_MSG, ((Packet) arg0).getPacketType());
+            System.out.println(((PktMessage) arg0).getContent().toString());
             return true;
          }
       }))).thenReturn(pktSwallowACK);
@@ -183,7 +170,8 @@ public class ProducerTest {
       //抛异常的mock
       ProducerSwallowService exceptionRemoteServiceMock = mock(ProducerSwallowService.class);
       //设置异常remoteServiceMock的行为
-      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(new ServerDaoException(null));
+      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(
+            new ServerDaoException(null));
 
       //Normal ProducerFactory mock
       ProducerFactoryImpl normalProducerFactory = mock(ProducerFactoryImpl.class);
@@ -191,7 +179,6 @@ public class ProducerTest {
       when(normalProducerFactory.getRemoteService()).thenReturn(normalRemoteServiceMock);
       when(normalProducerFactory.getProducerIP()).thenReturn("127.0.0.1");
       when(normalProducerFactory.getProducerVersion()).thenReturn("0.6.0");
-
 
       //Exception ProducerFactory mock
       ProducerFactoryImpl exceptionProducerFactory = mock(ProducerFactoryImpl.class);
@@ -217,7 +204,7 @@ public class ProducerTest {
          exceptionProducer = new ProducerImpl(exceptionProducerFactory, Destination.topic("UnitTest"), config);
       } catch (Exception e) {
       }
-      
+
       assertNotNull(normalProducer);
       assertNotNull(exceptionProducer);
       assertEquals(ProducerMode.ASYNC_MODE, normalProducer.getProducerConfig().getMode());
@@ -230,7 +217,7 @@ public class ProducerTest {
       assertEquals(false, exceptionProducer.getProducerConfig().isSendMsgLeftLastSession());
       assertEquals(2, normalProducer.getProducerConfig().getThreadPoolSize());
       assertEquals(2, exceptionProducer.getProducerConfig().getThreadPoolSize());
-      
+
       //测试异步模式下抛出异常的Producer
       String strRet = "";
       try {
@@ -262,13 +249,15 @@ public class ProducerTest {
          @Override
          public void describeTo(Description arg0) {
          }
+
          @Override
          public void _dont_implement_Matcher___instead_extend_BaseMatcher_() {
          }
+
          @Override
          public boolean matches(Object arg0) {
-            assertEquals(PacketType.OBJECT_MSG, ((Packet)arg0).getPacketType());
-            System.out.println(((PktMessage)arg0).getContent().toString());
+            assertEquals(PacketType.OBJECT_MSG, ((Packet) arg0).getPacketType());
+            System.out.println(((PktMessage) arg0).getContent().toString());
             return true;
          }
       }))).thenReturn(pktSwallowACK);
@@ -276,7 +265,8 @@ public class ProducerTest {
       //抛异常的mock
       ProducerSwallowService exceptionRemoteServiceMock = mock(ProducerSwallowService.class);
       //设置异常remoteServiceMock的行为
-      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(new ServerDaoException(null));
+      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(
+            new ServerDaoException(null));
 
       //Normal ProducerFactory mock
       ProducerFactoryImpl normalProducerFactory = mock(ProducerFactoryImpl.class);
@@ -299,12 +289,8 @@ public class ProducerTest {
       //构造Producer
       ProducerImpl normalProducer = null;
       ProducerImpl exceptionProducer = null;
-      try {
-         normalProducer = new ProducerImpl(normalProducerFactory, Destination.topic("UnitTest"), config);
-         exceptionProducer = new ProducerImpl(exceptionProducerFactory, Destination.topic("UnitTest"), config);
-      } catch (TopicNameInvalidException e) {
-         System.out.println(e.getMessage());
-      }
+      normalProducer = new ProducerImpl(normalProducerFactory, Destination.topic("UnitTest"), config);
+      exceptionProducer = new ProducerImpl(exceptionProducerFactory, Destination.topic("UnitTest"), config);
 
       assertNotNull(normalProducer);
       assertEquals(true, normalProducer.getProducerConfig().isZipped());

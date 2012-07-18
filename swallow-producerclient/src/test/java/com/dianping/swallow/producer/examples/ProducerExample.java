@@ -18,7 +18,6 @@ package com.dianping.swallow.producer.examples;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.SendFailedException;
-import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerFactory;
@@ -57,14 +56,9 @@ public class ProducerExample {
 
       //获取Producer实例
       Producer producer = null;
-      try {
-         //OR: producer = producerFactory.getProducer(Destination.topic("example"));//使用默认设置获取Producer
-         //默认Producer设置为：ProducerMode=SYNC_MODE，RetryTimes=5
-         producer = producerFactory.createProducer(Destination.topic("Example"), config);
-      } catch (TopicNameInvalidException e) {
-         //Topic名称非法抛出此异常
-         throw e;
-      }
+      //OR: producer = producerFactory.getProducer(Destination.topic("example"));//使用默认设置获取Producer
+      //默认Producer设置为：ProducerMode=SYNC_MODE，RetryTimes=5
+      producer = producerFactory.createProducer(Destination.topic("Example"), config);
 
       //发送message
       try {
