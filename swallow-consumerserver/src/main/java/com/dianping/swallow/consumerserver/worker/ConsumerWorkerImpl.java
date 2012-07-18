@@ -275,9 +275,6 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    private void putMsg2CachedMsgFromMsgQueue() throws InterruptedException {
       SwallowMessage message = null;
-      if (messageQueue.isEmpty()) {
-         return;
-      }
       while (getMessageisAlive) {
          //从blockQueue中获取消息
          message = (SwallowMessage) messageQueue.poll(pullStgy.fail(false), TimeUnit.MILLISECONDS);
