@@ -36,7 +36,7 @@ public class AppTest {
       public void run() {
          //设置Producer选项
          ProducerConfig config = new ProducerConfig();
-         config.setMode(ProducerMode.ASYNC_MODE);
+         config.setMode(ProducerMode.SYNC_MODE);
          config.setRetryTimes(3);
          config.setThreadPoolSize(3);
          config.setSendMsgLeftLastSession(false);
@@ -48,7 +48,7 @@ public class AppTest {
          //构造Producer
          ProducerImpl producer = null;
          try {
-            producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("songtong"), config);
+            producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("xx"), config);
          } catch (Exception e) {
             e.printStackTrace();
          }
@@ -60,11 +60,12 @@ public class AppTest {
          int i = 0;
 
          //发送消息
-         //while (true) {
-         for (i = 0, strRet = ""; i < MAX_NUM; i++) {
+         while (true) {
+//         for (i = 0, strRet = ""; i < MAX_NUM; i++) {
             try {
                //发送消息
-               strRet = producer.sendMessage("new " + pre + (++sentNum));
+               strRet = producer.sendMessage("new " + pre + (++sentNum), "张宇");
+               strRet = producer.sendMessage("new " + pre + (++sentNum), "宋通");
             } catch (SendFailedException e) {
                e.printStackTrace();
             }

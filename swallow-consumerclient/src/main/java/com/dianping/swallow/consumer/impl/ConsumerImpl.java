@@ -17,8 +17,6 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.common.internal.codec.JsonDecoder;
 import com.dianping.swallow.common.internal.codec.JsonEncoder;
-import com.dianping.swallow.common.internal.config.DynamicConfig;
-import com.dianping.swallow.common.internal.config.impl.LionDynamicConfig;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.message.Destination;
@@ -33,10 +31,6 @@ public class ConsumerImpl implements Consumer{
 
    private static final Logger LOG                          = LoggerFactory.getLogger(ConsumerImpl.class);
 
-   private static final String LION_CONFIG_FILENAME         = "swallow-consumerclient-lion.properties";
-
-   private static final String TOPICNAME_DEFAULT            = "default";
-
    private String              consumerId;
 
    private Destination         dest;
@@ -44,8 +38,6 @@ public class ConsumerImpl implements Consumer{
    private ClientBootstrap     bootstrap;
 
    private MessageListener     listener;
-
-   private final static String LION_KEY_CONSUMER_SERVER_URI = "swallow.consumer.consumerServerURI";
 
    private InetSocketAddress   masterAddress;
 
@@ -99,23 +91,26 @@ public class ConsumerImpl implements Consumer{
       return config;
    }
 
-   public ConsumerImpl(Destination dest, ConsumerConfig config) {
-      this(dest, null, config);
+   public ConsumerImpl(Destination dest, ConsumerConfig config, InetSocketAddress masterAddress, InetSocketAddress slaveAddress) {
+      this(dest, null, config, masterAddress, slaveAddress);
    }
    
-   public ConsumerImpl(Destination dest, String consumerId, ConsumerConfig config) {
+   public ConsumerImpl(Destination dest, String consumerId, ConsumerConfig config, InetSocketAddress masterAddress, InetSocketAddress slaveAddress) {
       this.dest = dest;
       this.consumerId = consumerId;
       this.config = config == null ? new ConsumerConfig() : config;
-      String swallowCAddress = getSwallowCAddress(dest.getName());
-      string2Address(swallowCAddress);
+      this.masterAddress = masterAddress;
+      this.slaveAddress = slaveAddress;
    }
 
    /**
     * 开始连接服务器，同时把连slave的线程启起来。
     */
    public void start() {
-      //TODO 检查MessageListener是否是null
+      if(listener == null){
+         LOG.error("MessageListener is null");
+         return;
+      }
       if(started.compareAndSet(false, true)) {
          init();
          ConsumerSlaveThread slave = new ConsumerSlaveThread();
@@ -126,7 +121,6 @@ public class ConsumerImpl implements Consumer{
          slaveThread.start();
          while (true) {
             synchronized (bootstrap) {
-               //TODO bootstrap是否能重用
                try {
                   ChannelFuture future = bootstrap.connect(masterAddress);
                   future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！     
@@ -161,48 +155,6 @@ public class ConsumerImpl implements Consumer{
             return pipeline;
          }
       });
-   }
-
-   private void string2Address(String swallowCAddress) {
-      String[] ipAndPorts = swallowCAddress.split(",");
-      String masterIp = ipAndPorts[0].split(":")[0];
-      int masterPort = Integer.parseInt(ipAndPorts[0].split(":")[1]);
-      String slaveIp = ipAndPorts[1].split(":")[0];
-      int slavePort = Integer.parseInt(ipAndPorts[1].split(":")[1]);
-      masterAddress = new InetSocketAddress(masterIp, masterPort);
-      slaveAddress = new InetSocketAddress(slaveIp, slavePort);
-
-   }
-
-   private String getSwallowCAddress(String topicName) {
-      DynamicConfig dynamicConfig = new LionDynamicConfig(LION_CONFIG_FILENAME);
-      String lionValue = dynamicConfig.get(LION_KEY_CONSUMER_SERVER_URI);
-      return getAddressByParseLionValue(lionValue, topicName);
-   }
-
-   /**
-    * 
-    * @param lionValue swallow.consumer.consumerServerURI=default=127.0.0.1:8081,127.0.0.1:8082;feed,topicForUnitTest=127.0.0.1:8083,127.0.0.1:8084
-    * @param topicName
-    * @return
-    */
-   private String getAddressByParseLionValue(String lionValue, String topicName) {
-      String swallowAddress = null;
-      label: for (String topicNameToAddress : lionValue.split(";")) {
-         String[] splits = topicNameToAddress.split("=");
-         String address = splits[1];
-         String topicNameStr = splits[0];
-         for (String tempTopicName : topicNameStr.split(",")) {
-            if (TOPICNAME_DEFAULT.equals(tempTopicName)) {
-               swallowAddress = address;
-            }
-            if (topicName.equals(tempTopicName)) {
-               swallowAddress = address;
-               break label;
-            }
-         }
-      }
-      return swallowAddress;
    }
 
    @Override
