@@ -14,6 +14,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.jboss.netty.channel.Channel;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,10 @@ import com.dianping.swallow.consumerserver.worker.ConsumerWorkerImpl;
 import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
 public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
-
+   @Autowired
+   private AckDAO ackDAO;
+   @Autowired
+   private MessageDAO messageDAO;
    @Autowired
    private ConsumerWorkerManager consumerWorkerManager;
    private Set<SwallowMessage>      messageSetChecker = new HashSet<SwallowMessage>();
@@ -56,28 +60,36 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
       return true;
    }
    
-   private void mockDao(){
+   @Before
+   public void mockDao(){
       SwallowBuffer swallowBuffer = mock(SwallowBuffer.class);
       CloseableBlockingQueue<Message> messageQueue = new MockedCloseableBlockingQueue<Message>();
       
       makeMessages(messageQueue);
       when(swallowBuffer.createMessageQueue(Matchers.anyString(), Matchers.anyString(), Matchers.anyLong(),
             (MessageFilter)Matchers.anyObject())).thenReturn(messageQueue);
-      AckDAO ackDAO = mock(AckDAO.class);
-      //doReturn(print()).when(ackDAO).add(Matchers.anyString(), Matchers.anyString(), Matchers.anyLong(), Matchers.anyString());
-      MessageDAO messageDAO = mock(MessageDAO.class);
-      when(ackDAO.getMaxMessageId("xx", "dp1")).thenReturn(123456L);
-      when(ackDAO.getMaxMessageId("xxx", "dp1")).thenReturn(null);
-      when(ackDAO.getMaxMessageId("xx", "dp11")).thenReturn(null);
-      when(messageDAO.getMaxMessageId("xx")).thenReturn(234567L);
-      when(messageDAO.getMaxMessageId("xxx")).thenReturn(null);
+//      AckDAO ackDAO = mock(AckDAO.class);
+//      //doReturn(print()).when(ackDAO).add(Matchers.anyString(), Matchers.anyString(), Matchers.anyLong(), Matchers.anyString());
+//      MessageDAO messageDAO = mock(MessageDAO.class);
+//      when(ackDAO.getMaxMessageId("xx", "dp1")).thenReturn(123456L);
+//      when(ackDAO.getMaxMessageId("xxx", "dp1")).thenReturn(null);
+//      when(ackDAO.getMaxMessageId("xx", "dp11")).thenReturn(null);
+//      when(messageDAO.getMaxMessageId("xx")).thenReturn(234567L);
+//      when(messageDAO.getMaxMessageId("xxx")).thenReturn(null);
+//      
+//      consumerWorkerManager.setAckDAO(ackDAO);
+//      consumerWorkerManager.setMessageDAO(messageDAO);
+      //准备数据
+      ackDAO.add("xx", "dp1", 123456L, "127.0.0.1");
+      SwallowMessage message = new SwallowMessage();
+      message.setContent("this is a SwallowMessage");
+      messageDAO.saveMessage("xx", message);
       
-      consumerWorkerManager.setAckDAO(ackDAO);
-      consumerWorkerManager.setMessageDAO(messageDAO);
       consumerWorkerManager.setSwallowBuffer(swallowBuffer);
    }
    
-   private void mockChannel(){      
+   @Before
+   public void mockChannel(){      
       channel = mock(Channel.class);
       when(channel.getRemoteAddress()).thenReturn(new InetSocketAddress("127.0.0.1", 8081));
       when(channel.isConnected()).thenReturn(true);
@@ -104,8 +116,8 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
     */
    @Test
    public void testHandleGreet_NON_DURABLE() throws InterruptedException{
-      mockChannel();
-      mockDao();
+//      mockChannel();
+//      mockDao();
     ConsumerId consumerId2 = new ConsumerId("dp11", Destination.topic("xx"));
     ConsumerInfo consumerInfo2 = new ConsumerInfo(consumerId2, ConsumerType.NON_DURABLE);      
     consumerWorkerManager.handleGreet(channel, consumerInfo2, 50, null);
@@ -119,8 +131,8 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
     */
    @Test
    public void testHandleGreet_topicFirst() throws InterruptedException{
-      mockChannel();
-      mockDao();
+//      mockChannel();
+//      mockDao();
       ConsumerId consumerId3 = new ConsumerId("dp1", Destination.topic("xxx"));
       ConsumerInfo consumerInfo3 = new ConsumerInfo(consumerId3, ConsumerType.AT_MOST_ONCE);      
       consumerWorkerManager.handleGreet(channel, consumerInfo3, 50, null);
@@ -133,8 +145,8 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
     */
    @Test
    public void testHandleGreet_consumerFirst() throws InterruptedException{
-      mockChannel();
-      mockDao();
+//      mockChannel();
+//      mockDao();
     ConsumerId consumerId2 = new ConsumerId("dp11", Destination.topic("xx"));
     ConsumerInfo consumerInfo2 = new ConsumerInfo(consumerId2, ConsumerType.AT_MOST_ONCE);      
     consumerWorkerManager.handleGreet(channel, consumerInfo2, 50, null);
@@ -148,9 +160,9 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
     */
    @Test
    public void testHandleGreet() throws InterruptedException {
-           
-      mockChannel();
-      mockDao();
+//           
+//      mockChannel();
+//      mockDao();
       
       ConsumerId consumerId1 = new ConsumerId("dp1", Destination.topic("xx"));
       ConsumerInfo consumerInfo1 = new ConsumerInfo(consumerId1, ConsumerType.AT_LEAST_ONCE);      

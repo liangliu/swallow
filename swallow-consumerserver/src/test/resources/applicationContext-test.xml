@@ -11,6 +11,13 @@
 		class="com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager">
 	</bean>
 	
+	<bean id="ackDAO"
+        class="com.dianping.swallow.common.internal.dao.impl.mongodb.AckDAOImpl">
+    </bean>
+
+    <bean id="messageDAO"
+        class="com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl">
+    </bean>
 
 	<bean id="heartbeatDAO"
 		class="com.dianping.swallow.common.internal.dao.impl.mongodb.HeartbeatDAOImpl">
