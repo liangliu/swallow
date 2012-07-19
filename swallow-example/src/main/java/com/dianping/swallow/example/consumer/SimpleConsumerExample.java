@@ -25,5 +25,10 @@ public class SimpleConsumerExample {
       });
       c.start();
    }
-   
+   private CloseableBlockingQueue<Message> messageQueue = new MockedCloseableBlockingQueue<Message>();
 }
+<property name="messageFilter">
+			<ref bean="messageFilter" />
+		</property>
+		
+		swallow.consumer.consumerServerURI=default=master ip port ,slave ip port；topicName=master ip port,slave ip port
