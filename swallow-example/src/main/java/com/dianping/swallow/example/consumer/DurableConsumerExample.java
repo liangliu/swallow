@@ -7,7 +7,7 @@ import com.dianping.swallow.consumer.ConsumerConfig;
 import com.dianping.swallow.consumer.MessageListener;
 import com.dianping.swallow.consumer.impl.ConsumerFactoryImpl;
 
-public class SimpleConsumerExample {
+public class DurableConsumerExample {
 
    public static void main(String[] args) {
       ConsumerConfig config = new ConsumerConfig();
