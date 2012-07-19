@@ -69,8 +69,7 @@ public class SlaveBootStrap {
       ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumerserver.xml" });
       ConfigManager configManager = ConfigManager.getInstance();
       
-      final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
-      consumerWorkerManager.init(isSlave);
+      final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);      
       
       Heartbeater heartbeater = ctx.getBean(Heartbeater.class);
       
@@ -101,7 +100,7 @@ public class SlaveBootStrap {
             LOG.info("slave interruptted, will stop", e);
             break;
          }
-         
+         consumerWorkerManager.init(isSlave);
          // Configure the server.
          bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
                Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
