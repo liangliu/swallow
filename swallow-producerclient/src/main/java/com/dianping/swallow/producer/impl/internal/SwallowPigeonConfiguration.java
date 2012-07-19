@@ -33,14 +33,22 @@ public class SwallowPigeonConfiguration {
       //默认配置
    }
 
+   @Override
+   public String toString() {
+      return "serviceName=" + serviceName + "; serialize=" + serialize + "; timeout=" + timeout + "; useLion="
+            + useLion + (useLion == false ? "; hosts=" + hosts + "; weights=" + weights : "");
+   }
+
    @SuppressWarnings("rawtypes")
    public SwallowPigeonConfiguration(String configFile) {
       Properties props = new Properties();
       Class clazz = this.getClass();
       InputStream in = null;
       in = SwallowPigeonConfiguration.class.getClassLoader().getResourceAsStream(configFile);
-      if (in == null)
+      if (in == null) {
+         logger.warn("No ProducerFactory config file, use default values: ["+ this.toString() + "]");
          return;
+      }
       try {
          props.load(in);
       } catch (IOException e) {
@@ -107,6 +115,7 @@ public class SwallowPigeonConfiguration {
       checkSerialize();
       checkTimeout();
       checkUseLion();
+      logger.info("ProducerFactory configuration: ["+ this.toString() + "]");
    }
 
    protected void checkSerialize() {

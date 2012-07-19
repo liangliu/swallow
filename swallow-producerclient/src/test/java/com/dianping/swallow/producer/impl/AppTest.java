@@ -62,8 +62,8 @@ public class AppTest {
          int i = 0;
 
          //发送消息
-         while (true) {
-//         for (i = 0, strRet = ""; i < MAX_NUM; i++) {
+//         while (true) {
+         for (i = 0, strRet = ""; i < MAX_NUM; i++) {
             try {
                //发送消息
                strRet = producer.sendMessage( pre + (++sentNum));
