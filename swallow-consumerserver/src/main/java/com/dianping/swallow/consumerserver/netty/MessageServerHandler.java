@@ -1,6 +1,5 @@
 package com.dianping.swallow.consumerserver.netty;
 
-import java.io.IOException;
 import java.util.UUID;
 
 import org.jboss.netty.channel.Channel;
@@ -99,15 +98,16 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
                clientThreadCount--;
                readyClose = Boolean.TRUE;
             }
+            ACKHandlerType handlerType = null;
             if (readyClose && clientThreadCount == 0) {
-               workerManager.handleAck(channel, consumerInfo, consumerPacket.getMessageId(),
-                     ACKHandlerType.CLOSE_CHANNEL);
+               handlerType = ACKHandlerType.CLOSE_CHANNEL;
             } else if (readyClose && clientThreadCount > 0) {
-               workerManager.handleAck(channel, consumerInfo, consumerPacket.getMessageId(), ACKHandlerType.NO_SEND);
+               handlerType = ACKHandlerType.NO_SEND;
             } else if (!readyClose) {
-               workerManager.handleAck(channel, consumerInfo, consumerPacket.getMessageId(),
-                     ACKHandlerType.SEND_MESSAGE);
+               handlerType = ACKHandlerType.SEND_MESSAGE;
             }
+            workerManager.handleAck(channel, consumerInfo, consumerPacket.getMessageId(),
+                  handlerType);
          }
       } else {
          LOG.warn("the received message is not PktConsumerMessage");
