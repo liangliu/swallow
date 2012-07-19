@@ -5,30 +5,19 @@
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/context
            http://www.springframework.org/schema/context/spring-context-3.0.xsd"
-           default-autowire="byName" >
+	default-autowire="byName">
 
-<bean id="consumerWorkerManager" scope="prototype"
-		class="com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager">
-	</bean>
-	
 	<bean id="ackDAO"
-        class="com.dianping.swallow.common.internal.dao.impl.mongodb.AckDAOImpl">
-    </bean>
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.AckDAOImpl">
+	</bean>
 
-    <bean id="messageDAO"
-        class="com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl">
-    </bean>
+	<bean id="messageDAO"
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl">
+	</bean>
 
 	<bean id="heartbeatDAO"
 		class="com.dianping.swallow.common.internal.dao.impl.mongodb.HeartbeatDAOImpl">
 	</bean>
-
-	<bean id="messageRetriever"
-		class="com.dianping.swallow.consumerserver.buffer.MongoDBMessageRetriever">
-		<property name="fetchSize" value="20" />
-	</bean>
-
-
 
 	<bean id="mongoClient"
 		class="com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient">
@@ -36,7 +25,5 @@
 			<value>swallow.mongo.consumerServerURI</value>
 		</constructor-arg>
 	</bean>
-
-
 
 </beans>
