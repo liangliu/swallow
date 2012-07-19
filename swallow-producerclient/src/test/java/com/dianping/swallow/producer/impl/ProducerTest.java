@@ -19,10 +19,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,13 +32,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Matchers;
 
-import sun.security.krb5.internal.crypto.Des;
-
 import com.dianping.swallow.common.internal.packet.Packet;
 import com.dianping.swallow.common.internal.packet.PacketType;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
+import com.dianping.swallow.common.internal.util.ZipUtil;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.SendFailedException;
@@ -54,16 +53,196 @@ import com.dianping.swallow.producer.impl.internal.SwallowPigeonConfiguration;
  * @author tong.song
  */
 public class ProducerTest {
-   private static ProducerSwallowService normalRemoteService    = mock(ProducerSwallowService.class);
-   private static ProducerSwallowService exceptionRemoteService = mock(ProducerSwallowService.class);
+   public static final ProducerSwallowService normalRemoteService    = mock(ProducerSwallowService.class);
+   public static final ProducerSwallowService exceptionRemoteService = mock(ProducerSwallowService.class);
+   public static final Destination            dest                   = Destination.topic("UnitTest");
+   public static final String                 content                = "Hello UnitTest.";
+   public static final String                 producerIP             = "127.0.0.1";
+   public static final String                 producerVersion        = "0.6.0";
+   public static final PktSwallowPACK         ack                    = new PktSwallowPACK("MockACK");
 
    @BeforeClass
    public static void init() {
-      PktSwallowPACK ack = new PktSwallowPACK("MockACK");
-      when(normalRemoteService.sendMessage((Packet) anyObject())).thenReturn(ack);
+
+      when(normalRemoteService.sendMessage(Matchers.argThat(new Matcher<Packet>() {
+         PktMessage message;
+
+         @Override
+         public void describeTo(Description arg0) {
+         }
+
+         @Override
+         public void _dont_implement_Matcher___instead_extend_BaseMatcher_() {
+         }
+
+         @Override
+         public boolean matches(Object arg0) {
+            message = (PktMessage) arg0;
+            assertEquals(PacketType.OBJECT_MSG, message.getPacketType());
+            assertEquals(dest, message.getDestination());
+            if (message.getContent().getInternalProperties() != null) {
+               if ("gzip".equals(message.getContent().getInternalProperties().get("compress"))) {
+                  try {
+                     assertEquals(ZipUtil.zip(content), message.getContent().getContent());
+                  } catch (IOException e) {
+                  }
+               }
+            } else {
+               assertEquals(content, message.getContent().getContent());
+            }
+            return true;
+         }
+      }))).thenReturn(ack);
 
       when(exceptionRemoteService.sendMessage((Packet) anyObject())).thenThrow(new ServerDaoException(null));
 
+   }
+
+   @Test
+   public void testSyncProducerSendMessage() throws SendFailedException {
+      ProducerConfig config = new ProducerConfig();
+
+      config.setMode(ProducerMode.SYNC_MODE);
+      config.setRetryTimes(2);
+      config.setZipped(true);
+
+      ProducerImpl producer = new ProducerImpl(dest, config, producerIP, producerVersion, normalRemoteService, 5000);
+      String ret = producer.sendMessage(content);
+      assertEquals(ack.getShaInfo(), ret);
+
+      ProducerImpl expectionProducer = new ProducerImpl(dest, config, producerIP, producerVersion,
+            exceptionRemoteService, 5000);
+      String exRet = null;
+      try {
+         exRet = expectionProducer.sendMessage(content);
+      } catch (Exception e) {
+         assertNull(exRet);
+      }
+   }
+
+   @Test
+   public void testExceptionAsyncProducerSendMessage() throws SendFailedException {
+
+      ProducerConfig config = new ProducerConfig();
+
+      config.setMode(ProducerMode.ASYNC_MODE);
+      config.setRetryTimes(2);
+      config.setZipped(false);
+      config.setSendMsgLeftLastSession(false);
+      config.setThreadPoolSize(2);
+
+      ProducerImpl producer = new ProducerImpl(dest, config, producerIP, producerVersion, exceptionRemoteService, 5000);
+
+      for (int i = 0; i < 5; i++) {
+         String ret = producer.sendMessage(content);
+         assertNull(ret);
+      }
+      try {
+         Thread.sleep(2000);
+      } catch (Exception e) {
+      }
+   }
+
+   @Test
+   public void testNomalAsyncProducerSendMessageWithoutTypeAndProperties() throws SendFailedException {
+
+      ProducerConfig config = new ProducerConfig();
+
+      config.setMode(ProducerMode.ASYNC_MODE);
+      config.setRetryTimes(2);
+      config.setZipped(false);
+      config.setSendMsgLeftLastSession(false);
+      config.setThreadPoolSize(2);
+
+      ProducerImpl producer = new ProducerImpl(dest, config, producerIP, producerVersion, normalRemoteService, 5000);
+
+      for (int i = 0; i < 5; i++) {
+         String ret = producer.sendMessage(content);
+         assertNull(ret);
+      }
+      try {
+         Thread.sleep(2000);
+      } catch (Exception e) {
+      }
+   }
+
+   @Test
+   public void testNormalAsyncProducerSendMessageWithTypeAndPropertiesWhileZippedIsOn() throws SendFailedException {
+
+      ProducerConfig config = new ProducerConfig();
+
+      config.setMode(ProducerMode.ASYNC_MODE);
+      config.setRetryTimes(2);
+      config.setZipped(true);
+      config.setSendMsgLeftLastSession(true);
+      config.setThreadPoolSize(2);
+
+      ProducerImpl producer = new ProducerImpl(dest, config, producerIP, producerVersion, normalRemoteService, 5000);
+
+      Map<String, String> properties = new HashMap<String, String>();
+      properties.put("Hello", "World");
+      properties.put("小猫", "你好");
+
+      for (int i = 0; i < 5; i++) {
+         String ret = producer.sendMessage(content, properties, "UnitTest");
+         assertNull(ret);
+      }
+      try {
+         Thread.sleep(2000);
+      } catch (Exception e) {
+      }
+   }
+
+   //测试ProducerFactory
+   @Test
+   public void testProducerFactoryCreateProducer() throws RemoteServiceInitFailedException {
+
+      ProducerFactoryImpl producerFactory = null;
+      //获取Producer工厂实例
+      try {
+         producerFactory = ProducerFactoryImpl.getInstance();
+      } catch (RemoteServiceInitFailedException e) {
+         throw e;
+      }
+      assertNotNull(producerFactory);
+
+      //设置Producer选项
+      ProducerImpl producer = null;
+      ProducerConfig config = new ProducerConfig();
+
+      //传入的config为null
+      producer = (ProducerImpl) producerFactory.createProducer(dest, null);
+      assertNotNull(producer);
+      assertEquals(ProducerMode.SYNC_MODE, producer.getProducerConfig().getMode());
+      assertEquals(5, producer.getProducerConfig().getRetryTimes());
+      assertEquals(false, producer.getProducerConfig().isZipped());
+      assertEquals(5, producer.getProducerConfig().getThreadPoolSize());
+      assertEquals(false, producer.getProducerConfig().isSendMsgLeftLastSession());
+
+      producer = (ProducerImpl) producerFactory.createProducer(dest, config);
+      assertNotNull(producer);
+      assertEquals(ProducerMode.SYNC_MODE, producer.getProducerConfig().getMode());
+      assertEquals(5, producer.getProducerConfig().getRetryTimes());
+      assertEquals(false, producer.getProducerConfig().isZipped());
+      assertEquals(5, producer.getProducerConfig().getThreadPoolSize());
+      assertEquals(false, producer.getProducerConfig().isSendMsgLeftLastSession());
+
+      //测试创建异步模式的Producer
+      producer = null;
+
+      config.setMode(ProducerMode.ASYNC_MODE);
+      config.setRetryTimes(7);
+      config.setZipped(true);
+      config.setSendMsgLeftLastSession(true);
+      config.setThreadPoolSize(100);
+
+      producer = (ProducerImpl) producerFactory.createProducer(dest, config);
+      assertNotNull(producer);
+      assertEquals(ProducerMode.ASYNC_MODE, producer.getProducerConfig().getMode());
+      assertEquals(7, producer.getProducerConfig().getRetryTimes());
+      assertEquals(true, producer.getProducerConfig().isZipped());
+      assertEquals(100, producer.getProducerConfig().getThreadPoolSize());
+      assertEquals(true, producer.getProducerConfig().isSendMsgLeftLastSession());
    }
 
    @Test
@@ -146,281 +325,4 @@ public class ProducerTest {
       assertEquals("127.2.2.1:2000,125.36.321.123:1325", wrongConfig.getHosts());
       assertEquals("2,1", wrongConfig.getWeights());
    }
-
-   //测试ProducerFactory
-   @Test
-   public void testProducerFactoryCreateProducer() throws RemoteServiceInitFailedException {
-
-      ProducerFactoryImpl producerFactory = null;
-      //获取Producer工厂实例
-      try {
-         producerFactory = ProducerFactoryImpl.getInstance();
-      } catch (RemoteServiceInitFailedException e) {
-         throw e;
-      }
-      assertNotNull(producerFactory);
-
-      //设置Producer选项
-      ProducerImpl producer = null;
-      ProducerConfig config = new ProducerConfig();
-
-      //传入的config为null
-      producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("UnitTest"), null);
-      assertNotNull(producer);
-      assertEquals(ProducerMode.SYNC_MODE, producer.getProducerConfig().getMode());
-      assertEquals(5, producer.getProducerConfig().getRetryTimes());
-      assertEquals(false, producer.getProducerConfig().isZipped());
-      assertEquals(5, producer.getProducerConfig().getThreadPoolSize());
-      assertEquals(false, producer.getProducerConfig().isSendMsgLeftLastSession());
-
-      producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("UnitTest"), config);
-      assertNotNull(producer);
-      assertEquals(ProducerMode.SYNC_MODE, producer.getProducerConfig().getMode());
-      assertEquals(5, producer.getProducerConfig().getRetryTimes());
-      assertEquals(false, producer.getProducerConfig().isZipped());
-      assertEquals(5, producer.getProducerConfig().getThreadPoolSize());
-      assertEquals(false, producer.getProducerConfig().isSendMsgLeftLastSession());
-
-      //测试创建异步模式的Producer
-      producer = null;
-
-      config.setMode(ProducerMode.ASYNC_MODE);
-      config.setRetryTimes(7);
-      config.setZipped(true);
-      config.setSendMsgLeftLastSession(true);
-      config.setThreadPoolSize(100);
-
-      producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("UnitTest"), config);
-      assertNotNull(producer);
-      assertEquals(ProducerMode.ASYNC_MODE, producer.getProducerConfig().getMode());
-      assertEquals(7, producer.getProducerConfig().getRetryTimes());
-      assertEquals(true, producer.getProducerConfig().isZipped());
-      assertEquals(100, producer.getProducerConfig().getThreadPoolSize());
-      assertEquals(true, producer.getProducerConfig().isSendMsgLeftLastSession());
-   }
-
-   @Test
-   public void testNomalAsyncProducerSendMessageWithoutTypeAndProperties() throws SendFailedException {
-
-      ProducerConfig config = new ProducerConfig();
-
-      config.setMode(ProducerMode.ASYNC_MODE);
-      config.setRetryTimes(2);
-      config.setZipped(false);
-      config.setSendMsgLeftLastSession(false);
-      config.setThreadPoolSize(2);
-
-      ProducerImpl producer = new ProducerImpl(Destination.topic("UnitTest"), config, "127.0.0.1", "0.6.0",
-            normalRemoteService, 5000);
-
-      for (int i = 0; i < 10; i++) {
-         String ret = producer.sendMessage("Hello UnitTest.");
-         assertNull(ret);
-      }
-      try {
-         Thread.sleep(2000);
-      } catch (Exception e) {
-      }
-   }
-
-   @Test
-   public void testNormalAsyncProducerSendMessageWithTypeAndPropertiesWhileZippedIsOn() throws SendFailedException {
-
-      ProducerConfig config = new ProducerConfig();
-
-      config.setMode(ProducerMode.ASYNC_MODE);
-      config.setRetryTimes(2);
-      config.setZipped(true);
-      config.setSendMsgLeftLastSession(true);
-      config.setThreadPoolSize(2);
-
-      ProducerImpl producer = new ProducerImpl(Destination.topic("UnitTest"), config, "127.0.0.1", "0.6.0",
-            normalRemoteService, 5000);
-
-      Map<String, String> properties = new HashMap<String, String>();
-      properties.put("Hello", "World");
-      properties.put("小猫", "你好");
-
-      for (int i = 0; i < 10; i++) {
-         String ret = producer.sendMessage("Hello UnitTest.", properties, "Test");
-         assertNull(ret);
-      }
-      try {
-         Thread.sleep(2000);
-      } catch (Exception e) {
-      }
-   }
-
-   @Test
-   public void testExceptionAsyncProducerSendMessage() throws SendFailedException {
-
-      ProducerConfig config = new ProducerConfig();
-
-      config.setMode(ProducerMode.ASYNC_MODE);
-      config.setRetryTimes(2);
-      config.setZipped(false);
-      config.setSendMsgLeftLastSession(false);
-      config.setThreadPoolSize(2);
-
-      ProducerImpl producer = new ProducerImpl(Destination.topic("UnitTest"), config, "127.0.0.1", "0.6.0",
-            exceptionRemoteService, 5000);
-
-      for (int i = 0; i < 10; i++) {
-         String ret = producer.sendMessage("Hello UnitTest.");
-         assertNull(ret);
-      }
-   }
-
-   //   @Test
-   //   public void testAsyncProducerImpl() throws ServerDaoException {
-   //      //正常的mock
-   //      ProducerSwallowService normalRemoteServiceMock = mock(ProducerSwallowService.class);
-   //      PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
-   //
-   //      when(normalRemoteServiceMock.sendMessage(argThat(new Matcher<Packet>() {
-   //         @Override
-   //         public void describeTo(Description arg0) {
-   //         }
-   //
-   //         @Override
-   //         public void _dont_implement_Matcher___instead_extend_BaseMatcher_() {
-   //         }
-   //
-   //         @Override
-   //         public boolean matches(Object arg0) {
-   //            assertEquals(PacketType.OBJECT_MSG, ((Packet) arg0).getPacketType());
-   //            System.out.println(((PktMessage) arg0).getContent().toString());
-   //            return true;
-   //         }
-   //      }))).thenReturn(pktSwallowACK);
-   //
-   //      //抛异常的mock
-   //      ProducerSwallowService exceptionRemoteServiceMock = mock(ProducerSwallowService.class);
-   //      //设置异常remoteServiceMock的行为
-   //      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(
-   //            new SendFailedException(null));
-   //
-   //      //异步模式的pOptions
-   //      ProducerConfig config = new ProducerConfig();
-   //      config.setMode(ProducerMode.ASYNC_MODE);
-   //      config.setRetryTimes(1);
-   //      config.setZipped(false);
-   //      config.setSendMsgLeftLastSession(false);
-   //      config.setThreadPoolSize(2);
-   //
-   //      ProducerImpl normalProducer = new ProducerImpl(Destination.topic("UnitTest"), config, "127.0.0.1", "0.6.0",
-   //            normalRemoteServiceMock, 5000);
-   //
-   //      ProducerImpl exceptionProducer = new ProducerImpl(Destination.topic("UnitTest"), config, "127.0.0.1", "0.6.0",
-   //            exceptionRemoteServiceMock, 5000);
-   //
-   //      assertNotNull(normalProducer);
-   //      assertNotNull(exceptionProducer);
-   //      assertEquals(ProducerMode.ASYNC_MODE, normalProducer.getProducerConfig().getMode());
-   //      assertEquals(ProducerMode.ASYNC_MODE, exceptionProducer.getProducerConfig().getMode());
-   //      assertEquals(2, normalProducer.getProducerConfig().getRetryTimes());
-   //      assertEquals(2, exceptionProducer.getProducerConfig().getRetryTimes());
-   //      assertEquals(false, normalProducer.getProducerConfig().isZipped());
-   //      assertEquals(false, exceptionProducer.getProducerConfig().isZipped());
-   //      assertEquals(false, normalProducer.getProducerConfig().isSendMsgLeftLastSession());
-   //      assertEquals(false, exceptionProducer.getProducerConfig().isSendMsgLeftLastSession());
-   //      assertEquals(2, normalProducer.getProducerConfig().getThreadPoolSize());
-   //      assertEquals(2, exceptionProducer.getProducerConfig().getThreadPoolSize());
-   //
-   //      //测试异步模式下抛出异常的Producer
-   //      String strRet = "";
-   //      try {
-   //         for (int i = 0; i < 100; i++) {
-   //            strRet = exceptionProducer.sendMessage("Hello World.");
-   //            assertNull(strRet);
-   //         }
-   //      } catch (SendFailedException e) {
-   //      }
-   //
-   //      //测试异步模式下情况正常的Producer
-   //      strRet = "";
-   //      try {
-   //         for (int i = 0; i < 100; i++) {
-   //            strRet = normalProducer.sendMessage("Hello World.");
-   //            assertNull(strRet);
-   //         }
-   //      } catch (SendFailedException e) {
-   //      }
-   //   }
-   //
-   //   @Test
-   //   public void testSyncProducerImpl() throws ServerDaoException {
-   //
-   //      //正常的mock
-   //      ProducerSwallowService normalRemoteServiceMock = mock(ProducerSwallowService.class);
-   //      PktSwallowPACK pktSwallowACK = new PktSwallowPACK("MockACK");
-   //      when(normalRemoteServiceMock.sendMessage(argThat(new Matcher<Packet>() {
-   //         @Override
-   //         public void describeTo(Description arg0) {
-   //         }
-   //
-   //         @Override
-   //         public void _dont_implement_Matcher___instead_extend_BaseMatcher_() {
-   //         }
-   //
-   //         @Override
-   //         public boolean matches(Object arg0) {
-   //            assertEquals(PacketType.OBJECT_MSG, ((Packet) arg0).getPacketType());
-   //            System.out.println(((PktMessage) arg0).getContent().toString());
-   //            return true;
-   //         }
-   //      }))).thenReturn(pktSwallowACK);
-   //
-   //      //抛异常的mock
-   //      ProducerSwallowService exceptionRemoteServiceMock = mock(ProducerSwallowService.class);
-   //      //设置异常remoteServiceMock的行为
-   //      when(exceptionRemoteServiceMock.sendMessage((Packet) Matchers.anyObject())).thenThrow(
-   //            new ServerDaoException(null));
-   //
-   //      //同步模式的options
-   //      ProducerConfig config = new ProducerConfig();
-   //      config.setMode(ProducerMode.SYNC_MODE);
-   //      config.setRetryTimes(1);
-   //      config.setZipped(true);
-   //
-   //      ProducerImpl normalProducer = new ProducerImpl(Destination.topic("UnitTest"), config, "127.0.0.1", "0.6.0",
-   //            normalRemoteServiceMock, 5000);
-   //
-   //      ProducerImpl exceptionProducer = new ProducerImpl(Destination.topic("UnitTest"), config, "127.0.0.1", "0.6.0",
-   //            exceptionRemoteServiceMock, 5000);
-   //
-   //      assertNotNull(normalProducer);
-   //      assertEquals(true, normalProducer.getProducerConfig().isZipped());
-   //      assertEquals(ProducerMode.SYNC_MODE, normalProducer.getProducerConfig().getMode());
-   //      assertEquals(1, normalProducer.getProducerConfig().getRetryTimes());
-   //
-   //      assertNotNull(exceptionProducer);
-   //      assertEquals(true, exceptionProducer.getProducerConfig().isZipped());
-   //      assertEquals(ProducerMode.SYNC_MODE, exceptionProducer.getProducerConfig().getMode());
-   //      assertEquals(1, exceptionProducer.getProducerConfig().getRetryTimes());
-   //
-   //      Map<String, String> properties = new HashMap<String, String>();
-   //      properties.put("hello", "kitty");
-   //      //测试同步模式正常情况下的Producer
-   //      String strRet = null;
-   //      try {
-   //         strRet = normalProducer.sendMessage("Hello world.");
-   //         assertEquals(pktSwallowACK.getShaInfo(), strRet);
-   //         strRet = normalProducer.sendMessage("Hello world.", "Hello world.");
-   //         assertEquals(pktSwallowACK.getShaInfo(), strRet);
-   //         strRet = normalProducer.sendMessage("Hello world.", properties);
-   //         assertEquals(pktSwallowACK.getShaInfo(), strRet);
-   //      } catch (SendFailedException e) {
-   //         System.out.println(e.getMessage());
-   //      }
-   //
-   //      //测试同步模式下抛异常的Producer
-   //      strRet = null;
-   //      try {
-   //         strRet = exceptionProducer.sendMessage("Hello world.");
-   //      } catch (SendFailedException e) {
-   //         assertNotNull(e);
-   //      }
-   //      assertNull(strRet);
-   //   }
 }
