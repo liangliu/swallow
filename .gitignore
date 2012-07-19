@@ -3,6 +3,7 @@
 target/
 bin/
 .settings/
+.metadata/
 
 # Compiled source #
 ###################

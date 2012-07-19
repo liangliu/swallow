@@ -36,7 +36,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
    private final FileQueue<Packet>               messageQueue;                                                      //filequeue
    private final int                             delayBase;
 
-   private synchronized static FileQueue<Packet> getMessageQueue(String topicName, boolean SendMsgLeftLastSessions) {
+   private synchronized static FileQueue<Packet> getMessageQueue(String topicName, boolean sendMsgLeftLastSessions) {
       //如果Map里已经存在该filequeue，在要求“不续传”的情况下， 忽略该请求
       if (messageQueues.containsKey(topicName))
          return messageQueues.get(topicName);
@@ -44,7 +44,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
       FileQueueConfigHolder fileQueueConfig = new FileQueueConfigHolder();
       fileQueueConfig.setMaxDataFileSize(DEFAULT_FILEQUEUE_SIZE);
       //如果Map里不存在该filequeue，此handler又要求将之前的文件删除，则删除
-      FileQueue<Packet> newQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, topicName, SendMsgLeftLastSessions);
+      FileQueue<Packet> newQueue = new DefaultFileQueueImpl<Packet>(fileQueueConfig, topicName, sendMsgLeftLastSessions);
       messageQueues.put(topicName, newQueue);
       return messageQueues.get(topicName);
    }
@@ -92,6 +92,8 @@ public class HandlerAsynchroMode implements ProducerHandler {
          DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, DELAY_BASE_MULTI * delayBase);
 
          while (true) {
+            //重置延时
+            defaultPullStrategy.succeess();
             //从filequeue获取message，如果filequeue无元素则阻塞            
             message = messageQueue.get();
             //发送message，重试次数从Producer获取
@@ -115,8 +117,6 @@ public class HandlerAsynchroMode implements ProducerHandler {
                //如果发送成功则跳出循环
                break;
             }
-            //跳出循环，说明消息发送成功break，或重试次数消耗完，此时重置延时
-            defaultPullStrategy.succeess();
          }
       }
    }

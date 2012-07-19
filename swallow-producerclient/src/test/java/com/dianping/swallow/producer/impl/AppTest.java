@@ -29,14 +29,16 @@ public class AppTest {
 
    private class TestTask implements Runnable {
       private String pre;
-      public TestTask(String pre){
+      private int freq;
+      public TestTask(String pre, int freq){
          this.pre = pre;
+         this.freq = freq;
       }
       @Override
       public void run() {
          //设置Producer选项
          ProducerConfig config = new ProducerConfig();
-         config.setMode(ProducerMode.SYNC_MODE);
+         config.setMode(ProducerMode.ASYNC_MODE);
          config.setRetryTimes(3);
          config.setThreadPoolSize(3);
          config.setSendMsgLeftLastSession(false);
@@ -48,7 +50,7 @@ public class AppTest {
          //构造Producer
          ProducerImpl producer = null;
          try {
-            producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("xx"), config);
+            producer = (ProducerImpl) producerFactory.createProducer(Destination.topic("songtong"), config);
          } catch (Exception e) {
             e.printStackTrace();
          }
@@ -64,14 +66,13 @@ public class AppTest {
 //         for (i = 0, strRet = ""; i < MAX_NUM; i++) {
             try {
                //发送消息
-               strRet = producer.sendMessage("new " + pre + (++sentNum), "张宇");
-               strRet = producer.sendMessage("new " + pre + (++sentNum), "宋通");
+               strRet = producer.sendMessage( pre + (++sentNum));
             } catch (SendFailedException e) {
                e.printStackTrace();
             }
             //发送频率
             try {
-               Thread.sleep(1000);
+               Thread.sleep(freq);
             } catch (Exception e) {
             }
 
@@ -82,11 +83,15 @@ public class AppTest {
    }
 
    public void doTest() {
-      final int THREAD_NUM = 1;//线程数量
+      final int THREAD_NUM = 3;//线程数量
 
       for (int i = 0; i < THREAD_NUM; i++) {
-         Thread task = new Thread(new TestTask("thread " + i + ": "));
+         Thread task = new Thread(new TestTask("thread " + i + ": ", (i+1)*1000));
          task.start();
+         try{
+            Thread.sleep(5000);
+         }catch(Exception e){
+         }
       }
    }
 
