@@ -23,9 +23,6 @@
 		<property name="threadPoolSize">
 			<value>10</value>
 		</property>
-		<property name="messageFilter">
-			<ref bean="messageFilter" />
-		</property>
 	</bean>
 
 	<bean id="dest" class="com.dianping.swallow.common.message.Destination"
@@ -53,13 +50,24 @@
 			<ref local="messageListener" />
 		</property>
 	</bean>
+	<bean id="consumerConfig2" class="com.dianping.swallow.consumer.ConsumerConfig">
+		<property name="threadPoolSize">
+			<value>10</value>
+		</property>
+		<property name="messageFilter">
+			<ref bean="messageFilter" />
+		</property>
+		<property name="consumerType">
+			<value>NON_DURABLE</value>
+		</property>
+	</bean>
 	<bean id="nonDurableConsumerClient" factory-bean="consumerFactory"
 		factory-method="createConsumer">
 		<constructor-arg>
 			<ref bean="dest" />
 		</constructor-arg>
 		<constructor-arg>
-			<ref bean="consumerConfig" />
+			<ref bean="consumerConfig2" />
 		</constructor-arg>
 		<property name="listener">
 			<ref local="messageListener" />
