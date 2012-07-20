@@ -40,12 +40,12 @@ public class ProducerImpl implements Producer {
    private final ProducerHandler        producerHandler;
 
    /**
-    * 构造函数
-    * 
-    * @param producerFactory Producer工厂类对象
-    * @param dest Topic的Destination
-    * @param pOptions producer配置选项
-    * @throws TopicNameInvalidException topic名称非法时抛出此异常
+    * @param destination 此Producer发送消息的目的地
+    * @param producerConfig Producer的配置信息
+    * @param producerIP 本机IP地址
+    * @param producerVersion Producer版本号
+    * @param remoteService 远程调用服务接口
+    * @param remoteServiceTimeout 远程调用超时
     */
    public ProducerImpl(Destination destination, ProducerConfig producerConfig, String producerIP,
                        String producerVersion, ProducerSwallowService remoteService, int remoteServiceTimeout) {
@@ -79,7 +79,7 @@ public class ProducerImpl implements Producer {
     * 将Object类型的content发送到指定的Destination
     * 
     * @param content 待发送的消息内容
-    * @return 异步模式返回null，同步模式返回content的SHA-1字符串
+    * @return 异步模式返回null，同步模式返回将content转化为json字符串后，与其对应的SHA-1签名
     * @throws SendFailedException 发送失败则抛出此异常
     */
    @Override
@@ -230,7 +230,9 @@ public class ProducerImpl implements Producer {
    public Destination getDestination() {
       return destination;
    }
-
+   /**
+    * @return 远程调用超时
+    */
    public int getRemoteServiceTimeout() {
       return remoteServiceTimeout;
    }

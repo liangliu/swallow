@@ -40,18 +40,17 @@ public class ProducerFactoryImpl implements ProducerFactory {
    private static ProducerFactoryImpl       instance;                                                             //Producer工厂类单例
    private static final Logger              logger           = LoggerFactory.getLogger(ProducerFactoryImpl.class);
 
-   private static final String              CONFIG_FILE_NAME = "swallow-producerclient-pigeon.properties";
+   private static final String              CONFIG_FILE_NAME = "swallow-producerclient-pigeon.properties";        //配置文件名称
 
    private final String                     producerIP       = IPUtil.getFirstNoLoopbackIP4Address();             //Producer IP地址
    private final String                     producerVersion  = "0.6.0";                                           //Producer版本号
-   private final SwallowPigeonConfiguration pigeonConfigure;
+   private final SwallowPigeonConfiguration pigeonConfigure;                                                      //ProducerFactory配置类
    private final ProducerSwallowService     remoteService;                                                        //远程调用对象
 
    /**
     * Producer工厂类构造函数
     * 
-    * @param timeout 远程调用超时
-    * @throws RemoteServiceInitFailedException 远程调用初始化失败
+    * @throws RemoteServiceInitFailedException 远程调用服务（pigeon）初始化失败
     */
    protected ProducerFactoryImpl() throws RemoteServiceInitFailedException {
       //初始化远程调用
@@ -62,7 +61,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    /**
     * 初始化远程调用服务（pigeon）
     * 
-    * @param remoteServiceTimeout 远程调用超时：APP可以忍受的远程调用的最长返回时间
+    * @param pigeonConfigure ProducerFactory配置对象
     * @return 实现MQService接口的类，此版本中为pigeon返回的一个远程调用服务代理
     * @throws RemoteServiceInitFailedException 远程调用服务（pigeon）初始化失败
     */
@@ -98,9 +97,8 @@ public class ProducerFactoryImpl implements ProducerFactory {
    /**
     * 获取Producer工厂类单例的函数
     * 
-    * @param timeout 远程调用超时，如果小于零，则使用默认超时
     * @return Producer工程类单例
-    * @throws RemoteServiceInitFailedException 远程调用初始化失败
+    * @throws RemoteServiceInitFailedException 远程调用服务（pigeon）初始化失败
     */
    public static synchronized ProducerFactoryImpl getInstance() throws RemoteServiceInitFailedException {
       if (instance == null)
@@ -109,9 +107,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    }
 
    /**
-    * 获取默认配置的Producer，默认Producer工作模式为同步，重试次数为5
-    * 
-    * @throws RemoteServiceInitFailedException Producer尝试连接远程服务失败
+    * 获取指定{@link Destination}，默认{@link ProducerConfig}的Producer
     */
    @Override
    public Producer createProducer(Destination dest) {

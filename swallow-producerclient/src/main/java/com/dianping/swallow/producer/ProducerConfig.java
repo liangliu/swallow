@@ -4,7 +4,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Producer配置
+ * Producer配置，默认构造函数生成的配置为：<br />
+ * <table>
+ * <tr>
+ * <td>mode</td>
+ * <td>=</td>
+ * <td>{@link ProducerMode}.SYNC_MODE</td>
+ * </tr>
+ * <tr>
+ * <td>retryTimes</td>
+ * <td>=</td>
+ * <td>5</td>
+ * </tr>
+ * <tr>
+ * <td>zipped</td>
+ * <td>=</td>
+ * <td>false</td>
+ * </tr>
+ * <tr>
+ * <td>threadPoolSize</td>
+ * <td>=</td>
+ * <td>5</td>
+ * </tr>
+ * <tr>
+ * <td>sendMsgLeftLastSession</td>
+ * <td>=</td>
+ * <td>false</td>
+ * </tr>
+ * </table>
  * 
  * @author tong.song
  */
@@ -32,14 +59,17 @@ public class ProducerConfig {
    }
 
    /**
-    * 设置消息发送模式，默认为同步(SYNC_MODE)
+    * 设置消息发送模式，默认为同步{@link ProducerMode}<code>.SYNC_MODE</code>
     * 
-    * @param mode
+    * @param mode Producer工作模式
     */
    public void setMode(ProducerMode mode) {
       this.mode = mode;
    }
 
+   /**
+    * @return 发送失败重试次数
+    */
    public int getRetryTimes() {
       return retryTimes;
    }
@@ -58,28 +88,35 @@ public class ProducerConfig {
       this.retryTimes = retryTimes;
    }
 
+   /**
+    * @return 是否对待发送消息进行压缩
+    */
    public boolean isZipped() {
       return zipped;
    }
 
    /**
     * 设置是否压缩存储消息，默认为false<br>
-    * Swallow将尝试进行压缩，如果压缩失败，则原文存储，不会作额外通知。
+    * Swallow将尝试进行压缩，如果压缩失败，则原文存储，不会作额外通知
     * 
-    * @param zipped
+    * @param zipped 是否压缩
     */
    public void setZipped(boolean zipped) {
       this.zipped = zipped;
    }
 
+   /**
+    * @return 异步模式下线程池大小
+    */
    public int getThreadPoolSize() {
       return threadPoolSize;
    }
 
    /**
-    * 设置异步模式(ASYNC_MODE)下发送线程池的线程数，默认为5
+    * 设置异步模式（{@link ProducerMode}<code>.ASYNC_MODE</code>
+    * ）从FileQueue获取并发送消息的线程数量，默认为5
     * 
-    * @param threadPoolSize
+    * @param threadPoolSize 线程池大小
     */
    public void setThreadPoolSize(int threadPoolSize) {
       if (threadPoolSize <= 0 || threadPoolSize > MAX_THREADPOOL_SIZE) {
@@ -91,6 +128,9 @@ public class ProducerConfig {
       this.threadPoolSize = threadPoolSize;
    }
 
+   /**
+    * @return 异步模式时，重启Producer是否继续上次未完成的发送
+    */
    public boolean isSendMsgLeftLastSession() {
       return sendMsgLeftLastSession;
    }
