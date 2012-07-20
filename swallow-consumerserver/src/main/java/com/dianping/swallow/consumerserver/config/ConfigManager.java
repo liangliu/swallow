@@ -29,6 +29,7 @@ public class ConfigManager {
    private int                  heartbeatCheckInterval          = 3000;
    private int                  heartbeatMaxStopTime            = 10000;
    private int                  heartbeatUpdateInterval         = 4000;
+   private int                  maxClientThreadCount            = 100;
    private int                  masterPort                      = 8081;
    private int                  slavePort                       = 8082;
 
@@ -37,6 +38,10 @@ public class ConfigManager {
 
    public int getPullFailDelayBase() {
       return pullFailDelayBase;
+   }
+
+   public int getMaxClientThreadCount() {
+      return maxClientThreadCount;
    }
 
    public int getMasterPort() {
@@ -78,7 +83,6 @@ public class ConfigManager {
    public int getHeartbeatCheckInterval() {
       return heartbeatCheckInterval;
    }
-
 
    /***
     * @return master consumer心跳最长的停止时间
