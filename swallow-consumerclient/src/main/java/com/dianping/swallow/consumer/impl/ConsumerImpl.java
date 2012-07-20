@@ -98,11 +98,14 @@ public class ConsumerImpl implements Consumer{
    }
    
    public ConsumerImpl(Destination dest, String consumerId, ConsumerConfig config, InetSocketAddress masterAddress, InetSocketAddress slaveAddress) {
-      if(ConsumerType.NON_DURABLE == config.getConsumerType() && consumerId != null) {
-         throw new IllegalArgumentException("ConsumerId should be null when consumer type is NON_DURABLE");
-      }
-      if(consumerId != null && !NameCheckUtil.isConsumerIdValid(consumerId)) {
-         throw new IllegalArgumentException("ConsumerId is invalid");
+      if(ConsumerType.NON_DURABLE == config.getConsumerType()){//非持久类型，不能有consumerId
+         if(consumerId != null) {
+            throw new IllegalArgumentException("ConsumerId should be null when consumer type is NON_DURABLE");
+         }
+      }else{//持久类型，需要验证consumerId
+         if(!NameCheckUtil.isConsumerIdValid(consumerId)) {
+            throw new IllegalArgumentException("ConsumerId is invalid");
+         }
       }
       this.dest = dest;
       this.consumerId = consumerId;

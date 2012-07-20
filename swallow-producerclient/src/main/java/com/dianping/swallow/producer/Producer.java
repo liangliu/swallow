@@ -26,34 +26,34 @@ import com.dianping.swallow.common.producer.exceptions.SendFailedException;
  */
 public interface Producer {
    /**
-    * @param content 消息体
-    * @return 同步：content转化为json字符串后的SHA-1签名，异步：null
-    * @throws SendFailedException 消息发送失败
+    * @param content 待发送的消息内容，类型为{@link Object}，不能为null，否则抛出{@link IllegalArgumentException}
+    * @return 同步模式：content转化为json字符串后的SHA-1签名，异步模式：null
+    * @throws SendFailedException 消息发送失败，可能的原因包括：网络、数据库及FileQueue故障
     */
    public String sendMessage(Object content) throws SendFailedException;
 
    /**
-    * @param content 消息体
-    * @param messageType 用于消息过滤，消息的类型
-    * @return 同步：content转化为json字符串后的SHA-1签名，异步：null
-    * @throws SendFailedException 消息发送失败
+    * @param content 待发送的消息内容，类型为{@link Object}，不能为null，否则抛出{@link IllegalArgumentException}
+    * @param messageType 消息类型，用于过滤指定类型的消息
+    * @return 同步模式：content转化为json字符串后的SHA-1签名，异步模式：null
+    * @throws SendFailedException 消息发送失败，可能的原因包括：网络、数据库及FileQueue故障
     */
    public String sendMessage(Object content, String messageType) throws SendFailedException;
 
    /**
-    * @param content 消息体
-    * @param properties key-value结构，作为消息的附加信息
-    * @return 同步：content转化为json字符串后的SHA-1签名，异步：null
-    * @throws SendFailedException 消息发送失败
+    * @param content 待发送的消息内容，类型为{@link Object}，不能为null，否则抛出{@link IllegalArgumentException}
+    * @param properties 消息属性，Key和Value类型非法时抛出{@link IllegalArgumentException}，Value可以为null
+    * @return 同步模式：content转化为json字符串后的SHA-1签名，异步模式：null
+    * @throws SendFailedException 消息发送失败，可能的原因包括：网络、数据库及FileQueue故障
     */
    public String sendMessage(Object content, Map<String, String> properties) throws SendFailedException;
 
    /**
-    * @param content 消息体
-    * @param properties key-value结构，作为消息的附加信息
-    * @param messageType 用于消息过滤，消息的类型
-    * @return 同步：content转化为json字符串后的SHA-1签名，异步：null
-    * @throws SendFailedException 消息发送失败
+    * @param content 待发送的消息内容，类型为{@link Object}，不能为null，否则抛出{@link IllegalArgumentException}
+    * @param properties 消息属性，Key和Value类型非法时抛出{@link IllegalArgumentException}，Value可以为null
+    * @param messageType 消息类型，用于过滤指定类型的消息
+    * @return 同步模式：content转化为json字符串后的SHA-1签名，异步模式：null
+    * @throws SendFailedException 消息发送失败，可能的原因包括：网络、数据库及FileQueue故障
     */
    public String sendMessage(Object content, Map<String, String> properties, String messageType)
          throws SendFailedException;

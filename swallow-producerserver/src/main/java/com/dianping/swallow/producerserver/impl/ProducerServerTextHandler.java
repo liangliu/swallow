@@ -13,6 +13,7 @@ import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
 import com.dianping.swallow.common.internal.dao.MessageDAO;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
+import com.dianping.swallow.common.internal.util.IPUtil;
 import com.dianping.swallow.common.internal.util.NameCheckUtil;
 import com.dianping.swallow.common.internal.util.SHAUtil;
 
@@ -44,37 +45,22 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    }
 
    @Override
-   public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-      logger.info("[Connection from " + e.getChannel().getRemoteAddress() + "]");
-      super.channelConnected(ctx, e);
-   }
-
-   @Override
-   public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-      logger.info("[Disconnection from " + e.getChannel().getRemoteAddress() + "]");
-      super.channelDisconnected(ctx, e);
-   }
-
-   @Override
    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
       //获取TextObject
       TextObject textObject = (TextObject) e.getMessage();
-      //获取sourceIP
-      String sourceIp = e.getRemoteAddress().toString();
       //生成SwallowMessage
       SwallowMessage swallowMessage = new SwallowMessage();
       swallowMessage.setContent(textObject.getContent());
       swallowMessage.setGeneratedTime(new Date());
       swallowMessage.setSha1(SHAUtil.generateSHA(swallowMessage.getContent()));
-      swallowMessage.setSourceIp(sourceIp.substring(sourceIp.indexOf("/") + 1, sourceIp.indexOf(":")));
+      swallowMessage.setSourceIp(IPUtil.getIpFromChannel(e.getChannel(), "127.0.0.1"));
 
       //初始化ACK对象
       TextACK textAck = new TextACK();
       textAck.setStatus(OK);
       //TopicName非法，返回失败ACK，reason是"TopicName is not valid."
       if (!NameCheckUtil.isTopicNameValid(textObject.getTopic())) {
-         logger.error("[Incorrect topic name.][From=" + e.getChannel().getRemoteAddress() + "][Content=" + textObject
-               + "]");
+         logger.error("[Incorrect topic name.][From=" + e.getRemoteAddress() + "][Content=" + textObject + "]");
          textAck.setStatus(INVALID_TOPIC_NAME);
          textAck.setInfo("TopicName is invalid.");
          //返回ACK

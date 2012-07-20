@@ -2,6 +2,7 @@ package com.dianping.swallow.producer.impl.internal;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -39,12 +40,12 @@ public class ProducerImpl implements Producer {
    private final ProducerHandler        producerHandler;
 
    /**
-    * 构造函数
-    * 
-    * @param producerFactory Producer工厂类对象
-    * @param dest Topic的Destination
-    * @param pOptions producer配置选项
-    * @throws TopicNameInvalidException topic名称非法时抛出此异常
+    * @param destination 此Producer发送消息的目的地
+    * @param producerConfig Producer的配置信息
+    * @param producerIP 本机IP地址
+    * @param producerVersion Producer版本号
+    * @param remoteService 远程调用服务接口
+    * @param remoteServiceTimeout 远程调用超时
     */
    public ProducerImpl(Destination destination, ProducerConfig producerConfig, String producerIP,
                        String producerVersion, ProducerSwallowService remoteService, int remoteServiceTimeout) {
@@ -78,7 +79,7 @@ public class ProducerImpl implements Producer {
     * 将Object类型的content发送到指定的Destination
     * 
     * @param content 待发送的消息内容
-    * @return 异步模式返回null，同步模式返回content的SHA-1字符串
+    * @return 异步模式返回null，同步模式返回将content转化为json字符串后，与其对应的SHA-1签名
     * @throws SendFailedException 发送失败则抛出此异常
     */
    @Override
@@ -122,6 +123,7 @@ public class ProducerImpl implements Producer {
     * @throws SendFailedException 发送失败则抛出此异常
     */
    @Override
+   @SuppressWarnings("rawtypes")
    public String sendMessage(Object content, Map<String, String> properties, String messageType)
          throws SendFailedException {
       if (content == null) {
@@ -144,8 +146,16 @@ public class ProducerImpl implements Producer {
 
          if (messageType != null)
             swallowMsg.setType(messageType);
-         if (properties != null)
+         if (properties != null) {
+            Iterator propIter = properties.entrySet().iterator();
+            while (propIter.hasNext()) {
+               Map.Entry entry = (Map.Entry) propIter.next();
+               if (!(entry.getKey() instanceof String)
+                     || (entry.getValue() != null && !(entry.getValue() instanceof String)))
+                  throw new IllegalArgumentException("Type of properties should be Map<String, String>.");
+            }
             swallowMsg.setProperties(properties);
+         }
          //压缩选项为真：对通过SwallowMessage类转换过的json字符串进行压缩，压缩成功时将compress=gzip写入InternalProperties，
          //               压缩失败时将compress=failed写入InternalProperties
          //压缩选项为假：不做任何操作，InternalProperties中将不存在key为zip的项
@@ -220,7 +230,9 @@ public class ProducerImpl implements Producer {
    public Destination getDestination() {
       return destination;
    }
-
+   /**
+    * @return 远程调用超时
+    */
    public int getRemoteServiceTimeout() {
       return remoteServiceTimeout;
    }

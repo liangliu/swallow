@@ -106,7 +106,7 @@ public class ProducerServerForClientTest {
       //mock的lion配置
       DynamicConfig config = mock(LionDynamicConfig.class);
       when(config.get("swallow.mongo.producerServerURI")).thenReturn(
-            "default=mongodb://127.0.0.1:27016;feed=mongodb://127.0.0.1:21017");
+            "default=mongodb://127.0.0.1:27010;feed=mongodb://127.0.0.1:21011");
       when(config.get("swallow.mongo.msgCappedCollectionSize")).thenReturn("default=1024;feed,topicForUnitTest=1025");
       when(config.get("swallow.mongo.msgCappedCollectionMaxDocNum")).thenReturn(
             "default=1024;feed,topicForUnitTest=1025");
@@ -127,7 +127,7 @@ public class ProducerServerForClientTest {
       Assert.assertEquals(SHAUtil.generateSHA(swallowMessage.getContent()), ACK.getShaInfo());
 
       mongoClient.onConfigChange("swallow.mongo.producerServerURI",
-            "default=mongodb://127.0.0.1:27017;feed=mongodb://127.0.0.1:21016");
+            "default=mongodb://127.0.0.1:27010;feed=mongodb://127.0.0.1:21011");
 
       ACK = (PktSwallowPACK) producerServerForClient.sendMessage(pktMessage);
       Assert.assertEquals(PacketType.SWALLOW_P_ACK, ACK.getPacketType());
@@ -137,10 +137,10 @@ public class ProducerServerForClientTest {
 
    @BeforeClass
    public static void beforeClass() {
-      mockMongo = new MockMongo(27017);
+      mockMongo = new MockMongo(27010);
       mockMongo.start();
 
-      mockMongo2 = new MockMongo(27016);
+      mockMongo2 = new MockMongo(27011);
       mockMongo2.start();
    }
 

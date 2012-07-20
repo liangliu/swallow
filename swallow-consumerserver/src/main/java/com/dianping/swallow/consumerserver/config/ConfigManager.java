@@ -21,7 +21,7 @@ public class ConfigManager {
    // time related
    private int                  pullFailDelayBase               = 500;
    private int                  pullFailDelayUpperBound         = 3000;
-   private long                 checkConnectedChannelInterval   = 2000L;
+   private long                 checkConnectedChannelInterval   = 10000L;
    private long                 retryIntervalWhenMongoException = 2000L;
    private long                 waitAckTimeWhenCloseSwc         = 15000L;
    private long                 waitSlaveShutDown               = 3000L;
