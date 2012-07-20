@@ -71,7 +71,8 @@ public class ConsumerWorkerManager {
       if (worker != null) {
          worker.handleAck(channel, ackedMsgId, type);
       } else {
-         //TODO log warning
+         LOG.warn(consumerInfo + "ConsumerWorker is not exist!");
+         channel.close();
       }
    }
 

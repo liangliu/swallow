@@ -23,7 +23,7 @@ import com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.message.Message;
 
-@ContextConfiguration(loader = SpringockitoContextLoader.class, locations = "classpath:applicationContext.xml")
+@ContextConfiguration(loader = SpringockitoContextLoader.class, locations = "classpath:applicationContext-test.xml")
 public class SwallowBufferTest extends AbstractDAOImplTest {
    protected static final String TOPIC_NAME = "topicForUnitTest";
    protected static final String TYPE       = "feed";

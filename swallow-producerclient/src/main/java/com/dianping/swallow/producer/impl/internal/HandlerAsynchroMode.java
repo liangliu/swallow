@@ -25,17 +25,24 @@ import com.dianping.swallow.producer.ProducerHandler;
 public class HandlerAsynchroMode implements ProducerHandler {
    private static final Logger                   logger                 = LoggerFactory
                                                                               .getLogger(HandlerAsynchroMode.class);
-   private static final MQThreadFactory          threadFactory          = new MQThreadFactory();
+   private static final MQThreadFactory          threadFactory          = new MQThreadFactory();                     //从FileQueue中获取消息的线程池
 
    private static final int                      DEFAULT_FILEQUEUE_SIZE = 512 * 1024 * 1024;                        //默认的filequeue切片大小，512MB
-   private static final int                      DELAY_BASE_MULTI       = 5;
+   private static final int                      DELAY_BASE_MULTI       = 5;                                        //超时策略倍数
 
-   private static Map<String, FileQueue<Packet>> messageQueues          = new HashMap<String, FileQueue<Packet>>();
+   private static Map<String, FileQueue<Packet>> messageQueues          = new HashMap<String, FileQueue<Packet>>(); //当前TopicName与Filequeue对应关系的集合
 
    private final ProducerImpl                    producer;
-   private final FileQueue<Packet>               messageQueue;                                                      //filequeue
-   private final int                             delayBase;
+   private final FileQueue<Packet>               messageQueue;                                                      //Filequeue
+   private final int                             delayBase;                                                         //超时策略基数
 
+   /**
+    * 获取指定topicName及选项的FileQueue，如果已经存在则返回引用，如果不存在就创建新的FileQueue
+    * 
+    * @param topicName 消息目的地名称
+    * @param sendMsgLeftLastSessions 是否重启续传
+    * @return 指定参数的FileQueue
+    */
    private synchronized static FileQueue<Packet> getMessageQueue(String topicName, boolean sendMsgLeftLastSessions) {
       //如果Map里已经存在该filequeue，在要求“不续传”的情况下， 忽略该请求
       if (messageQueues.containsKey(topicName))
@@ -53,11 +60,14 @@ public class HandlerAsynchroMode implements ProducerHandler {
    public HandlerAsynchroMode(ProducerImpl producer) {
       this.producer = producer;
       delayBase = producer.getRemoteServiceTimeout();
-      messageQueue = getMessageQueue(producer.getDestination().getName(), producer.getProducerConfig().isSendMsgLeftLastSession());
+      messageQueue = getMessageQueue(producer.getDestination().getName(), producer.getProducerConfig()
+            .isSendMsgLeftLastSession());
       this.start();
    }
 
-   //对外的接口//异步处理只需将pkt放入filequeue即可，放入失败抛出异常
+   /**
+    * 异步处理只需将pkt放入filequeue即可，放入失败抛出异常
+    */
    @Override
    public Packet doSendMsg(Packet pkt) throws SendFailedException {
       try {

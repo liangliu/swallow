@@ -61,10 +61,14 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
          if (ConsumerMessageType.GREET.equals(consumerPacket.getType())) {
             if (!NameCheckUtil.isTopicNameValid(consumerPacket.getDest().getName())) {
                LOG.error("TopicName inValid from " + channel.getRemoteAddress());
-               //TODO close channel
+               channel.close();
+               return;
             }
             clientThreadCount = consumerPacket.getThreadCount();
-            //TODO ensure clientThreadCount < 100(configable)
+            if(clientThreadCount > workerManager.getConfigManager().getMaxClientThreadCount()){
+               LOG.warn(channel.getRemoteAddress() + " with " + consumerInfo + "clientThreadCount greater than MaxClientThreadCount(" + workerManager.getConfigManager().getMaxClientThreadCount() +")");
+               clientThreadCount = workerManager.getConfigManager().getMaxClientThreadCount();
+            }
             String strConsumerId = consumerPacket.getConsumerId();
             if(strConsumerId == null || strConsumerId.trim().length() == 0){
                consumerId = new ConsumerId(fakeCid(), consumerPacket.getDest());
@@ -72,7 +76,8 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
             }else{
                if(!NameCheckUtil.isConsumerIdValid(consumerPacket.getConsumerId())){
                   LOG.error("ConsumerId inValid from " + channel.getRemoteAddress());
-                  //TODO close channel
+                  channel.close();
+                  return;
                }
                consumerId = new ConsumerId(strConsumerId, consumerPacket.getDest());
                consumerInfo = new ConsumerInfo(consumerId, consumerPacket.getConsumerType());
@@ -93,7 +98,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
                         } catch (InterruptedException e) {
                            LOG.error("CloseChannelThread InterruptedException", e);
                         }
-                        //TODO channel.getRemoteAddress() shi fou hui pao yi chang, ru guo duan le 
+                        // channel.getRemoteAddress() 在channel断开后,不会抛异常
                         LOG.info("CloseChannelMaxWaitingTime reached, close channel " + channel.getRemoteAddress() + " with " + consumerInfo);
                         channel.close();
                         workerManager.handleChannelDisconnect(channel, consumerInfo);
