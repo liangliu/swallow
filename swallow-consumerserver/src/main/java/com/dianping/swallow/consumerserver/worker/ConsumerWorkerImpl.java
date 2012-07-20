@@ -116,7 +116,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
    //只有AT_LEAST_ONCE模式的consumer需要更新等待ack的message列表，AT_MOST_ONCE没有等待ack的message列表
    private void updateWaitAckMessages(Channel channel, Long ackedMsgId) {
-      if (ConsumerType.AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
+      if (ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
          Map<PktMessage, Boolean> messages = waitAckMessages.get(channel);
          if (messages != null) {
             SwallowMessage swallowMsg = new SwallowMessage();
@@ -130,15 +130,15 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
    }
 
    private void updateMaxMessageId(Long ackedMsgId, Channel channel) {
-      if (ackedMsgId != null && ConsumerType.AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
+      if (ackedMsgId != null && ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
          ackDao.add(topicName, consumerid, ackedMsgId, connectedChannels.get(channel));
       }
    }
 
    @Override
-   public void handleChannelDisconnect(Channel channel) {
+   public synchronized void handleChannelDisconnect(Channel channel) {
       connectedChannels.remove(channel);
-      if (ConsumerType.AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
+      if (ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
          Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
          if (messageMap != null) {
             for (Map.Entry<PktMessage, Boolean> messageEntry : messageMap.entrySet()) {
@@ -224,9 +224,10 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
                      long messageIdOfTailMessage = getMessageIdOfTailMessage(topicName, consumerid, channel);
                      messageQueue = swallowBuffer.createMessageQueue(topicName, consumerid, messageIdOfTailMessage,
                            messageFilter);
-                  } catch (Exception e) {
-                     LOG.error("sendMessageByPollFreeChannelQueue error!", e);
+                  } catch (RuntimeException e) {
+                     LOG.error("Error create message queue from SwallowBuffer!", e);
                      freeChannels.add(channel);
+                     Thread.sleep(configManager.getRetryIntervalWhenMongoException());
                      continue;
                   }
                }
@@ -249,13 +250,13 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       PktMessage preparedMessage = cachedMessages.poll();
       Long messageId = preparedMessage.getContent().getMessageId();
       //如果是AT_MOST模式，收到ACK之前更新messageId的类型
-      if (ConsumerType.AT_MOST_ONCE.equals(consumerInfo.getConsumerType())) {
+      if (ConsumerType.DURABLE_AT_MOST_ONCE.equals(consumerInfo.getConsumerType())) {
          ackDao.add(topicName, consumerid, messageId, connectedChannels.get(channel));
       }
       try {
          channel.write(preparedMessage);
          //如果是AT_LEAST模式，发送完后，在server端记录已发送但未收到ACK的消息记录
-         if (ConsumerType.AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
+         if (ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
             Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
             if (messageMap == null) {
                messageMap = new ConcurrentHashMap<PktMessage, Boolean>();
@@ -263,7 +264,7 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
             }
             messageMap.put(preparedMessage, Boolean.TRUE);
          }
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
          LOG.error(consumerInfo.toString() + "：channel write error.", e);
          cachedMessages.add(preparedMessage);
       }
@@ -341,6 +342,13 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
 
       public boolean isStarted() {
          return started;
+      }
+      
+      public String getMessageFilter() {
+         if (messageFilter != null) {
+            return messageFilter.toString();
+         }
+         return null;
       }
 
    }

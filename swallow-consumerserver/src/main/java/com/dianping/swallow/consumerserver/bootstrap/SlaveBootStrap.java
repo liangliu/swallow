@@ -91,6 +91,9 @@ public class SlaveBootStrap {
 
       });
 
+      LOG.info("slave starting, master ip: " + configManager.getMasterIp());
+      consumerWorkerManager.init(isSlave);
+      
       while (!closed) {
          
          try {
@@ -100,7 +103,6 @@ public class SlaveBootStrap {
             LOG.info("slave interruptted, will stop", e);
             break;
          }
-         consumerWorkerManager.init(isSlave);
          // Configure the server.
          bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
                Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));

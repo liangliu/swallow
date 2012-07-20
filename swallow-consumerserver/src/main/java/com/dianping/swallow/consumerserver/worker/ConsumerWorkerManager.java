@@ -70,6 +70,8 @@ public class ConsumerWorkerManager {
       ConsumerWorker worker = findConsumerWorker(consumerInfo);
       if (worker != null) {
          worker.handleAck(channel, ackedMsgId, type);
+      } else {
+         //TODO log warning
       }
    }
 
@@ -114,11 +116,11 @@ public class ConsumerWorkerManager {
 
    public ConsumerWorker findOrCreateConsumerWorker(ConsumerInfo consumerInfo,MessageFilter messageFilter) {
       ConsumerWorker worker = findConsumerWorker(consumerInfo);
-      ConsumerId consumerId = consumerInfo.getConsumerId();
       if (worker == null) {
-         synchronized (this) {
-            if (worker == null) {
+         synchronized (consumerId2ConsumerWorker) {
+            if ( (worker = findConsumerWorker(consumerInfo)) == null) {
                worker = new ConsumerWorkerImpl(consumerInfo, this, messageFilter);
+               ConsumerId consumerId = consumerInfo.getConsumerId();
                consumerId2ConsumerWorker.put(consumerId, worker);
             }
          }

@@ -15,10 +15,12 @@ import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.internal.codec.JsonDecoder;
 import com.dianping.swallow.common.internal.codec.JsonEncoder;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
+import com.dianping.swallow.common.internal.util.NameCheckUtil;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.consumer.Consumer;
 import com.dianping.swallow.consumer.ConsumerConfig;
@@ -96,6 +98,12 @@ public class ConsumerImpl implements Consumer{
    }
    
    public ConsumerImpl(Destination dest, String consumerId, ConsumerConfig config, InetSocketAddress masterAddress, InetSocketAddress slaveAddress) {
+      if(ConsumerType.NON_DURABLE == config.getConsumerType() && consumerId != null) {
+         throw new IllegalArgumentException("ConsumerId should be null when consumer type is NON_DURABLE");
+      }
+      if(consumerId != null && !NameCheckUtil.isConsumerIdValid(consumerId)) {
+         throw new IllegalArgumentException("ConsumerId is invalid");
+      }
       this.dest = dest;
       this.consumerId = consumerId;
       this.config = config == null ? new ConsumerConfig() : config;

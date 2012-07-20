@@ -7,7 +7,7 @@ public class ConsumerConfig {
 
    private int           threadPoolSize = 1;
    private MessageFilter messageFilter  = MessageFilter.AllMatchFilter;
-   private ConsumerType        consumerType                 = ConsumerType.AT_MOST_ONCE;
+   private ConsumerType        consumerType                 = ConsumerType.DURABLE_AT_MOST_ONCE;
 
    public int getThreadPoolSize() {
       return threadPoolSize;
