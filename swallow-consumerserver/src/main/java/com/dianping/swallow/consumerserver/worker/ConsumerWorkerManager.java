@@ -94,6 +94,9 @@ public class ConsumerWorkerManager {
       for (Map.Entry<ConsumerId, ConsumerWorker> entry : consumerId2ConsumerWorker.entrySet()) {
          entry.getValue().closeAckExecutor();
       }
+      for (Map.Entry<ConsumerId, ConsumerWorker> entry : consumerId2ConsumerWorker.entrySet()) {
+         entry.getValue().close();
+      }
       closed = true;
       if (idleWorkerManagerCheckerThread != null) {
          try {
@@ -150,6 +153,7 @@ public class ConsumerWorkerManager {
                   if(worker.allChannelDisconnected()) {
                      worker.closeMessageFetcherThread();
                      worker.closeAckExecutor();
+                     worker.close();
                      workerDone(consumerId);
                      LOG.info("ConsumerWorker for " + consumerId + " has no connected channel, close it");
                   }
