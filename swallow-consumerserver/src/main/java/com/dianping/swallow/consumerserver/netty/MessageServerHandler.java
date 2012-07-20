@@ -61,18 +61,23 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
          if (ConsumerMessageType.GREET.equals(consumerPacket.getType())) {
             if (!NameCheckUtil.isTopicNameValid(consumerPacket.getDest().getName())) {
                LOG.error("TopicName inValid from " + channel.getRemoteAddress());
+               //TODO close channel
             }
-            clientThreadCount = consumerPacket.getThreadCount();            
-            if(consumerPacket.getConsumerId() == null){
+            clientThreadCount = consumerPacket.getThreadCount();
+            //TODO ensure clientThreadCount < 100(configable)
+            String strConsumerId = consumerPacket.getConsumerId();
+            if(strConsumerId == null || strConsumerId.trim().length() == 0){
                consumerId = new ConsumerId(fakeCid(), consumerPacket.getDest());
                consumerInfo = new ConsumerInfo(consumerId, ConsumerType.NON_DURABLE);
             }else{
                if(!NameCheckUtil.isConsumerIdValid(consumerPacket.getConsumerId())){
                   LOG.error("ConsumerId inValid from " + channel.getRemoteAddress());
+                  //TODO close channel
                }
-               consumerId = new ConsumerId(consumerPacket.getConsumerId(), consumerPacket.getDest());
+               consumerId = new ConsumerId(strConsumerId, consumerPacket.getDest());
                consumerInfo = new ConsumerInfo(consumerId, consumerPacket.getConsumerType());
-            }     
+            }
+            LOG.info("received greet from " + e.getChannel().getRemoteAddress() + " with " + consumerInfo);
             workerManager.handleGreet(channel, consumerInfo, clientThreadCount, consumerPacket.getMessageFilter());
          } 
          if(ConsumerMessageType.ACK.equals(consumerPacket.getType())){
@@ -88,6 +93,8 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
                         } catch (InterruptedException e) {
                            LOG.error("CloseChannelThread InterruptedException", e);
                         }
+                        //TODO channel.getRemoteAddress() shi fou hui pao yi chang, ru guo duan le 
+                        LOG.info("CloseChannelMaxWaitingTime reached, close channel " + channel.getRemoteAddress() + " with " + consumerInfo);
                         channel.close();
                         workerManager.handleChannelDisconnect(channel, consumerInfo);
                      }

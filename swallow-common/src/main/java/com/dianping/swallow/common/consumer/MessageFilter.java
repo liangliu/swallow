@@ -30,5 +30,10 @@ public class MessageFilter {
    public Set<String> getParam() {
       return param;
    }
+
+   @Override
+   public String toString() {
+      return "MessageFilter [param=" + param + ", type=" + type + "]";
+   }
    
 }

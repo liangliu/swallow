@@ -21,7 +21,9 @@ public class ConsumerInfo {
       return consumerType;
    }
 
+   @Override
    public String toString() {
-      return consumerId.getDest().getName() + ":" + consumerId.getConsumerId();
+      return "ConsumerInfo [consumerId=" + consumerId + ", consumerType=" + consumerType + "]";
    }
+   
 }

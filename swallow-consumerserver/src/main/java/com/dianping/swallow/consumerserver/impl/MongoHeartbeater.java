@@ -29,6 +29,7 @@ public class MongoHeartbeater implements Heartbeater {
       LOG.info("started to wait "+ip + " master stop beating");
       while (true) {
          Date beat = null;
+         //TODO ke zhu dao
          try {
             beat = heartbeatDAO.findLastHeartbeat(ip);
          } catch (Exception e) {
@@ -72,7 +73,6 @@ public class MongoHeartbeater implements Heartbeater {
             long lastBeatTime = beat.getTime();
             long now = System.currentTimeMillis();
             if (now - lastBeatTime < maxStopTime) {
-               //bootStrap.releaseExternalResources();
                break;
             }
          }
