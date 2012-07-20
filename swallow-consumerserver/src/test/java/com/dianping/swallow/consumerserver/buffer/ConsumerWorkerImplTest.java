@@ -154,7 +154,7 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
 //      mockChannel();
 //      mockDao();
       ConsumerId consumerId3 = new ConsumerId("dp1", Destination.topic("xxx"));
-      ConsumerInfo consumerInfo3 = new ConsumerInfo(consumerId3, ConsumerType.AT_MOST_ONCE);
+      ConsumerInfo consumerInfo3 = new ConsumerInfo(consumerId3, ConsumerType.DURABLE_AT_MOST_ONCE);
       consumerWorkerManager.handleGreet(channel, consumerInfo3, 50, null);
       Thread.sleep(3000);
       Assert.assertTrue(check(50));
@@ -170,7 +170,7 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
 //      mockChannel();
 //      mockDao();
       ConsumerId consumerId2 = new ConsumerId("dp11", Destination.topic("xx"));
-      ConsumerInfo consumerInfo2 = new ConsumerInfo(consumerId2, ConsumerType.AT_MOST_ONCE);
+      ConsumerInfo consumerInfo2 = new ConsumerInfo(consumerId2, ConsumerType.DURABLE_AT_MOST_ONCE);
       consumerWorkerManager.handleGreet(channel, consumerInfo2, 50, null);
       Thread.sleep(3000);
       Assert.assertTrue(check(50));
@@ -188,7 +188,7 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
 //      mockDao();
 
       ConsumerId consumerId1 = new ConsumerId("dp1", Destination.topic("xx"));
-      ConsumerInfo consumerInfo1 = new ConsumerInfo(consumerId1, ConsumerType.AT_LEAST_ONCE);
+      ConsumerInfo consumerInfo1 = new ConsumerInfo(consumerId1, ConsumerType.DURABLE_AT_LEAST_ONCE);
       consumerWorkerManager.handleGreet(channel, consumerInfo1, 30, null);
       Thread.sleep(3000);
       Assert.assertTrue(check(30));
