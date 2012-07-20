@@ -108,7 +108,7 @@ public class MessageDAOImpl implements MessageDAO {
       DBObject orderBy = BasicDBObjectBuilder.start().add(ID, Integer.valueOf(1)).get();
       DBCursor cursor = collection.find(query).sort(orderBy).limit(size);
 
-      List<SwallowMessage> list = new ArrayList<SwallowMessage>(cursor.size());
+      List<SwallowMessage> list = new ArrayList<SwallowMessage>();
       try {
          while (cursor.hasNext()) {
             DBObject result = cursor.next();
