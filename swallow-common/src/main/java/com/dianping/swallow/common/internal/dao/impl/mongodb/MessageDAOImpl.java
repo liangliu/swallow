@@ -20,7 +20,6 @@ import com.mongodb.DBObject;
 
 public class MessageDAOImpl implements MessageDAO {
 
-   @SuppressWarnings("unused")
    private static final Logger LOG                 = LoggerFactory.getLogger(MessageDAOImpl.class);
 
    public static final String  ID                  = "_id";
@@ -47,8 +46,12 @@ public class MessageDAOImpl implements MessageDAO {
       DBObject result = collection.findOne(query);
       if (result != null) {
          SwallowMessage swallowMessage = new SwallowMessage();
-         convert(result, swallowMessage);
-         return swallowMessage;
+         try {
+            convert(result, swallowMessage);
+            return swallowMessage;
+         } catch (RuntimeException e) {
+            LOG.error("Error when convert resultset to SwallowMessage.", e);
+         }
       }
       return null;
    }
@@ -83,8 +86,12 @@ public class MessageDAOImpl implements MessageDAO {
          if (cursor.hasNext()) {
             DBObject result = cursor.next();
             SwallowMessage swallowMessage = new SwallowMessage();
-            convert(result, swallowMessage);
-            return swallowMessage;
+            try {
+               convert(result, swallowMessage);
+               return swallowMessage;
+            } catch (RuntimeException e) {
+               LOG.error("Error when convert resultset to SwallowMessage.", e);
+            }
          }
       } finally {
          cursor.close();
@@ -101,13 +108,17 @@ public class MessageDAOImpl implements MessageDAO {
       DBObject orderBy = BasicDBObjectBuilder.start().add(ID, Integer.valueOf(1)).get();
       DBCursor cursor = collection.find(query).sort(orderBy).limit(size);
 
-      List<SwallowMessage> list = new ArrayList<SwallowMessage>();
+      List<SwallowMessage> list = new ArrayList<SwallowMessage>(cursor.size());
       try {
          while (cursor.hasNext()) {
             DBObject result = cursor.next();
             SwallowMessage swallowMessage = new SwallowMessage();
-            convert(result, swallowMessage);
-            list.add(swallowMessage);
+            try {
+               convert(result, swallowMessage);
+               list.add(swallowMessage);
+            } catch (RuntimeException e) {
+               LOG.error("Error when convert resultset to SwallowMessage.", e);
+            }
          }
       } finally {
          cursor.close();
