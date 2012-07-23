@@ -1,5 +1,7 @@
 package com.dianping.swallow.producer.cases;
 
+import java.util.Map;
+
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
@@ -29,23 +31,44 @@ class TempObject {
 
 public class SingleThreadSend {
 
-   public static void syncSendSome(Object content, int count, int freq) throws Exception {
+   public static void syncSendSome(Object content, int count, int freq, Map<String, String> properties, String type)
+         throws Exception {
       Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("songtong"));
-      for (int i = 0; i < count; i++) {
-         System.out.println(producer.sendMessage(content));
-         Thread.sleep(freq < 0 ? 0 : freq);
+      if (count <= 0) {
+         while (true) {
+            System.out.println(producer.sendMessage(content, properties, type));
+            Thread.sleep(freq < 0 ? 0 : freq);
+         }
+      } else {
+         for (int i = 0; i < count; i++) {
+            System.out.println(producer.sendMessage(content, properties, type));
+            Thread.sleep(freq < 0 ? 0 : freq);
+         }
       }
    }
 
-   public static void syncSendAlways(Object content, int freq) throws Exception {
-      Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("songtong"));
-      while (true) {
-         System.out.println(producer.sendMessage(content));
+   public static void syncSendSomeObjectDemoWithZipped(int count, int freq) throws Exception {
+      ProducerConfig config = new ProducerConfig();
+      config.setRetryTimes(1);
+      config.setZipped(true);
+
+      Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("songtong"), config);
+
+      DemoObject demoObj = new DemoObject();
+      if (count <= 0) {
+         System.out.println(producer.sendMessage(demoObj));
          Thread.sleep(freq < 0 ? 0 : freq);
+      } else {
+         for (int i = 0; i < count; i++) {
+            demoObj.setA(i);
+            System.out.println(producer.sendMessage(demoObj));
+            Thread.sleep(freq < 0 ? 0 : freq);
+         }
       }
    }
 
-   public static void asyncSendSome(Object content, int count, int freq) throws Exception {
+   public static void asyncSendSome(Object content, int count, int freq, Map<String, String> properties, String type)
+         throws Exception {
       ProducerConfig config = new ProducerConfig();
       config.setMode(ProducerMode.ASYNC_MODE);
       config.setRetryTimes(1);
@@ -55,25 +78,21 @@ public class SingleThreadSend {
 
       Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("songtong"), config);
       long begin = System.currentTimeMillis();
-      for (int i = 0; i < count; i++) {
-         producer.sendMessage(content);
+      if (count <= 0) {
+         while (true) {
+            producer.sendMessage(content, properties, type);
+            Thread.sleep(freq < 0 ? 0 : freq);
+         }
+      } else {
+         for (int i = 0; i < count; i++) {
+            producer.sendMessage(content, properties, type);
+            Thread.sleep(freq < 0 ? 0 : freq);
+         }
+         System.out.println("total cost: " + (System.currentTimeMillis() - begin));
       }
-      System.out.println("total cost: " + (System.currentTimeMillis() - begin));
    }
 
    public static void main(String[] args) throws Exception {
-      ProducerConfig config = new ProducerConfig();
-      config.setRetryTimes(1);
-      config.setZipped(true);
-
-      Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("songtong"), config);
-
-      DemoObject demoObj = new DemoObject();
-
-      for (int i = 0; i < 100; i++) {
-         demoObj.setA(i);
-         System.out.println(producer.sendMessage(demoObj));
-         Thread.sleep(100);
-      }
+      SingleThreadSend.syncSendSome("Hello songtong", 1000, 1000, null, "songtong");
    }
 }
