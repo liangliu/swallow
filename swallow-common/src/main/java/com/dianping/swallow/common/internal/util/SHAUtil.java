@@ -32,6 +32,7 @@ public class SHAUtil {
    }
 
    //将bytes转化为String
+   //TODO StringBuffer.append, Integer.toHexString(digest[i] & 0x0f, Integer.toHexString(digest[i] & 0xf0
    private static String byteToString(byte[] digest) {
       String str = "";
       String tempStr = "";

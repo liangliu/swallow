@@ -27,7 +27,6 @@ import com.dianping.swallow.common.message.Message;
  * </pre>
  */
 public class HessianDecoder extends OneToOneDecoder {
-
    private SerializerFactory factory = new SerializerFactory(); ;
 
    public HessianDecoder() {
@@ -53,5 +52,4 @@ public class HessianDecoder extends OneToOneDecoder {
          return in.readObject(Message.class);
       }
    }
-
 }

@@ -1,39 +1,39 @@
 [INFO] Scanning for projects...
 [WARNING] 
 [WARNING] Some problems were encountered while building the effective model for com.dianping.swallow:swallow-common:jar:0.6.0
-[WARNING] 'artifactId' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-common.aid}:${swallow-common.version}, /home/wukezhu/document/mywork/swallow/swallow-common/pom.xml, line 13, column 14
-[WARNING] 'version' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-common.aid}:${swallow-common.version}, /home/wukezhu/document/mywork/swallow/swallow-common/pom.xml, line 14, column 11
-[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.springframework:spring-beans:jar -> duplicate declaration of version 3.0.5.RELEASE @ com.dianping.swallow:swallow-all:1.0.1, /home/wukezhu/document/mywork/swallow/pom.xml, line 90, column 15
+[WARNING] 'artifactId' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-common.aid}:${swallow-common.version}, /home/wukezhu/document/mywork/swallow-0.6/swallow-common/pom.xml, line 13, column 14
+[WARNING] 'version' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-common.aid}:${swallow-common.version}, /home/wukezhu/document/mywork/swallow-0.6/swallow-common/pom.xml, line 14, column 11
+[WARNING] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: org.springframework:spring-beans:jar -> duplicate declaration of version 3.0.5.RELEASE @ com.dianping.swallow:swallow-all:1.0.1, /home/wukezhu/document/mywork/swallow-0.6/pom.xml, line 90, column 15
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ com.dianping:dianping-parent:1.0.0, /home/wukezhu/.m2/repository/com/dianping/dianping-parent/1.0.0/dianping-parent-1.0.0.pom, line 343, column 12
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-source-plugin is missing. @ com.dianping:dianping-parent:1.0.0, /home/wukezhu/.m2/repository/com/dianping/dianping-parent/1.0.0/dianping-parent-1.0.0.pom, line 331, column 12
 [WARNING] 
 [WARNING] Some problems were encountered while building the effective model for com.dianping.swallow:swallow-consumerclient:jar:0.6.0
-[WARNING] 'artifactId' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-consumerclient.aid}:${swallow-consumerclient.version}, /home/wukezhu/document/mywork/swallow/swallow-consumerclient/pom.xml, line 14, column 14
-[WARNING] 'version' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-consumerclient.aid}:${swallow-consumerclient.version}, /home/wukezhu/document/mywork/swallow/swallow-consumerclient/pom.xml, line 15, column 11
+[WARNING] 'artifactId' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-consumerclient.aid}:${swallow-consumerclient.version}, /home/wukezhu/document/mywork/swallow-0.6/swallow-consumerclient/pom.xml, line 14, column 14
+[WARNING] 'version' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-consumerclient.aid}:${swallow-consumerclient.version}, /home/wukezhu/document/mywork/swallow-0.6/swallow-consumerclient/pom.xml, line 15, column 11
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ com.dianping:dianping-parent:1.0.0, /home/wukezhu/.m2/repository/com/dianping/dianping-parent/1.0.0/dianping-parent-1.0.0.pom, line 343, column 12
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-source-plugin is missing. @ com.dianping:dianping-parent:1.0.0, /home/wukezhu/.m2/repository/com/dianping/dianping-parent/1.0.0/dianping-parent-1.0.0.pom, line 331, column 12
 [WARNING] 
 [WARNING] Some problems were encountered while building the effective model for com.dianping.swallow:swallow-consumerserver:jar:0.6.0
-[WARNING] 'artifactId' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-consumerserver.aid}:${swallow-consumerserver.version}, /home/wukezhu/document/mywork/swallow/swallow-consumerserver/pom.xml, line 15, column 14
-[WARNING] 'version' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-consumerserver.aid}:${swallow-consumerserver.version}, /home/wukezhu/document/mywork/swallow/swallow-consumerserver/pom.xml, line 16, column 11
+[WARNING] 'artifactId' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-consumerserver.aid}:${swallow-consumerserver.version}, /home/wukezhu/document/mywork/swallow-0.6/swallow-consumerserver/pom.xml, line 15, column 14
+[WARNING] 'version' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-consumerserver.aid}:${swallow-consumerserver.version}, /home/wukezhu/document/mywork/swallow-0.6/swallow-consumerserver/pom.xml, line 16, column 11
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ com.dianping:dianping-parent:1.0.0, /home/wukezhu/.m2/repository/com/dianping/dianping-parent/1.0.0/dianping-parent-1.0.0.pom, line 343, column 12
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-source-plugin is missing. @ com.dianping:dianping-parent:1.0.0, /home/wukezhu/.m2/repository/com/dianping/dianping-parent/1.0.0/dianping-parent-1.0.0.pom, line 331, column 12
 [WARNING] 
 [WARNING] Some problems were encountered while building the effective model for com.dianping.swallow:swallow-producerclient:jar:0.6.0
-[WARNING] 'artifactId' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-producerclient.aid}:${swallow-producerclient.version}, /home/wukezhu/document/mywork/swallow/swallow-producerclient/pom.xml, line 13, column 14
-[WARNING] 'version' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-producerclient.aid}:${swallow-producerclient.version}, /home/wukezhu/document/mywork/swallow/swallow-producerclient/pom.xml, line 15, column 11
+[WARNING] 'artifactId' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-producerclient.aid}:${swallow-producerclient.version}, /home/wukezhu/document/mywork/swallow-0.6/swallow-producerclient/pom.xml, line 13, column 14
+[WARNING] 'version' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-producerclient.aid}:${swallow-producerclient.version}, /home/wukezhu/document/mywork/swallow-0.6/swallow-producerclient/pom.xml, line 15, column 11
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ com.dianping:dianping-parent:1.0.0, /home/wukezhu/.m2/repository/com/dianping/dianping-parent/1.0.0/dianping-parent-1.0.0.pom, line 343, column 12
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-source-plugin is missing. @ com.dianping:dianping-parent:1.0.0, /home/wukezhu/.m2/repository/com/dianping/dianping-parent/1.0.0/dianping-parent-1.0.0.pom, line 331, column 12
 [WARNING] 
 [WARNING] Some problems were encountered while building the effective model for com.dianping.swallow:swallow-producerserver:jar:0.6.0
-[WARNING] 'artifactId' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-producerserver.aid}:${swallow-producerserver.version}, /home/wukezhu/document/mywork/swallow/swallow-producerserver/pom.xml, line 13, column 14
-[WARNING] 'version' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-producerserver.aid}:${swallow-producerserver.version}, /home/wukezhu/document/mywork/swallow/swallow-producerserver/pom.xml, line 14, column 11
+[WARNING] 'artifactId' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-producerserver.aid}:${swallow-producerserver.version}, /home/wukezhu/document/mywork/swallow-0.6/swallow-producerserver/pom.xml, line 13, column 14
+[WARNING] 'version' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-producerserver.aid}:${swallow-producerserver.version}, /home/wukezhu/document/mywork/swallow-0.6/swallow-producerserver/pom.xml, line 14, column 11
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ com.dianping:dianping-parent:1.0.0, /home/wukezhu/.m2/repository/com/dianping/dianping-parent/1.0.0/dianping-parent-1.0.0.pom, line 343, column 12
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-source-plugin is missing. @ com.dianping:dianping-parent:1.0.0, /home/wukezhu/.m2/repository/com/dianping/dianping-parent/1.0.0/dianping-parent-1.0.0.pom, line 331, column 12
 [WARNING] 
 [WARNING] Some problems were encountered while building the effective model for com.dianping.swallow:swallow-example:jar:0.6.0
-[WARNING] 'artifactId' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-example.aid}:${swallow-example.version}, /home/wukezhu/document/mywork/swallow/swallow-example/pom.xml, line 13, column 14
-[WARNING] 'version' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-example.aid}:${swallow-example.version}, /home/wukezhu/document/mywork/swallow/swallow-example/pom.xml, line 15, column 11
+[WARNING] 'artifactId' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-example.aid}:${swallow-example.version}, /home/wukezhu/document/mywork/swallow-0.6/swallow-example/pom.xml, line 13, column 14
+[WARNING] 'version' contains an expression but should be a constant. @ com.dianping.swallow:${swallow-example.aid}:${swallow-example.version}, /home/wukezhu/document/mywork/swallow-0.6/swallow-example/pom.xml, line 15, column 11
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ com.dianping:dianping-parent:1.0.0, /home/wukezhu/.m2/repository/com/dianping/dianping-parent/1.0.0/dianping-parent-1.0.0.pom, line 343, column 12
 [WARNING] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-source-plugin is missing. @ com.dianping:dianping-parent:1.0.0, /home/wukezhu/.m2/repository/com/dianping/dianping-parent/1.0.0/dianping-parent-1.0.0.pom, line 331, column 12
 [WARNING] 
@@ -56,11 +56,6 @@
 [INFO] swallow-producerclientv0.6.0
 [INFO] swallow-producerserverv0.6.0
 [INFO] swallow-example0.6.0
-Downloading: http://192.168.8.45:8080/artifactory/dianping-snapshots/org/apache/maven/plugins/maven-source-plugin/maven-metadata.xml
-Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/org/apache/maven/plugins/maven-source-plugin/maven-metadata.xml
-Downloading: http://192.168.8.45:8080/artifactory/dprepo/org/apache/maven/plugins/maven-source-plugin/maven-metadata.xml
-Downloading: http://192.168.8.45:8080/artifactory/third-party/org/apache/maven/plugins/maven-source-plugin/maven-metadata.xml
-632/632 B               Downloaded: http://192.168.8.45:8080/artifactory/dprepo/org/apache/maven/plugins/maven-source-plugin/maven-metadata.xml (632 B at 2.2 KB/sec)
 [INFO]                                                                         
 [INFO] ------------------------------------------------------------------------
 [INFO] Building dianping swallow v1.0.1 1.0.1
@@ -93,24 +88,6 @@ Downloading: http://192.168.8.45:8080/artifactory/third-party/org/apache/maven/p
 [INFO] ------------------------------------------------------------------------
 [INFO] Building swallow-common v0.6.0 0.6.0
 [INFO] ------------------------------------------------------------------------
-Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping/cat/cat-core/0.3.3/cat-core-0.3.3.pom
-2/3 KB      3/3 KB            Downloaded: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping/cat/cat-core/0.3.3/cat-core-0.3.3.pom (3 KB at 30.8 KB/sec)
-Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping/cat/parent/0.3.3/parent-0.3.3.pom
-2/7 KB   4/7 KB   6/7 KB   7/7 KB            Downloaded: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping/cat/parent/0.3.3/parent-0.3.3.pom (7 KB at 76.8 KB/sec)
-Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/site/common/lookup/1.1.1/lookup-1.1.1.pom
-2/2 KB            Downloaded: http://192.168.8.45:8080/artifactory/dianping-releases/com/site/common/lookup/1.1.1/lookup-1.1.1.pom (2 KB at 10.3 KB/sec)
-Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping/cat/cat-core/0.3.3/cat-core-0.3.3.jar
-Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/org/codehaus/plexus/plexus-container-default/1.5.5/plexus-container-default-1.5.5.jar
-Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/site/common/lookup/1.1.1/lookup-1.1.1.jar
-Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/org/codehaus/plexus/plexus-classworlds/2.2.2/plexus-classworlds-2.2.2.jar
-                  2/106 KB   3/106 KB   4/106 KB   2/247 KB   4/106 KB   4/247 KB   4/106 KB   4/247 KB   6/106 KB   4/247 KB   7/106 KB   4/247 KB   8/106 KB   4/247 KB   9/106 KB   4/247 KB   11/106 KB   6/247 KB   11/106 KB   7/247 KB   11/106 KB   8/247 KB   11/106 KB   9/247 KB   11/106 KB   11/247 KB   11/106 KB   11/247 KB   12/106 KB   11/247 KB   13/106 KB   11/247 KB   15/106 KB   11/247 KB   16/106 KB   11/247 KB   17/106 KB   11/247 KB   19/106 KB   11/247 KB   20/106 KB   11/247 KB   21/106 KB   11/247 KB   23/106 KB   11/247 KB   24/106 KB   11/247 KB   25/106 KB   12/247 KB   25/106 KB   13/247 KB   25/106 KB   15/247 KB   25/106 KB   16/247 KB   25/106 KB   17/247 KB   25/106 KB   19/247 KB   25/106 KB   20/247 KB   25/106 KB   23/247 KB   25/106 KB   23/247 KB   27/106 KB   23/247 KB   28/106 KB   23/247 KB   29/106 KB   23/247 KB   31/106 KB   23/247 KB   33/106 KB   23/247 KB   35/106 KB   23/247 KB   37/106 KB   23/247 KB   39/106 KB   23/247 KB   40/106 KB   23/247 KB   41/106 KB   23/247 KB   44/106 KB   24/247 KB   44/106 KB   24/247 KB   45/106 KB   25/247 KB   45/106 KB   27/247 KB   45/106 KB   28/247 KB   45/106 KB   29/247 KB   45/106 KB   31/247 KB   45/106 KB   33/247 KB   45/106 KB   37/247 KB   45/106 KB   37/247 KB   46/106 KB   37/247 KB   49/106 KB   39/247 KB   49/106 KB   39/247 KB   50/106 KB   39/247 KB   52/106 KB   39/247 KB   53/106 KB   39/247 KB   54/106 KB   39/247 KB   57/106 KB   39/247 KB   58/106 KB   39/247 KB   62/106 KB   39/247 KB   65/106 KB   40/247 KB   65/106 KB   42/247 KB   65/106 KB   44/247 KB   65/106 KB   45/247 KB   65/106 KB   48/247 KB   65/106 KB   48/247 KB   66/106 KB   48/247 KB   68/106 KB   48/247 KB   69/106 KB   48/247 KB   70/106 KB   48/247 KB   72/106 KB   48/247 KB   73/106 KB   48/247 KB   75/106 KB   48/247 KB   77/106 KB   49/247 KB   77/106 KB   50/247 KB   77/106 KB   52/247 KB   77/106 KB   54/247 KB   77/106 KB   56/247 KB   77/106 KB   57/247 KB   77/106 KB   58/247 KB   77/106 KB   60/247 KB   77/106 KB   62/247 KB   77/106 KB   64/247 KB   77/106 KB   65/247 KB   77/106 KB   66/247 KB   77/106 KB   68/247 KB   77/106 KB   69/247 KB   77/106 KB   70/247 KB   77/106 KB   70/247 KB   78/106 KB   70/247 KB   81/106 KB   70/247 KB   82/106 KB   70/247 KB   83/106 KB   70/247 KB   85/106 KB   70/247 KB   87/106 KB   70/247 KB   90/106 KB   70/247 KB   91/106 KB   70/247 KB   93/106 KB   70/247 KB   94/106 KB   70/247 KB   97/106 KB   70/247 KB   98/106 KB   70/247 KB   99/106 KB   70/247 KB   100/106 KB   72/247 KB   100/106 KB   73/247 KB   100/106 KB   74/247 KB   100/106 KB   75/247 KB   100/106 KB   77/247 KB   100/106 KB   78/247 KB   100/106 KB   78/247 KB   101/106 KB   78/247 KB   102/106 KB   78/247 KB   104/106 KB   78/247 KB   104/106 KB   78/247 KB   106/106 KB   79/247 KB   106/106 KB   81/247 KB   106/106 KB   82/247 KB   106/106 KB   83/247 KB   106/106 KB   85/247 KB   106/106 KB   86/247 KB   106/106 KB   87/247 KB   106/106 KB   89/247 KB   106/106 KB   90/247 KB   106/106 KB   91/247 KB   106/106 KB   93/247 KB   106/106 KB   94/247 KB   106/106 KB   95/247 KB   106/106 KB   97/247 KB   106/106 KB   98/247 KB   106/106 KB   99/247 KB   106/106 KB   101/247 KB   106/106 KB   102/247 KB   106/106 KB   103/247 KB   106/106 KB   104/247 KB   106/106 KB   106/247 KB   106/106 KB   107/247 KB   106/106 KB   108/247 KB   106/106 KB   110/247 KB   106/106 KB   111/247 KB   106/106 KB   112/247 KB   106/106 KB   114/247 KB   106/106 KB   115/247 KB   106/106 KB   116/247 KB   106/106 KB   118/247 KB   106/106 KB   119/247 KB   106/106 KB   120/247 KB   106/106 KB   122/247 KB   106/106 KB   123/247 KB   106/106 KB   124/247 KB   106/106 KB   126/247 KB   106/106 KB   127/247 KB   106/106 KB   128/247 KB   106/106 KB   130/247 KB   106/106 KB   131/247 KB   106/106 KB   132/247 KB   106/106 KB   134/247 KB   106/106 KB   135/247 KB   106/106 KB   136/247 KB   106/106 KB   137/247 KB   106/106 KB                             Downloaded: http://192.168.8.45:8080/artifactory/dianping-releases/com/site/common/lookup/1.1.1/lookup-1.1.1.jar (106 KB at 238.2 KB/sec)
-139/247 KB                140/247 KB   141/247 KB   143/247 KB   144/247 KB   145/247 KB   147/247 KB   148/247 KB   149/247 KB   151/247 KB   152/247 KB   153/247 KB   155/247 KB   156/247 KB   157/247 KB   159/247 KB   160/247 KB   161/247 KB   162/247 KB   163/247 KB   164/247 KB   165/247 KB   167/247 KB   168/247 KB   169/247 KB   170/247 KB   172/247 KB   173/247 KB   174/247 KB   176/247 KB   177/247 KB   178/247 KB   180/247 KB   181/247 KB   182/247 KB   184/247 KB   185/247 KB   185/247 KB   187/247 KB   188/247 KB   189/247 KB   190/247 KB   192/247 KB   194/247 KB   196/247 KB   197/247 KB   198/247 KB   199/247 KB   201/247 KB   202/247 KB   203/247 KB   205/247 KB   206/247 KB   207/247 KB   209/247 KB   211/247 KB   213/247 KB   214/247 KB   215/247 KB   217/247 KB   218/247 KB   219/247 KB   223/247 KB   226/247 KB   227/247 KB   229/247 KB   230/247 KB   231/247 KB   232/247 KB   234/247 KB   235/247 KB   236/247 KB   238/247 KB   239/247 KB   240/247 KB   242/247 KB   243/247 KB   244/247 KB   246/247 KB   247/247 KB                Downloaded: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping/cat/cat-core/0.3.3/cat-core-0.3.3.jar (247 KB at 335.2 KB/sec)
-Downloading: http://192.168.8.45:8080/artifactory/third-party/org/codehaus/plexus/plexus-container-default/1.5.5/plexus-container-default-1.5.5.jar
-Downloading: http://192.168.8.45:8080/artifactory/third-party/org/codehaus/plexus/plexus-classworlds/2.2.2/plexus-classworlds-2.2.2.jar
-                          Downloading: http://192.168.8.45:8080/artifactory/dprepo/org/codehaus/plexus/plexus-container-default/1.5.5/plexus-container-default-1.5.5.jar
-Downloading: http://192.168.8.45:8080/artifactory/dprepo/org/codehaus/plexus/plexus-classworlds/2.2.2/plexus-classworlds-2.2.2.jar
-2/212 KB     3/212 KB   4/212 KB   4/212 KB   2/46 KB   4/212 KB   3/46 KB   4/212 KB   4/46 KB   6/212 KB   4/46 KB   7/212 KB   4/46 KB   8/212 KB   4/46 KB   9/212 KB   4/46 KB   11/212 KB   4/46 KB   11/212 KB   6/46 KB   11/212 KB   7/46 KB   11/212 KB   8/46 KB   11/212 KB   10/46 KB   11/212 KB   11/46 KB   12/212 KB   11/46 KB   13/212 KB   11/46 KB   16/212 KB   11/46 KB   17/212 KB   11/46 KB   19/212 KB   11/46 KB   20/212 KB   11/46 KB   21/212 KB   11/46 KB   23/212 KB   11/46 KB   23/212 KB   12/46 KB   23/212 KB   13/46 KB   23/212 KB   15/46 KB   23/212 KB   16/46 KB   23/212 KB   19/46 KB   23/212 KB   20/46 KB   23/212 KB   21/46 KB   23/212 KB   23/46 KB   24/212 KB   23/46 KB   25/212 KB   23/46 KB   27/212 KB   23/46 KB   28/212 KB   23/46 KB   29/212 KB   23/46 KB   31/212 KB   23/46 KB   32/212 KB   23/46 KB   33/212 KB   23/46 KB   36/212 KB   23/46 KB   37/212 KB   23/46 KB   37/212 KB   24/46 KB   39/212 KB   24/46 KB   39/212 KB   25/46 KB   39/212 KB   27/46 KB   39/212 KB   28/46 KB   39/212 KB   29/46 KB   39/212 KB   31/46 KB   39/212 KB   32/46 KB   39/212 KB   33/46 KB   39/212 KB   35/46 KB   39/212 KB   37/46 KB   40/212 KB   37/46 KB   40/212 KB   39/46 KB   41/212 KB   39/46 KB   44/212 KB   39/46 KB   45/212 KB   39/46 KB   46/212 KB   39/46 KB   49/212 KB   39/46 KB   49/212 KB   40/46 KB   49/212 KB   41/46 KB   49/212 KB   42/46 KB   49/212 KB   44/46 KB   49/212 KB   45/46 KB   49/212 KB   46/46 KB   50/212 KB   46/46 KB   52/212 KB   46/46 KB   53/212 KB   46/46 KB   54/212 KB   46/46 KB   56/212 KB   46/46 KB   57/212 KB   46/46 KB   60/212 KB   46/46 KB   61/212 KB   46/46 KB   62/212 KB   46/46 KB   64/212 KB   46/46 KB   65/212 KB   46/46 KB   66/212 KB   46/46 KB   68/212 KB   46/46 KB   69/212 KB   46/46 KB   72/212 KB   46/46 KB   73/212 KB   46/46 KB   74/212 KB   46/46 KB   77/212 KB   46/46 KB   78/212 KB   46/46 KB   79/212 KB   46/46 KB   81/212 KB   46/46 KB   82/212 KB   46/46 KB   83/212 KB   46/46 KB   87/212 KB   46/46 KB   89/212 KB   46/46 KB   90/212 KB   46/46 KB   91/212 KB   46/46 KB   93/212 KB   46/46 KB                          Downloaded: http://192.168.8.45:8080/artifactory/dprepo/org/codehaus/plexus/plexus-classworlds/2.2.2/plexus-classworlds-2.2.2.jar (46 KB at 153.6 KB/sec)
-94/212 KB              95/212 KB   97/212 KB   98/212 KB   99/212 KB   102/212 KB   103/212 KB   104/212 KB   106/212 KB   108/212 KB   110/212 KB   111/212 KB   112/212 KB   114/212 KB   115/212 KB   116/212 KB   117/212 KB   118/212 KB   119/212 KB   120/212 KB   122/212 KB   123/212 KB   124/212 KB   126/212 KB   127/212 KB   128/212 KB   130/212 KB   131/212 KB   132/212 KB   134/212 KB   135/212 KB   137/212 KB   140/212 KB   141/212 KB   144/212 KB   145/212 KB   147/212 KB   148/212 KB   149/212 KB   151/212 KB   153/212 KB   156/212 KB   160/212 KB   164/212 KB   168/212 KB   170/212 KB   172/212 KB   173/212 KB   174/212 KB   176/212 KB   177/212 KB   178/212 KB   181/212 KB   182/212 KB   184/212 KB   185/212 KB   186/212 KB   188/212 KB   189/212 KB   190/212 KB   192/212 KB   193/212 KB   194/212 KB   196/212 KB   197/212 KB   198/212 KB   199/212 KB   202/212 KB   203/212 KB   205/212 KB   206/212 KB   207/212 KB   209/212 KB   211/212 KB   212/212 KB                Downloaded: http://192.168.8.45:8080/artifactory/dprepo/org/codehaus/plexus/plexus-container-default/1.5.5/plexus-container-default-1.5.5.jar (212 KB at 455.0 KB/sec)
 [INFO] 
 [INFO] --- maven-dependency-plugin:2.4:tree (default-cli) @ swallow-common ---
 [INFO] com.dianping.swallow:swallow-common:jar:0.6.0
@@ -119,7 +96,6 @@ Downloading: http://192.168.8.45:8080/artifactory/dprepo/org/codehaus/plexus/ple
 [INFO] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.0.2:compile
 [INFO] +- commons-codec:commons-codec:jar:1.6:compile
 [INFO] +- org.jboss.netty:netty:jar:3.2.7.Final:compile
-[INFO] +- com.caucho:hessian:jar:4.0.7:compile
 [INFO] +- org.mongodb:mongo-java-driver:jar:2.6.3:compile
 [INFO] +- com.dianping.lion:lion-client:jar:0.2.2:compile
 [INFO] |  \- zookeeper:zookeeper:jar:3.3.2:compile
@@ -260,18 +236,11 @@ Downloading: http://192.168.8.45:8080/artifactory/dprepo/org/codehaus/plexus/ple
 [INFO] ------------------------------------------------------------------------
 [INFO] Building swallow-producerclientv0.6.0 0.6.0
 [INFO] ------------------------------------------------------------------------
-Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping/dpsf/dpsf-net/1.6.0/dpsf-net-1.6.0.pom
-2/6 KB       3/6 KB   4/6 KB   6/6 KB   6/6 KB            Downloaded: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping/dpsf/dpsf-net/1.6.0/dpsf-net-1.6.0.pom (6 KB at 79.1 KB/sec)
-Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping/dpsf/dpsf-all/1.0.2/dpsf-all-1.0.2.pom
-2/7 KB   4/7 KB   6/7 KB   7/7 KB   7/7 KB            Downloaded: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping/dpsf/dpsf-all/1.0.2/dpsf-all-1.0.2.pom (7 KB at 195.9 KB/sec)
-Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping/dpsf/dpsf-net/1.6.0/dpsf-net-1.6.0.jar
-2/332 KB   3/332 KB   4/332 KB   6/332 KB   7/332 KB   8/332 KB   9/332 KB   10/332 KB   12/332 KB   13/332 KB   14/332 KB   16/332 KB   17/332 KB   18/332 KB   19/332 KB   20/332 KB   22/332 KB   23/332 KB   24/332 KB   26/332 KB   27/332 KB   28/332 KB   30/332 KB   31/332 KB   32/332 KB   34/332 KB   35/332 KB   36/332 KB   38/332 KB   39/332 KB   42/332 KB   43/332 KB   44/332 KB   46/332 KB   47/332 KB   48/332 KB   50/332 KB   51/332 KB   52/332 KB   53/332 KB   55/332 KB   56/332 KB   57/332 KB   59/332 KB   60/332 KB   61/332 KB   63/332 KB   64/332 KB   65/332 KB   67/332 KB   68/332 KB   69/332 KB   71/332 KB   72/332 KB   73/332 KB   75/332 KB   76/332 KB   77/332 KB   79/332 KB   80/332 KB   81/332 KB   82/332 KB   84/332 KB   85/332 KB   86/332 KB   88/332 KB   89/332 KB   90/332 KB   92/332 KB   93/332 KB   94/332 KB   96/332 KB   97/332 KB   98/332 KB   100/332 KB   101/332 KB   102/332 KB   104/332 KB   105/332 KB   106/332 KB   108/332 KB   109/332 KB   110/332 KB   112/332 KB   113/332 KB   114/332 KB   115/332 KB   117/332 KB   118/332 KB   119/332 KB   121/332 KB   122/332 KB   123/332 KB   125/332 KB   126/332 KB   127/332 KB   129/332 KB   130/332 KB   131/332 KB   133/332 KB   134/332 KB   135/332 KB   137/332 KB   138/332 KB   139/332 KB   141/332 KB   142/332 KB   143/332 KB   144/332 KB   146/332 KB   147/332 KB   148/332 KB   150/332 KB   151/332 KB   152/332 KB   154/332 KB   155/332 KB   156/332 KB   158/332 KB   159/332 KB   160/332 KB   162/332 KB   163/332 KB   164/332 KB   166/332 KB   167/332 KB   168/332 KB   170/332 KB   171/332 KB   172/332 KB   174/332 KB   175/332 KB   176/332 KB   177/332 KB   179/332 KB   180/332 KB   181/332 KB   183/332 KB   184/332 KB   185/332 KB   187/332 KB   188/332 KB   189/332 KB   191/332 KB   192/332 KB   193/332 KB   195/332 KB   196/332 KB   197/332 KB   199/332 KB   200/332 KB   201/332 KB   203/332 KB   204/332 KB   205/332 KB   207/332 KB   208/332 KB   209/332 KB   210/332 KB   212/332 KB   213/332 KB   214/332 KB   216/332 KB   217/332 KB   218/332 KB   220/332 KB   221/332 KB   222/332 KB   224/332 KB   225/332 KB   226/332 KB   228/332 KB   229/332 KB   230/332 KB   232/332 KB   233/332 KB   234/332 KB   236/332 KB   237/332 KB   238/332 KB   239/332 KB   241/332 KB   242/332 KB   243/332 KB   245/332 KB   246/332 KB   247/332 KB   249/332 KB   250/332 KB   251/332 KB   253/332 KB   254/332 KB   255/332 KB   257/332 KB   258/332 KB   259/332 KB   261/332 KB   262/332 KB   263/332 KB   265/332 KB   266/332 KB   267/332 KB   269/332 KB   270/332 KB   271/332 KB   272/332 KB   274/332 KB   275/332 KB   276/332 KB   278/332 KB   279/332 KB   280/332 KB   282/332 KB   283/332 KB   284/332 KB   286/332 KB   287/332 KB   288/332 KB   290/332 KB   291/332 KB   292/332 KB   294/332 KB   295/332 KB   296/332 KB   298/332 KB   299/332 KB   300/332 KB   301/332 KB   303/332 KB   304/332 KB   305/332 KB   307/332 KB   308/332 KB   309/332 KB   311/332 KB   312/332 KB   313/332 KB   315/332 KB   316/332 KB   317/332 KB   319/332 KB   320/332 KB   321/332 KB   323/332 KB   324/332 KB   325/332 KB   327/332 KB   328/332 KB   329/332 KB   331/332 KB   332/332 KB                Downloaded: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping/dpsf/dpsf-net/1.6.0/dpsf-net-1.6.0.jar (332 KB at 890.2 KB/sec)
 [INFO] 
 [INFO] --- maven-dependency-plugin:2.4:tree (default-cli) @ swallow-producerclient ---
 [INFO] com.dianping.swallow:swallow-producerclient:jar:0.6.0
-[INFO] +- org.jboss.netty:netty:jar:3.2.7.Final:compile
 [INFO] +- commons-codec:commons-codec:jar:1.6:compile
-[INFO] +- com.dianping:file-queue:jar:1.0.0:compile
+[INFO] +- com.dianping:file-queue:jar:1.1.0:compile
 [INFO] |  +- commons-lang:commons-lang:jar:2.4:compile
 [INFO] |  +- commons-io:commons-io:jar:1.4:compile
 [INFO] |  \- log4j:log4j:jar:1.2.14:compile
@@ -282,7 +251,8 @@ Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping
 [INFO] +- com.dianping.dpsf:dpsf-net:jar:1.6.0:compile
 [INFO] |  +- aspectj:aspectjrt:jar:1.5.3:compile
 [INFO] |  +- com.google.protobuf:protobuf-java:jar:2.3.0:compile
-[INFO] |  +- com.caucho:hessian:jar:4.0.7:compile (version managed from 3.1.5)
+[INFO] |  +- org.jboss.netty:netty:jar:3.2.7.Final:compile
+[INFO] |  +- com.caucho:hessian:jar:3.1.5:compile
 [INFO] |  +- org.apache:libthrift:jar:0.4.0:compile
 [INFO] |  \- zookeeper:zookeeper:jar:3.3.2:compile
 [INFO] +- com.dianping.lion:lion-client:jar:0.2.2:compile
@@ -344,7 +314,7 @@ Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping
 [INFO] +- com.dianping.dpsf:dpsf-net:jar:1.6.0:compile
 [INFO] |  +- aspectj:aspectjrt:jar:1.5.3:compile
 [INFO] |  +- com.google.protobuf:protobuf-java:jar:2.3.0:compile
-[INFO] |  +- com.caucho:hessian:jar:4.0.7:compile (version managed from 3.1.5)
+[INFO] |  +- com.caucho:hessian:jar:3.1.5:compile
 [INFO] |  +- org.apache:libthrift:jar:0.4.0:compile
 [INFO] |  +- zookeeper:zookeeper:jar:3.3.2:compile
 [INFO] |  \- commons-lang:commons-lang:jar:2.4:compile (version managed from 2.3)
@@ -378,13 +348,23 @@ Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping
 [INFO] 
 [INFO] --- maven-dependency-plugin:2.4:tree (default-cli) @ swallow-example ---
 [INFO] com.dianping.swallow:swallow-example:jar:0.6.0
-[INFO] +- com.dianping.swallow:swallow-common:jar:0.6.0:compile
-[INFO] |  \- com.fasterxml.jackson.core:jackson-databind:jar:2.0.2:compile
-[INFO] |     +- com.fasterxml.jackson.core:jackson-annotations:jar:2.0.2:compile
-[INFO] |     \- com.fasterxml.jackson.core:jackson-core:jar:2.0.2:compile
+[INFO] +- org.springframework:spring-beans:jar:3.0.5.RELEASE:compile
+[INFO] +- org.springframework:spring-context:jar:3.0.5.RELEASE:compile
+[INFO] |  +- org.springframework:spring-aop:jar:2.5.6:compile (version managed from 3.0.5.RELEASE)
+[INFO] |  |  \- aopalliance:aopalliance:jar:1.0:compile
+[INFO] |  +- org.springframework:spring-expression:jar:3.0.5.RELEASE:compile
+[INFO] |  \- org.springframework:spring-asm:jar:3.0.5.RELEASE:compile
+[INFO] +- org.springframework:spring-core:jar:3.0.5.RELEASE:compile
+[INFO] |  \- commons-logging:commons-logging:jar:1.1.1:compile
+[INFO] +- log4j:log4j:jar:1.2.14:compile
+[INFO] +- org.slf4j:slf4j-log4j12:jar:1.6.1:compile
 [INFO] +- com.dianping.swallow:swallow-consumerclient:jar:0.6.0:compile
 [INFO] |  +- org.jboss.netty:netty:jar:3.2.7.Final:compile
 [INFO] |  +- commons-codec:commons-codec:jar:1.6:compile
+[INFO] |  +- com.dianping.swallow:swallow-common:jar:0.6.0:compile
+[INFO] |  |  \- com.fasterxml.jackson.core:jackson-databind:jar:2.0.2:compile
+[INFO] |  |     +- com.fasterxml.jackson.core:jackson-annotations:jar:2.0.2:compile
+[INFO] |  |     \- com.fasterxml.jackson.core:jackson-core:jar:2.0.2:compile
 [INFO] |  +- com.dianping.lion:lion-client:jar:0.2.2:compile
 [INFO] |  |  \- zookeeper:zookeeper:jar:3.3.2:compile
 [INFO] |  +- com.dianping.lion:lion-dev:jar:1.0.0:compile
@@ -397,33 +377,23 @@ Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping
 [INFO] |           |  \- commons-logging:commons-logging-api:jar:1.1:compile
 [INFO] |           \- com.google.collections:google-collections:jar:1.0:compile
 [INFO] +- com.dianping.swallow:swallow-producerclient:jar:0.6.0:compile
-[INFO] |  +- com.dianping:file-queue:jar:1.0.0:compile
+[INFO] |  +- com.dianping:file-queue:jar:1.1.0:compile
 [INFO] |  |  +- commons-lang:commons-lang:jar:2.4:compile
-[INFO] |  |  +- commons-io:commons-io:jar:1.4:compile
-[INFO] |  |  \- log4j:log4j:jar:1.2.14:compile
+[INFO] |  |  \- commons-io:commons-io:jar:1.4:compile
 [INFO] |  +- com.dianping.dpsf:dpsf-net:jar:1.6.0:compile
 [INFO] |  |  +- aspectj:aspectjrt:jar:1.5.3:compile
 [INFO] |  |  +- com.google.protobuf:protobuf-java:jar:2.3.0:compile
-[INFO] |  |  +- com.caucho:hessian:jar:4.0.7:compile (version managed from 3.1.5)
+[INFO] |  |  +- com.caucho:hessian:jar:3.1.5:compile
 [INFO] |  |  \- org.apache:libthrift:jar:0.4.0:compile
 [INFO] |  \- com.dianping.hawk:hawk-client:jar:0.6.7:compile
 [INFO] |     \- com.thoughtworks.xstream:xstream:jar:1.3.1:compile
 [INFO] |        \- xpp3:xpp3_min:jar:1.1.4c:compile
 [INFO] +- org.slf4j:slf4j-api:jar:1.6.0:compile
-[INFO] +- org.springframework:spring-beans:jar:3.0.5.RELEASE:test
-[INFO] +- org.springframework:spring-context:jar:3.0.5.RELEASE:test
-[INFO] |  +- org.springframework:spring-aop:jar:2.5.6:test (version managed from 3.0.5.RELEASE)
-[INFO] |  |  \- aopalliance:aopalliance:jar:1.0:test
-[INFO] |  +- org.springframework:spring-expression:jar:3.0.5.RELEASE:test
-[INFO] |  \- org.springframework:spring-asm:jar:3.0.5.RELEASE:test
-[INFO] +- org.springframework:spring-core:jar:3.0.5.RELEASE:test
-[INFO] |  \- commons-logging:commons-logging:jar:1.1.1:test
 [INFO] +- org.springframework:spring-test:jar:3.0.5.RELEASE:test
 [INFO] +- junit:junit:jar:4.5:test
 [INFO] +- org.kubek2k:springockito:jar:1.0.4:test
 [INFO] +- org.kubek2k:springockito-annotations:jar:1.0.2:test
 [INFO] |  \- org.mockito:mockito-all:jar:1.9.0:test
-[INFO] +- org.slf4j:slf4j-log4j12:jar:1.6.1:test
 [INFO] +- com.google.guava:guava:jar:12.0:test
 [INFO] |  \- com.google.code.findbugs:jsr305:jar:1.3.9:test
 [INFO] \- com.dianping:jmockmongo-patched:jar:0.0.3:test
@@ -432,17 +402,17 @@ Downloading: http://192.168.8.45:8080/artifactory/dianping-releases/com/dianping
 [INFO] ------------------------------------------------------------------------
 [INFO] Reactor Summary:
 [INFO] 
-[INFO] dianping swallow v1.0.1 ........................... SUCCESS [6.533s]
-[INFO] swallow-common v0.6.0 ............................. SUCCESS [3.405s]
-[INFO] swallow-consumerclientv0.6.0 ...................... SUCCESS [0.130s]
-[INFO] swallow-consumerserverv0.6.0 ...................... SUCCESS [0.081s]
-[INFO] swallow-producerclientv0.6.0 ...................... SUCCESS [0.982s]
-[INFO] swallow-producerserverv0.6.0 ...................... SUCCESS [0.059s]
-[INFO] swallow-example0.6.0 .............................. SUCCESS [0.119s]
+[INFO] dianping swallow v1.0.1 ........................... SUCCESS [4.609s]
+[INFO] swallow-common v0.6.0 ............................. SUCCESS [0.485s]
+[INFO] swallow-consumerclientv0.6.0 ...................... SUCCESS [0.138s]
+[INFO] swallow-consumerserverv0.6.0 ...................... SUCCESS [0.079s]
+[INFO] swallow-producerclientv0.6.0 ...................... SUCCESS [0.161s]
+[INFO] swallow-producerserverv0.6.0 ...................... SUCCESS [0.047s]
+[INFO] swallow-example0.6.0 .............................. SUCCESS [0.113s]
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time: 13.766s
-[INFO] Finished at: Tue Jul 17 15:04:40 CST 2012
-[INFO] Final Memory: 12M/54M
+[INFO] Total time: 6.622s
+[INFO] Finished at: Mon Jul 23 17:57:33 CST 2012
+[INFO] Final Memory: 10M/64M
 [INFO] ------------------------------------------------------------------------
