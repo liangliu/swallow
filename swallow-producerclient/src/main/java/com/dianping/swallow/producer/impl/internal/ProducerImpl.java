@@ -171,8 +171,6 @@ public class ProducerImpl implements Producer {
             }
             swallowMsg.setInternalProperties(zipProperties);
          }
-         //CAT
-         event.addData(swallowMsg.toKeyValuePairs());
 
          //构造packet
          PktMessage pktMessage = new PktMessage(destination, swallowMsg);
@@ -195,11 +193,13 @@ public class ProducerImpl implements Producer {
 
          return ret;
       } catch (SendFailedException e) {
+         event.addData(swallowMsg.toKeyValuePairs());
          event.setStatus(e);
          t.setStatus(e);
          Cat.getProducer().logError(e);
          throw e;
       } catch (RuntimeException e) {
+         event.addData(swallowMsg.toKeyValuePairs());
          event.setStatus(e);
          t.setStatus(e);
          Cat.getProducer().logError(e);

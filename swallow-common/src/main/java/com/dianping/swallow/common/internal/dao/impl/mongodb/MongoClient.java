@@ -162,21 +162,6 @@ public class MongoClient implements ConfigChangeListener {
    }
 
    /**
-    * 创建自定义Mongo。它在被GC回收时，会自动执行close()方法。
-    */
-   private Mongo createMongo(List<ServerAddress> replicaSetSeeds, MongoOptions options) {
-      Mongo mongo = new Mongo(replicaSetSeeds, mongoOptions) {
-         @Override
-         protected void finalize() throws Throwable {
-            super.finalize();
-            this.close();
-            LOG.info("Called finalize() of Mongo: " + this);
-         }
-      };
-      return mongo;
-   }
-
-   /**
     * 解析URI，且创建heartbeat使用的Mongo实例
     */
    private Mongo parseURIAndCreateHeartbeatMongo(String serverURI) {
@@ -184,7 +169,7 @@ public class MongoClient implements ConfigChangeListener {
       List<ServerAddress> replicaSetSeeds = this.parseUriToAddressList(serverURI);
       mongo = getExistsMongo(replicaSetSeeds);
       if (mongo == null) {
-         mongo = createMongo(replicaSetSeeds, this.mongoOptions);
+         mongo = new Mongo(replicaSetSeeds, mongoOptions);
       }
       if (LOG.isInfoEnabled()) {
          LOG.info("parseURIAndCreateHeartbeatMongo() - parse " + serverURI + " to: " + mongo);
@@ -231,7 +216,7 @@ public class MongoClient implements ConfigChangeListener {
             List<String> topicNames = entry.getValue();
             mongo = getExistsMongo(replicaSetSeeds);
             if (mongo == null) {//创建mongo实例
-               mongo = createMongo(replicaSetSeeds, this.mongoOptions);
+               mongo = new Mongo(replicaSetSeeds, mongoOptions);
             }
             for (String topicName : topicNames) {
                topicNameToMongoMap.put(topicName, mongo);

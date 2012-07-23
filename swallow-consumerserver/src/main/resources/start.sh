@@ -9,7 +9,7 @@ usage(){
 script_path=`dirname "$0"`
 MASTER_JMX_PORT=9011
 SLAVE_JMX_PORT=9012
-JAVA_OPTS="-server -Xms512m -Xmx2g -XX:+HeapDumpOnOutOfMemoryError -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -cp ${script_path}/.:${script_path}/*"
+JAVA_OPTS="-server -Xms512m -Xmx2g -XX:+HeapDumpOnOutOfMemoryError -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.local.only=false -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -cp ${script_path}/.:${script_path}/*"
 MASTER_JAVA_OPTS="-Dcom.sun.management.jmxremote.port=${MASTER_JMX_PORT} ${JAVA_OPTS}"
 SLAVE_JAVA_OPTS="-Dcom.sun.management.jmxremote.port=${SLAVE_JMX_PORT} ${JAVA_OPTS}"
 MASTER_CLASS="com.dianping.swallow.consumerserver.bootstrap.MasterBootStrap"

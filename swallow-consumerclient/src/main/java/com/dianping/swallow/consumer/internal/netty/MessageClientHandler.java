@@ -68,7 +68,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
             //使用CAT监控处理消息的时间
             Transaction t = Cat.getProducer().newTransaction("Message", cClient.getDest().getName());
             Event event = Cat.getProducer().newEvent("Message", "payload");
-            event.addData(swallowMessage.toString());
+            event.addData(swallowMessage.getMessageId().toString());
 
             //处理消息
             //如果是压缩后的消息，则进行解压缩
