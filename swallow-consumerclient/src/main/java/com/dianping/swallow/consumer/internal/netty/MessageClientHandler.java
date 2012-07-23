@@ -19,6 +19,7 @@ import com.dianping.swallow.common.internal.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
+import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
 import com.dianping.swallow.common.internal.util.ZipUtil;
 import com.dianping.swallow.consumer.impl.ConsumerImpl;
 
@@ -40,7 +41,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
    public MessageClientHandler(ConsumerImpl cClient) {
       this.cClient = cClient;
-      service = Executors.newFixedThreadPool(cClient.getConfig().getThreadPoolSize());
+      service = Executors.newFixedThreadPool(cClient.getConfig().getThreadPoolSize(), new MQThreadFactory("swallow-consumer-client-"));
 
    }
 
@@ -68,7 +69,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
             //使用CAT监控处理消息的时间
             Transaction t = Cat.getProducer().newTransaction("Message", cClient.getDest().getName());
             Event event = Cat.getProducer().newEvent("Message", "payload");
-            event.addData(swallowMessage.toString());
+            event.addData(swallowMessage.getMessageId().toString());
 
             //处理消息
             //如果是压缩后的消息，则进行解压缩
