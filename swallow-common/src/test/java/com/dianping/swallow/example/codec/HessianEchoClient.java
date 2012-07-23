@@ -34,7 +34,7 @@ public class HessianEchoClient {
          public ChannelPipeline getPipeline() throws Exception {
             ChannelPipeline p = Channels.pipeline();
             p.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());
-            p.addLast("hessianDecoder", new HessianDecoder());
+//            p.addLast("hessianDecoder", new HessianDecoder());
             p.addLast("handler", new EchoClientHandler());
             return p;
          }

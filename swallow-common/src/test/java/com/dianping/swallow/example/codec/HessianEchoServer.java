@@ -42,7 +42,7 @@ public class HessianEchoServer {
          public ChannelPipeline getPipeline() throws Exception {
             ChannelPipeline p = Channels.pipeline();
             p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());
-            p.addLast("hessianEncoder", new HessianEncoder());
+//            p.addLast("hessianEncoder", new HessianEncoder());
             p.addLast("handler", new EchoServerHandler());
             return p;
          }
