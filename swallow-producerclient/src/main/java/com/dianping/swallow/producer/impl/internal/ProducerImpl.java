@@ -28,16 +28,17 @@ import com.dianping.swallow.producer.ProducerHandler;
  */
 public class ProducerImpl implements Producer {
    //常量定义
-   private static final Logger          logger = Logger.getLogger(ProducerImpl.class); //日志
+   private static final Logger          logger = Logger.getLogger(ProducerImpl.class);                  //日志
 
    //变量定义
-   private final Destination            destination;                                  //Producer消息目的
+   private final Destination            destination;                                                    //Producer消息目的
    private final ProducerConfig         producerConfig;
-   private final String                 producerIP;                                   //Producer IP地址
-   private final String                 producerVersion;                              //Producer版本号
+   private final String                 producerIP;                                                     //Producer IP地址
+   private final String                 producerVersion;                                                //Producer版本号
    private final ProducerSwallowService remoteService;
    private final int                    remoteServiceTimeout;
    private final ProducerHandler        producerHandler;
+
 
    /**
     * @param destination 此Producer发送消息的目的地
@@ -230,6 +231,7 @@ public class ProducerImpl implements Producer {
    public Destination getDestination() {
       return destination;
    }
+
    /**
     * @return 远程调用超时
     */

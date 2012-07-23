@@ -101,7 +101,7 @@ public class SwallowPigeonConfiguration {
             }
          }
       }
-
+      System.out.println(props.toString());
       for (String key : props.stringPropertyNames()) {
          Field field = null;
          try {
@@ -121,7 +121,8 @@ public class SwallowPigeonConfiguration {
             }
          } else if (field.getType().equals(Boolean.TYPE)) {
             try {
-               field.set(this, ("false".equals(props.getProperty(key).trim())) ? false : true);
+               String str = props.getProperty(key).trim();
+               field.set(this, ("false".equals(str) ? false : ("true".equals(str) ? true : DEFAULT_IS_USE_LION)));
             } catch (Exception e) {
                logger.warn("[Can not parse property " + key + ".]", e);
                continue;

@@ -1,4 +1,4 @@
-package com.dianping.swallow.producer.impl;
+package com.dianping.swallow.producer.cases;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,14 +7,15 @@ import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.SendFailedException;
 import com.dianping.swallow.producer.ProducerConfig;
 import com.dianping.swallow.producer.ProducerMode;
+import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 
-public class AppTest {
+public class SyncSendMessageWithMulitipleThread {
    private ProducerFactoryImpl producerFactory = null;
    private String              message         = "";
 
    //初始化
-   public AppTest() {
+   public SyncSendMessageWithMulitipleThread() {
       //初始化ProducerFactory
       try {
          producerFactory = ProducerFactoryImpl.getInstance();
@@ -38,7 +39,7 @@ public class AppTest {
       public void run() {
          //设置Producer选项
          ProducerConfig config = new ProducerConfig();
-         config.setMode(ProducerMode.ASYNC_MODE);
+         config.setMode(ProducerMode.SYNC_MODE);
          config.setRetryTimes(3);
          config.setThreadPoolSize(3);
          config.setSendMsgLeftLastSession(false);
@@ -83,7 +84,7 @@ public class AppTest {
    }
 
    public void doTest() {
-      final int THREAD_NUM = 3;//线程数量
+      final int THREAD_NUM = 1;//线程数量
 
       for (int i = 0; i < THREAD_NUM; i++) {
          Thread task = new Thread(new TestTask("thread " + i + ": ", (i+1)*1000));
@@ -96,7 +97,7 @@ public class AppTest {
    }
 
    public static void main(String[] args) {
-      new AppTest().doTest();
+      new SyncSendMessageWithMulitipleThread().doTest();
    }
 
    public String getMessage() {

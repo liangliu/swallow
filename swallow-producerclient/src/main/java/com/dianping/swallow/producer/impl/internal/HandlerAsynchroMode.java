@@ -6,6 +6,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.configuration.NetworkInterfaceManager;
+import com.dianping.cat.message.Heartbeat;
+import com.dianping.cat.message.Message;
+import com.dianping.cat.message.Transaction;
 import com.dianping.filequeue.DefaultFileQueueConfig.FileQueueConfigHolder;
 import com.dianping.filequeue.DefaultFileQueueImpl;
 import com.dianping.filequeue.FileQueue;
@@ -25,9 +30,9 @@ import com.dianping.swallow.producer.ProducerHandler;
 public class HandlerAsynchroMode implements ProducerHandler {
    private static final Logger                   logger                 = LoggerFactory
                                                                               .getLogger(HandlerAsynchroMode.class);
-   private static final MQThreadFactory          threadFactory          = new MQThreadFactory();                     //从FileQueue中获取消息的线程池
+   private static final MQThreadFactory          threadFactory          = new MQThreadFactory();                    //从FileQueue中获取消息的线程池
 
-   private static final int                      DEFAULT_FILEQUEUE_SIZE = 512 * 1024 * 1024;                        //默认的filequeue切片大小，512MB
+   private static final int                      DEFAULT_FILEQUEUE_SIZE = 100 * 1024 * 1024;                        //默认的filequeue切片大小，512MB
    private static final int                      DELAY_BASE_MULTI       = 5;                                        //超时策略倍数
 
    private static Map<String, FileQueue<Packet>> messageQueues          = new HashMap<String, FileQueue<Packet>>(); //当前TopicName与Filequeue对应关系的集合
@@ -35,6 +40,38 @@ public class HandlerAsynchroMode implements ProducerHandler {
    private final ProducerImpl                    producer;
    private final FileQueue<Packet>               messageQueue;                                                      //Filequeue
    private final int                             delayBase;                                                         //超时策略基数
+
+   static {
+      final String ip = NetworkInterfaceManager.INSTANCE.getLocalHostAddress();
+      
+      threadFactory.newThread(new Runnable() {
+         @Override
+         public void run() {
+            try {
+               
+               while (true) {
+                  Transaction t = Cat.getProducer().newTransaction("System", "SwallowHeartbeat");
+                  Heartbeat heartbeat = Cat.getProducer().newHeartbeat("SwallowProducerClient", ip);
+
+                  for (Map.Entry<String, FileQueue<Packet>> entry : messageQueues.entrySet()) {
+                     heartbeat.addData(entry.getKey(), entry.getValue().size());
+                  }
+                  
+                  heartbeat.setStatus(Message.SUCCESS);
+                  heartbeat.complete();
+                  t.setStatus(Message.SUCCESS);
+                  t.complete();
+
+                  Thread.sleep(60000); // 1 min
+               }
+               
+            } catch (InterruptedException e) {
+               e.printStackTrace();
+            }
+         }
+      }, "swallow-FilequeueHeartBeat-");
+
+   }
 
    /**
     * 获取指定topicName及选项的FileQueue，如果已经存在则返回引用，如果不存在就创建新的FileQueue

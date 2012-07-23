@@ -19,6 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dianping.dpsf.api.ProxyFactory;
+import com.dianping.lion.EnvZooKeeperConfig;
+import com.dianping.lion.client.ConfigCache;
 import com.dianping.swallow.common.internal.packet.PktProducerGreet;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.util.IPUtil;
@@ -81,6 +83,8 @@ public class ProducerFactoryImpl implements ProducerFactory {
 
       ProducerSwallowService remoteService = null;
       try {
+         ConfigCache.getInstance(EnvZooKeeperConfig.getZKAddress());
+
          pigeon.init();
          logger.info("[Initialize pigeon successfully.]");
 
