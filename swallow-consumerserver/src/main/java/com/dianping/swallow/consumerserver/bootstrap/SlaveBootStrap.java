@@ -131,7 +131,9 @@ public class SlaveBootStrap {
             LOG.info("slave interruptted, will stop", e);
             break;
          }
-         
+         LOG.info("consumerWorkerManager.close()-started");
+         consumerWorkerManager.close();
+         LOG.info("consumerWorkerManager.close()-finished");
          closeNettyRelatedResource();
       }
       
