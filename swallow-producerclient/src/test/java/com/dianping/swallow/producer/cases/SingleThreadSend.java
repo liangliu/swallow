@@ -68,7 +68,7 @@ public class SingleThreadSend {
       }
    }
 
-   public static void asyncSendSome(String content, int count, int freq, Map<String, String> properties, String type)
+   public static void asyncSendSome(Object content, int count, int freq, Map<String, String> properties, String type)
          throws Exception {
       ProducerConfig config = new ProducerConfig();
       config.setMode(ProducerMode.ASYNC_MODE);
@@ -77,17 +77,16 @@ public class SingleThreadSend {
       config.setThreadPoolSize(2);
       config.setZipped(false);
 
-      Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("songtong"), config);
+      Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("example"), config);
       long begin = System.currentTimeMillis();
-      int sent = 0;
       if (count <= 0) {
          while (true) {
-            System.out.println(producer.sendMessage(++sent + ": " + content, properties, type));
+            producer.sendMessage(content, properties, type);
             Thread.sleep(freq < 0 ? 0 : freq);
          }
       } else {
          for (int i = 0; i < count; i++) {
-            System.out.println(producer.sendMessage(++sent + ": " + content, properties, type));
+            producer.sendMessage(content, properties, type);
             Thread.sleep(freq < 0 ? 0 : freq);
          }
          System.out.println("total cost: " + (System.currentTimeMillis() - begin));
@@ -95,8 +94,8 @@ public class SingleThreadSend {
    }
 
    public static void main(String[] args) throws Exception {
-//      SingleThreadSend.syncSendSome("Hello world", 1000, 1000, null, "songtong");
+      SingleThreadSend.syncSendSome("Hello world", 1000, 1000, null, "songtong");
       //      SingleThreadSend.syncSendSomeObjectDemoWithZipped(1000, 1000);
-            SingleThreadSend.asyncSendSome("Hello orange", 1000, 100, null, null);
+      //      SingleThreadSend.asyncSendSome("Hello orange", 1000, 100, null, null);
    }
 }
