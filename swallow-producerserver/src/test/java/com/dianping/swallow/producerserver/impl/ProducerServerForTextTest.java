@@ -24,12 +24,14 @@ public class ProducerServerForTextTest {
       textObj.setContent("This is a Mock Text content.");
       textObj.setTopic("UnitTest");
 
+      SocketAddress socketAddress = new InetSocketAddress("127.0.0.1", 8000);
+      
       //构造Channel
       Channel channel = mock(Channel.class);
       when(channel.write(Matchers.anyObject())).thenReturn(null);
+      when(channel.getRemoteAddress()).thenReturn(socketAddress);
 
       //构造MessageEvent对象，用以调用messageReceived方法
-      SocketAddress socketAddress = new InetSocketAddress("127.0.0.1", 8000);
       MessageEvent messageEvent = mock(MessageEvent.class);
       when(messageEvent.getMessage()).thenReturn(textObj);
       when(messageEvent.getRemoteAddress()).thenReturn(socketAddress);
