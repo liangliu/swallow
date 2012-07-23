@@ -1,5 +1,6 @@
 package com.dianping.swallow.example.consumer;
 
+import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.consumer.Consumer;
@@ -13,7 +14,7 @@ public class NonDurableConsumerExample {
       ConsumerConfig config = new ConsumerConfig();
       //以下两项根据自己情况而定，默认是不需要配的
       config.setThreadPoolSize(10);
-      
+      config.setConsumerType(ConsumerType.NON_DURABLE);
       Consumer c = ConsumerFactoryImpl.getInstance().createConsumer(Destination.topic("example"), config);
       c.setListener(new MessageListener() {
          
