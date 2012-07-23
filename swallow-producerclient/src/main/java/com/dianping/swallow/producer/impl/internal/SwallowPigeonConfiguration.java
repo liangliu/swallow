@@ -179,6 +179,7 @@ public class SwallowPigeonConfiguration {
       String realWeights = "";
       String host;
       String weight;
+      //TODO StringBuilder
       for (int idx = 0; idx < hostSet.length; idx++) {
          host = hostSet[idx];
          if (idx >= weightSet.length) {

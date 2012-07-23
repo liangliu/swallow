@@ -40,7 +40,7 @@ public class DefaultPullStrategy implements PullStrategy {
 	@Override
 	public long fail(boolean shouldSleep) throws InterruptedException {
 		failCnt++;
-		long sleepTime = failCnt * delayBase;
+		long sleepTime = (long)failCnt * delayBase;
 		sleepTime = sleepTime > delayUpperbound ? delayUpperbound : sleepTime;
 		if(shouldSleep) {
 		   if(log.isDebugEnabled()) {

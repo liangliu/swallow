@@ -21,15 +21,15 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
 
    private final String                cid;
    private final String                topicName;
-   private final MessageRetriverThread messageRetriverThread;
+   private final transient MessageRetriverThread messageRetriverThread;
 
    /** 最小剩余数量,当queue的消息数量小于threshold时，会触发从数据库加载数据的操作 */
    private final int                   threshold;
 
-   protected MessageRetriever          messageRetriever;
+   protected transient MessageRetriever          messageRetriever;
 
    private ReentrantLock               reentrantLock    = new ReentrantLock(true);
-   private Condition                   condition        = reentrantLock.newCondition();
+   private transient Condition                   condition        = reentrantLock.newCondition();
 
    protected volatile Long             tailMessageId;
    protected MessageFilter             messageFilter;

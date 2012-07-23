@@ -33,7 +33,11 @@ public class MQThreadFactory implements ThreadFactory, Closeable {
    private ConcurrentHashMap<String, AtomicInteger> prefixToSeq    = new ConcurrentHashMap<String, AtomicInteger>();
 
    public MQThreadFactory(String namePrefix) {
-      this.prefix = namePrefix;
+      if(namePrefix != null) {
+         this.prefix = namePrefix;
+      } else {
+         this.prefix = PREFIX_DEFAULT;
+      }
       HawkJMXUtil.registerMBean("SwallowThreadStatusBean", new ThreadStatusBean());
    }
 

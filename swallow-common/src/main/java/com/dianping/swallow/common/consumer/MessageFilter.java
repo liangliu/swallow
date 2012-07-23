@@ -1,8 +1,11 @@
 package com.dianping.swallow.common.consumer;
 
+import java.io.Serializable;
 import java.util.Set;
 
-public class MessageFilter {
+public class MessageFilter implements Serializable {
+   
+   private static final long serialVersionUID = 5643819915814285301L;
    
    public final static MessageFilter AllMatchFilter = new MessageFilter(FilterType.AllMatch, null);
 

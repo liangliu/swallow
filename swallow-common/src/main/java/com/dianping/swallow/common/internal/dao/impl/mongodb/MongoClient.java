@@ -226,7 +226,7 @@ public class MongoClient implements ConfigChangeListener {
             LOG.info("parseURIAndCreateTopicMongo() - parse " + serverURI + " to: " + topicNameToMongoMap);
          }
          return topicNameToMongoMap;
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
          throw new IllegalArgumentException(
                "Error parsing the '*ServerURI' property, the format is '<topicName>,default=<mongoURI>;<topicName>=<mongoURI>': "
                      + e.getMessage(), e);

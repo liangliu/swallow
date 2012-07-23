@@ -16,6 +16,7 @@
 package com.dianping.swallow.producer.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.anyObject;
@@ -112,11 +113,10 @@ public class ProducerTest {
 
       ProducerImpl expectionProducer = new ProducerImpl(dest, config, producerIP, producerVersion,
             exceptionRemoteService, 5000);
-      String exRet = null;
       try {
-         exRet = expectionProducer.sendMessage(content);
+         expectionProducer.sendMessage(content);
+         fail();
       } catch (Exception e) {
-         assertNull(exRet);
       }
    }
 

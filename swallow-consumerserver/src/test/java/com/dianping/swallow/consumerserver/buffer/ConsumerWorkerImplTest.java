@@ -235,7 +235,7 @@ public class ConsumerWorkerImplTest extends AbstractDAOImplTest {
             .get(consumerId1)).getCachedMessages().size());
    }
 
-   class MockedCloseableBlockingQueue<E> extends LinkedBlockingQueue<E> implements CloseableBlockingQueue<E> {
+   static class MockedCloseableBlockingQueue<E> extends LinkedBlockingQueue<E> implements CloseableBlockingQueue<E> {
       private static final long serialVersionUID = 1L;
 
       @Override
