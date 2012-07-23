@@ -1,8 +1,11 @@
 #!/bin/bash
 PRGDIR=`dirname "$0"`
+if [ ! -d "/data/applogs/swallow" ] ; then
+  mkdir -p "/data/applogs/swallow"
+fi
 usage(){
     echo "  Usage:"
-    echo "     use '$0' or '$0 master'  to start as master."
+    echo "     use '$0 master' to start as master."
     echo "     use '$0 slave' to start as slave."
     exit 1
 }
@@ -14,7 +17,7 @@ SLAVE_JAVA_OPTS="-Dmaster.or.slave=slave -Dcom.sun.management.jmxremote.port=${S
 MASTER_CLASS="com.dianping.swallow.consumerserver.bootstrap.MasterBootStrap"
 SLAVE_CLASS="com.dianping.swallow.consumerserver.bootstrap.SlaveBootStrap"
 
-if [ "$1" == "master" ] || [ "$1" == "" ]; then
+if [ "$1" == "master" ]; then
     STD_OUT="/data/applogs/swallow/swallow-consumerserver-master-std.out
     echo "starting as master ..."
     echo "output: $STD_OUT"
