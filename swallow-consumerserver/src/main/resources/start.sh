@@ -18,15 +18,15 @@ MASTER_CLASS="com.dianping.swallow.consumerserver.bootstrap.MasterBootStrap"
 SLAVE_CLASS="com.dianping.swallow.consumerserver.bootstrap.SlaveBootStrap"
 
 if [ "$1" == "master" ]; then
-    STD_OUT="/data/applogs/swallow/swallow-consumerserver-master-std.out
+    STD_OUT="/data/applogs/swallow/swallow-consumerserver-master-std.out"
     echo "starting as master ..."
     echo "output: $STD_OUT"
-    exec java $MASTER_JAVA_OPTS $MASTER_CLASS >> "$STD_OUT" 2>&1 &
+    exec java $MASTER_JAVA_OPTS $MASTER_CLASS > "$STD_OUT" 2>&1 &
 elif [ "$1" == "slave" ]; then
-    STD_OUT="/data/applogs/swallow/swallow-consumerserver-slave-std.out
+    STD_OUT="/data/applogs/swallow/swallow-consumerserver-slave-std.out"
     echo "starting as slave ..."
     echo "output: $STD_OUT"
-    exec java $SLAVE_JAVA_OPTS $SLAVE_CLASS >> "$STD_OUT" 2>&1 &
+    exec java $SLAVE_JAVA_OPTS $SLAVE_CLASS > "$STD_OUT" 2>&1 &
 else
     echo "Your input is not corrent!"
     usage
