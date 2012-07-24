@@ -71,18 +71,18 @@ public class IPUtil {
       if (channel == null)
          return defaultIP;
       String channelIP = defaultIP;
-      String str = channel.getRemoteAddress().toString();
-      int beginIdx = str.indexOf("/") + 1;
-      int endIdx = str.indexOf(":");
-      if (beginIdx < 0)
-         beginIdx = 0;
       try {
+         String str = channel.getRemoteAddress().toString();
+         int beginIdx = str.indexOf("/") + 1;
+         int endIdx = str.indexOf(":");
+         if (beginIdx < 0)
+            beginIdx = 0;
          if (endIdx < 0) {
             channelIP = str.substring(beginIdx).trim();
          } else {
             channelIP = str.substring(beginIdx, endIdx).trim();
          }
-      } catch (IndexOutOfBoundsException iobe) {
+      } catch (Exception iobe) {
       }
       return channelIP;
    }
