@@ -21,9 +21,9 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    private final MessageDAO    messageDAO;
 
    //TextHandler状态代码
-   private static final int    OK                 = 250;
-   private static final int    INVALID_TOPIC_NAME = 251;
-   private static final int    SAVE_FAILED        = 252;
+   public static final int     OK                 = 250;
+   public static final int     INVALID_TOPIC_NAME = 251;
+   public static final int     SAVE_FAILED        = 252;
 
    private static final Logger logger             = Logger.getLogger(ProducerServerForText.class);
 

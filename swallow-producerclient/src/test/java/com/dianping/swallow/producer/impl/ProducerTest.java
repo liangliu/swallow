@@ -104,7 +104,7 @@ public class ProducerTest {
       ProducerConfig config = new ProducerConfig();
 
       config.setMode(ProducerMode.SYNC_MODE);
-      config.setRetryTimes(2);
+      config.setRetryTimes(1);
       config.setZipped(true);
 
       ProducerImpl producer = new ProducerImpl(dest, config, producerIP, producerVersion, normalRemoteService, 5000);
@@ -112,7 +112,7 @@ public class ProducerTest {
       assertEquals(ack.getShaInfo(), ret);
 
       ProducerImpl expectionProducer = new ProducerImpl(dest, config, producerIP, producerVersion,
-            exceptionRemoteService, 5000);
+            exceptionRemoteService, 500);
       try {
          expectionProducer.sendMessage(content);
          fail();

@@ -60,7 +60,7 @@ public class SwallowPigeonConfiguration {
 
    public static final String  DEFAULT_SERVICE_NAME   = "http://service.dianping.com/swallowService/producerService_1.0.0"; //默认远程服务名称
    public static final String  DEFAULT_SERIALIZE      = "hessian";                                                         //默认序列化方式
-   public static final int     DEFAULT_TIMEOUT        = 50000;                                                             //默认远程调用延时
+   public static final int     DEFAULT_TIMEOUT        = 5000;                                                             //默认远程调用延时
    public static final boolean DEFAULT_IS_USE_LION    = true;                                                              //默认是否使用Lion以配置Swallow server地址
    public static final String  DEFAULT_HOSTS          = "127.0.0.1:4000";                                                  //默认Swallow server地址字符串
    public static final String  DEFAULT_WEIGHTS        = "1";                                                               //默认Swallow server权重
