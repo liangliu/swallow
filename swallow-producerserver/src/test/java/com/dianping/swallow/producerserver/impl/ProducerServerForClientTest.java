@@ -4,7 +4,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.Date;
 
@@ -26,6 +25,7 @@ import com.dianping.swallow.common.internal.packet.PacketType;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktProducerGreet;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
+import com.dianping.swallow.common.internal.util.IPUtil;
 import com.dianping.swallow.common.internal.util.SHAUtil;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
@@ -65,7 +65,7 @@ public class ProducerServerForClientTest {
       ACK = (PktSwallowPACK) producerServerForClient.sendMessage(pktProducerGreet);
 
       Assert.assertEquals(PacketType.SWALLOW_P_ACK, ACK.getPacketType());
-      Assert.assertEquals(Inet4Address.getLocalHost().getHostAddress(), ACK.getShaInfo());
+      Assert.assertEquals(IPUtil.getFirstNoLoopbackIP4Address(), ACK.getShaInfo());
 
       //不抛异常的DAO
       MessageDAO messageDAO = mock(MessageDAO.class);
