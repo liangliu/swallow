@@ -12,12 +12,13 @@ import com.dianping.swallow.consumerserver.config.ConfigManager;
 
 public class MongoHeartbeater implements Heartbeater {
 
-   private static final Logger LOG        = LoggerFactory.getLogger(MongoHeartbeater.class);
-   private HeartbeatDAO  heartbeatDAO;
-   private ConfigManager                   configManager             = ConfigManager.getInstance();
+   private static final Logger LOG           = LoggerFactory.getLogger(MongoHeartbeater.class);
+   private HeartbeatDAO        heartbeatDAO;
+   private ConfigManager       configManager = ConfigManager.getInstance();
 
    public void setHeartbeatDAO(HeartbeatDAO heartbeatDAO) {
-      this.heartbeatDAO = ProxyUtil.createMongoDaoProxyWithRetryMechanism(heartbeatDAO, configManager.getRetryIntervalWhenMongoException());
+      this.heartbeatDAO = ProxyUtil.createMongoDaoProxyWithRetryMechanism(heartbeatDAO,
+            configManager.getRetryIntervalWhenMongoException());
    }
 
    @Override
@@ -28,17 +29,19 @@ public class MongoHeartbeater implements Heartbeater {
    @Override
    public void waitUntilMasterDown(String ip, long checkInterval, long maxStopTime) throws InterruptedException {
       long startTime = System.currentTimeMillis();
-      LOG.info("started to wait "+ip + " master stop beating");
+      LOG.info("started to wait " + ip + " master stop beating");
       while (true) {
          Date beat = null;
-            beat = heartbeatDAO.findLastHeartbeat(ip);
+         beat = heartbeatDAO.findLastHeartbeat(ip);
          if (beat == null) {
-            LOG.info(ip + " no beat");
+            LOG.warn(ip + " no beat");
             if (System.currentTimeMillis() - startTime > maxStopTime) {
                break;
             }
          } else {
-            LOG.info(ip + " beat at " + beat.getTime());
+            if (LOG.isDebugEnabled()) {
+               LOG.debug(ip + " beat at " + beat.getTime());
+            }
             long now = System.currentTimeMillis();
             long lastBeatTime = beat.getTime();
             if (now - lastBeatTime > maxStopTime) {
@@ -51,8 +54,7 @@ public class MongoHeartbeater implements Heartbeater {
    }
 
    @Override
-   public void waitUntilMasterUp(String ip, long checkInterval, long maxStopTime)
-         throws InterruptedException {
+   public void waitUntilMasterUp(String ip, long checkInterval, long maxStopTime) throws InterruptedException {
       Date beat = null;
       while (true) {
          try {
