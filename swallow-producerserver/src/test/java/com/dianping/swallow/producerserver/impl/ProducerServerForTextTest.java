@@ -1,12 +1,14 @@
 package com.dianping.swallow.producerserver.impl;
 
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
+import junit.framework.Assert;
+
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.MessageEvent;
 import org.junit.Test;
@@ -14,12 +16,13 @@ import org.mockito.Matchers;
 
 import com.dianping.swallow.common.internal.dao.MessageDAO;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
+import com.dianping.swallow.common.internal.util.SHAUtil;
 
 public class ProducerServerForTextTest {
    @Test
    public void testProducerServerForText() {
       //构造mock的文本对象
-      TextObject textObj = new TextObject();
+      final TextObject textObj = new TextObject();
       textObj.setACK(true);
       textObj.setContent("This is a Mock Text content.");
       textObj.setTopic("UnitTest");
@@ -28,7 +31,32 @@ public class ProducerServerForTextTest {
       
       //构造Channel
       Channel channel = mock(Channel.class);
-      when(channel.write(Matchers.anyObject())).thenReturn(null);
+      //Matchers.anyObject()
+      when(channel.write(argThat(new Matcher<TextACK>() {
+         @Override
+         public void describeTo(Description arg0) {
+         }
+         @Override
+         public void _dont_implement_Matcher___instead_extend_BaseMatcher_() {
+         }
+         @Override
+         public boolean matches(Object arg0) {
+            TextACK textAck = (TextACK)arg0;
+            Assert.assertEquals(TextACK.class, arg0.getClass());
+            switch(textAck.getStatus()){
+               case ProducerServerTextHandler.OK:
+                  Assert.assertEquals(SHAUtil.generateSHA(textObj.getContent()), textAck.getInfo());
+                  break;
+               case ProducerServerTextHandler.INVALID_TOPIC_NAME:
+                  Assert.assertEquals("TopicName is invalid.", textAck.getInfo());
+                  break;
+               case ProducerServerTextHandler.SAVE_FAILED:
+                  Assert.assertEquals("Can not save message.", textAck.getInfo());
+                  break;
+            }
+            return true;
+         }
+      }))).thenReturn(null);
       when(channel.getRemoteAddress()).thenReturn(socketAddress);
 
       //构造MessageEvent对象，用以调用messageReceived方法
@@ -52,4 +80,5 @@ public class ProducerServerForTextTest {
       doThrow(new RuntimeException()).when(messageDAO).saveMessage(Matchers.anyString(), (SwallowMessage)Matchers.anyObject());
       producerServerTextHandler.messageReceived(null, messageEvent);
    }
+
 }

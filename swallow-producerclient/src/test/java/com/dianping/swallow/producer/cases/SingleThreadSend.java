@@ -33,7 +33,7 @@ public class SingleThreadSend {
 
    public static void syncSendSome(String content, int count, int freq, Map<String, String> properties, String type)
          throws Exception {
-      Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("songtong"));
+      Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("example"));
       int sent = 0;
       if (count <= 0) {
          while (true) {
@@ -94,7 +94,7 @@ public class SingleThreadSend {
    }
 
    public static void main(String[] args) throws Exception {
-      SingleThreadSend.syncSendSome("Hello world", 1000, 1000, null, "songtong");
+      SingleThreadSend.syncSendSome("Hello world", -1, -1, null, "songtong");
       //      SingleThreadSend.syncSendSomeObjectDemoWithZipped(1000, 1000);
       //      SingleThreadSend.asyncSendSome("Hello orange", 1000, 100, null, null);
    }
