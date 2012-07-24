@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
 import com.dianping.swallow.common.consumer.MessageFilter;
-import com.dianping.swallow.common.internal.dao.impl.mongodb.AbstractDAOImplTest;
 import com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl;
 import com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
