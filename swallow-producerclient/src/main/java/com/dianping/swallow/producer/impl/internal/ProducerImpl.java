@@ -28,17 +28,16 @@ import com.dianping.swallow.producer.ProducerHandler;
  */
 public class ProducerImpl implements Producer {
    //常量定义
-   private static final Logger          logger = Logger.getLogger(ProducerImpl.class);                  //日志
+   private static final Logger          logger = Logger.getLogger(ProducerImpl.class); //日志
 
    //变量定义
-   private final Destination            destination;                                                    //Producer消息目的
+   private final Destination            destination;                                  //Producer消息目的
    private final ProducerConfig         producerConfig;
-   private final String                 producerIP;                                                     //Producer IP地址
-   private final String                 producerVersion;                                                //Producer版本号
+   private final String                 producerIP;                                   //Producer IP地址
+   private final String                 producerVersion;                              //Producer版本号
    private final ProducerSwallowService remoteService;
-   private final int                    remoteServiceTimeout;
+   private final int                    punishTimeout;
    private final ProducerHandler        producerHandler;
-
 
    /**
     * @param destination 此Producer发送消息的目的地
@@ -46,10 +45,10 @@ public class ProducerImpl implements Producer {
     * @param producerIP 本机IP地址
     * @param producerVersion Producer版本号
     * @param remoteService 远程调用服务接口
-    * @param remoteServiceTimeout 远程调用超时
+    * @param punishTimeout 远程调用超时
     */
    public ProducerImpl(Destination destination, ProducerConfig producerConfig, String producerIP,
-                       String producerVersion, ProducerSwallowService remoteService, int remoteServiceTimeout) {
+                       String producerVersion, ProducerSwallowService remoteService, int punishTimeout) {
       if (producerConfig != null) {
          this.producerConfig = producerConfig;
       } else {
@@ -62,7 +61,7 @@ public class ProducerImpl implements Producer {
       this.producerIP = producerIP;
       this.producerVersion = producerVersion;
       this.remoteService = remoteService;
-      this.remoteServiceTimeout = remoteServiceTimeout;
+      this.punishTimeout = punishTimeout;
 
       //设置Producer工作模式
       switch (this.producerConfig.getMode()) {
@@ -131,7 +130,7 @@ public class ProducerImpl implements Producer {
          throw new IllegalArgumentException("Message content can not be null.");
       }
       //根据content生成SwallowMessage
-      SwallowMessage swallowMsg = null;
+      SwallowMessage swallowMsg = new SwallowMessage();
       Map<String, String> zipProperties = null;
 
       //使用CAT监控处理消息的时间
@@ -139,7 +138,6 @@ public class ProducerImpl implements Producer {
       Event event = Cat.getProducer().newEvent("Message", "Payload");
       try {
          //根据content生成SwallowMessage
-         swallowMsg = new SwallowMessage();
          swallowMsg.setContent(content);
          swallowMsg.setVersion(producerVersion);
          swallowMsg.setGeneratedTime(new Date());
@@ -235,7 +233,7 @@ public class ProducerImpl implements Producer {
    /**
     * @return 远程调用超时
     */
-   public int getRemoteServiceTimeout() {
-      return remoteServiceTimeout;
+   public int getPunishTimeout() {
+      return punishTimeout;
    }
 }

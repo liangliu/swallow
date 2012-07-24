@@ -54,7 +54,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * 
     * @throws RemoteServiceInitFailedException 远程调用服务（pigeon）初始化失败
     */
-   protected ProducerFactoryImpl() throws RemoteServiceInitFailedException {
+   private ProducerFactoryImpl() throws RemoteServiceInitFailedException {
       //初始化远程调用
       pigeonConfigure = new SwallowPigeonConfiguration(CONFIG_FILE_NAME);
       remoteService = initPigeon(pigeonConfigure);
@@ -77,10 +77,14 @@ public class ProducerFactoryImpl implements ProducerFactory {
       pigeon.setServiceName(pigeonConfigure.getServiceName());
       pigeon.setSerialize(pigeonConfigure.getSerialize());
       pigeon.setTimeout(pigeonConfigure.getTimeout());
-      pigeon.setUseLion(pigeonConfigure.isUseLion());
-      pigeon.setHosts(pigeonConfigure.getHosts());
-      pigeon.setWeight(pigeonConfigure.getWeights());
 
+      if (pigeonConfigure.isUseLion() == false) {
+         pigeon.setUseLion(false);
+         pigeon.setHosts(pigeonConfigure.getHosts());
+         pigeon.setWeight(pigeonConfigure.getWeights());
+      } else {
+         pigeon.setUseLion(true);
+      }
       ProducerSwallowService remoteService = null;
       try {
          ConfigCache.getInstance(EnvZooKeeperConfig.getZKAddress());
@@ -128,7 +132,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
 
       ProducerImpl producerImpl = null;
       producerImpl = new ProducerImpl(dest, config, producerIP, producerVersion, remoteService,
-            pigeonConfigure.getTimeout());
+            pigeonConfigure.getPunishTimeout());
       logger.info("New producer:[TopicName=" + dest.getName() + "; " + producerImpl.getProducerConfig().toString()
             + "]");
       //向swallow发送greet信息
