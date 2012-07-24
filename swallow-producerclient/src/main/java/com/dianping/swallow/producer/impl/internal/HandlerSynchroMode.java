@@ -19,7 +19,7 @@ public class HandlerSynchroMode implements ProducerHandler {
 
    public HandlerSynchroMode(ProducerImpl producer) {
       this.sendTimes = producer.getProducerConfig().getRetryTimes() + 1;//初始值等于用户要求的retryTimes+1，这样可以保证至少执行一次
-      this.delayBase = producer.getRemoteServiceTimeout();
+      this.delayBase = producer.getPunishTimeout();
       this.remoteService = producer.getRemoteService();
       defaultPullStrategy = new DefaultPullStrategy(delayBase, 5 * delayBase);
    }
