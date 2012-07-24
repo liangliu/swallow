@@ -15,15 +15,15 @@ import org.junit.Test;
 import org.kubek2k.springockito.annotations.SpringockitoContextLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
-import com.dianping.swallow.common.dao.impl.mongodb.MessageDAOImpl;
-import com.dianping.swallow.common.dao.impl.mongodb.MongoClient;
+import com.dianping.swallow.common.consumer.MessageFilter;
+import com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl;
+import com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient;
+import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.message.Message;
-import com.dianping.swallow.common.message.SwallowMessage;
 
-@ContextConfiguration(loader = SpringockitoContextLoader.class, locations = "classpath:applicationContext.xml")
-public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {
+@ContextConfiguration(loader = SpringockitoContextLoader.class, locations = "classpath:applicationContext-test.xml")
+public class SwallowBufferTest extends AbstractTest {
    protected static final String TOPIC_NAME = "topicForUnitTest";
    protected static final String TYPE       = "feed";
 
@@ -76,7 +76,8 @@ public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {
    public void testCreateMessageQueue2() throws InterruptedException {
       Set<String> messageTypeSet = new HashSet<String>();
       messageTypeSet.add(TYPE);
-      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId,
+            MessageFilter.createInSetMessageFilter(messageTypeSet));
 
       Message m;
       while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
@@ -89,7 +90,8 @@ public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {
       Set<String> messageTypeSet = new HashSet<String>();
       messageTypeSet.add(TYPE);
 
-      swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
+      swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId,
+            MessageFilter.createInSetMessageFilter(messageTypeSet));
       BlockingQueue<Message> queue = swallowBuffer.getMessageQueue(TOPIC_NAME, cid);
       Message m;
       while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
@@ -103,7 +105,8 @@ public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {
    public void testPoll1() throws InterruptedException {
       Set<String> messageTypeSet = new HashSet<String>();
       messageTypeSet.add(TYPE);
-      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId,
+            MessageFilter.createInSetMessageFilter(messageTypeSet));
 
       Message m = queue.poll();
       while (m == null) {
@@ -116,13 +119,34 @@ public class SwallowBufferTest extends AbstractJUnit4SpringContextTests {
    public void testPoll2() throws InterruptedException {
       Set<String> messageTypeSet = new HashSet<String>();
       messageTypeSet.add(TYPE);
-      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId, messageTypeSet);
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId,
+            MessageFilter.createInSetMessageFilter(messageTypeSet));
 
       Message m = queue.poll(500, TimeUnit.MILLISECONDS);
       while (m == null) {
          m = queue.poll(500, TimeUnit.MILLISECONDS);
       }
       Assert.assertEquals("content2", m.getContent());
+   }
+
+   @Test
+   public void testPoll3() throws InterruptedException {
+      //插入1条消息
+      String myType = TYPE + "_";
+      SwallowMessage myTypeMsg = createMessage();
+      myTypeMsg.setType(myType);
+      messageDAO.saveMessage(TOPIC_NAME, myTypeMsg);
+
+      Set<String> messageTypeSet = new HashSet<String>();
+      messageTypeSet.add(myType);
+      BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId,
+            MessageFilter.createInSetMessageFilter(messageTypeSet));
+
+      Message m = queue.poll(500, TimeUnit.MILLISECONDS);
+      while (m == null) {
+         m = queue.poll(50, TimeUnit.MILLISECONDS);
+      }
+      Assert.assertEquals(myType, m.getType());
    }
 
    private static SwallowMessage createMessage() {

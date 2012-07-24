@@ -6,8 +6,10 @@ import static org.junit.Assert.assertNull;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
 
+import com.dianping.swallow.common.internal.codec.JsonBinder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -16,7 +18,7 @@ import com.google.common.collect.Maps;
  */
 public class JsonBinderTest {
 
-   private static JsonBinder binder = JsonBinder.buildNormalBinder();
+   private static JsonBinder binder = JsonBinder.getNonEmptyBinder();
 
    /**
     * 序列化对象/集合到Json字符串.
@@ -26,7 +28,7 @@ public class JsonBinderTest {
       //Bean
       TestBean bean = new TestBean("A");
       String beanString = binder.toJson(bean);
-      assertEquals("{\"name\":\"A\",\"defaultValue\":\"hello\",\"nullValue\":null}", beanString);
+      assertEquals("{\"name\":\"A\",\"defaultValue\":\"hello\"}", beanString);
 
       //Map
       Map<String, Object> map = Maps.newLinkedHashMap();
@@ -67,6 +69,11 @@ public class JsonBinderTest {
       String nullBeanString = binder.toJson(nullBean);
       assertEquals("null", nullBeanString);
 
+      //Empty bean
+      EmptyBean bean = new EmptyBean();
+      Assert.assertNotNull(binder.toJson(bean));
+      Assert.assertEquals("{}", binder.toJson(bean));
+
       //Empty List
       List<String> emptyList = Lists.newArrayList();
       String emptyListString = binder.toJson(emptyList);
@@ -84,6 +91,7 @@ public class JsonBinderTest {
       //Null/Empty String for List
       List nullListResult = binder.fromJson(null, List.class);
       assertNull(nullListResult);
+      Assert.assertNotNull(binder.fromJson("{}", EmptyBean.class));
 
       nullListResult = binder.fromJson("null", List.class);
       assertNull(nullListResult);
@@ -92,27 +100,20 @@ public class JsonBinderTest {
       assertEquals(0, nullListResult.size());
    }
 
-   /**
-    * 测试三种不同的Binder.
-    */
-   @Test
-   public void threeTypeBinders() {
-      //打印全部属性
-      JsonBinder normalBinder = JsonBinder.buildNormalBinder();
-      TestBean bean = new TestBean("A");
-      assertEquals("{\"name\":\"A\",\"defaultValue\":\"hello\",\"nullValue\":null}", normalBinder.toJson(bean));
-
-   }
-
    @Test
    public void error() {
-      JsonBinder normalBinder = JsonBinder.buildNormalBinder();
-      ErrorBean bean = new ErrorBean();
-      assertNull(normalBinder.toJson(bean));
-      assertNull(normalBinder.fromJson("error json string", ErrorBean.class));
+      JsonBinder binder = JsonBinder.getNonEmptyBinder();
+      // error json string
+      try {
+         binder.fromJson("error json string", EmptyBean.class);
+         Assert.fail();
+      } catch (Exception e) {
+         Assert.assertTrue(e instanceof JsonDeserializedException);
+      }
+
    }
 
-   public static class ErrorBean {
+   public static class EmptyBean {
       int getA() {
          return 5;
       }
@@ -129,30 +130,6 @@ public class JsonBinderTest {
 
       public TestBean(String name) {
          this.name = name;
-      }
-
-      public String getName() {
-         return name;
-      }
-
-      public void setName(String name) {
-         this.name = name;
-      }
-
-      public String getDefaultValue() {
-         return defaultValue;
-      }
-
-      public void setDefaultValue(String defaultValue) {
-         this.defaultValue = defaultValue;
-      }
-
-      public String getNullValue() {
-         return nullValue;
-      }
-
-      public void setNullValue(String nullValue) {
-         this.nullValue = nullValue;
       }
 
       @Override

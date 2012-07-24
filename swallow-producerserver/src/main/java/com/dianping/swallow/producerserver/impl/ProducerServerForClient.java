@@ -1,33 +1,38 @@
 package com.dianping.swallow.producerserver.impl;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.dianping.dpsf.api.ServiceRegistry;
-import com.dianping.swallow.common.dao.MessageDAO;
-import com.dianping.swallow.common.message.SwallowMessage;
-import com.dianping.swallow.common.packet.Packet;
-import com.dianping.swallow.common.packet.PktMessage;
-import com.dianping.swallow.common.packet.PktSwallowPACK;
-import com.dianping.swallow.common.producer.MQService;
+import com.dianping.hawk.jmx.HawkJMXUtil;
+import com.dianping.swallow.common.internal.dao.MessageDAO;
+import com.dianping.swallow.common.internal.message.SwallowMessage;
+import com.dianping.swallow.common.internal.packet.Packet;
+import com.dianping.swallow.common.internal.packet.PktMessage;
+import com.dianping.swallow.common.internal.packet.PktProducerGreet;
+import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
+import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
+import com.dianping.swallow.common.internal.util.IPUtil;
+import com.dianping.swallow.common.internal.util.SHAUtil;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
-import com.dianping.swallow.producerserver.util.SHAGenerater;
 
-public class ProducerServerForClient implements MQService {
+public class ProducerServerForClient implements ProducerSwallowService {
 
-   private static final Logger logger       = Logger.getLogger(ProducerServerForClient.class);
-   private static final int    DEFAULT_PORT = 4000;
-   private int                 port         = DEFAULT_PORT;
+   private static final Logger logger             = Logger.getLogger(ProducerServerForClient.class);
+   private static final int    DEFAULT_PORT       = 4000;
+   public static final String  producerServerIP   = IPUtil.getFirstNoLoopbackIP4Address();
 
-   @Autowired
+   private int                 port               = DEFAULT_PORT;
    private MessageDAO          messageDAO;
+   private String              remoteServiceName;
+
+   public ProducerServerForClient() {
+      //Hawk监控
+      HawkJMXUtil.registerMBean("ProducerServerForClient", new HawkMBean());
+   }
 
    /**
     * 启动producerServerClient
@@ -37,16 +42,17 @@ public class ProducerServerForClient implements MQService {
     * @throws Exception 连续绑定同一个端口抛出异常，pigeon初始化失败抛出异常
     */
    public void start() throws RemoteServiceInitFailedException {
-      ServiceRegistry remoteService = null;
       try {
+         ServiceRegistry remoteService = null;
          remoteService = new ServiceRegistry(getPort());
          Map<String, Object> services = new HashMap<String, Object>();
-         services.put("remoteService", this);
+         services.put(remoteServiceName, this);
          remoteService.setServices(services);
          remoteService.init();
+         logger.info("[Initialize pigeon sucessfully, Producer service for client is ready.]");
       } catch (Exception e) {
-         logger.log(Level.ERROR, "[ProducerServer]:[Initialize remote service failed.]", e.getCause());
-         throw new RemoteServiceInitFailedException();
+         logger.error("[Initialize pigeon failed.]", e);
+         throw new RemoteServiceInitFailedException(e);
       }
    }
 
@@ -58,34 +64,34 @@ public class ProducerServerForClient implements MQService {
    @Override
    public Packet sendMessage(Packet pkt) throws ServerDaoException {
       Packet pktRet = null;
+      SwallowMessage swallowMessage;
+      String topicName;
+      String sha1;
       switch (pkt.getPacketType()) {
          case PRODUCER_GREET:
-            System.out.println("got greet");
-            try {
-               //返回ProducerServer地址
-               pktRet = new PktSwallowPACK(InetAddress.getLocalHost().toString());
-            } catch (UnknownHostException uhe) {
-               pktRet = new PktSwallowPACK(uhe.toString());
-            }
+            logger.info("[Got Greet][From=" + ((PktProducerGreet) pkt).getProducerIP() + "][Version="
+                  + ((PktProducerGreet) pkt).getProducerVersion() + "]");
+            //返回ProducerServer地址
+            pktRet = new PktSwallowPACK(producerServerIP);
             break;
          case OBJECT_MSG:
-            String sha1 = SHAGenerater.generateSHA(((SwallowMessage) ((PktMessage) pkt).getContent()).getContent());
+            swallowMessage = ((PktMessage) pkt).getContent();
+            topicName = ((PktMessage) pkt).getDestination().getName();
+            sha1 = SHAUtil.generateSHA(swallowMessage.getContent());
             pktRet = new PktSwallowPACK(sha1);
-
-            //设置swallowMessage的sha-1//TODO 设置swallowMessage的IP地址
-            ((SwallowMessage) ((PktMessage) pkt).getContent()).setSha1(sha1);
+            //设置swallowMessage的sha-1
+            swallowMessage.setSha1(sha1);
 
             //将swallowMessage保存到mongodb
             try {
-               messageDAO.saveMessage(((PktMessage) pkt).getDestination().getName(),
-                     (SwallowMessage) ((PktMessage) pkt).getContent());
+               messageDAO.saveMessage(topicName, swallowMessage);
             } catch (Exception e) {
-               logger.error("[ProducerServer]:[Message saved failed.]", e);
-               throw new ServerDaoException();
+               logger.error("[Save message to DB failed.]", e);
+               throw new ServerDaoException(e);
             }
             break;
          default:
-            logger.log(Level.WARN, "[ProducerServer]:[Received unrecognized packet.]");
+            logger.warn("[Received unrecognized packet.]" + pkt);
             break;
       }
       return pktRet;
@@ -101,6 +107,27 @@ public class ProducerServerForClient implements MQService {
 
    public void setMessageDAO(MessageDAO messageDAO) {
       this.messageDAO = messageDAO;
+   }
+
+   public String getRemoteServiceName() {
+      return remoteServiceName;
+   }
+
+   public void setRemoteServiceName(String remoteServiceName) {
+      this.remoteServiceName = remoteServiceName;
+   }
+
+   /**
+    * 用于Hawk监控
+    */
+   public class HawkMBean {
+      public String getProducerserverip() {
+         return producerServerIP;
+      }
+
+      public int getPort() {
+         return port;
+      }
    }
 
 }

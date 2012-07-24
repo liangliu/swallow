@@ -16,7 +16,7 @@
 package com.dianping.swallow.producerserver.impl;
 
 /**
- * TODO Comment of TextObject
+ * 可以处理的文本流格式，需要包含topic、content、isACK三方面内容
  * 
  * @author tong.song
  */
@@ -47,6 +47,10 @@ public class TextObject {
 
    public void setACK(boolean isACK) {
       this.isACK = isACK;
+   }
+   
+   public boolean getIsACK() {
+	   return isACK;
    }
 
    @Override

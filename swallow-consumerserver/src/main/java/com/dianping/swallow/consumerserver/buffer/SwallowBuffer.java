@@ -1,13 +1,13 @@
 package com.dianping.swallow.consumerserver.buffer;
 
 import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.Set;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.dianping.swallow.common.consumer.MessageFilter;
 import com.dianping.swallow.common.message.Message;
 
 public class SwallowBuffer {
@@ -22,10 +22,11 @@ public class SwallowBuffer {
          locksForCreateTopicBuffer[i] = new ReentrantLock();
       }
    }
+
    private final ConcurrentMap<String, TopicBuffer> topicBuffers                     = new ConcurrentHashMap<String, TopicBuffer>();
    private MessageRetriever                         messageRetriever;
-   private int                                      capacityOfQueue                         = Integer.MAX_VALUE;
-   private int                                      thresholdOfQueue                        = 100;
+   private int                                      capacityOfQueue                  = Integer.MAX_VALUE;
+   private int                                      thresholdOfQueue                 = 100;
 
    /**
     * 根据topicName，获取topicName对应的TopicBuffer。<br>
@@ -71,9 +72,9 @@ public class SwallowBuffer {
     * @param tailMessageId 从messageId大于messageIdOfTailMessage的消息开始消费
     * @return
     */
-   public BlockingQueue<Message> createMessageQueue(String topicName, String cid, Long tailMessageId,
-                                                    Set<String> messageTypeSet) {
-      return this.getTopicBuffer(topicName).createMessageQueue(cid, tailMessageId, messageTypeSet);
+   public CloseableBlockingQueue<Message> createMessageQueue(String topicName, String cid, Long tailMessageId,
+                                                    MessageFilter messageFilter) {
+      return this.getTopicBuffer(topicName).createMessageQueue(cid, tailMessageId, messageFilter);
    }
 
    /**
@@ -107,9 +108,9 @@ public class SwallowBuffer {
 
    class TopicBuffer {
 
-      private final String                                                     topicName;
+      private final String                                                   topicName;
 
-      private ConcurrentHashMap<String, SoftReference<BlockingQueue<Message>>> messageQueues = new ConcurrentHashMap<String, SoftReference<BlockingQueue<Message>>>();
+      private ConcurrentHashMap<String, WeakReference<MessageBlockingQueue>> messageQueues = new ConcurrentHashMap<String, WeakReference<MessageBlockingQueue>>();
 
       private TopicBuffer(String topicName) {
          this.topicName = topicName;
@@ -126,7 +127,7 @@ public class SwallowBuffer {
          if (cid == null) {
             throw new IllegalArgumentException("cid is null.");
          }
-         Reference<BlockingQueue<Message>> ref = messageQueues.get(cid);
+         Reference<MessageBlockingQueue> ref = messageQueues.get(cid);
          if (ref == null) {
             return null;
          }
@@ -151,7 +152,7 @@ public class SwallowBuffer {
        * @param tailMessageId 从messageId大于messageIdOfTailMessage的消息开始消费
        * @return
        */
-      public BlockingQueue<Message> createMessageQueue(String cid, Long tailMessageId, Set<String> messageTypeSet) {
+      public CloseableBlockingQueue<Message> createMessageQueue(String cid, Long tailMessageId, MessageFilter messageFilter) {
          if (cid == null) {
             throw new IllegalArgumentException("cid is null.");
          }
@@ -159,14 +160,15 @@ public class SwallowBuffer {
             throw new IllegalArgumentException("messageIdOfTailMessage is null.");
          }
          MessageBlockingQueue messageBlockingQueue;
-         if (messageTypeSet != null) {
-            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue, tailMessageId,
-                  messageTypeSet);
+         if (messageFilter != null) {
+            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue,
+                  tailMessageId, messageFilter);
          } else {
-            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue, tailMessageId);
+            messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue,
+                  tailMessageId);
          }
          messageBlockingQueue.setMessageRetriever(messageRetriever);
-         messageQueues.put(cid, new SoftReference<BlockingQueue<Message>>(messageBlockingQueue));
+         messageQueues.put(cid, new WeakReference<MessageBlockingQueue>(messageBlockingQueue));
          return messageBlockingQueue;
       }
 

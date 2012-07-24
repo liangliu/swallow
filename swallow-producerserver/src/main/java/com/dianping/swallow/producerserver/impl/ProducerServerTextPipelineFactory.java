@@ -6,9 +6,9 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 
-import com.dianping.swallow.common.codec.JsonDecoder;
-import com.dianping.swallow.common.codec.JsonEncoder;
-import com.dianping.swallow.common.dao.MessageDAO;
+import com.dianping.swallow.common.internal.codec.JsonDecoder;
+import com.dianping.swallow.common.internal.codec.JsonEncoder;
+import com.dianping.swallow.common.internal.dao.MessageDAO;
 
 public class ProducerServerTextPipelineFactory implements ChannelPipelineFactory {
    private MessageDAO messageDAO;

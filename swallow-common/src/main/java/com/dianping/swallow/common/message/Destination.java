@@ -17,8 +17,11 @@ package com.dianping.swallow.common.message;
 
 import java.io.Serializable;
 
+import com.dianping.swallow.common.internal.util.NameCheckUtil;
+
 /***
- * 消息地址
+ * 代表消息目的地。<br>
+ * (可通过<code>Destination.topic(String name)</code>工厂方法创建一个Topic消息目的地。)
  * 
  * @author qing.gu
  */
@@ -38,40 +41,83 @@ public class Destination implements Serializable {
    }
 
    private Destination(String name, Type type) {
-      this.name = name;
+      this.name = name.trim();
       this.type = type;
    }
 
-   /***
-    * 创建Queue类型地址
-    * 
-    * @param name Queue名称
-    * @return
-    */
-   public static Destination queue(String name) {
-      return new Destination(name, Type.QUEUE);
-   }
+   // 此版本不实现queue类型
+   //   /***
+   //    * 创建Queue类型地址
+   //    * 
+   //    * @param name Queue名称
+   //    * @return
+   //    */
+   //   public static Destination queue(String name) {
+   //      return new Destination(name, Type.QUEUE);
+   //   }
 
    /***
-    * 创建Topic类型地址
+    * 创建Topic类型的消息目的地
     * 
     * @param name Topic名称
-    * @return
+    * @return 消息目的地实例
     */
    public static Destination topic(String name) {
+      if (!NameCheckUtil.isTopicNameValid(name))
+         throw new IllegalArgumentException(
+               "Topic name is illegal, permitted set is [0-9,a-z,A-Z,'_','.'], start with a letter.");
       return new Destination(name, Type.TOPIC);
    }
 
+   /**
+    * 获取消息目的地的名称
+    * 
+    * @return
+    */
    public String getName() {
       return name;
    }
 
-   public boolean isQueue() {
-      return type == Type.QUEUE;
+   // 此版本不实现queue类型，故不需要以下2个方法
+   //   public boolean isQueue() {
+   //      return type == Type.QUEUE;
+   //   }
+   //
+   //   public boolean isTopic() {
+   //      return type == Type.TOPIC;
+   //   }
+
+   @Override
+   public String toString() {
+      return String.format("Destination [name=%s, type=%s]", name, type);
    }
 
-   public boolean isTopic() {
-      return type == Type.TOPIC;
+   @Override
+   public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((name == null) ? 0 : name.hashCode());
+      result = prime * result + ((type == null) ? 0 : type.hashCode());
+      return result;
+   }
+
+   @Override
+   public boolean equals(Object obj) {
+      if (this == obj)
+         return true;
+      if (obj == null)
+         return false;
+      if (getClass() != obj.getClass())
+         return false;
+      Destination other = (Destination) obj;
+      if (name == null) {
+         if (other.name != null)
+            return false;
+      } else if (!name.equals(other.name))
+         return false;
+      if (type != other.type)
+         return false;
+      return true;
    }
 
 }

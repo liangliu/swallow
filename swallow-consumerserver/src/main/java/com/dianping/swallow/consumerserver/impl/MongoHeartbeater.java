@@ -1,86 +1,77 @@
 package com.dianping.swallow.consumerserver.impl;
 
-
-
 import java.util.Date;
 
-import org.apache.log4j.Logger;
-import org.jboss.netty.bootstrap.ServerBootstrap;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.common.dao.HeartbeatDAO;
+import com.dianping.swallow.common.internal.dao.HeartbeatDAO;
+import com.dianping.swallow.common.internal.util.ProxyUtil;
 import com.dianping.swallow.consumerserver.Heartbeater;
-import com.dianping.swallow.consumerserver.bootstrap.SlaveBootStrap;
+import com.dianping.swallow.consumerserver.config.ConfigManager;
 
 public class MongoHeartbeater implements Heartbeater {
 
-	private static Logger log = Logger.getLogger(MongoHeartbeater.class);
+   private static final Logger LOG        = LoggerFactory.getLogger(MongoHeartbeater.class);
+   private HeartbeatDAO  heartbeatDAO;
+   private ConfigManager                   configManager             = ConfigManager.getInstance();
 
-	@Autowired
-	private HeartbeatDAO dao;
+   public void setHeartbeatDAO(HeartbeatDAO heartbeatDAO) {
+      this.heartbeatDAO = ProxyUtil.createMongoDaoProxyWithRetryMechanism(heartbeatDAO, configManager.getRetryIntervalWhenMongoException());
+   }
 
-	@Override
-	public void beat(String ip) {
-		dao.updateLastHeartbeat(ip);
-	}
+   @Override
+   public void beat(String ip) {
+      heartbeatDAO.updateLastHeartbeat(ip);
+   }
 
-	@Override
-	public void waitUntilStopBeating(String ip, long checkInterval, long maxStopTime) throws InterruptedException {
-		long startTime = System.currentTimeMillis();
-		long lastBeatTime = startTime;
-		while (true) {
-			Date beat = null;
-			try {
-				beat = dao.findLastHeartbeat(ip);
-			} catch (Exception e) {
-				//如果访问mongo出错，重置startTime，防止failover时间过长
-				log.error("error find last heartbeat", e);
-				startTime = System.currentTimeMillis();
-				Thread.sleep(1000);
-				continue;
-			}
-			if (beat == null) {
-				log.info(ip + " no beat");
-				if (System.currentTimeMillis() - startTime > maxStopTime) {
-					break;
-				}
-			} else {
-				log.info(ip + " beat at " + beat.getTime());
-				long now = System.currentTimeMillis();
-				lastBeatTime = beat.getTime();
-				if (now - lastBeatTime > maxStopTime) {
-					break;
-				}
-			}
-			Thread.sleep(checkInterval);
-		}
-		log.info(ip + " master stop beating, slave start");
-	}
+   @Override
+   public void waitUntilMasterDown(String ip, long checkInterval, long maxStopTime) throws InterruptedException {
+      long startTime = System.currentTimeMillis();
+      LOG.info("started to wait "+ip + " master stop beating");
+      while (true) {
+         Date beat = null;
+            beat = heartbeatDAO.findLastHeartbeat(ip);
+         if (beat == null) {
+            LOG.info(ip + " no beat");
+            if (System.currentTimeMillis() - startTime > maxStopTime) {
+               break;
+            }
+         } else {
+            LOG.info(ip + " beat at " + beat.getTime());
+            long now = System.currentTimeMillis();
+            long lastBeatTime = beat.getTime();
+            if (now - lastBeatTime > maxStopTime) {
+               break;
+            }
+         }
+         Thread.sleep(checkInterval);
+      }
+      LOG.info(ip + " master stop beating, slave waked up");
+   }
 
-	@Override
-	public void waitUntilBeginBeating(String ip, ServerBootstrap bootStrap, long checkInterval, long maxStopTime) throws InterruptedException {
-		Date beat = null;
-		while (true) {
-			try {
-				beat = dao.findLastHeartbeat(ip);
-			} catch (Exception e) {
-				log.error("error find last heartbeat", e);
-				Thread.sleep(1000);
-				continue;
-			}
-			if(beat != null){
-				long lastBeatTime = beat.getTime();
-				long now = System.currentTimeMillis();
-				if (now - lastBeatTime < maxStopTime) {
-					bootStrap.releaseExternalResources();
-					SlaveBootStrap.slaveShouldLive = Boolean.FALSE;
-					break;
-				}				
-			}
-			Thread.sleep(checkInterval);
-		}
-		
-		
-	}
+   @Override
+   public void waitUntilMasterUp(String ip, long checkInterval, long maxStopTime)
+         throws InterruptedException {
+      Date beat = null;
+      while (true) {
+         try {
+            beat = heartbeatDAO.findLastHeartbeat(ip);
+         } catch (Exception e) {
+            LOG.error("error find last heartbeat", e);
+            Thread.sleep(1000);
+            continue;
+         }
+         if (beat != null) {
+            long lastBeatTime = beat.getTime();
+            long now = System.currentTimeMillis();
+            if (now - lastBeatTime < maxStopTime) {
+               break;
+            }
+         }
+         Thread.sleep(checkInterval);
+      }
+
+   }
 
 }

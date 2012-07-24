@@ -20,23 +20,58 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<env>dev</env>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.jboss.netty</groupId>
 			<artifactId>netty</artifactId>
-			<version>3.2.7.Final</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId><!-- use the Base64 codec function -->
+			<artifactId>commons-codec</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.swallow</groupId>
 			<artifactId>${swallow-common.aid}</artifactId>
-			<version>${swallow-common.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongo-java-driver</artifactId>
-			<version>2.6.3</version>
+			<groupId>com.dianping.lion</groupId>
+			<artifactId>lion-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.dianping.lion</groupId>
+			<artifactId>lion-${env}</artifactId>
+		</dependency>
+		<!-- 监控 -->
+		<dependency>
+			<groupId>com.dianping.cat</groupId>
+			<artifactId>cat-core</artifactId>
 		</dependency>
 	</dependencies>
+	
+	<profiles>
+		<profile>
+			<id>product</id>
+			<activation>
+				<property>
+					<name>env</name>
+					<value>product</value>
+				</property>
+			</activation>
+			<build>
+				<resources>
+					<resource>
+						<!-- do not package to jar, for assembly -->
+						<directory>src/main/resources</directory>
+						<excludes>
+							<exclude>*</exclude>
+						</excludes>
+					</resource>
+				</resources>
+			</build>
+		</profile>
+	</profiles>
+	
 </project>

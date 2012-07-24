@@ -15,19 +15,22 @@
  */
 package com.dianping.swallow.producerserver.bootstrap;
 
+import java.io.File;
+
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.dianping.cat.Cat;
+
 /**
- * TODO Comment of ProducerServerBootstrap
+ * ProducerServer的Bootstrap类，用以启动ProducerServer
  * 
  * @author tong.song
  */
 public class ProducerServerBootstrap {
    public static void main(String[] args) {
-      new ClassPathXmlApplicationContext("producerServer.xml");
-      try {
-      } catch (Exception e) {
-         System.out.println(e.toString());
-      }
+      //启动Cat
+      Cat.initialize(new File("/data/appdatas/cat/client.xml"));
+
+      new ClassPathXmlApplicationContext("applicationContext.xml");
    }
 }

@@ -1,3 +1,10 @@
+# temp folder #
+######################
+target/
+bin/
+.settings/
+.metadata/
+
 # Compiled source #
 ###################
 *.com
@@ -41,18 +48,12 @@ Thumbs.db
 ######################
 .project
 .classpath
-*/.settings/
 
 # jupiter generated files #
 ######################
 .jupiter
 *.review
 */review/
-
-# temp folder #
-######################
-*/target/
-*/bin/
 
 # temp file #
 ######################

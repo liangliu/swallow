@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd"
+	default-autowire="byName">
+
+	<bean id="ackDAO"
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.AckDAOImpl">
+	</bean>
+
+	<bean id="messageDAO"
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl">
+	</bean>
+
+	<bean id="heartbeatDAO"
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.HeartbeatDAOImpl">
+	</bean>
+
+
+	<bean id="mongoClient"
+		class="com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient">
+		<constructor-arg>
+			<value>swallow.mongo.producerServerURI</value>
+		</constructor-arg>
+	</bean>
+
+	<bean id="producerServerForClient"
+		class="com.dianping.swallow.producerserver.impl.ProducerServerForClient"
+		init-method="start">
+		<property name="port" value="4000" />
+		<property name="remoteServiceName" value="http://service.dianping.com/swallowService/producerService_1.0.0" />
+	</bean>
+
+	<bean id="producerServerForText"
+		class="com.dianping.swallow.producerserver.impl.ProducerServerForText"
+		init-method="start">
+		<property name="port" value="8000" />
+	</bean>
+</beans>

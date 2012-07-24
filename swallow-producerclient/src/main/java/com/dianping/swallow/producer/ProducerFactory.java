@@ -15,16 +15,29 @@
  */
 package com.dianping.swallow.producer;
 
-import java.util.Map;
-
-import com.dianping.swallow.common.producer.exceptions.TopicNameInvalidException;
-import com.dianping.swallow.producer.impl.ProducerImpl;
+import com.dianping.swallow.common.message.Destination;
+import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 
 /**
  * Producer工厂类接口
+ * 
  * @author tong.song
- *
  */
 public interface ProducerFactory {
-   public ProducerImpl getProducer(String topicName, Map<ProducerOptionKey, Object> pOptions) throws TopicNameInvalidException;
+   /**
+    * 获取默认配置的Producer实例
+    * 
+    * @param dest Producer消息目的地，类型为{@link Destination}
+    * @return 实现Producer接口的对象，用于发送消息，此版本中类型为{@link ProducerImpl}
+    */
+   public Producer createProducer(Destination dest);
+
+   /**
+    * 获取指定配置的Producer实例
+    * 
+    * @param dest Producer消息目的地，类型为{@link Destination}
+    * @param config Producer选项，类型为{@link ProducerConfig}
+    * @return 实现Producer接口的对象，用于发送消息，此版本中类型为{@link ProducerImpl}
+    */
+   public Producer createProducer(Destination dest, ProducerConfig config);
 }

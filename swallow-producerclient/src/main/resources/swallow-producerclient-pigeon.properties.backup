@@ -1,0 +1,8 @@
+serviceName=http://service.dianping.com/swallowService/producerService_1.0.0
+serialize=hessian
+timeout=5000
+useLion=false
+hosts=127.0.0.1:4000
+weights=1
+
+punishTimeout=500
