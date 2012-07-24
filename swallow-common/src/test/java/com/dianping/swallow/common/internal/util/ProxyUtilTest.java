@@ -6,6 +6,25 @@ import org.junit.Test;
 import com.mongodb.MongoException;
 
 public class ProxyUtilTest {
+   
+   static class TempClassForTest {
+      int    i = 0;
+      String c = null;
+
+      public String getA() {
+         if (i++ < 1) {
+            throw new MongoException("this is a exception from UnitTest.");
+         }
+         return c;
+      }
+
+      public String getB() {
+         if (i++ < 1) {
+            throw new RuntimeException("this is a exception from UnitTest.");
+         }
+         return c;
+      }
+   }
 
    @Test
    public void testCreateProxyWithRetryMechanism() {
@@ -28,23 +47,4 @@ public class ProxyUtilTest {
 
    }
 
-}
-
-class TempClassForTest {
-   int    i = 0;
-   String c = null;
-
-   public String getA() {
-      if (i++ < 1) {
-         throw new MongoException("this is a exception from UnitTest.");
-      }
-      return c;
-   }
-
-   public String getB() {
-      if (i++ < 1) {
-         throw new RuntimeException("this is a exception from UnitTest.");
-      }
-      return c;
-   }
 }

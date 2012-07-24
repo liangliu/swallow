@@ -17,14 +17,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
 import com.dianping.swallow.common.consumer.MessageFilter;
-import com.dianping.swallow.common.internal.dao.impl.mongodb.AbstractDAOImplTest;
 import com.dianping.swallow.common.internal.dao.impl.mongodb.MessageDAOImpl;
 import com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.message.Message;
 
 @ContextConfiguration(loader = SpringockitoContextLoader.class, locations = "classpath:applicationContext-test.xml")
-public class SwallowBufferTest extends AbstractDAOImplTest {
+public class SwallowBufferTest extends AbstractTest {
    protected static final String TOPIC_NAME = "topicForUnitTest";
    protected static final String TYPE       = "feed";
 
