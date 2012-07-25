@@ -29,7 +29,7 @@ public class MongoHeartbeater implements Heartbeater {
    @Override
    public void waitUntilMasterDown(String ip, long checkInterval, long maxStopTime) throws InterruptedException {
       long startTime = System.currentTimeMillis();
-      LOG.info("started to wait " + ip + " master stop beating");
+      LOG.info("start to wait " + ip + " master stop beating");
       while (true) {
          Date beat = null;
          beat = heartbeatDAO.findLastHeartbeat(ip);
@@ -39,9 +39,7 @@ public class MongoHeartbeater implements Heartbeater {
                break;
             }
          } else {
-            if (LOG.isDebugEnabled()) {
-               LOG.debug(ip + " beat at " + beat.getTime());
-            }
+            LOG.info(ip + " beat at " + beat.getTime());
             long now = System.currentTimeMillis();
             long lastBeatTime = beat.getTime();
             if (now - lastBeatTime > maxStopTime) {
@@ -56,6 +54,7 @@ public class MongoHeartbeater implements Heartbeater {
    @Override
    public void waitUntilMasterUp(String ip, long checkInterval, long maxStopTime) throws InterruptedException {
       Date beat = null;
+      LOG.info("start to wait " + ip + " master up");
       while (true) {
          try {
             beat = heartbeatDAO.findLastHeartbeat(ip);
@@ -68,12 +67,13 @@ public class MongoHeartbeater implements Heartbeater {
             long lastBeatTime = beat.getTime();
             long now = System.currentTimeMillis();
             if (now - lastBeatTime < maxStopTime) {
+               LOG.info(ip + " beat at " + beat.getTime());
                break;
             }
          }
          Thread.sleep(checkInterval);
       }
-
+      LOG.info(ip + " master up, slave shutdown");
    }
 
 }

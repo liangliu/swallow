@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * @author tong.song
  */
 public class ProducerConfig {
-   Logger                           logger                             = LoggerFactory.getLogger(ProducerConfig.class);
+   private static final Logger      logger                             = LoggerFactory.getLogger(ProducerConfig.class);
 
    public static final int          MAX_THREADPOOL_SIZE                = 100;                                          //线程池大小最大值
    public static final ProducerMode DEFAULT_PRODUCER_MODE              = ProducerMode.SYNC_MODE;                       //默认Producer工作模式

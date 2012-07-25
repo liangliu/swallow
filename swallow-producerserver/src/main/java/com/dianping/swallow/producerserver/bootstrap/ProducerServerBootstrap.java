@@ -26,7 +26,7 @@ import com.dianping.cat.Cat;
  * 
  * @author tong.song
  */
-public class ProducerServerBootstrap {
+public final class ProducerServerBootstrap {
    private ProducerServerBootstrap() {
    }
 

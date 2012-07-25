@@ -84,6 +84,12 @@ public class SwallowPigeonConfiguration {
             + useLion + (!useLion ? "; hosts=" + hosts + "; weights=" + weights : "") + "; punishTimeout="
             + punishTimeout;
    }
+   
+   private String getConfigInfo(){
+      return "serviceName=" + serviceName + "; serialize=" + serialize + "; timeout=" + timeout + "; useLion="
+            + useLion + (!useLion ? "; hosts=" + hosts + "; weights=" + weights : "") + "; punishTimeout="
+            + punishTimeout;
+   }
 
    @SuppressWarnings("rawtypes")
    public SwallowPigeonConfiguration(String configFile) {
@@ -92,14 +98,13 @@ public class SwallowPigeonConfiguration {
       InputStream in = null;
       in = SwallowPigeonConfiguration.class.getClassLoader().getResourceAsStream(configFile);
       if (in == null) {
-         logger.warn("No ProducerFactory config file, use default values: [" + this.toString() + "]");
+         logger.warn("No ProducerFactory config file, use default values: [" + getConfigInfo() + "]");
          return;
       }
       try {
          props.load(in);
       } catch (IOException e) {
-         logger.error("[Load property file failed.]", e);
-         e.printStackTrace();
+         logger.error("Load property file failed, use default values: [" + getConfigInfo() + "]", e);
       } finally {
          if (in != null) {
             try {
@@ -162,7 +167,7 @@ public class SwallowPigeonConfiguration {
       checkTimeout();
       checkUseLion();
       checkPunishTimeout();
-      logger.info("ProducerFactory configuration: [" + this.toString() + "]");
+      logger.info("ProducerFactory configuration: [" + getConfigInfo() + "]");
    }
 
    /**
@@ -183,11 +188,10 @@ public class SwallowPigeonConfiguration {
    private void checkHostsAndWeights() {
       String[] hostSet = getHosts().trim().split(",");
       String[] weightSet = getWeights().trim().split(",");
-      String realHosts = "";
-      String realWeights = "";
+      StringBuilder realHosts = new StringBuilder();
+      StringBuilder realWeights = new StringBuilder();
       String host;
       String weight;
-      //TODO StringBuilder
       for (int idx = 0; idx < hostSet.length; idx++) {
          host = hostSet[idx];
          if (idx >= weightSet.length) {
@@ -199,10 +203,10 @@ public class SwallowPigeonConfiguration {
             logger.warn("[Unrecognized host address: " + host + ", or weight: " + weight + ", ignored it.]");
             continue;
          }
-         realHosts += host + ",";
-         realWeights += weight + ",";
+         realHosts.append(host + ",");
+         realWeights.append(weight + ",");
       }
-      if (realHosts == "") {
+      if (realHosts.length() == 0) {
          this.hosts = DEFAULT_HOSTS;
          this.weights = DEFAULT_WEIGHTS;
       } else {
@@ -296,5 +300,4 @@ public class SwallowPigeonConfiguration {
       this.punishTimeout = punishTimeout;
       checkPunishTimeout();
    }
-
 }
