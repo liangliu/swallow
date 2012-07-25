@@ -19,7 +19,7 @@ public class CloseMonitor {
 
    private final static String DEFAULT_SHUTDOWN_CMD = "shutdown";
 
-   public static interface CloseHook {
+   public interface CloseHook {
       void onClose();
    }
 
