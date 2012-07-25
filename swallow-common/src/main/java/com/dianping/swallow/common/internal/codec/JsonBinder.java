@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * 
  * @author wukezhu
  */
-public class JsonBinder {
+public final class JsonBinder {
 
    private static class NonEmptySingletonHolder {
       public static final JsonBinder nonEmptyBinder = new JsonBinder(Include.NON_EMPTY);

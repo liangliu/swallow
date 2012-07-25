@@ -25,7 +25,7 @@ import com.dianping.swallow.common.internal.util.NameCheckUtil;
  * 
  * @author qing.gu
  */
-public class Destination implements Serializable {
+public final class Destination implements Serializable {
 
    private static final long serialVersionUID = 3571573051999434062L;
 

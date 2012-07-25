@@ -13,7 +13,7 @@ import com.dianping.swallow.consumer.Consumer;
 import com.dianping.swallow.consumer.ConsumerConfig;
 import com.dianping.swallow.consumer.ConsumerFactory;
 
-public class ConsumerFactoryImpl implements ConsumerFactory {
+public final class ConsumerFactoryImpl implements ConsumerFactory {
    
    
    private static final String LION_CONFIG_FILENAME         = "swallow-consumerclient-lion.properties";
