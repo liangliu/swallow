@@ -1,19 +1,16 @@
-package com.dianping.swallow.consumer.impl;
+package com.dianping.swallow.consumer.internal;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
-import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.internal.codec.JsonDecoder;
@@ -25,33 +22,30 @@ import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.consumer.Consumer;
 import com.dianping.swallow.consumer.ConsumerConfig;
 import com.dianping.swallow.consumer.MessageListener;
-import com.dianping.swallow.consumer.internal.ConsumerSlaveThread;
 import com.dianping.swallow.consumer.internal.config.ConfigManager;
 import com.dianping.swallow.consumer.internal.netty.MessageClientHandler;
 
-public class ConsumerImpl implements Consumer{
+public class ConsumerImpl implements Consumer {
 
-   private static final Logger LOG                          = LoggerFactory.getLogger(ConsumerImpl.class);
+   private String                 consumerId;
 
-   private String              consumerId;
+   private Destination            dest;
 
-   private Destination         dest;
+   private ClientBootstrap        bootstrap;
 
-   private ClientBootstrap     bootstrap;
+   private MessageListener        listener;
 
-   private MessageListener     listener;
+   private InetSocketAddress      masterAddress;
 
-   private InetSocketAddress   masterAddress;
+   private InetSocketAddress      slaveAddress;
 
-   private InetSocketAddress   slaveAddress;
+   private ConfigManager          configManager = ConfigManager.getInstance();
 
-   private ConfigManager       configManager                = ConfigManager.getInstance();
+   private volatile boolean       closed        = false;
 
-   private volatile boolean             closed                    = false;
-   
-   private volatile AtomicBoolean started = new AtomicBoolean(false);
-   
-   private ConsumerConfig config;
+   private volatile AtomicBoolean started       = new AtomicBoolean(false);
+
+   private ConsumerConfig         config;
 
    public boolean isClosed() {
       return closed;
@@ -94,17 +88,19 @@ public class ConsumerImpl implements Consumer{
       return config;
    }
 
-   public ConsumerImpl(Destination dest, ConsumerConfig config, InetSocketAddress masterAddress, InetSocketAddress slaveAddress) {
+   public ConsumerImpl(Destination dest, ConsumerConfig config, InetSocketAddress masterAddress,
+                       InetSocketAddress slaveAddress) {
       this(dest, null, config, masterAddress, slaveAddress);
    }
-   
-   public ConsumerImpl(Destination dest, String consumerId, ConsumerConfig config, InetSocketAddress masterAddress, InetSocketAddress slaveAddress) {
-      if(ConsumerType.NON_DURABLE == config.getConsumerType()){//非持久类型，不能有consumerId
-         if(consumerId != null) {
+
+   public ConsumerImpl(Destination dest, String consumerId, ConsumerConfig config, InetSocketAddress masterAddress,
+                       InetSocketAddress slaveAddress) {
+      if (ConsumerType.NON_DURABLE == config.getConsumerType()) {//非持久类型，不能有consumerId
+         if (consumerId != null) {
             throw new IllegalArgumentException("ConsumerId should be null when consumer type is NON_DURABLE");
          }
-      }else{//持久类型，需要验证consumerId
-         if(!NameCheckUtil.isConsumerIdValid(consumerId)) {
+      } else {//持久类型，需要验证consumerId
+         if (!NameCheckUtil.isConsumerIdValid(consumerId)) {
             throw new IllegalArgumentException("ConsumerId is invalid");
          }
       }
@@ -120,33 +116,27 @@ public class ConsumerImpl implements Consumer{
     */
    @Override
    public void start() {
-      if(listener == null){
-         LOG.error("MessageListener is null");
-         return;
+      if (listener == null) {
+         throw new IllegalArgumentException(
+               "MessageListener is null, MessageListener should be set(use setListener()) before start.");
       }
-      if(started.compareAndSet(false, true)) {
+      if (started.compareAndSet(false, true)) {
          init();
-         ConsumerSlaveThread slave = new ConsumerSlaveThread();
+         //启动连接slave的线程
+         ConsumerThread slave = new ConsumerThread();
          slave.setBootstrap(bootstrap);
-         slave.setSlaveAddress(slaveAddress);
-         slave.setConfigManager(configManager);
+         slave.setRemoteAddress(slaveAddress);
+         slave.setInterval(configManager.getConnectSlaveInterval());
          Thread slaveThread = new Thread(slave);
+         slaveThread.setDaemon(true);
          slaveThread.start();
-         while (true) {
-            synchronized (bootstrap) {
-               try {
-                  ChannelFuture future = bootstrap.connect(masterAddress);
-                  future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！     
-               } catch (RuntimeException e) {
-                  LOG.error("Unexpected exception", e);
-               }
-            }
-            try {
-               Thread.sleep(configManager.getConnectMasterInterval());
-            } catch (InterruptedException e) {
-               LOG.error("thread InterruptedException", e);
-            }
-         }
+         //启动连接master的线程
+         ConsumerThread master = new ConsumerThread();
+         master.setBootstrap(bootstrap);
+         master.setRemoteAddress(masterAddress);
+         master.setInterval(configManager.getConnectMasterInterval());
+         Thread masterThread = new Thread(master);
+         masterThread.start();
       }
    }
 

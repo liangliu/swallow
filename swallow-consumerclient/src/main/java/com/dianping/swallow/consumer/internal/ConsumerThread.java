@@ -7,33 +7,30 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.dianping.swallow.consumer.internal.config.ConfigManager;
+public class ConsumerThread implements Runnable {
 
-
-public class ConsumerSlaveThread implements Runnable {
-
-   private static final Logger LOG             = LoggerFactory.getLogger(ConsumerSlaveThread.class);
+   private static final Logger LOG = LoggerFactory.getLogger(ConsumerThread.class);
 
    private ClientBootstrap     bootstrap;
 
-   private InetSocketAddress   slaveAddress;
-   
-   private ConfigManager configManager;
+   private InetSocketAddress   remoteAddress;
+
+   private long                interval;
 
    public ClientBootstrap getBootstrap() {
       return bootstrap;
-   }
-
-   public void setConfigManager(ConfigManager configManager) {
-      this.configManager = configManager;
    }
 
    public void setBootstrap(ClientBootstrap bootstrap) {
       this.bootstrap = bootstrap;
    }
 
-   public void setSlaveAddress(InetSocketAddress slaveAddress) {
-      this.slaveAddress = slaveAddress;
+   public void setRemoteAddress(InetSocketAddress remoteAddress) {
+      this.remoteAddress = remoteAddress;
+   }
+
+   public void setInterval(long interval) {
+      this.interval = interval;
    }
 
    @Override
@@ -41,14 +38,14 @@ public class ConsumerSlaveThread implements Runnable {
       while (true) {
          synchronized (bootstrap) {
             try {
-               ChannelFuture future = bootstrap.connect(slaveAddress);
+               ChannelFuture future = bootstrap.connect(remoteAddress);
                future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！
             } catch (RuntimeException e) {
                LOG.error("Unexpected exception", e);
             }
          }
          try {
-            Thread.sleep(configManager.getConnectSlaveInterval());
+            Thread.sleep(interval);
          } catch (InterruptedException e) {
             LOG.error("ConSlaveThread InterruptedException", e);
          }
