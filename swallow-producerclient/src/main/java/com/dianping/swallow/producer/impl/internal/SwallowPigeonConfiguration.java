@@ -60,7 +60,7 @@ public class SwallowPigeonConfiguration {
 
    public static final String  DEFAULT_SERVICE_NAME   = "http://service.dianping.com/swallowService/producerService_1.0.0"; //默认远程服务名称
    public static final String  DEFAULT_SERIALIZE      = "hessian";                                                         //默认序列化方式
-   public static final int     DEFAULT_TIMEOUT        = 5000;                                                             //默认远程调用延时
+   public static final int     DEFAULT_TIMEOUT        = 5000;                                                              //默认远程调用延时
    public static final boolean DEFAULT_IS_USE_LION    = true;                                                              //默认是否使用Lion以配置Swallow server地址
    public static final String  DEFAULT_HOSTS          = "127.0.0.1:4000";                                                  //默认Swallow server地址字符串
    public static final String  DEFAULT_WEIGHTS        = "1";                                                               //默认Swallow server权重
@@ -81,7 +81,7 @@ public class SwallowPigeonConfiguration {
    @Override
    public String toString() {
       return "serviceName=" + serviceName + "; serialize=" + serialize + "; timeout=" + timeout + "; useLion="
-            + useLion + (useLion == false ? "; hosts=" + hosts + "; weights=" + weights : "") + "; punishTimeout="
+            + useLion + (!useLion ? "; hosts=" + hosts + "; weights=" + weights : "") + "; punishTimeout="
             + punishTimeout;
    }
 
@@ -109,7 +109,6 @@ public class SwallowPigeonConfiguration {
             }
          }
       }
-      System.out.println(props.toString());
       for (String key : props.stringPropertyNames()) {
          Field field = null;
          try {
@@ -216,7 +215,7 @@ public class SwallowPigeonConfiguration {
     * 检查Timeout是否合法，Timeout>0
     */
    private void checkTimeout() {
-      if (timeout <= 0){
+      if (timeout <= 0) {
          timeout = DEFAULT_TIMEOUT;
          logger.warn("Timeout should be more than 0, use default value.");
       }
@@ -234,7 +233,7 @@ public class SwallowPigeonConfiguration {
    }
 
    private void checkPunishTimeout() {
-      if (punishTimeout <= 0){
+      if (punishTimeout <= 0) {
          punishTimeout = DEFAULT_PUNISH_TIMEOUT;
          logger.warn("PunishTimeout should be more than 0, use default value.");
       }

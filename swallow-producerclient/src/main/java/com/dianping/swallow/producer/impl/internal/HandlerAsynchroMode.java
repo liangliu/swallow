@@ -81,8 +81,9 @@ public class HandlerAsynchroMode implements ProducerHandler {
     */
    private synchronized static FileQueue<Packet> getMessageQueue(String topicName, boolean sendMsgLeftLastSessions) {
       //如果Map里已经存在该filequeue，在要求“不续传”的情况下， 忽略该请求
-      if (messageQueues.containsKey(topicName))
+      if (messageQueues.containsKey(topicName)) {
          return messageQueues.get(topicName);
+      }
 
       FileQueueConfigHolder fileQueueConfig = new FileQueueConfigHolder();
       fileQueueConfig.setMaxDataFileSize(DEFAULT_FILEQUEUE_SIZE);

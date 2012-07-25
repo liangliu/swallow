@@ -2,7 +2,6 @@ package com.dianping.swallow.producer.impl.internal;
 
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -123,7 +122,6 @@ public class ProducerImpl implements Producer {
     * @throws SendFailedException 发送失败则抛出此异常
     */
    @Override
-   @SuppressWarnings("rawtypes")
    public String sendMessage(Object content, Map<String, String> properties, String messageType)
          throws SendFailedException {
       if (content == null) {
@@ -143,15 +141,16 @@ public class ProducerImpl implements Producer {
          swallowMsg.setGeneratedTime(new Date());
          swallowMsg.setSourceIp(producerIP);
 
-         if (messageType != null)
+         if (messageType != null) {
             swallowMsg.setType(messageType);
+         }
          if (properties != null) {
-            Iterator propIter = properties.entrySet().iterator();
-            while (propIter.hasNext()) {
-               Map.Entry entry = (Map.Entry) propIter.next();
+            //            Iterator propIter = properties.entrySet().iterator();
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
                if (!(entry.getKey() instanceof String)
-                     || (entry.getValue() != null && !(entry.getValue() instanceof String)))
+                     || (entry.getValue() != null && !(entry.getValue() instanceof String))) {
                   throw new IllegalArgumentException("Type of properties should be Map<String, String>.");
+               }
             }
             swallowMsg.setProperties(properties);
          }

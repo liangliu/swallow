@@ -3,6 +3,8 @@ package com.dianping.swallow.common.internal.util;
 import org.bson.types.BSONTimestamp;
 
 public class MongoUtils {
+   private MongoUtils() {
+   }
 
    public static BSONTimestamp longToBSONTimestamp(Long messageId) {
       int time = (int) (messageId >>> 32);

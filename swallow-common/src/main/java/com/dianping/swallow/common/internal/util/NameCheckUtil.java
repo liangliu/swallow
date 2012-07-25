@@ -16,6 +16,9 @@
 package com.dianping.swallow.common.internal.util;
 
 public class NameCheckUtil {
+   private NameCheckUtil() {
+   }
+
    /**
     * 判定topicName是否合法
     * 

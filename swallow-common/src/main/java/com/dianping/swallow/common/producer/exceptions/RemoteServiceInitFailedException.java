@@ -13,6 +13,6 @@ public class RemoteServiceInitFailedException extends Exception {
    }
 
    public RemoteServiceInitFailedException(Throwable cause) {
-      super("Remote service initial failed.");
+      super("Remote service initial failed.", cause);
    }
 }

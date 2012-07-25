@@ -37,11 +37,15 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    }
 
    @Override
-   public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
+   public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) {
       if (e instanceof ChannelStateEvent) {
          logger.info(e.toString());
       }
-      super.handleUpstream(ctx, e);
+      try {
+         super.handleUpstream(ctx, e);
+      } catch (Exception e1) {
+         logger.warn("Handle Upstrem Exceptions." + e1);
+      }
    }
 
    @Override
@@ -85,7 +89,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    }
 
    @Override
-   public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+   public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
       if (e.getCause() instanceof IOException) {
          e.getChannel().close();
       } else {

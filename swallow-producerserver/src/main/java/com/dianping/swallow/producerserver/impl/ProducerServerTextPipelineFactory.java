@@ -18,9 +18,9 @@ public class ProducerServerTextPipelineFactory implements ChannelPipelineFactory
    }
 
    @Override
-   public ChannelPipeline getPipeline() throws Exception {
+   public ChannelPipeline getPipeline() {
       ChannelPipeline pipeline = Channels.pipeline();
-      
+
       pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
       pipeline.addLast("jsonDecoder", new JsonDecoder(TextObject.class));
 
