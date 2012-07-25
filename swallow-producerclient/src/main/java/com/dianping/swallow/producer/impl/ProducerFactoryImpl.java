@@ -37,7 +37,7 @@ import com.dianping.swallow.producer.impl.internal.SwallowPigeonConfiguration;
  * 
  * @author tong.song
  */
-public class ProducerFactoryImpl implements ProducerFactory {
+public final class ProducerFactoryImpl implements ProducerFactory {
 
    private static ProducerFactoryImpl       instance;                                                             //Producer工厂类单例
    private static final Logger              logger           = LoggerFactory.getLogger(ProducerFactoryImpl.class);
@@ -47,7 +47,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    private final String                     producerIP       = IPUtil.getFirstNoLoopbackIP4Address();             //Producer IP地址
    private final String                     producerVersion  = "0.6.0";                                           //Producer版本号
    private final SwallowPigeonConfiguration pigeonConfigure;                                                      //ProducerFactory配置类
-   private final ProducerSwallowService     remoteService;                                                        //远程调用对象
+   private ProducerSwallowService           remoteService;                                                        //远程调用对象
 
    /**
     * Producer工厂类构造函数
@@ -57,7 +57,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
    private ProducerFactoryImpl() throws RemoteServiceInitFailedException {
       //初始化远程调用
       pigeonConfigure = new SwallowPigeonConfiguration(CONFIG_FILE_NAME);
-      remoteService = initPigeon(pigeonConfigure);
+      initPigeon(pigeonConfigure);
    }
 
    /**
@@ -67,8 +67,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @return 实现MQService接口的类，此版本中为pigeon返回的一个远程调用服务代理
     * @throws RemoteServiceInitFailedException 远程调用服务（pigeon）初始化失败
     */
-   private ProducerSwallowService initPigeon(SwallowPigeonConfiguration pigeonConfigure)
-         throws RemoteServiceInitFailedException {
+   private void initPigeon(SwallowPigeonConfiguration pigeonConfigure) throws RemoteServiceInitFailedException {
 
       ProxyFactory<ProducerSwallowService> pigeon = new ProxyFactory<ProducerSwallowService>(); //pigeon代理对象
       pigeon.setIface(ProducerSwallowService.class);
@@ -85,7 +84,6 @@ public class ProducerFactoryImpl implements ProducerFactory {
       } else {
          pigeon.setUseLion(true);
       }
-      ProducerSwallowService remoteService = null;
       try {
          ConfigCache.getInstance(EnvZooKeeperConfig.getZKAddress());
 
@@ -99,7 +97,6 @@ public class ProducerFactoryImpl implements ProducerFactory {
          logger.error("[Initialize remote service failed.]", e);
          throw new RemoteServiceInitFailedException(e);
       }
-      return remoteService;
    }
 
    /**

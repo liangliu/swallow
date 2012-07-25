@@ -65,11 +65,13 @@ public class ProducerImpl implements Producer {
       //设置Producer工作模式
       switch (this.producerConfig.getMode()) {
          case SYNC_MODE:
-         default:
             producerHandler = new HandlerSynchroMode(this);
             break;
          case ASYNC_MODE:
             producerHandler = new HandlerAsynchroMode(this);
+            break;
+         default:
+            producerHandler = new HandlerSynchroMode(this);
             break;
       }
    }
