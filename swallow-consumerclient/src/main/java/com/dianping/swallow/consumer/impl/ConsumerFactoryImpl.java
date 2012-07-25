@@ -12,6 +12,7 @@ import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.consumer.Consumer;
 import com.dianping.swallow.consumer.ConsumerConfig;
 import com.dianping.swallow.consumer.ConsumerFactory;
+import com.dianping.swallow.consumer.internal.ConsumerImpl;
 
 public final class ConsumerFactoryImpl implements ConsumerFactory {
    

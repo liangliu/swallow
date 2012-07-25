@@ -39,7 +39,9 @@ public class MongoHeartbeater implements Heartbeater {
                break;
             }
          } else {
-            LOG.info(ip + " beat at " + beat.getTime());
+            if (LOG.isDebugEnabled()) {
+               LOG.debug(ip + " beat at " + beat.getTime());
+            }
             long now = System.currentTimeMillis();
             long lastBeatTime = beat.getTime();
             if (now - lastBeatTime > maxStopTime) {
@@ -67,7 +69,9 @@ public class MongoHeartbeater implements Heartbeater {
             long lastBeatTime = beat.getTime();
             long now = System.currentTimeMillis();
             if (now - lastBeatTime < maxStopTime) {
-               LOG.info(ip + " beat at " + beat.getTime());
+               if (LOG.isDebugEnabled()) {
+                  LOG.debug(ip + " beat at " + beat.getTime());
+               }
                break;
             }
          }
