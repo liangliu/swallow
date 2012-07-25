@@ -25,7 +25,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    public static final int     INVALID_TOPIC_NAME = 251;
    public static final int     SAVE_FAILED        = 252;
 
-   private static final Logger logger             = Logger.getLogger(ProducerServerForText.class);
+   private static final Logger LOGGER             = Logger.getLogger(ProducerServerForText.class);
 
    /**
     * 构造函数
@@ -39,12 +39,12 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) {
       if (e instanceof ChannelStateEvent) {
-         logger.info(e.toString());
+         LOGGER.info(e.toString());
       }
       try {
          super.handleUpstream(ctx, e);
       } catch (Exception e1) {
-         logger.warn("Handle Upstrem Exceptions." + e1);
+         LOGGER.warn("Handle Upstrem Exceptions." + e1);
       }
    }
 
@@ -64,7 +64,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       textAck.setStatus(OK);
       //TopicName非法，返回失败ACK，reason是"TopicName is not valid."
       if (!NameCheckUtil.isTopicNameValid(textObject.getTopic())) {
-         logger.error("[Incorrect topic name.][From=" + e.getRemoteAddress() + "][Content=" + textObject + "]");
+         LOGGER.error("[Incorrect topic name.][From=" + e.getRemoteAddress() + "][Content=" + textObject + "]");
          textAck.setStatus(INVALID_TOPIC_NAME);
          textAck.setInfo("TopicName is invalid.");
          //返回ACK
@@ -75,7 +75,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
             messageDAO.saveMessage(textObject.getTopic(), swallowMessage);
          } catch (Exception e1) {
             //记录异常，返回失败ACK，reason是“Can not save message”
-            logger.error("[Save message to DB failed.]", e1);
+            LOGGER.error("[Save message to DB failed.]", e1);
             textAck.setStatus(SAVE_FAILED);
             textAck.setInfo("Can not save message.");
          }
@@ -93,7 +93,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       if (e.getCause() instanceof IOException) {
          e.getChannel().close();
       } else {
-         logger.error("Unexpected exception from downstream.", e.getCause());
+         LOGGER.error("Unexpected exception from downstream.", e.getCause());
       }
    }
 }

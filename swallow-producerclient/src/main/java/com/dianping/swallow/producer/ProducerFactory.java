@@ -29,7 +29,7 @@ public interface ProducerFactory {
     * @param dest Producer消息目的地，类型为{@link Destination}
     * @return 实现Producer接口的对象，用于发送消息，此版本中类型为{@link ProducerImpl}
     */
-   public Producer createProducer(Destination dest);
+   Producer createProducer(Destination dest);
 
    /**
     * 获取指定配置的Producer实例
@@ -38,5 +38,5 @@ public interface ProducerFactory {
     * @param config Producer选项，类型为{@link ProducerConfig}
     * @return 实现Producer接口的对象，用于发送消息，此版本中类型为{@link ProducerImpl}
     */
-   public Producer createProducer(Destination dest, ProducerConfig config);
+   Producer createProducer(Destination dest, ProducerConfig config);
 }

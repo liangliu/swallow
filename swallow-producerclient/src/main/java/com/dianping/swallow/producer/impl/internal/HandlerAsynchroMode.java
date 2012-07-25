@@ -28,12 +28,13 @@ import com.dianping.swallow.producer.ProducerHandler;
  * @author tong.song
  */
 public class HandlerAsynchroMode implements ProducerHandler {
-   private static final Logger                   logger                 = LoggerFactory
+   private static final Logger                   LOGGER                 = LoggerFactory
                                                                               .getLogger(HandlerAsynchroMode.class);
-   private static final MQThreadFactory          threadFactory          = new MQThreadFactory();                    //从FileQueue中获取消息的线程池
+   private static final MQThreadFactory          THREAD_FACTORY          = new MQThreadFactory();                    //从FileQueue中获取消息的线程池
 
    private static final int                      DEFAULT_FILEQUEUE_SIZE = 100 * 1024 * 1024;                        //默认的filequeue切片大小，512MB
    private static final int                      DELAY_BASE_MULTI       = 5;                                        //超时策略倍数
+   private static final int                      CAT_HEARTBEAT_FREQ     = 60000;                                    //1min
 
    private static Map<String, FileQueue<Packet>> messageQueues          = new HashMap<String, FileQueue<Packet>>(); //当前TopicName与Filequeue对应关系的集合
 
@@ -44,7 +45,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
    static {
       final String ip = NetworkInterfaceManager.INSTANCE.getLocalHostAddress();
 
-      threadFactory.newThread(new Runnable() {
+      THREAD_FACTORY.newThread(new Runnable() {
          public void run() {
             try {
                while (true) {
@@ -57,10 +58,10 @@ public class HandlerAsynchroMode implements ProducerHandler {
                   heartbeat.complete();
                   t.setStatus(Message.SUCCESS);
                   t.complete();
-                  Thread.sleep(60000); // 1 min
+                  Thread.sleep(CAT_HEARTBEAT_FREQ); // 1 min
                }
             } catch (InterruptedException e) {
-               logger.error(e.getMessage(), e);
+               LOGGER.error(e.getMessage(), e);
             }
          }
       }, "swallow-FilequeueHeartBeat-");
@@ -113,7 +114,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
    private void start() {
       int threadPoolSize = producer.getProducerConfig().getThreadPoolSize();
       for (int idx = 0; idx < threadPoolSize; idx++) {
-         Thread t = threadFactory.newThread(new TskGetAndSend(), "swallow-AsyncProducer-");
+         Thread t = THREAD_FACTORY.newThread(new TskGetAndSend(), "swallow-AsyncProducer-");
          t.setDaemon(true);
          t.start();
       }
@@ -153,7 +154,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
                      //发送失败，重发
                      continue;
                   }
-                  logger.error("Message sent failed: " + message.toString(), e);
+                  LOGGER.error("Message sent failed: " + message.toString(), e);
                }
                //如果发送成功则跳出循环
                break;

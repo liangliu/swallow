@@ -22,7 +22,7 @@ import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
 import com.dianping.swallow.common.internal.util.ZipUtil;
-import com.dianping.swallow.consumer.impl.ConsumerImpl;
+import com.dianping.swallow.consumer.internal.ConsumerImpl;
 
 /**
  * <em>Internal-use-only</em> used by Swallow. <strong>DO NOT</strong> access

@@ -13,7 +13,7 @@ import com.dianping.swallow.common.internal.dao.MessageDAO;
 public class ProducerServerForText {
    private static final int    DEFAULT_PORT = 8000;
    private int                 port         = DEFAULT_PORT;
-   private static final Logger logger       = Logger.getLogger(ProducerServerForText.class);
+   private static final Logger LOGGER       = Logger.getLogger(ProducerServerForText.class);
    private MessageDAO          messageDAO;
 
    public ProducerServerForText() {
@@ -26,7 +26,7 @@ public class ProducerServerForText {
             Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
       bootstrap.setPipelineFactory(new ProducerServerTextPipelineFactory(messageDAO));
       bootstrap.bind(new InetSocketAddress(getPort()));
-      logger.info("[Initialize netty sucessfully, Producer service for text is ready.]");
+      LOGGER.info("[Initialize netty sucessfully, Producer service for text is ready.]");
    }
 
    public int getPort() {

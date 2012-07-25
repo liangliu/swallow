@@ -40,7 +40,7 @@ import com.dianping.swallow.producer.impl.internal.SwallowPigeonConfiguration;
 public final class ProducerFactoryImpl implements ProducerFactory {
 
    private static ProducerFactoryImpl       instance;                                                             //Producer工厂类单例
-   private static final Logger              logger           = LoggerFactory.getLogger(ProducerFactoryImpl.class);
+   private static final Logger              LOGGER           = LoggerFactory.getLogger(ProducerFactoryImpl.class);
 
    private static final String              CONFIG_FILE_NAME = "swallow-producerclient-pigeon.properties";        //配置文件名称
 
@@ -88,13 +88,13 @@ public final class ProducerFactoryImpl implements ProducerFactory {
          ConfigCache.getInstance(EnvZooKeeperConfig.getZKAddress());
 
          pigeon.init();
-         logger.info("[Initialize pigeon successfully.]");
+         LOGGER.info("[Initialize pigeon successfully.]");
 
          remoteService = pigeon.getProxy();
-         logger.info("[Get remoteService successfully.]:[" + "RemoteService's timeout is: "
+         LOGGER.info("[Get remoteService successfully.]:[" + "RemoteService's timeout is: "
                + pigeonConfigure.getTimeout() + ".]");
       } catch (Exception e) {
-         logger.error("[Initialize remote service failed.]", e);
+         LOGGER.error("[Initialize remote service failed.]", e);
          throw new RemoteServiceInitFailedException(e);
       }
    }
@@ -132,7 +132,7 @@ public final class ProducerFactoryImpl implements ProducerFactory {
       ProducerImpl producerImpl = null;
       producerImpl = new ProducerImpl(dest, config, producerIP, producerVersion, remoteService,
             pigeonConfigure.getPunishTimeout());
-      logger.info("New producer:[TopicName=" + dest.getName() + "; " + producerImpl.getProducerConfig().toString()
+      LOGGER.info("New producer:[TopicName=" + dest.getName() + "; " + producerImpl.getProducerConfig().toString()
             + "]");
       //向swallow发送greet信息
       PktProducerGreet pktProducerGreet = new PktProducerGreet(producerVersion, producerIP);
@@ -141,7 +141,7 @@ public final class ProducerFactoryImpl implements ProducerFactory {
          remoteService.sendMessage(pktProducerGreet);
       } catch (Exception e) {
          //吃掉所有异常，以保证用户可以拿到Producer
-         logger.warn("Couldn't send greet now.", e);
+         LOGGER.warn("Couldn't send greet now.", e);
       }
 
       return producerImpl;
