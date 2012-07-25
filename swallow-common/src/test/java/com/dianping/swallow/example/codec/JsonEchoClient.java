@@ -32,6 +32,7 @@ public class JsonEchoClient {
 
       // Set up the pipeline factory.
       bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+         @Override
          public ChannelPipeline getPipeline() throws Exception {
             ChannelPipeline p = Channels.pipeline();
             p.addLast("frameDecoder", new ProtobufVarint32FrameDecoder());

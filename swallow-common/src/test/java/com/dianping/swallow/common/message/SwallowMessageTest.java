@@ -130,20 +130,26 @@ public class SwallowMessageTest {
 
       @Override
       public boolean equals(Object obj) {
-         if (this == obj)
+         if (this == obj) {
             return true;
-         if (obj == null)
+         }
+         if (obj == null) {
             return false;
-         if (!(obj instanceof DemoBean))
+         }
+         if (!(obj instanceof DemoBean)) {
             return false;
+         }
          DemoBean other = (DemoBean) obj;
-         if (a != other.a)
+         if (a != other.a) {
             return false;
+         }
          if (b == null) {
-            if (other.b != null)
+            if (other.b != null) {
                return false;
-         } else if (!b.equals(other.b))
+            }
+         } else if (!b.equals(other.b)) {
             return false;
+         }
          return true;
       }
 

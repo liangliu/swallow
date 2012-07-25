@@ -130,7 +130,7 @@ public class MessageDAOImpl implements MessageDAO {
    private void convert(DBObject result, SwallowMessage swallowMessage) {
       BSONTimestamp timestamp = (BSONTimestamp) result.get(ID);
       swallowMessage.setMessageId(MongoUtils.BSONTimestampToLong(timestamp));
-      swallowMessage.setContent((String) result.get(CONTENT));//content
+      swallowMessage.setContent(result.get(CONTENT));//content
       swallowMessage.setVersion((String) result.get(VERSION));//version
       swallowMessage.setGeneratedTime((Date) result.get(GENERATED_TIME));//generatedTime
       Map<String, String> propertiesBasicDBObject = (Map<String, String>) result.get(PROPERTIES);//mongo返回是一个BasicDBObject，转化成jdk的HashMap，以免某些序列化方案在反序列化需要依赖BasicDBObject

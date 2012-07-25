@@ -63,9 +63,10 @@ public final class Destination implements Serializable {
     * @return 消息目的地实例
     */
    public static Destination topic(String name) {
-      if (!NameCheckUtil.isTopicNameValid(name))
+      if (!NameCheckUtil.isTopicNameValid(name)) {
          throw new IllegalArgumentException(
                "Topic name is illegal, permitted set is [0-9,a-z,A-Z,'_','.'], start with a letter.");
+      }
       return new Destination(name, Type.TOPIC);
    }
 
@@ -103,20 +104,26 @@ public final class Destination implements Serializable {
 
    @Override
    public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
          return true;
-      if (obj == null)
+      }
+      if (obj == null) {
          return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
          return false;
+      }
       Destination other = (Destination) obj;
       if (name == null) {
-         if (other.name != null)
+         if (other.name != null) {
             return false;
-      } else if (!name.equals(other.name))
+         }
+      } else if (!name.equals(other.name)) {
          return false;
-      if (type != other.type)
+      }
+      if (type != other.type) {
          return false;
+      }
       return true;
    }
 

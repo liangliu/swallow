@@ -45,18 +45,23 @@ public class PktMessage extends Packet implements Message {
 
    @Override
    public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
          return true;
-      if (obj == null)
+      }
+      if (obj == null) {
          return false;
-      if (!(obj instanceof PktMessage))
+      }
+      if (!(obj instanceof PktMessage)) {
          return false;
+      }
       PktMessage other = (PktMessage) obj;
       if (content == null) {
-         if (other.content != null)
+         if (other.content != null) {
             return false;
-      } else if (!content.equals(other.content))
+         }
+      } else if (!content.equals(other.content)) {
          return false;
+      }
       return true;
    }
 

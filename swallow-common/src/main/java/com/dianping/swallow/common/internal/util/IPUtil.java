@@ -71,15 +71,17 @@ public class IPUtil {
    }
 
    public static String getIpFromChannel(Channel channel, String defaultIP) {
-      if (channel == null)
+      if (channel == null) {
          return defaultIP;
+      }
       String channelIP = defaultIP;
       try {
          String str = channel.getRemoteAddress().toString();
          int beginIdx = str.indexOf("/") + 1;
          int endIdx = str.indexOf(":");
-         if (beginIdx < 0)
+         if (beginIdx < 0) {
             beginIdx = 0;
+         }
          if (endIdx < 0) {
             channelIP = str.substring(beginIdx).trim();
          } else {

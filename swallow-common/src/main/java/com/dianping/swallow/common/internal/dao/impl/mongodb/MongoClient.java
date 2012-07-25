@@ -133,27 +133,31 @@ public class MongoClient implements ConfigChangeListener {
          this.topicNameToMongoMap = parseURIAndCreateTopicMongo(dynamicConfig.get(this.severURILionKey).trim());
          //msgTopicNameToSizes
          String msgTopicNameToSizes = dynamicConfig.get(LION_KEY_MSG_CAPPED_COLLECTION_SIZE);
-         if (msgTopicNameToSizes != null)
+         if (msgTopicNameToSizes != null) {
             this.msgTopicNameToSizes = parseSizeOrDocNum(msgTopicNameToSizes.trim());
+         }
          //msgTopicNameToMaxDocNums(可选)
          String msgTopicNameToMaxDocNums = dynamicConfig.get(LION_KEY_MSG_CAPPED_COLLECTION_MAX_DOC_NUM);
-         if (msgTopicNameToMaxDocNums != null)
+         if (msgTopicNameToMaxDocNums != null) {
             this.msgTopicNameToMaxDocNums = parseSizeOrDocNum(msgTopicNameToMaxDocNums.trim());
+         }
          //ackTopicNameToSizes
          String ackTopicNameToSizes = dynamicConfig.get(LION_KEY_ACK_CAPPED_COLLECTION_SIZE);
          this.ackTopicNameToSizes = parseSizeOrDocNum(ackTopicNameToSizes.trim());
          //ackTopicNameToMaxDocNums(可选)
          String ackTopicNameToMaxDocNums = dynamicConfig.get(LION_KEY_ACK_CAPPED_COLLECTION_MAX_DOC_NUM);
-         if (ackTopicNameToMaxDocNums != null)
+         if (ackTopicNameToMaxDocNums != null) {
             this.ackTopicNameToMaxDocNums = parseSizeOrDocNum(ackTopicNameToMaxDocNums.trim());
+         }
          //heartbeat
          this.heartbeatMongo = parseURIAndCreateHeartbeatMongo(dynamicConfig.get(LION_KEY_HEARTBEAT_SERVER_URI).trim());
          String heartbeatCappedCollectionSize = dynamicConfig.get(LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE);
          this.heartbeatCappedCollectionSize = Integer.parseInt(heartbeatCappedCollectionSize.trim());
          String heartbeatCappedCollectionMaxDocNum = dynamicConfig
                .get(LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM);//(可选)
-         if (heartbeatCappedCollectionMaxDocNum != null)
+         if (heartbeatCappedCollectionMaxDocNum != null) {
             this.heartbeatCappedCollectionMaxDocNum = Integer.parseInt(heartbeatCappedCollectionMaxDocNum.trim());
+         }
          //添加Lion监听
          dynamicConfig.setConfigChangeListener(this);
       } catch (Exception e) {
@@ -465,8 +469,9 @@ public class MongoClient implements ConfigChangeListener {
             }
             markCollectionExists(db);//缓存default collection 存在的标识，避免db.collectionExists的调用
          }
-         if (collection == null)//执行到此处，保证DEFAULT_COLLECTION_NAME已经存在，但collection句柄也许还是null，所以需再检查
+         if (collection == null) {
             collection = db.getCollection(DEFAULT_COLLECTION_NAME);
+         }
       } else {
          collection = db.getCollection(DEFAULT_COLLECTION_NAME);
       }
