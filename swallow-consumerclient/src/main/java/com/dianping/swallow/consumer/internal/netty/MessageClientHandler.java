@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Event;
+import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.swallow.common.internal.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
@@ -61,7 +62,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
          @Override
          public void run() {
-            SwallowMessage swallowMessage = (SwallowMessage) ((PktMessage) e.getMessage()).getContent();
+            SwallowMessage swallowMessage = ((PktMessage) e.getMessage()).getContent();
             Long messageId = swallowMessage.getMessageId();
 
             consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, messageId, cClient.isClosed());
@@ -84,8 +85,8 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                } catch (Exception e) {
                   LOG.error("exception in MessageListener", e);
                }
-               event.setStatus(Event.SUCCESS);
-               t.setStatus(Transaction.SUCCESS);
+               event.setStatus(Message.SUCCESS);
+               t.setStatus(Message.SUCCESS);
             } catch (IOException e) {
                LOG.error("can not uncompress message with messageId " + messageId, e);
                event.setStatus(e);

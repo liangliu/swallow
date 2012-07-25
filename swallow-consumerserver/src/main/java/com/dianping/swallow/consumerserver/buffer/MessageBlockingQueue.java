@@ -41,11 +41,13 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
       //能运行到这里，说明capacity>0
       this.cid = cid;
       this.topicName = topicName;
-      if (threshold < 0)
+      if (threshold < 0) {
          throw new IllegalArgumentException("threshold: " + threshold);
+      }
       this.threshold = threshold;
-      if (messageIdOfTailMessage == null)
+      if (messageIdOfTailMessage == null) {
          throw new IllegalArgumentException("messageIdOfTailMessage is null.");
+      }
       this.tailMessageId = messageIdOfTailMessage;
       messageRetriverThread = new MessageRetriverThread();
       messageRetriverThread.start();
@@ -59,11 +61,13 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
       //能运行到这里，说明capacity>0
       this.cid = cid;
       this.topicName = topicName;
-      if (threshold < 0)
+      if (threshold < 0) {
          throw new IllegalArgumentException("threshold: " + threshold);
+      }
       this.threshold = threshold;
-      if (messageIdOfTailMessage == null)
+      if (messageIdOfTailMessage == null) {
          throw new IllegalArgumentException("messageIdOfTailMessage is null.");
+      }
       this.tailMessageId = messageIdOfTailMessage;
       this.messageFilter = messageFilter;
       messageRetriverThread = new MessageRetriverThread();
@@ -72,6 +76,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
       HawkJMXUtil.registerMBean(topicName + "-" + cid + "-MessageBlockingQueue", new HawkMBean());
    }
 
+   @Override
    public Message take() throws InterruptedException {
       //阻塞take()方法不让使用的原因是：防止当ensureLeftMessage()失败时，没法获取消息，而调用take()的代码将一直阻塞。
       //不过，可以在后台线程中获取消息失败时不断重试，直到保证ensureLeftMessage。
@@ -82,6 +87,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
             "Don't call this operation, call 'poll(long timeout, TimeUnit unit)' instead.");
    }
 
+   @Override
    public Message poll() {
       //如果剩余元素数量小于最低限制值threshold，就启动一个“获取DB数据的后台线程”去DB获取数据，并添加到Queue的尾部
       if (super.size() < threshold) {
@@ -90,6 +96,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
       return super.poll();
    }
 
+   @Override
    public Message poll(long timeout, TimeUnit unit) throws InterruptedException {
       //如果剩余元素数量小于最低限制值threshold，就启动一个“获取DB数据的后台线程”去DB获取数据，并添加到Queue的尾部
       if (super.size() < threshold) {
@@ -219,12 +226,14 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
     * unit)方法不可用,您依然可以使用poll()和poll(long timeout, TimeUnit
     * unit)方法获取MessageBlockingQueue中剩余的消息。不过，不会再有后台线程去从DB获取更多的消息。 </note>
     */
+   @Override
    public void close() {
       if (isClosed.compareAndSet(false, true)) {
          this.messageRetriverThread.interrupt();
       }
    }
 
+   @Override
    public void isClosed() {
       if (isClosed.get()) {
          throw new RuntimeException("MessageBlockingQueue- already closed! ");
