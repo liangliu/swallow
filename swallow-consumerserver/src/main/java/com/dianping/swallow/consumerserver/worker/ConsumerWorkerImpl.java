@@ -180,14 +180,17 @@ public class ConsumerWorkerImpl implements ConsumerWorker {
       });
    }
 
+   @Override
    public void closeMessageFetcherThread() {
       getMessageisAlive = false;
    }
 
+   @Override
    public void closeAckExecutor() {
       ackExecutor.shutdownNow();
    }
 
+   @Override
    public void close() {
       getMessageisAlive = false;
       messageQueue.close();

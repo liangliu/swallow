@@ -5,6 +5,8 @@ import net.sf.cglib.proxy.Enhancer;
 import com.mongodb.MongoException;
 
 public class ProxyUtil {
+   private ProxyUtil() {
+   }
 
    /**
     * 返回一个代理类，代理了所有targetClass的方法，代理后的方法实现了以下功能：<br>

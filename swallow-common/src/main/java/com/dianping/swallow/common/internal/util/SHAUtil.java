@@ -5,6 +5,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class SHAUtil {
+   private SHAUtil() {
+   }
+
    //根据String生成SHA-1字符串
    public static String generateSHA(String str) {
       try {

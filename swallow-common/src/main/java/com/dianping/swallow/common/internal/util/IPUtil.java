@@ -14,6 +14,9 @@ import org.jboss.netty.channel.Channel;
  * @author Leo Liang
  */
 public class IPUtil {
+   private IPUtil() {
+   }
+
    /**
     * 获取第一个no loop address
     * 

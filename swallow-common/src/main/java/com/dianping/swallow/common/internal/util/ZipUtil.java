@@ -9,6 +9,9 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.commons.codec.binary.Base64;
 
 public class ZipUtil {
+   private ZipUtil() {
+   }
+
    /**
     * 压缩字符串
     * 

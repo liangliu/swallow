@@ -78,7 +78,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
       pigeon.setSerialize(pigeonConfigure.getSerialize());
       pigeon.setTimeout(pigeonConfigure.getTimeout());
 
-      if (pigeonConfigure.isUseLion() == false) {
+      if (!pigeonConfigure.isUseLion()) {
          pigeon.setUseLion(false);
          pigeon.setHosts(pigeonConfigure.getHosts());
          pigeon.setWeight(pigeonConfigure.getWeights());
@@ -92,7 +92,7 @@ public class ProducerFactoryImpl implements ProducerFactory {
          pigeon.init();
          logger.info("[Initialize pigeon successfully.]");
 
-         remoteService = (ProducerSwallowService) pigeon.getProxy();
+         remoteService = pigeon.getProxy();
          logger.info("[Get remoteService successfully.]:[" + "RemoteService's timeout is: "
                + pigeonConfigure.getTimeout() + ".]");
       } catch (Exception e) {
@@ -109,8 +109,9 @@ public class ProducerFactoryImpl implements ProducerFactory {
     * @throws RemoteServiceInitFailedException 远程调用服务（pigeon）初始化失败
     */
    public static synchronized ProducerFactoryImpl getInstance() throws RemoteServiceInitFailedException {
-      if (instance == null)
+      if (instance == null) {
          instance = new ProducerFactoryImpl();
+      }
       return instance;
    }
 
@@ -127,8 +128,9 @@ public class ProducerFactoryImpl implements ProducerFactory {
     */
    @Override
    public Producer createProducer(Destination dest, ProducerConfig config) {
-      if (dest == null)
+      if (dest == null) {
          throw new IllegalArgumentException("Destination can not be null");
+      }
 
       ProducerImpl producerImpl = null;
       producerImpl = new ProducerImpl(dest, config, producerIP, producerVersion, remoteService,

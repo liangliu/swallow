@@ -27,6 +27,9 @@ import com.dianping.cat.Cat;
  * @author tong.song
  */
 public class ProducerServerBootstrap {
+   private ProducerServerBootstrap() {
+   }
+
    public static void main(String[] args) {
       //启动Cat
       Cat.initialize(new File("/data/appdatas/cat/client.xml"));
