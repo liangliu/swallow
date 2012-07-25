@@ -1,6 +1,5 @@
 package com.dianping.swallow.common.internal.dao.impl.mongodb;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dianping.hawk.jmx.HawkJMXUtil;
-import com.dianping.lion.client.LionException;
 import com.dianping.swallow.common.internal.config.ConfigChangeListener;
 import com.dianping.swallow.common.internal.config.DynamicConfig;
 import com.dianping.swallow.common.internal.config.impl.LionDynamicConfig;
@@ -77,8 +75,6 @@ public class MongoClient implements ConfigChangeListener {
     * 
     * @param uri
     * @param config
-    * @throws LionException
-    * @throws IOException
     */
    public MongoClient(String severURILionKey, DynamicConfig dynamicConfig) {
       this.severURILionKey = severURILionKey;
