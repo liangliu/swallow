@@ -33,8 +33,4 @@ public final class PktSwallowPACK extends Packet {
 	public void setShaInfo(String shaInfo) {
 		this.shaInfo = shaInfo;
 	}
-	@Override
-	public String toString() {
-		return shaInfo;
-	}
 }

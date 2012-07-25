@@ -188,6 +188,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.dianping.lion</groupId>
+				<artifactId>lion-qa</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>com.dianping.lion</groupId>
 				<artifactId>lion-alpha</artifactId>
 				<version>1.0.0</version>
 			</dependency>
