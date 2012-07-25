@@ -149,28 +149,37 @@ public class JsonBinderTest {
 
       @Override
       public boolean equals(Object obj) {
-         if (this == obj)
+         if (this == obj) {
             return true;
-         if (obj == null)
+         }
+         if (obj == null) {
             return false;
-         if (!(obj instanceof TestBean))
+         }
+         if (!(obj instanceof TestBean)) {
             return false;
+         }
          TestBean other = (TestBean) obj;
          if (defaultValue == null) {
-            if (other.defaultValue != null)
+            if (other.defaultValue != null) {
                return false;
-         } else if (!defaultValue.equals(other.defaultValue))
+            }
+         } else if (!defaultValue.equals(other.defaultValue)) {
             return false;
+         }
          if (name == null) {
-            if (other.name != null)
+            if (other.name != null) {
                return false;
-         } else if (!name.equals(other.name))
+            }
+         } else if (!name.equals(other.name)) {
             return false;
+         }
          if (nullValue == null) {
-            if (other.nullValue != null)
+            if (other.nullValue != null) {
                return false;
-         } else if (!nullValue.equals(other.nullValue))
+            }
+         } else if (!nullValue.equals(other.nullValue)) {
             return false;
+         }
          return true;
       }
    }

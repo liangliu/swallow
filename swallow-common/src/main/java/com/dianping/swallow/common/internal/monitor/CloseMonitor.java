@@ -29,6 +29,7 @@ public class CloseMonitor {
 
    public void start(final int port, final String cmd, final CloseHook hook) {
       Thread t = new Thread() {
+         @Override
          public void run() {
             try {
                ServerSocket ss = new ServerSocket(port);

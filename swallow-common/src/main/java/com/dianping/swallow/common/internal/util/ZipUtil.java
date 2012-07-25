@@ -20,8 +20,9 @@ public class ZipUtil {
     * @throws IOException IO处理出错
     */
    public static String zip(String str) throws IOException {
-      if (str == null || str.length() == 0)
+      if (str == null || str.length() == 0) {
          return str;
+      }
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       GZIPOutputStream gzip = new GZIPOutputStream(out);
       try {
@@ -40,8 +41,9 @@ public class ZipUtil {
     * @throws IOException IO处理出错
     */
    public static String unzip(String zipedBase64String) throws IOException {
-      if (zipedBase64String == null || zipedBase64String.length() == 0)
+      if (zipedBase64String == null || zipedBase64String.length() == 0) {
          return zipedBase64String;
+      }
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       ByteArrayInputStream in = new ByteArrayInputStream(Base64.decodeBase64(zipedBase64String));
       GZIPInputStream gunzip = new GZIPInputStream(in);

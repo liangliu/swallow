@@ -37,7 +37,7 @@ import com.dianping.swallow.producer.impl.internal.SwallowPigeonConfiguration;
  * 
  * @author tong.song
  */
-public class ProducerFactoryImpl implements ProducerFactory {
+public final class ProducerFactoryImpl implements ProducerFactory {
 
    private static ProducerFactoryImpl       instance;                                                             //Producer工厂类单例
    private static final Logger              logger           = LoggerFactory.getLogger(ProducerFactoryImpl.class);

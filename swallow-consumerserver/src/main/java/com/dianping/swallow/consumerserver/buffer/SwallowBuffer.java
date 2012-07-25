@@ -106,7 +106,7 @@ public class SwallowBuffer {
       this.messageRetriever = messageRetriever;
    }
 
-   class TopicBuffer {
+   private class TopicBuffer {
 
       private final String                                                   topicName;
 

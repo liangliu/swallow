@@ -33,8 +33,9 @@ public class NameCheckUtil {
       if (topicName == null || topicName.length() == 0) {
          return false;
       }
-      if (topicName.matches("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,29}"))
+      if (topicName.matches("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,29}")) {
          return true;
+      }
       return false;
    }
 
@@ -52,8 +53,9 @@ public class NameCheckUtil {
       if (consumerId == null || consumerId.length() == 0) {
          return false;
       }
-      if (consumerId.matches("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,29}"))
+      if (consumerId.matches("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,29}")) {
          return true;
+      }
       return false;
    }
 
