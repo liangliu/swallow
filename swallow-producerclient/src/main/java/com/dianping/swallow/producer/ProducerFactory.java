@@ -16,7 +16,6 @@
 package com.dianping.swallow.producer;
 
 import com.dianping.swallow.common.message.Destination;
-import com.dianping.swallow.producer.impl.internal.ProducerImpl;
 
 /**
  * Producer工厂类接口
