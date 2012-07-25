@@ -56,7 +56,7 @@ import com.dianping.lion.EnvZooKeeperConfig;
  */
 public class SwallowPigeonConfiguration {
 
-   private static final Logger logger                 = LoggerFactory.getLogger(SwallowPigeonConfiguration.class);
+   private static final Logger LOGGER                 = LoggerFactory.getLogger(SwallowPigeonConfiguration.class);
 
    public static final String  DEFAULT_SERVICE_NAME   = "http://service.dianping.com/swallowService/producerService_1.0.0"; //默认远程服务名称
    public static final String  DEFAULT_SERIALIZE      = "hessian";                                                         //默认序列化方式
@@ -84,8 +84,8 @@ public class SwallowPigeonConfiguration {
             + useLion + (!useLion ? "; hosts=" + hosts + "; weights=" + weights : "") + "; punishTimeout="
             + punishTimeout;
    }
-   
-   private String getConfigInfo(){
+
+   private String getConfigInfo() {
       return "serviceName=" + serviceName + "; serialize=" + serialize + "; timeout=" + timeout + "; useLion="
             + useLion + (!useLion ? "; hosts=" + hosts + "; weights=" + weights : "") + "; punishTimeout="
             + punishTimeout;
@@ -98,19 +98,19 @@ public class SwallowPigeonConfiguration {
       InputStream in = null;
       in = SwallowPigeonConfiguration.class.getClassLoader().getResourceAsStream(configFile);
       if (in == null) {
-         logger.warn("No ProducerFactory config file, use default values: [" + getConfigInfo() + "]");
+         LOGGER.warn("No ProducerFactory config file, use default values: [" + getConfigInfo() + "]");
          return;
       }
       try {
          props.load(in);
       } catch (IOException e) {
-         logger.error("Load property file failed, use default values: [" + getConfigInfo() + "]", e);
+         LOGGER.error("Load property file failed, use default values: [" + getConfigInfo() + "]", e);
       } finally {
          if (in != null) {
             try {
                in.close();
             } catch (IOException e) {
-               logger.error("[Close inputstream failed.]", e);
+               LOGGER.error("[Close inputstream failed.]", e);
             }
          }
       }
@@ -119,7 +119,7 @@ public class SwallowPigeonConfiguration {
          try {
             field = clazz.getDeclaredField(key.trim());
          } catch (Exception e) {
-            logger.warn("[Unknow property found in " + configFile + ": " + key + ".]", e);
+            LOGGER.warn("[Unknow property found in " + configFile + ": " + key + ".]", e);
             continue;
          }
          field.setAccessible(true);
@@ -128,7 +128,7 @@ public class SwallowPigeonConfiguration {
             try {
                field.set(this, Integer.parseInt(props.getProperty(key).trim()));
             } catch (Exception e) {
-               logger.warn("[Can not parse property " + key + ".]", e);
+               LOGGER.warn("[Can not parse property " + key + ".]", e);
                continue;
             }
          } else if (field.getType().equals(Boolean.TYPE)) {
@@ -136,26 +136,26 @@ public class SwallowPigeonConfiguration {
                String str = props.getProperty(key).trim();
                field.set(this, ("false".equals(str) ? false : ("true".equals(str) ? true : DEFAULT_IS_USE_LION)));
             } catch (Exception e) {
-               logger.warn("[Can not parse property " + key + ".]", e);
+               LOGGER.warn("[Can not parse property " + key + ".]", e);
                continue;
             }
          } else if (field.getType().equals(String.class)) {
             try {
                field.set(this, props.getProperty(key).trim());
             } catch (Exception e) {
-               logger.warn("[Can not parse property " + key + ".]", e);
+               LOGGER.warn("[Can not parse property " + key + ".]", e);
                continue;
             }
          }
       }
-      if (logger.isDebugEnabled()) {
+      if (LOGGER.isDebugEnabled()) {
          Field[] fields = clazz.getDeclaredFields();
          for (int i = 0; i < fields.length; i++) {
             Field f = fields[i];
             f.setAccessible(true);
             if (!Modifier.isStatic(f.getModifiers())) {
                try {
-                  logger.debug(f.getName() + "=" + f.get(this));
+                  LOGGER.debug(f.getName() + "=" + f.get(this));
                } catch (Exception e) {
                }
             }
@@ -167,7 +167,7 @@ public class SwallowPigeonConfiguration {
       checkTimeout();
       checkUseLion();
       checkPunishTimeout();
-      logger.info("ProducerFactory configuration: [" + getConfigInfo() + "]");
+      LOGGER.info("ProducerFactory configuration: [" + getConfigInfo() + "]");
    }
 
    /**
@@ -176,7 +176,7 @@ public class SwallowPigeonConfiguration {
    private void checkSerialize() {
       if (!"hessian".equals(serialize) && !"java".equals(serialize) && !"protobuf".equals(serialize)
             && !"thrift".equals(serialize)) {
-         logger.warn("[Unrecognized serialize, use default value: " + DEFAULT_SERIALIZE + ".]");
+         LOGGER.warn("[Unrecognized serialize, use default value: " + DEFAULT_SERIALIZE + ".]");
          serialize = DEFAULT_SERIALIZE;
       }
    }
@@ -200,7 +200,7 @@ public class SwallowPigeonConfiguration {
             weight = weightSet[idx];
          }
          if (!host.matches("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}:\\d{4,5}") || !weight.matches("[1-9]|10")) {
-            logger.warn("[Unrecognized host address: " + host + ", or weight: " + weight + ", ignored it.]");
+            LOGGER.warn("[Unrecognized host address: " + host + ", or weight: " + weight + ", ignored it.]");
             continue;
          }
          realHosts.append(host + ",");
@@ -221,7 +221,7 @@ public class SwallowPigeonConfiguration {
    private void checkTimeout() {
       if (timeout <= 0) {
          timeout = DEFAULT_TIMEOUT;
-         logger.warn("Timeout should be more than 0, use default value.");
+         LOGGER.warn("Timeout should be more than 0, use default value.");
       }
    }
 
@@ -231,7 +231,7 @@ public class SwallowPigeonConfiguration {
    private void checkUseLion() {
       String env = EnvZooKeeperConfig.getEnv();
       if (!"dev".equals(env)) {
-         logger.warn("[Not dev, set useLion=" + DEFAULT_IS_USE_LION + ".]");
+         LOGGER.warn("[Not dev, set useLion=" + DEFAULT_IS_USE_LION + ".]");
          useLion = DEFAULT_IS_USE_LION;
       }
    }
@@ -239,7 +239,7 @@ public class SwallowPigeonConfiguration {
    private void checkPunishTimeout() {
       if (punishTimeout <= 0) {
          punishTimeout = DEFAULT_PUNISH_TIMEOUT;
-         logger.warn("PunishTimeout should be more than 0, use default value.");
+         LOGGER.warn("PunishTimeout should be more than 0, use default value.");
       }
    }
 

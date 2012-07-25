@@ -28,7 +28,7 @@ import com.dianping.swallow.producer.ProducerHandler;
  */
 public class ProducerImpl implements Producer {
    //常量定义
-   private static final Logger          logger = Logger.getLogger(ProducerImpl.class); //日志
+   private static final Logger          LOGGER = Logger.getLogger(ProducerImpl.class); //日志
 
    //变量定义
    private final Destination            destination;                                  //Producer消息目的
@@ -52,7 +52,7 @@ public class ProducerImpl implements Producer {
       if (producerConfig != null) {
          this.producerConfig = producerConfig;
       } else {
-         logger.warn("config is null, use default settings.");
+         LOGGER.warn("config is null, use default settings.");
          this.producerConfig = new ProducerConfig();
       }
 
@@ -166,7 +166,7 @@ public class ProducerImpl implements Producer {
                swallowMsg.setContent(ZipUtil.zip(swallowMsg.getContent()));
                zipProperties.put("compress", "gzip");
             } catch (Exception e) {
-               logger.warn("Compress message failed.Content=" + swallowMsg.getContent(), e);
+               LOGGER.warn("Compress message failed.Content=" + swallowMsg.getContent(), e);
                zipProperties.put("compress", "failed");
             }
             swallowMsg.setInternalProperties(zipProperties);
