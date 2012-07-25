@@ -29,6 +29,7 @@ public class SwallowMessage implements Serializable, Message {
 
    private String              sourceIp;
 
+   @Override
    public Date getGeneratedTime() {
       return generatedTime;
    }
@@ -37,6 +38,7 @@ public class SwallowMessage implements Serializable, Message {
       this.generatedTime = generatedTime;
    }
 
+   @Override
    public Long getMessageId() {
       return messageId;
    }
@@ -58,6 +60,7 @@ public class SwallowMessage implements Serializable, Message {
       this.version = version;
    }
 
+   @Override
    public Map<String, String> getProperties() {
       return properties;
    }
@@ -74,6 +77,7 @@ public class SwallowMessage implements Serializable, Message {
       this.internalProperties = internalProperties;
    }
 
+   @Override
    public String getSha1() {
       return sha1;
    }
@@ -82,11 +86,13 @@ public class SwallowMessage implements Serializable, Message {
       this.sha1 = sha1;
    }
 
+   @Override
    public <T> T transferContentToBean(Class<T> clazz) {
       JsonBinder jsonBinder = JsonBinder.getNonEmptyBinder();
       return jsonBinder.fromJson(content, clazz);
    }
 
+   @Override
    public String getContent() {
       return content;
    }
@@ -100,6 +106,7 @@ public class SwallowMessage implements Serializable, Message {
       }
    }
 
+   @Override
    public String getType() {
       return type;
    }
@@ -108,6 +115,7 @@ public class SwallowMessage implements Serializable, Message {
       this.type = type;
    }
 
+   @Override
    public String getSourceIp() {
       return sourceIp;
    }
@@ -139,18 +147,23 @@ public class SwallowMessage implements Serializable, Message {
 
    @Override
    public boolean equals(Object obj) {
-      if (this == obj)
+      if (this == obj) {
          return true;
-      if (obj == null)
+      }
+      if (obj == null) {
          return false;
-      if (getClass() != obj.getClass())
+      }
+      if (getClass() != obj.getClass()) {
          return false;
+      }
       SwallowMessage other = (SwallowMessage) obj;
       if (messageId == null) {
-         if (other.messageId != null)
+         if (other.messageId != null) {
             return false;
-      } else if (!messageId.equals(other.messageId))
+         }
+      } else if (!messageId.equals(other.messageId)) {
          return false;
+      }
       return true;
    }
 
@@ -158,53 +171,72 @@ public class SwallowMessage implements Serializable, Message {
     * 在不比较MessageId的情况下，判断消息是否相等。
     */
    public boolean equalsWithoutMessageId(Object obj) {
-      if (this == obj)
+      if (this == obj) {
          return true;
-      if (obj == null)
+      }
+      if (obj == null) {
          return false;
-      if (!(obj instanceof SwallowMessage))
+      }
+      if (!(obj instanceof SwallowMessage)) {
          return false;
+      }
       SwallowMessage other = (SwallowMessage) obj;
       if (content == null) {
-         if (other.content != null)
+         if (other.content != null) {
             return false;
-      } else if (!content.equals(other.content))
+         }
+      } else if (!content.equals(other.content)) {
          return false;
+      }
       if (generatedTime == null) {
-         if (other.generatedTime != null)
+         if (other.generatedTime != null) {
             return false;
-      } else if (!generatedTime.equals(other.generatedTime))
+         }
+      } else if (!generatedTime.equals(other.generatedTime)) {
          return false;
+      }
       if (properties == null) {
-         if (other.properties != null)
+         if (other.properties != null) {
             return false;
-      } else if (!properties.equals(other.properties))
+         }
+      } else if (!properties.equals(other.properties)) {
          return false;
+      }
       if (internalProperties == null) {
-         if (other.internalProperties != null)
+         if (other.internalProperties != null) {
             return false;
-      } else if (!internalProperties.equals(other.internalProperties))
+         }
+      } else if (!internalProperties.equals(other.internalProperties)) {
          return false;
+      }
       if (sha1 == null) {
-         if (other.sha1 != null)
+         if (other.sha1 != null) {
             return false;
-      } else if (!sha1.equals(other.sha1))
+         }
+      } else if (!sha1.equals(other.sha1)) {
          return false;
+      }
       if (sourceIp == null) {
-         if (other.sourceIp != null)
+         if (other.sourceIp != null) {
             return false;
-      } else if (!sourceIp.equals(other.sourceIp))
+         }
+      } else if (!sourceIp.equals(other.sourceIp)) {
          return false;
+      }
       if (type == null) {
-         if (other.type != null)
+         if (other.type != null) {
             return false;
-      } else if (!type.equals(other.type))
+         }
+      } else if (!type.equals(other.type)) {
          return false;
+      }
       if (version == null) {
-         if (other.version != null)
+         if (other.version != null) {
             return false;
-      } else if (!version.equals(other.version))
+         }
+      } else if (!version.equals(other.version)) {
          return false;
+      }
       return true;
    }
 

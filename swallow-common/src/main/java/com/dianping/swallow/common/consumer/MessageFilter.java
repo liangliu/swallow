@@ -3,7 +3,7 @@ package com.dianping.swallow.common.consumer;
 import java.io.Serializable;
 import java.util.Set;
 
-public class MessageFilter implements Serializable {
+public final class MessageFilter implements Serializable {
    
    private static final long serialVersionUID = 5643819915814285301L;
    

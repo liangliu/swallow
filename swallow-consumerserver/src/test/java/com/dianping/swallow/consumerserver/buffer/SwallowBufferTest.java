@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.kubek2k.springockito.annotations.SpringockitoContextLoader;
@@ -57,18 +56,13 @@ public class SwallowBufferTest extends AbstractTest {
       }
    }
 
-   @After
-   public void tearDown() throws Exception {
-      //删除测试过程创建的Collection
-      mongoClient.getMessageCollection(TOPIC_NAME).drop();
-   }
-
    @Test
    public void testCreateMessageQueue1() throws InterruptedException {
       BlockingQueue<Message> queue = swallowBuffer.createMessageQueue(TOPIC_NAME, cid, tailMessageId);
       Message m;
-      while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
+      while ((m = queue.poll(1, TimeUnit.SECONDS)) == null) {
          ;
+      }
       Assert.assertEquals("content2", m.getContent());
    }
 
@@ -80,8 +74,9 @@ public class SwallowBufferTest extends AbstractTest {
             MessageFilter.createInSetMessageFilter(messageTypeSet));
 
       Message m;
-      while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
+      while ((m = queue.poll(1, TimeUnit.SECONDS)) == null) {
          ;
+      }
       Assert.assertEquals("content2", m.getContent());
    }
 
@@ -94,10 +89,12 @@ public class SwallowBufferTest extends AbstractTest {
             MessageFilter.createInSetMessageFilter(messageTypeSet));
       BlockingQueue<Message> queue = swallowBuffer.getMessageQueue(TOPIC_NAME, cid);
       Message m;
-      while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
+      while ((m = queue.poll(1, TimeUnit.SECONDS)) == null) {
          ;
-      while ((m = queue.poll(1, TimeUnit.SECONDS)) == null)
+      }
+      while ((m = queue.poll(1, TimeUnit.SECONDS)) == null) {
          ;
+      }
       Assert.assertEquals("content3", m.getContent());
    }
 

@@ -39,6 +39,7 @@ public class HessianEchoServer {
 
       // Set up the pipeline factory.
       bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+         @Override
          public ChannelPipeline getPipeline() throws Exception {
             ChannelPipeline p = Channels.pipeline();
             p.addLast("frameEncoder", new ProtobufVarint32LengthFieldPrepender());

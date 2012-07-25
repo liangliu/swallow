@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Event;
+import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
@@ -187,8 +188,8 @@ public class ProducerImpl implements Producer {
                break;
          }
          //CAT
-         event.setStatus(Event.SUCCESS);
-         t.setStatus(Transaction.SUCCESS);
+         event.setStatus(Message.SUCCESS);
+         t.setStatus(Message.SUCCESS);
 
          return ret;
       } catch (SendFailedException e) {

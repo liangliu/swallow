@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author zhang.yu
  */
-public class ConfigManager {
+public final class ConfigManager {
 
    private static final Logger  LOG                   = LoggerFactory.getLogger(ConfigManager.class);
 

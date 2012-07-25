@@ -90,7 +90,7 @@ public final class ProducerFactoryImpl implements ProducerFactory {
          pigeon.init();
          logger.info("[Initialize pigeon successfully.]");
 
-         remoteService = (ProducerSwallowService) pigeon.getProxy();
+         remoteService = pigeon.getProxy();
          logger.info("[Get remoteService successfully.]:[" + "RemoteService's timeout is: "
                + pigeonConfigure.getTimeout() + ".]");
       } catch (Exception e) {

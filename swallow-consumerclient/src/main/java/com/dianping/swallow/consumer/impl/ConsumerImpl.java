@@ -85,6 +85,7 @@ public class ConsumerImpl implements Consumer{
       return listener;
    }
 
+   @Override
    public void setListener(MessageListener listener) {
       this.listener = listener;
    }
@@ -117,6 +118,7 @@ public class ConsumerImpl implements Consumer{
    /**
     * 开始连接服务器，同时把连slave的线程启起来。
     */
+   @Override
    public void start() {
       if(listener == null){
          LOG.error("MessageListener is null");
