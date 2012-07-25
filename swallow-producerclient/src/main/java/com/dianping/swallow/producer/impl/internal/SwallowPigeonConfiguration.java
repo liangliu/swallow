@@ -54,7 +54,7 @@ import com.dianping.lion.EnvZooKeeperConfig;
  * 
  * @author tong.song
  */
-public class SwallowPigeonConfiguration {
+public final class SwallowPigeonConfiguration {
 
    private static final Logger logger                 = LoggerFactory.getLogger(SwallowPigeonConfiguration.class);
 

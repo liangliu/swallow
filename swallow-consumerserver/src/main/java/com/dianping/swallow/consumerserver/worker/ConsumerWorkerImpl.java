@@ -32,7 +32,7 @@ import com.dianping.swallow.consumerserver.buffer.CloseableBlockingQueue;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 
-public class ConsumerWorkerImpl implements ConsumerWorker {
+public final class ConsumerWorkerImpl implements ConsumerWorker {
    private static final Logger    LOG               = LoggerFactory.getLogger(ConsumerWorkerImpl.class);
 
    private ConsumerInfo           consumerInfo;
