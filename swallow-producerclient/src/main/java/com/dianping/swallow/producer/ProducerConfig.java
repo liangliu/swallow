@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * @author tong.song
  */
 public class ProducerConfig {
-   private static final Logger      logger                             = LoggerFactory.getLogger(ProducerConfig.class);
+   private static final Logger      LOGGER                             = LoggerFactory.getLogger(ProducerConfig.class);
 
    public static final int          MAX_THREADPOOL_SIZE                = 100;                                          //线程池大小最大值
    public static final ProducerMode DEFAULT_PRODUCER_MODE              = ProducerMode.SYNC_MODE;                       //默认Producer工作模式
@@ -82,7 +82,7 @@ public class ProducerConfig {
    public void setRetryTimes(int retryTimes) {
       if (retryTimes < 0) {
          this.retryTimes = DEFAULT_RETRY_TIMES;
-         logger.warn("invalid retryTimes, use default value: " + this.retryTimes + ".");
+         LOGGER.warn("invalid retryTimes, use default value: " + this.retryTimes + ".");
          return;
       }
       this.retryTimes = retryTimes;
@@ -121,7 +121,7 @@ public class ProducerConfig {
    public void setThreadPoolSize(int threadPoolSize) {
       if (threadPoolSize <= 0 || threadPoolSize > MAX_THREADPOOL_SIZE) {
          this.threadPoolSize = DEFAULT_THREADPOOL_SIZE;
-         logger.warn("invalid threadPoolSize, must between 1 - " + MAX_THREADPOOL_SIZE + ", use default value: "
+         LOGGER.warn("invalid threadPoolSize, must between 1 - " + MAX_THREADPOOL_SIZE + ", use default value: "
                + this.threadPoolSize + ".");
          return;
       }

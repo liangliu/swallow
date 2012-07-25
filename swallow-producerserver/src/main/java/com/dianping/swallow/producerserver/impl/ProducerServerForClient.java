@@ -21,7 +21,7 @@ import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 
 public class ProducerServerForClient implements ProducerSwallowService {
 
-   private static final Logger logger             = Logger.getLogger(ProducerServerForClient.class);
+   private static final Logger LOGGER             = Logger.getLogger(ProducerServerForClient.class);
    private static final int    DEFAULT_PORT       = 4000;
    public static final String  producerServerIP   = IPUtil.getFirstNoLoopbackIP4Address();
 
@@ -49,9 +49,9 @@ public class ProducerServerForClient implements ProducerSwallowService {
          services.put(remoteServiceName, this);
          remoteService.setServices(services);
          remoteService.init();
-         logger.info("[Initialize pigeon sucessfully, Producer service for client is ready.]");
+         LOGGER.info("[Initialize pigeon sucessfully, Producer service for client is ready.]");
       } catch (Exception e) {
-         logger.error("[Initialize pigeon failed.]", e);
+         LOGGER.error("[Initialize pigeon failed.]", e);
          throw new RemoteServiceInitFailedException(e);
       }
    }
@@ -69,7 +69,7 @@ public class ProducerServerForClient implements ProducerSwallowService {
       String sha1;
       switch (pkt.getPacketType()) {
          case PRODUCER_GREET:
-            logger.info("[Got Greet][From=" + ((PktProducerGreet) pkt).getProducerIP() + "][Version="
+            LOGGER.info("[Got Greet][From=" + ((PktProducerGreet) pkt).getProducerIP() + "][Version="
                   + ((PktProducerGreet) pkt).getProducerVersion() + "]");
             //返回ProducerServer地址
             pktRet = new PktSwallowPACK(producerServerIP);
@@ -86,12 +86,12 @@ public class ProducerServerForClient implements ProducerSwallowService {
             try {
                messageDAO.saveMessage(topicName, swallowMessage);
             } catch (Exception e) {
-               logger.error("[Save message to DB failed.]", e);
+               LOGGER.error("[Save message to DB failed.]", e);
                throw new ServerDaoException(e);
             }
             break;
          default:
-            logger.warn("[Received unrecognized packet.]" + pkt);
+            LOGGER.warn("[Received unrecognized packet.]" + pkt);
             break;
       }
       return pktRet;

@@ -16,12 +16,13 @@ public class HandlerSynchroMode implements ProducerHandler {
    private final int                 delayBase;
    private final DefaultPullStrategy defaultPullStrategy;
    private ProducerSwallowService    remoteService;
+   private static final int          DELAY_BASE_MULTI = 5; //超时策略倍数
 
    public HandlerSynchroMode(ProducerImpl producer) {
       this.sendTimes = producer.getProducerConfig().getRetryTimes() + 1;//初始值等于用户要求的retryTimes+1，这样可以保证至少执行一次
       this.delayBase = producer.getPunishTimeout();
       this.remoteService = producer.getRemoteService();
-      defaultPullStrategy = new DefaultPullStrategy(delayBase, 5 * delayBase);
+      defaultPullStrategy = new DefaultPullStrategy(delayBase, DELAY_BASE_MULTI * delayBase);
    }
 
    //对外接口
