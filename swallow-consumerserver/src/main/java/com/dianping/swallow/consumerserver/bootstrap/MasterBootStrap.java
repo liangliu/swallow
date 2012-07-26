@@ -31,6 +31,9 @@ public class MasterBootStrap {
 
    private static boolean      isSlave = false;
 
+   private MasterBootStrap() {
+   }
+
    /**
     * 启动Master
     */
@@ -53,7 +56,7 @@ public class MasterBootStrap {
             Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
       bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
          @Override
-         public ChannelPipeline getPipeline() throws Exception {
+         public ChannelPipeline getPipeline() {
             MessageServerHandler handler = new MessageServerHandler(consumerWorkerManager);
             ChannelPipeline pipeline = Channels.pipeline();
             pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));

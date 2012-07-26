@@ -147,7 +147,7 @@ public class ConsumerImpl implements Consumer {
       final ConsumerImpl cc = this;
       bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
          @Override
-         public ChannelPipeline getPipeline() throws Exception {
+         public ChannelPipeline getPipeline() {
             MessageClientHandler handler = new MessageClientHandler(cc);
             ChannelPipeline pipeline = Channels.pipeline();
             pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
