@@ -7,6 +7,11 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * ConsumerThread的作用是，它会不断的保持与ConsumerServer的连接(一个channel关闭后继续建立新的channel)
+ * 
+ * @author wukezhu
+ */
 public class ConsumerThread implements Runnable {
 
    private static final Logger LOG = LoggerFactory.getLogger(ConsumerThread.class);
@@ -35,20 +40,26 @@ public class ConsumerThread implements Runnable {
 
    @Override
    public void run() {
-      while (true) {
+      while (!Thread.currentThread().isInterrupted()) {
          synchronized (bootstrap) {
             try {
                ChannelFuture future = bootstrap.connect(remoteAddress);
-               future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！
+               LOG.info("ConsumerThread(name=" + Thread.currentThread().getName() + ")-connected to " + remoteAddress);
+               future.getChannel().getCloseFuture().await();//等待channel关闭，否则一直阻塞！
+               LOG.info("ConsumerThread(name=" + Thread.currentThread().getName() + ")-closed from " + remoteAddress);
+            } catch (InterruptedException e) {
+               Thread.currentThread().interrupt();
             } catch (RuntimeException e) {
-               LOG.error("Unexpected exception", e);
+               LOG.error(e.getMessage(), e);
             }
          }
          try {
             Thread.sleep(interval);
          } catch (InterruptedException e) {
-            LOG.error("ConSlaveThread InterruptedException", e);
+            Thread.currentThread().interrupt();
          }
       }
+      LOG.info("ConsumerThread(name=" + Thread.currentThread().getName() + " ,remoteAddress=" + remoteAddress
+            + ") done.");
    }
 }

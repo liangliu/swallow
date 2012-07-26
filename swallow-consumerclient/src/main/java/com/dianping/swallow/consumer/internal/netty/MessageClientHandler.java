@@ -32,32 +32,34 @@ import com.dianping.swallow.consumer.internal.ConsumerImpl;
  */
 public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
-   private static final Logger LOG      = LoggerFactory.getLogger(MessageClientHandler.class);
+   private static final Logger LOG = LoggerFactory.getLogger(MessageClientHandler.class);
 
-   private ConsumerImpl        cClient;
-
-   private PktConsumerMessage  consumermessage;
+   private ConsumerImpl        consumer;
 
    private ExecutorService     service;
 
-   public MessageClientHandler(ConsumerImpl cClient) {
-      this.cClient = cClient;
-      service = Executors.newFixedThreadPool(cClient.getConfig().getThreadPoolSize(), new MQThreadFactory("swallow-consumer-client-"));
+   public MessageClientHandler(ConsumerImpl consumer) {
+      this.consumer = consumer;
+      service = Executors.newFixedThreadPool(consumer.getConfig().getThreadPoolSize(), new MQThreadFactory(
+            "swallow-consumer-client-"));
 
    }
 
    @Override
    public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) {
-
-      consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET, cClient.getConsumerId(), cClient.getDest(),
-            cClient.getConfig().getConsumerType(), cClient.getConfig().getThreadPoolSize(), cClient.getConfig()
-                  .getMessageFilter());
-
+      PktConsumerMessage consumermessage = new PktConsumerMessage(ConsumerMessageType.GREET, consumer.getConsumerId(),
+            consumer.getDest(), consumer.getConfig().getConsumerType(), consumer.getConfig().getThreadPoolSize(),
+            consumer.getConfig().getMessageFilter());
       e.getChannel().write(consumermessage);
    }
 
    @Override
    public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) {
+      //记录收到消息，并且记录发来消息的server的地址
+      if (LOG.isDebugEnabled()) {
+         LOG.debug("messageReceived from " + ctx.getChannel().getRemoteAddress());
+      }
+
       Runnable task = new Runnable() {
 
          @Override
@@ -65,10 +67,11 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
             SwallowMessage swallowMessage = ((PktMessage) e.getMessage()).getContent();
             Long messageId = swallowMessage.getMessageId();
 
-            consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, messageId, cClient.isClosed());
+            PktConsumerMessage consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, messageId,
+                  consumer.isClosed());
 
             //使用CAT监控处理消息的时间
-            Transaction t = Cat.getProducer().newTransaction("Message", cClient.getDest().getName());
+            Transaction t = Cat.getProducer().newTransaction("Message", consumer.getDest().getName());
             Event event = Cat.getProducer().newEvent("Message", "payload");
             event.addData(swallowMessage.getMessageId().toString());
 
@@ -81,7 +84,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                   }
                }
                try {
-                  cClient.getListener().onMessage(swallowMessage);
+                  consumer.getListener().onMessage(swallowMessage);
                } catch (Exception e) {
                   LOG.error("exception in MessageListener", e);
                }
@@ -91,7 +94,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                LOG.error("can not uncompress message with messageId " + messageId, e);
                event.setStatus(e);
                t.setStatus(e);
-            } finally{
+            } finally {
                event.complete();
                t.complete();
             }
@@ -111,7 +114,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
       // Close the connection when an exception is raised.
-      LOG.error("exception caught, disconnect from swallowC", e.getCause());
+      LOG.error("exception caught, disconnect from ConsumerServer", e.getCause());
       e.getChannel().close();
    }
 }

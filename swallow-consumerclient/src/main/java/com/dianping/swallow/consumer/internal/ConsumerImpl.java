@@ -122,21 +122,22 @@ public class ConsumerImpl implements Consumer {
       }
       if (started.compareAndSet(false, true)) {
          init();
-         //启动连接slave的线程
-         ConsumerThread slave = new ConsumerThread();
-         slave.setBootstrap(bootstrap);
-         slave.setRemoteAddress(slaveAddress);
-         slave.setInterval(configManager.getConnectSlaveInterval());
-         Thread slaveThread = new Thread(slave);
-         slaveThread.setDaemon(true);
-         slaveThread.start();
          //启动连接master的线程
          ConsumerThread master = new ConsumerThread();
          master.setBootstrap(bootstrap);
          master.setRemoteAddress(masterAddress);
          master.setInterval(configManager.getConnectMasterInterval());
          Thread masterThread = new Thread(master);
+         masterThread.setName("masterThread");
          masterThread.start();
+         //启动连接slave的线程
+         ConsumerThread slave = new ConsumerThread();
+         slave.setBootstrap(bootstrap);
+         slave.setRemoteAddress(slaveAddress);
+         slave.setInterval(configManager.getConnectSlaveInterval());
+         Thread slaveThread = new Thread(slave);
+         slaveThread.setName("slaveThread");
+         slaveThread.start();
       }
    }
 
@@ -144,11 +145,11 @@ public class ConsumerImpl implements Consumer {
    private void init() {
       bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(),
             Executors.newCachedThreadPool()));
-      final ConsumerImpl cc = this;
+      final ConsumerImpl consumer = this;
       bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
          @Override
          public ChannelPipeline getPipeline() throws Exception {
-            MessageClientHandler handler = new MessageClientHandler(cc);
+            MessageClientHandler handler = new MessageClientHandler(consumer);
             ChannelPipeline pipeline = Channels.pipeline();
             pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
             pipeline.addLast("jsonDecoder", new JsonDecoder(PktMessage.class));

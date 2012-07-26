@@ -434,7 +434,7 @@ public class MongoClient implements ConfigChangeListener {
       }
       return this.getCollection(mongo, getIntSafely(ackTopicNameToSizes, topicName),
             getIntSafely(ackTopicNameToMaxDocNums, topicName), "ack#", topicName + "#" + consumerId, new BasicDBObject(
-                  AckDAOImpl.MSG_ID, -1).append(AckDAOImpl.CONSUMER_ID, 1));
+                  AckDAOImpl.MSG_ID, -1));
    }
 
    public DBCollection getHeartbeatCollection(String ip) {

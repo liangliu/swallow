@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.common.internal.dao.AckDAO;
 import com.dianping.swallow.common.internal.util.MongoUtils;
+import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -18,8 +19,7 @@ public class AckDAOImpl implements AckDAO {
    @SuppressWarnings("unused")
    private static final Logger LOG             = LoggerFactory.getLogger(AckDAOImpl.class);
 
-   public static final String  MSG_ID          = "mid";
-   public static final String  CONSUMER_ID     = "cid";
+   public static final String  MSG_ID          = "_id";
    public static final String  SRC_CONSUMER_IP = "cip";
    public static final String  TICK            = "t";
 
@@ -33,10 +33,9 @@ public class AckDAOImpl implements AckDAO {
    public Long getMaxMessageId(String topicName, String consumerId) {
       DBCollection collection = this.mongoClient.getAckCollection(topicName, consumerId);
 
-      DBObject query = BasicDBObjectBuilder.start().add(CONSUMER_ID, consumerId).get();
       DBObject fields = BasicDBObjectBuilder.start().add(MSG_ID, Integer.valueOf(1)).get();
       DBObject orderBy = BasicDBObjectBuilder.start().add(MSG_ID, Integer.valueOf(-1)).get();
-      DBCursor cursor = collection.find(query, fields).sort(orderBy).limit(1);
+      DBCursor cursor = collection.find(new BasicDBObject(), fields).sort(orderBy).limit(1);
       try {
          if (cursor.hasNext()) {
             DBObject result = cursor.next();
@@ -55,8 +54,8 @@ public class AckDAOImpl implements AckDAO {
 
       BSONTimestamp timestamp = MongoUtils.longToBSONTimestamp(messageId);
       Date curTime = new Date();
-      DBObject add = BasicDBObjectBuilder.start().add(CONSUMER_ID, consumerId).add(MSG_ID, timestamp)
-            .add(SRC_CONSUMER_IP, sourceConsumerIp).add(TICK, curTime).get();
+      DBObject add = BasicDBObjectBuilder.start().add(MSG_ID, timestamp).add(SRC_CONSUMER_IP, sourceConsumerIp)
+            .add(TICK, curTime).get();
       collection.insert(add);
    }
 

@@ -24,7 +24,7 @@ public class MongoDBMessageRetriever implements MessageRetriever {
 
    @SuppressWarnings({ "rawtypes", "unchecked" })
    @Override
-   public List retriveMessage(String topicName, Long messageId, MessageFilter messageFilter) throws Exception {
+   public List retriveMessage(String topicName, Long messageId, MessageFilter messageFilter) {
       List<SwallowMessage> messages;
       messages = messageDAO.getMessagesGreaterThan(topicName, messageId, fetchSize);
       //过滤type

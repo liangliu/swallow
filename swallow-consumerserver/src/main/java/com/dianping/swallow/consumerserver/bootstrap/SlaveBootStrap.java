@@ -30,12 +30,12 @@ import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
 public class SlaveBootStrap {
 
-   private static final Logger LOG = LoggerFactory.getLogger(SlaveBootStrap.class);
-   
-   private static boolean isSlave = true;
-   private static ServerBootstrap bootstrap = null;
-   private static volatile boolean closed = false;
-   
+   private static final Logger     LOG       = LoggerFactory.getLogger(SlaveBootStrap.class);
+
+   private static boolean          isSlave   = true;
+   private static ServerBootstrap  bootstrap = null;
+   private static volatile boolean closed    = false;
+
    private static void closeNettyRelatedResource() {
       try {
          LOG.info("MessageServerHandler.getChannelGroup().unbind()-started");
@@ -58,23 +58,22 @@ public class SlaveBootStrap {
          Thread.currentThread().interrupt();
       }
    }
-   
+
    /**
     * 启动Slave
     */
    public static void main(String[] args) {
       //启动Cat
       Cat.initialize(new File("/data/appdatas/cat/client.xml"));
-      
-      ApplicationContext ctx = new ClassPathXmlApplicationContext(new String[] { "applicationContext-consumerserver.xml" });
+
+      ApplicationContext ctx = new ClassPathXmlApplicationContext(
+            new String[] { "applicationContext-consumerserver.xml" });
       ConfigManager configManager = ConfigManager.getInstance();
-      
-      final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);      
-      
+
+      final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
+
       Heartbeater heartbeater = ctx.getBean(Heartbeater.class);
-      
-      final Thread mainThread = Thread.currentThread();
-      
+
       CloseMonitor closeMonitor = new CloseMonitor();
       int port = Integer.parseInt(System.getProperty("closeMonitorPort", "17556"));
       closeMonitor.start(port, new CloseHook() {
@@ -86,16 +85,16 @@ public class SlaveBootStrap {
             consumerWorkerManager.close();
             LOG.info("consumerWorkerManager.close()-finished");
             closeNettyRelatedResource();
-            mainThread.interrupt();
+            Thread.currentThread().interrupt();
          }
 
       });
 
       LOG.info("slave starting, master ip: " + configManager.getMasterIp());
       consumerWorkerManager.init(isSlave);
-      
+
       while (!closed) {
-         
+
          try {
             heartbeater.waitUntilMasterDown(configManager.getMasterIp(), configManager.getHeartbeatCheckInterval(),
                   configManager.getHeartbeatMaxStopTime());
@@ -104,8 +103,8 @@ public class SlaveBootStrap {
             break;
          }
          // Configure the server.
-         bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
-               Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
+         bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(Executors.newCachedThreadPool(),
+               Executors.newCachedThreadPool()));
 
          bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             @Override
@@ -120,10 +119,11 @@ public class SlaveBootStrap {
                return pipeline;
             }
          });
-         
+
          // Bind and start to accept incoming connections.
          bootstrap.bind(new InetSocketAddress(consumerWorkerManager.getConfigManager().getSlavePort()));
-         LOG.info("Server started on port " + consumerWorkerManager.getConfigManager().getMasterPort());
+         LOG.info("Server started on port " + consumerWorkerManager.getConfigManager().getSlavePort());
+
          try {
             heartbeater.waitUntilMasterUp(configManager.getMasterIp(), configManager.getHeartbeatCheckInterval(),
                   configManager.getHeartbeatMaxStopTime());
@@ -136,7 +136,7 @@ public class SlaveBootStrap {
          LOG.info("consumerWorkerManager.close()-finished");
          closeNettyRelatedResource();
       }
-      
+
       LOG.info("slave stopped");
    }
 
