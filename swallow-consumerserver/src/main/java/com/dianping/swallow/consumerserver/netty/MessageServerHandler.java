@@ -140,12 +140,14 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
       removeChannel(e);
       super.channelDisconnected(ctx, e);
+      LOG.info(e.getChannel().getRemoteAddress() + " disconnected!");
    }
 
    @Override
    public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
       removeChannel(e);
       super.channelClosed(ctx, e);
+      LOG.info(e.getChannel().getRemoteAddress() + " closed!");
    }
 
    private void removeChannel(ChannelEvent e) {

@@ -7,7 +7,7 @@ public class ConsumerConfig {
 
    private int           threadPoolSize = 1;
    private MessageFilter messageFilter  = MessageFilter.AllMatchFilter;
-   private ConsumerType        consumerType                 = ConsumerType.DURABLE_AT_MOST_ONCE;
+   private ConsumerType  consumerType   = ConsumerType.DURABLE_AT_MOST_ONCE;
 
    public int getThreadPoolSize() {
       return threadPoolSize;
@@ -15,6 +15,7 @@ public class ConsumerConfig {
 
    /**
     * 设置consumer处理消息的线程池线程数，默认为1
+    * 
     * @param threadPoolSize
     */
    public void setThreadPoolSize(int threadPoolSize) {
@@ -27,6 +28,7 @@ public class ConsumerConfig {
 
    /**
     * 设置消息过滤方式
+    * 
     * @param messageFilter
     */
    public void setMessageFilter(MessageFilter messageFilter) {

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
@@ -42,7 +43,6 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
       this.consumer = consumer;
       service = Executors.newFixedThreadPool(consumer.getConfig().getThreadPoolSize(), new MQThreadFactory(
             "swallow-consumer-client-"));
-
    }
 
    @Override
@@ -51,6 +51,12 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
             consumer.getDest(), consumer.getConfig().getConsumerType(), consumer.getConfig().getThreadPoolSize(),
             consumer.getConfig().getMessageFilter());
       e.getChannel().write(consumermessage);
+   }
+
+   @Override
+   public void channelDisconnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
+      super.channelDisconnected(ctx, e);
+      LOG.info("channel(remoteAddress=" + e.getChannel().getRemoteAddress() + ") disconnected");
    }
 
    @Override
@@ -114,7 +120,8 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
       // Close the connection when an exception is raised.
-      LOG.error("exception caught, disconnect from ConsumerServer", e.getCause());
-      e.getChannel().close();
+      Channel channel = e.getChannel();
+      LOG.error("error from channel(remoteAddress=" + channel.getRemoteAddress() + ")", e.getCause());
+      channel.close();
    }
 }

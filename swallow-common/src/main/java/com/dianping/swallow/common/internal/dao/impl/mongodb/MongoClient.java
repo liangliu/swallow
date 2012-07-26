@@ -502,14 +502,10 @@ public class MongoClient implements ConfigChangeListener {
       }
       try {
          DBCollection collection = db.createCollection(collectionName, options);
-         if (LOG.isInfoEnabled()) {
-            LOG.info("Create collection '" + collection + "' on db " + db + ", index is " + indexDBObject);
-         }
+         LOG.info("Create collection '" + collection + "' on db " + db + ", index is " + indexDBObject);
          if (indexDBObject != null) {
             collection.ensureIndex(indexDBObject);
-            if (LOG.isInfoEnabled()) {
-               LOG.info("Ensure index " + indexDBObject + " on colleciton " + collection);
-            }
+            LOG.info("Ensure index " + indexDBObject + " on colleciton " + collection);
          }
          return collection;
       } catch (MongoException e) {

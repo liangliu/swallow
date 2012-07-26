@@ -13,10 +13,10 @@ import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import com.mongodb.MongoException;
 
 public class AckDAOImpl implements AckDAO {
 
-   @SuppressWarnings("unused")
    private static final Logger LOG             = LoggerFactory.getLogger(AckDAOImpl.class);
 
    public static final String  MSG_ID          = "_id";
@@ -54,9 +54,20 @@ public class AckDAOImpl implements AckDAO {
 
       BSONTimestamp timestamp = MongoUtils.longToBSONTimestamp(messageId);
       Date curTime = new Date();
-      DBObject add = BasicDBObjectBuilder.start().add(MSG_ID, timestamp).add(SRC_CONSUMER_IP, sourceConsumerIp)
-            .add(TICK, curTime).get();
-      collection.insert(add);
+      //TODO delete
+      LOG.info("%%%%%%%%%%%"+curTime);
+      try {
+         DBObject add = BasicDBObjectBuilder.start().add(MSG_ID, timestamp).add(SRC_CONSUMER_IP, sourceConsumerIp)
+               .add(TICK, curTime).get();
+         collection.insert(add);
+      } catch (MongoException e) {
+         if (e.getMessage() != null && e.getMessage().indexOf("duplicate key") >= 0 || e.getCode() == 11000) {
+            //_id already exists
+            LOG.warn(e.getMessage() + ": _id is " + timestamp);
+         } else {
+            throw e;
+         }
+      }
    }
 
 }
