@@ -9,9 +9,9 @@ public class SyncProducerExample {
 
    public static void main(String[] args) throws Exception {
       ProducerConfig config = new ProducerConfig();
-      Producer p = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("example"), config );
+      Producer p = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("example2"), config );
       for (int i = 0; i < 10; i++) {
-         p.sendMessage("" + i);
+         p.sendMessage("消息-" + i);
       }
    }
    

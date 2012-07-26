@@ -96,6 +96,6 @@ public class SingleThreadSend {
    public static void main(String[] args) throws Exception {
       SingleThreadSend.syncSendSome("Hello world", -1, 1000, null, "songtong");
       //      SingleThreadSend.syncSendSomeObjectDemoWithZipped(1000, 1000);
-      //      SingleThreadSend.asyncSendSome("Hello orange", 1000, 100, null, null);
+      //            SingleThreadSend.asyncSendSome("Hello orange", 1000, 1000, null, null);
    }
 }

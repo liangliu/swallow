@@ -36,6 +36,9 @@ public class SlaveBootStrap {
    private static ServerBootstrap  bootstrap = null;
    private static volatile boolean closed    = false;
 
+   private SlaveBootStrap() {
+   }
+
    private static void closeNettyRelatedResource() {
       try {
          LOG.info("MessageServerHandler.getChannelGroup().unbind()-started");
@@ -108,7 +111,7 @@ public class SlaveBootStrap {
 
          bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             @Override
-            public ChannelPipeline getPipeline() throws Exception {
+            public ChannelPipeline getPipeline() {
                MessageServerHandler handler = new MessageServerHandler(consumerWorkerManager);
                ChannelPipeline pipeline = Channels.pipeline();
                pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
