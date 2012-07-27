@@ -90,6 +90,7 @@ public class MongoClient implements ConfigChangeListener {
          config = new MongoConfig();
       }
       mongoOptions = this.getMongoOptions(config);
+      LOG.info("MongoOptions=" + mongoOptions.toString());
       if (dynamicConfig != null) {
          this.dynamicConfig = dynamicConfig;
       } else {
