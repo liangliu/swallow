@@ -54,8 +54,6 @@ public class AckDAOImpl implements AckDAO {
 
       BSONTimestamp timestamp = MongoUtils.longToBSONTimestamp(messageId);
       Date curTime = new Date();
-      //TODO delete
-      LOG.info("%%%%%%%%%%%"+curTime);
       try {
          DBObject add = BasicDBObjectBuilder.start().add(MSG_ID, timestamp).add(SRC_CONSUMER_IP, sourceConsumerIp)
                .add(TICK, curTime).get();
