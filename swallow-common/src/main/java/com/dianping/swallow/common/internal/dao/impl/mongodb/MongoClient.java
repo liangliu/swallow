@@ -90,6 +90,7 @@ public class MongoClient implements ConfigChangeListener {
          config = new MongoConfig();
       }
       mongoOptions = this.getMongoOptions(config);
+      LOG.info("MongoOptions=" + mongoOptions.toString());
       if (dynamicConfig != null) {
          this.dynamicConfig = dynamicConfig;
       } else {
@@ -315,7 +316,7 @@ public class MongoClient implements ConfigChangeListener {
             Map<String, Mongo> oldTopicNameToMongoMap = this.topicNameToMongoMap;
             this.topicNameToMongoMap = parseURIAndCreateTopicMongo(value);
             //Mongo可能有更新，所以需要关闭旧的不再使用的Mongo
-            Thread.sleep(2000);//DAO可能正在使用旧的Mongo，故等候2秒，才执行关闭操作
+            Thread.sleep(5000);//DAO可能正在使用旧的Mongo，故等候5秒，才执行关闭操作
             closeUnuseMongo(oldTopicNameToMongoMap.values(), this.topicNameToMongoMap.values(), this.heartbeatMongo);
          } else if (LION_KEY_MSG_CAPPED_COLLECTION_SIZE.equals(key)) {
             this.msgTopicNameToSizes = parseSizeOrDocNum(value);
@@ -329,7 +330,7 @@ public class MongoClient implements ConfigChangeListener {
             Mongo oldMongo = this.heartbeatMongo;
             this.heartbeatMongo = parseURIAndCreateHeartbeatMongo(value);
             //Mongo可能有更新，所以需要关闭旧的不再使用的Mongo
-            Thread.sleep(2000);//DAO可能正在使用旧的Mongo，故等候2秒，才执行关闭操作
+            Thread.sleep(5000);//DAO可能正在使用旧的Mongo，故等候5秒，才执行关闭操作
             closeUnuseMongo(oldMongo, this.topicNameToMongoMap.values(), this.heartbeatMongo);
          } else if (LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE.equals(key)) {
             this.heartbeatCappedCollectionSize = Integer.parseInt(value);
@@ -434,7 +435,7 @@ public class MongoClient implements ConfigChangeListener {
       }
       return this.getCollection(mongo, getIntSafely(ackTopicNameToSizes, topicName),
             getIntSafely(ackTopicNameToMaxDocNums, topicName), "ack#", topicName + "#" + consumerId, new BasicDBObject(
-                  AckDAOImpl.MSG_ID, -1).append(AckDAOImpl.CONSUMER_ID, 1));
+                  AckDAOImpl.MSG_ID, -1));
    }
 
    public DBCollection getHeartbeatCollection(String ip) {
@@ -502,14 +503,10 @@ public class MongoClient implements ConfigChangeListener {
       }
       try {
          DBCollection collection = db.createCollection(collectionName, options);
-         if (LOG.isInfoEnabled()) {
-            LOG.info("Create collection '" + collection + "' on db " + db + ", index is " + indexDBObject);
-         }
+         LOG.info("Create collection '" + collection + "' on db " + db + ", index is " + indexDBObject);
          if (indexDBObject != null) {
             collection.ensureIndex(indexDBObject);
-            if (LOG.isInfoEnabled()) {
-               LOG.info("Ensure index " + indexDBObject + " on colleciton " + collection);
-            }
+            LOG.info("Ensure index " + indexDBObject + " on colleciton " + collection);
          }
          return collection;
       } catch (MongoException e) {

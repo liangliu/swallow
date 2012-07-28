@@ -22,15 +22,15 @@ class MongoConfig {
    // local config(mongo server options)
    private boolean             slaveOk                                      = true;
    private boolean             socketKeepAlive                              = true;
-   private int                 socketTimeout                                = 1000;
+   private int                 socketTimeout                                = 2000;
    private int                 connectionsPerHost                           = 30;
    private int                 threadsAllowedToBlockForConnectionMultiplier = 50;
    private int                 w                                            = 1;
-   private int                 wtimeout                                     = 500;
+   private int                 wtimeout                                     = 2000;
    private boolean             fsync                                        = false;
    private int                 connectTimeout                               = 2000;
    private int                 maxWaitTime                                  = 2000;
-   private boolean             autoConnectRetry                             = false;
+   private boolean             autoConnectRetry                             = true;
    private boolean             safe                                         = true;
 
    public MongoConfig() {

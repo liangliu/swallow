@@ -27,6 +27,10 @@ import com.dianping.swallow.consumer.internal.netty.MessageClientHandler;
 
 public class ConsumerImpl implements Consumer {
 
+   private ConsumerThread         masterConsumerThread;
+
+   private ConsumerThread         slaveConsumerThread;
+
    private String                 consumerId;
 
    private Destination            dest;
@@ -122,21 +126,20 @@ public class ConsumerImpl implements Consumer {
       }
       if (started.compareAndSet(false, true)) {
          init();
-         //启动连接slave的线程
-         ConsumerThread slave = new ConsumerThread();
-         slave.setBootstrap(bootstrap);
-         slave.setRemoteAddress(slaveAddress);
-         slave.setInterval(configManager.getConnectSlaveInterval());
-         Thread slaveThread = new Thread(slave);
-         slaveThread.setDaemon(true);
-         slaveThread.start();
          //启动连接master的线程
-         ConsumerThread master = new ConsumerThread();
-         master.setBootstrap(bootstrap);
-         master.setRemoteAddress(masterAddress);
-         master.setInterval(configManager.getConnectMasterInterval());
-         Thread masterThread = new Thread(master);
-         masterThread.start();
+         masterConsumerThread = new ConsumerThread();
+         masterConsumerThread.setBootstrap(bootstrap);
+         masterConsumerThread.setRemoteAddress(masterAddress);
+         masterConsumerThread.setInterval(configManager.getConnectMasterInterval());
+         masterConsumerThread.setName("masterConsumerThread");
+         masterConsumerThread.start();
+         //启动连接slave的线程
+         slaveConsumerThread = new ConsumerThread();
+         slaveConsumerThread.setBootstrap(bootstrap);
+         slaveConsumerThread.setRemoteAddress(slaveAddress);
+         slaveConsumerThread.setInterval(configManager.getConnectSlaveInterval());
+         slaveConsumerThread.setName("slaveConsumerThread");
+         slaveConsumerThread.start();
       }
    }
 
@@ -144,11 +147,11 @@ public class ConsumerImpl implements Consumer {
    private void init() {
       bootstrap = new ClientBootstrap(new NioClientSocketChannelFactory(Executors.newCachedThreadPool(),
             Executors.newCachedThreadPool()));
-      final ConsumerImpl cc = this;
+      final ConsumerImpl consumer = this;
       bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
          @Override
          public ChannelPipeline getPipeline() throws Exception {
-            MessageClientHandler handler = new MessageClientHandler(cc);
+            MessageClientHandler handler = new MessageClientHandler(consumer);
             ChannelPipeline pipeline = Channels.pipeline();
             pipeline.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
             pipeline.addLast("jsonDecoder", new JsonDecoder(PktMessage.class));
@@ -160,8 +163,18 @@ public class ConsumerImpl implements Consumer {
       });
    }
 
+   /**
+    * 设置closed标记为true，这样Consumer会在接收到ConsumerServer的消息后通知对方需要关闭连接。<br>
+    * 同时，Consumer内部的masterConsumerThread和slaveConsumerThread线程将在连接关闭后也结束。<br>
+    */
    @Override
    public void close() {
       closed = true;
+      if (masterConsumerThread != null) {
+         masterConsumerThread.interrupt();
+      }
+      if (slaveConsumerThread != null) {
+         slaveConsumerThread.interrupt();
+      }
    }
 }

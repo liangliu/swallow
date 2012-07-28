@@ -43,12 +43,12 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       return connectedChannels;
    }
 
-   private CloseableBlockingQueue<Message> messageQueue = null;
+   private CloseableBlockingQueue<Message> messageQueue   = null;
 
-   private AckDAO            ackDao;
-   private SwallowBuffer     swallowBuffer;
-   private MessageDAO        messageDao;
-   private Queue<PktMessage> cachedMessages = new ConcurrentLinkedQueue<PktMessage>();
+   private AckDAO                          ackDao;
+   private SwallowBuffer                   swallowBuffer;
+   private MessageDAO                      messageDao;
+   private Queue<PktMessage>               cachedMessages = new ConcurrentLinkedQueue<PktMessage>();
 
    public Queue<PktMessage> getCachedMessages() {
       return cachedMessages;
@@ -94,7 +94,6 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
 
    @Override
    public void handleAck(final Channel channel, final Long ackedMsgId, final ACKHandlerType type) {
-
       ackExecutor.execute(new Runnable() {
          @Override
          public void run() {
@@ -102,7 +101,9 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
                updateWaitAckMessages(channel, ackedMsgId);
                updateMaxMessageId(ackedMsgId, channel);
                if (ACKHandlerType.CLOSE_CHANNEL.equals(type)) {
-                  handleChannelDisconnect(channel);
+                  LOG.info("receive ack(type=" + type + ") from " + channel.getRemoteAddress());
+                  channel.close();
+                  //                  handleChannelDisconnect(channel); //channel.close()会触发netty调用handleChannelDisconnect(channel);
                } else if (ACKHandlerType.SEND_MESSAGE.equals(type)) {
                   freeChannels.add(channel);
                }
@@ -346,7 +347,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       public boolean isStarted() {
          return started;
       }
-      
+
       public String getMessageFilter() {
          if (messageFilter != null) {
             return messageFilter.toString();

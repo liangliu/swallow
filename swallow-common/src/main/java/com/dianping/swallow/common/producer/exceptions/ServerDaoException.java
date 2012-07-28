@@ -17,5 +17,5 @@ public class ServerDaoException extends RuntimeException {
    public ServerDaoException(Throwable cause) {
       super("Can not save message to DB now.", cause);
    }
-   
+
 }

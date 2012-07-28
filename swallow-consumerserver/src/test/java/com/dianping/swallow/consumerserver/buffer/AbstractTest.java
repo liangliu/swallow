@@ -15,9 +15,11 @@ import com.dianping.swallow.common.internal.dao.impl.mongodb.MongoClient;
 @ContextConfiguration(loader = SpringockitoContextLoader.class, locations = "classpath:applicationContext-test.xml")
 public abstract class AbstractTest extends AbstractJUnit4SpringContextTests {
 
-   protected static final String TOPIC_NAME  = "topicForUnitTest";
-   protected static final String CONSUMER_ID = "consumer1";
-   protected static final String IP          = "127.0.0.1";
+   protected static final String TOPIC_NAME   = "topicForUnitTest";
+   protected static final String TOPIC_NAME2  = "topicForUnitTest2";
+   protected static final String CONSUMER_ID  = "consumer1";
+   protected static final String CONSUMER_ID2 = "consumer2";
+   protected static final String IP           = "127.0.0.1";
 
    @Autowired
    private MongoClient           mongoClient;
@@ -36,7 +38,11 @@ public abstract class AbstractTest extends AbstractJUnit4SpringContextTests {
    public void tearDown() throws Exception {
       //删除测试过程创建的Collection
       mongoClient.getMessageCollection(TOPIC_NAME).drop();
+      mongoClient.getMessageCollection(TOPIC_NAME2).drop();
       mongoClient.getAckCollection(TOPIC_NAME, CONSUMER_ID).drop();
+      mongoClient.getAckCollection(TOPIC_NAME, CONSUMER_ID2).drop();
+      mongoClient.getAckCollection(TOPIC_NAME2, CONSUMER_ID).drop();
+      mongoClient.getAckCollection(TOPIC_NAME2, CONSUMER_ID2).drop();
       mongoClient.getHeartbeatCollection(IP.replace('.', '_')).drop();
 
    }

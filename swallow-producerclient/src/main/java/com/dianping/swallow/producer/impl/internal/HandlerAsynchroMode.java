@@ -50,7 +50,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
             try {
                while (true) {
                   Transaction t = Cat.getProducer().newTransaction("System", "SwallowHeartbeat");
-                  Heartbeat heartbeat = Cat.getProducer().newHeartbeat("SwallowProducerClient", ip);//TODO ip作为name是为什么？
+                  Heartbeat heartbeat = Cat.getProducer().newHeartbeat("SwallowProducerClient", ip);
                   for (Map.Entry<String, FileQueue<Packet>> entry : messageQueues.entrySet()) {
                      heartbeat.addData(entry.getKey(), entry.getValue().size());
                   }
