@@ -316,7 +316,7 @@ public class MongoClient implements ConfigChangeListener {
             Map<String, Mongo> oldTopicNameToMongoMap = this.topicNameToMongoMap;
             this.topicNameToMongoMap = parseURIAndCreateTopicMongo(value);
             //Mongo可能有更新，所以需要关闭旧的不再使用的Mongo
-            Thread.sleep(2000);//DAO可能正在使用旧的Mongo，故等候2秒，才执行关闭操作
+            Thread.sleep(5000);//DAO可能正在使用旧的Mongo，故等候5秒，才执行关闭操作
             closeUnuseMongo(oldTopicNameToMongoMap.values(), this.topicNameToMongoMap.values(), this.heartbeatMongo);
          } else if (LION_KEY_MSG_CAPPED_COLLECTION_SIZE.equals(key)) {
             this.msgTopicNameToSizes = parseSizeOrDocNum(value);
@@ -330,7 +330,7 @@ public class MongoClient implements ConfigChangeListener {
             Mongo oldMongo = this.heartbeatMongo;
             this.heartbeatMongo = parseURIAndCreateHeartbeatMongo(value);
             //Mongo可能有更新，所以需要关闭旧的不再使用的Mongo
-            Thread.sleep(2000);//DAO可能正在使用旧的Mongo，故等候2秒，才执行关闭操作
+            Thread.sleep(5000);//DAO可能正在使用旧的Mongo，故等候5秒，才执行关闭操作
             closeUnuseMongo(oldMongo, this.topicNameToMongoMap.values(), this.heartbeatMongo);
          } else if (LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE.equals(key)) {
             this.heartbeatCappedCollectionSize = Integer.parseInt(value);
