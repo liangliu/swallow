@@ -187,7 +187,7 @@ public class ProducerImpl implements Producer {
          return ret;
       } catch (SendFailedException e) {
        //使用CAT监控处理消息的时间
-         Transaction t = Cat.getProducer().newTransaction("Message", destination.getName());
+         Transaction t = Cat.getProducer().newTransaction("SendMessage", destination.getName());
          Event event = Cat.getProducer().newEvent("Message", "Payload");
          event.addData(swallowMsg.toKeyValuePairs());
          event.setStatus(e);
@@ -196,7 +196,7 @@ public class ProducerImpl implements Producer {
          throw e;
       } catch (RuntimeException e) {
        //使用CAT监控处理消息的时间
-         Transaction t = Cat.getProducer().newTransaction("Message", destination.getName());
+         Transaction t = Cat.getProducer().newTransaction("SendMessage", destination.getName());
          Event event = Cat.getProducer().newEvent("Message", "Payload");
          event.addData(swallowMsg.toKeyValuePairs());
          event.setStatus(e);
