@@ -152,10 +152,10 @@ public class ConsumerWorkerManager {
                   ConsumerWorker worker = entry.getValue();
                   ConsumerId consumerId = entry.getKey();
                   if(worker.allChannelDisconnected()) {
+                     workerDone(consumerId);
                      worker.closeMessageFetcherThread();
                      worker.closeAckExecutor();
                      worker.close();
-                     workerDone(consumerId);
                      LOG.info("ConsumerWorker for " + consumerId + " has no connected channel, close it");
                   }
                }
