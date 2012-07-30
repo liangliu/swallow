@@ -135,7 +135,7 @@ public class ProducerImpl implements Producer {
       Map<String, String> zipProperties = null;
 
       //使用CAT监控处理消息的时间
-      Transaction t = Cat.getProducer().newTransaction("Message", destination.getName());
+      Transaction t = Cat.getProducer().newTransaction("SendMessage", destination.getName());
       Event event = Cat.getProducer().newEvent("Message", "Payload");
       try {
          //根据content生成SwallowMessage

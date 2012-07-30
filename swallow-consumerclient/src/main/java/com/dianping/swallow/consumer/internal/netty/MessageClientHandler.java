@@ -77,7 +77,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                   consumer.isClosed());
 
             //使用CAT监控处理消息的时间
-            Transaction t = Cat.getProducer().newTransaction("Message", consumer.getDest().getName());
+            Transaction t = Cat.getProducer().newTransaction("ConsumeMessage", consumer.getDest().getName() + consumer.getConsumerId());
             Event event = Cat.getProducer().newEvent("Message", "payload");
             event.addData(swallowMessage.getMessageId().toString());
 
@@ -92,7 +92,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                try {
                   consumer.getListener().onMessage(swallowMessage);
                } catch (Exception e) {
-                  LOG.error("exception in MessageListener", e);
+                  LOG.info("exception in MessageListener", e);
                }
                event.setStatus(Message.SUCCESS);
                t.setStatus(Message.SUCCESS);
