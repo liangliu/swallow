@@ -224,7 +224,7 @@
 			<dependency>
 				<groupId>com.dianping.cat</groupId>
 				<artifactId>cat-core</artifactId>
-				<version>0.3.3</version>
+				<version>0.3.4</version>
 			</dependency>
 			<dependency>
 				<groupId>com.dianping.hawk</groupId>
