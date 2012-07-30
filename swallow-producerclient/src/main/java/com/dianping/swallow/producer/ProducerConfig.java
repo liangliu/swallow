@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
  * <tr>
  * <td>retryTimes</td>
  * <td>=</td>
- * <td>5</td>
+ * <td>0</td>
  * </tr>
  * <tr>
  * <td>zipped</td>
@@ -40,7 +40,7 @@ public class ProducerConfig {
 
    public static final int          MAX_THREADPOOL_SIZE                = 100;                                          //线程池大小最大值
    public static final ProducerMode DEFAULT_PRODUCER_MODE              = ProducerMode.SYNC_MODE;                       //默认Producer工作模式
-   public static final int          DEFAULT_RETRY_TIMES                = 5;                                            //默认发送失败重试次数
+   public static final int          DEFAULT_RETRY_TIMES                = 0;                                            //默认发送失败重试次数
    public static final boolean      DEFAULT_ZIPPED                     = false;                                        //默认是否对消息进行压缩
    public static final int          DEFAULT_THREADPOOL_SIZE            = 5;                                            //默认线程池大小
    public static final boolean      DEFAULT_SEND_MSG_LEFT_LAST_SESSION = false;                                        //默认是否重启续传
