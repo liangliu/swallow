@@ -17,6 +17,7 @@ import com.dianping.cat.Cat;
 import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
+import com.dianping.cat.message.spi.MessageTree;
 import com.dianping.swallow.common.internal.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
@@ -71,13 +72,19 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
          @Override
          public void run() {
             SwallowMessage swallowMessage = ((PktMessage) e.getMessage()).getContent();
+            
+            String catParentID = ((PktMessage)e.getMessage()).getCatEventID();
+            
             Long messageId = swallowMessage.getMessageId();
 
             PktConsumerMessage consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, messageId,
                   consumer.isClosed());
 
             //使用CAT监控处理消息的时间
-            Transaction t = Cat.getProducer().newTransaction("ConsumeMessage", consumer.getDest().getName() + ":" + consumer.getConsumerId());
+            MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
+            tree.setParentMessageId(catParentID);
+            
+            Transaction t = Cat.getProducer().newTransaction("MessageConsumed", consumer.getDest().getName() + ":" + consumer.getConsumerId());
             Event event = Cat.getProducer().newEvent("Message", "payload");
             event.addData("mid", swallowMessage.getMessageId());
             event.addData("sha1", swallowMessage.getSha1());

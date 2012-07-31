@@ -2,6 +2,9 @@ package com.dianping.swallow.producer.cases;
 
 import java.util.Map;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.internal.MessageId;
+import com.dianping.cat.message.spi.MessageTree;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
@@ -94,6 +97,15 @@ public class SingleThreadSend {
    }
 
    public static void main(String[] args) throws Exception {
+      
+      MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
+      tree.getMessageId();
+      tree.getParentMessageId();
+      tree.getRootMessageId();
+      tree.setParentMessageId("");
+      MessageId.parse("mid").getDomain();
+      
+      
       SingleThreadSend.syncSendSome("Hello world", -1, 1000, null, "songtong");
       //      SingleThreadSend.syncSendSomeObjectDemoWithZipped(1000, 1000);
 //                  SingleThreadSend.asyncSendSome("Hello orange", 100, 100, null, null);

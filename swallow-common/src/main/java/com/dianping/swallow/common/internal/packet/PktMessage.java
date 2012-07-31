@@ -7,17 +7,18 @@ public class PktMessage extends Packet implements Message {
 
    private static final long serialVersionUID = 2189810352053398027L;
    private SwallowMessage    content;
-   private Destination       dest;
+   private Destination       destination;
+   private String            catEventID;
 
    public PktMessage() {
-      super();
+      super.setPacketType(PacketType.OBJECT_MSG);
    }
 
    public PktMessage(Destination dest, SwallowMessage content) {
       super.setPacketType(PacketType.OBJECT_MSG);
 
-      this.dest = dest;
-      this.content = content;
+      this.setDestination(dest);
+      this.setContent(content);
    }
 
    @Override
@@ -27,19 +28,19 @@ public class PktMessage extends Packet implements Message {
 
    @Override
    public Destination getDestination() {
-      return dest;
+      return destination;
    }
 
    @Override
    public String toString() {
-      return String.format("PktMessage [content=%s, dest=%s]", content, dest);
+      return String.format("PktMessage [content=%s, dest=%s]", getContent(), getDestination());
    }
 
    @Override
    public int hashCode() {
       final int prime = 31;
       int result = 1;
-      result = prime * result + ((content == null) ? 0 : content.hashCode());
+      result = prime * result + ((getContent() == null) ? 0 : getContent().hashCode());
       return result;
    }
 
@@ -55,14 +56,29 @@ public class PktMessage extends Packet implements Message {
          return false;
       }
       PktMessage other = (PktMessage) obj;
-      if (content == null) {
-         if (other.content != null) {
+      if (getContent() == null) {
+         if (other.getContent() != null) {
             return false;
          }
-      } else if (!content.equals(other.content)) {
+      } else if (!getContent().equals(other.getContent())) {
          return false;
       }
       return true;
    }
 
+   public String getCatEventID() {
+      return catEventID;
+   }
+
+   public void setCatEventID(String catEventID) {
+      this.catEventID = catEventID;
+   }
+
+   public void setDestination(Destination destination) {
+      this.destination = destination;
+   }
+
+   public void setContent(SwallowMessage content) {
+      this.content = content;
+   }
 }
