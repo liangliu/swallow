@@ -16,7 +16,7 @@ public interface MessageRetriever {
     * @return
     * @throws Exception
     */
-   List<Message> retriveMessage(String topicName, Long tailMessageId, MessageFilter messageFilter) throws Exception;
+   List<Message> retriveMessage(String topicName, Long tailMessageId, MessageFilter messageFilter);
 
    void setFetchSize(int fetchSize);
 

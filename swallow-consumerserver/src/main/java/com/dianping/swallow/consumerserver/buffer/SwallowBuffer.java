@@ -27,6 +27,8 @@ public class SwallowBuffer {
    private MessageRetriever                         messageRetriever;
    private int                                      capacityOfQueue                  = Integer.MAX_VALUE;
    private int                                      thresholdOfQueue                 = 60;
+   private int                                      delayBase                        = -1;
+   private int                                      delayUpperbound                  = -1;
 
    /**
     * 根据topicName，获取topicName对应的TopicBuffer。<br>
@@ -73,7 +75,7 @@ public class SwallowBuffer {
     * @return
     */
    public CloseableBlockingQueue<Message> createMessageQueue(String topicName, String cid, Long tailMessageId,
-                                                    MessageFilter messageFilter) {
+                                                             MessageFilter messageFilter) {
       return this.getTopicBuffer(topicName).createMessageQueue(cid, tailMessageId, messageFilter);
    }
 
@@ -100,6 +102,14 @@ public class SwallowBuffer {
 
    public void setThreshold(int threshold) {
       this.thresholdOfQueue = threshold;
+   }
+
+   public void setDelayBase(int delayBase) {
+      this.delayBase = delayBase;
+   }
+
+   public void setDelayUpperbound(int delayUpperbound) {
+      this.delayUpperbound = delayUpperbound;
    }
 
    public void setMessageRetriever(MessageRetriever messageRetriever) {
@@ -152,7 +162,8 @@ public class SwallowBuffer {
        * @param tailMessageId 从messageId大于messageIdOfTailMessage的消息开始消费
        * @return
        */
-      public CloseableBlockingQueue<Message> createMessageQueue(String cid, Long tailMessageId, MessageFilter messageFilter) {
+      public CloseableBlockingQueue<Message> createMessageQueue(String cid, Long tailMessageId,
+                                                                MessageFilter messageFilter) {
          if (cid == null) {
             throw new IllegalArgumentException("cid is null.");
          }
@@ -166,6 +177,12 @@ public class SwallowBuffer {
          } else {
             messageBlockingQueue = new MessageBlockingQueue(cid, this.topicName, thresholdOfQueue, capacityOfQueue,
                   tailMessageId);
+         }
+         if (delayBase != -1) {
+            messageBlockingQueue.setDelayBase(delayBase);
+         }
+         if (delayUpperbound != -1) {
+            messageBlockingQueue.setDelayUpperbound(delayUpperbound);
          }
          messageBlockingQueue.setMessageRetriever(messageRetriever);
          messageQueues.put(cid, new WeakReference<MessageBlockingQueue>(messageBlockingQueue));
