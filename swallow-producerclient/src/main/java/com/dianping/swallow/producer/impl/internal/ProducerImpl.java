@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Transaction;
+import com.dianping.cat.message.spi.MessageTree;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
@@ -74,6 +75,7 @@ public class ProducerImpl implements Producer {
             producerHandler = new HandlerSynchroMode(this);
             break;
       }
+
    }
 
    /**
@@ -170,6 +172,9 @@ public class ProducerImpl implements Producer {
 
          //构造packet
          PktMessage pktMessage = new PktMessage(destination, swallowMsg);
+         //加入Cat的MessageID
+         MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
+         pktMessage.setCatEventID(tree.getMessageId());
 
          String ret = null;
          switch (producerConfig.getMode()) {
@@ -186,8 +191,8 @@ public class ProducerImpl implements Producer {
 
          return ret;
       } catch (SendFailedException e) {
-       //使用CAT监控处理消息的时间
-         Transaction t = Cat.getProducer().newTransaction("SendMessage", destination.getName());
+         //使用CAT监控处理消息的时间
+         Transaction t = Cat.getProducer().newTransaction("MessageProduced", destination.getName());
          Event event = Cat.getProducer().newEvent("Message", "Payload");
          event.addData(swallowMsg.toKeyValuePairs());
          event.setStatus(e);
@@ -195,8 +200,8 @@ public class ProducerImpl implements Producer {
          Cat.getProducer().logError(e);
          throw e;
       } catch (RuntimeException e) {
-       //使用CAT监控处理消息的时间
-         Transaction t = Cat.getProducer().newTransaction("SendMessage", destination.getName());
+         //使用CAT监控处理消息的时间
+         Transaction t = Cat.getProducer().newTransaction("MessageProduced", destination.getName());
          Event event = Cat.getProducer().newEvent("Message", "Payload");
          event.addData(swallowMsg.toKeyValuePairs());
          event.setStatus(e);

@@ -14,6 +14,10 @@ import org.jboss.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Event;
+import com.dianping.cat.message.Transaction;
+import com.dianping.cat.message.spi.MessageTree;
 import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.consumer.MessageFilter;
@@ -252,7 +256,17 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
 
    private void sendMsgFromCachedMessages(Channel channel) throws InterruptedException {
       PktMessage preparedMessage = cachedMessages.poll();
-      Long messageId = preparedMessage.getContent().getMessageId();      
+      Long messageId = preparedMessage.getContent().getMessageId();
+      
+      //Cat begin
+      MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
+      String catEventId = tree.getMessageId();
+      preparedMessage.setCatEventID(catEventId);
+
+      Transaction t = Cat.getProducer().newTransaction("Out:" + topicName, consumerid);
+      Event event = Cat.getProducer().newEvent("Message", "payload");
+      //Cat end
+
       try {
          channel.write(preparedMessage);
          //如果是AT_MOST模式，收到ACK之前更新messageId的类型
@@ -268,10 +282,23 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
             }
             messageMap.put(preparedMessage, Boolean.TRUE);
          }
+         //Cat begin
+         t.setStatus(com.dianping.cat.message.Message.SUCCESS);
+         event.setStatus(com.dianping.cat.message.Message.SUCCESS);
+         //Cat end
       } catch (RuntimeException e) {
          LOG.error(consumerInfo.toString() + "：channel write error.", e);
          cachedMessages.add(preparedMessage);
+         
+         //Cat begin
+         t.setStatus(e);
+         event.setStatus(e);
+         Cat.getProducer().logError(e);
+      } finally{
+         t.complete();
+         event.complete();
       }
+      //Cat end
 
    }
 

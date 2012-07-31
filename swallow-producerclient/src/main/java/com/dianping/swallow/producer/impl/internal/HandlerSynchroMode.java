@@ -59,7 +59,7 @@ public class HandlerSynchroMode implements ProducerHandler {
          break;
       }
 
-      Transaction t = Cat.getProducer().newTransaction("Message", destination.getName());
+      Transaction t = Cat.getProducer().newTransaction("MessageProduced", destination.getName());
       Event event = Cat.getProducer().newEvent("Message", "Payload");
       if (pktRet != null) {
          event.addData(((PktSwallowPACK) pktRet).getShaInfo());

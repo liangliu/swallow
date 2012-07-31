@@ -136,7 +136,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
          DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, DELAY_BASE_MULTI * delayBase);
          Packet pktRet = null;
 
-         Transaction t = Cat.getProducer().newTransaction("Message", producer.getDestination().getName());
+         Transaction t = Cat.getProducer().newTransaction("MessageProduced", producer.getDestination().getName());
          Event event = Cat.getProducer().newEvent("Message", "Payload");
 
          while (true) {
