@@ -26,7 +26,7 @@ public class SwallowBuffer {
    private final ConcurrentMap<String, TopicBuffer> topicBuffers                     = new ConcurrentHashMap<String, TopicBuffer>();
    private MessageRetriever                         messageRetriever;
    private int                                      capacityOfQueue                  = Integer.MAX_VALUE;
-   private int                                      thresholdOfQueue                 = 100;
+   private int                                      thresholdOfQueue                 = 60;
 
    /**
     * 根据topicName，获取topicName对应的TopicBuffer。<br>
