@@ -69,7 +69,7 @@ public class MultipleThreadSend {
    public void syncSend(int threadNum, int count, int freq) {
       ExecutorService threadPool = Executors.newFixedThreadPool(threadNum);
       ProducerConfig config = new ProducerConfig();
-      config.setRetryTimes(1);
+      config.setAsyncRetryTimes(1);
       Producer producer = producerFactory.createProducer(Destination.topic("example"), config);
       for (int i = 0; i < threadNum;) {
          ++i;

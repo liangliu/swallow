@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Event;
-import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
@@ -134,9 +133,6 @@ public class ProducerImpl implements Producer {
       SwallowMessage swallowMsg = new SwallowMessage();
       Map<String, String> zipProperties = null;
 
-      //使用CAT监控处理消息的时间
-      Transaction t = Cat.getProducer().newTransaction("Message", destination.getName());
-      Event event = Cat.getProducer().newEvent("Message", "Payload");
       try {
          //根据content生成SwallowMessage
          swallowMsg.setContent(content);
@@ -187,26 +183,26 @@ public class ProducerImpl implements Producer {
                producerHandler.doSendMsg(pktMessage);
                break;
          }
-         //CAT
-         event.setStatus(Message.SUCCESS);
-         t.setStatus(Message.SUCCESS);
 
          return ret;
       } catch (SendFailedException e) {
+       //使用CAT监控处理消息的时间
+         Transaction t = Cat.getProducer().newTransaction("SendMessage", destination.getName());
+         Event event = Cat.getProducer().newEvent("Message", "Payload");
          event.addData(swallowMsg.toKeyValuePairs());
          event.setStatus(e);
          t.setStatus(e);
          Cat.getProducer().logError(e);
          throw e;
       } catch (RuntimeException e) {
+       //使用CAT监控处理消息的时间
+         Transaction t = Cat.getProducer().newTransaction("SendMessage", destination.getName());
+         Event event = Cat.getProducer().newEvent("Message", "Payload");
          event.addData(swallowMsg.toKeyValuePairs());
          event.setStatus(e);
          t.setStatus(e);
          Cat.getProducer().logError(e);
          throw e;
-      } finally {
-         event.complete();
-         t.complete();
       }
 
    }

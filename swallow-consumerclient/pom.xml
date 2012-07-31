@@ -68,6 +68,9 @@
 						<excludes>
 							<exclude>*</exclude>
 						</excludes>
+						<includes>
+							<include>META-INF/cat/client.xml</include>
+						</includes>
 					</resource>
 				</resources>
 			</build>

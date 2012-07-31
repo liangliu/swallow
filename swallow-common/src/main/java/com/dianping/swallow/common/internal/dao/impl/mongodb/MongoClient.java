@@ -459,7 +459,7 @@ public class MongoClient implements ConfigChangeListener {
       //从DB实例获取Collection(因为只有一个Collection，所以名字均叫做c),如果不存在，则创建)
       DBCollection collection = null;
       if (!collectionExists(db)) {//从缓存检查default collection 存在的标识，避免db.collectionExists的调用
-         synchronized (dbName.intern()) {
+         synchronized (db) {
             if (!collectionExists(db) && !db.collectionExists(DEFAULT_COLLECTION_NAME)) {
                collection = createColletcion(db, DEFAULT_COLLECTION_NAME, size, cappedCollectionMaxDocNum,
                      indexDBObject);
@@ -481,7 +481,7 @@ public class MongoClient implements ConfigChangeListener {
     * 返回false，表示集合可能不存在。<br>
     */
    private boolean collectionExists(DB db) {
-      return collectionExistsSign.get(db) != null;
+      return collectionExistsSign.containsKey(db);
    }
 
    /**
