@@ -252,13 +252,13 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
 
    private void sendMsgFromCachedMessages(Channel channel) throws InterruptedException {
       PktMessage preparedMessage = cachedMessages.poll();
-      Long messageId = preparedMessage.getContent().getMessageId();
-      //如果是AT_MOST模式，收到ACK之前更新messageId的类型
-      if (ConsumerType.DURABLE_AT_MOST_ONCE.equals(consumerInfo.getConsumerType())) {
-         ackDao.add(topicName, consumerid, messageId, connectedChannels.get(channel));
-      }
+      Long messageId = preparedMessage.getContent().getMessageId();      
       try {
          channel.write(preparedMessage);
+         //如果是AT_MOST模式，收到ACK之前更新messageId的类型
+         if (ConsumerType.DURABLE_AT_MOST_ONCE.equals(consumerInfo.getConsumerType())) {
+            ackDao.add(topicName, consumerid, messageId, connectedChannels.get(channel));
+         }
          //如果是AT_LEAST模式，发送完后，在server端记录已发送但未收到ACK的消息记录
          if (ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
             Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);

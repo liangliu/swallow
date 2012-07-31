@@ -1,6 +1,5 @@
 package com.dianping.swallow.consumer.internal.netty;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
