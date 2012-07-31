@@ -12,9 +12,14 @@ import org.slf4j.LoggerFactory;
  * <td>{@link ProducerMode}.SYNC_MODE</td>
  * </tr>
  * <tr>
- * <td>retryTimes</td>
+ * <td>syncRetryTimes</td>
  * <td>=</td>
  * <td>0</td>
+ * </tr>
+ * <tr>
+ * <td>asyncRetryTimes</td>
+ * <td>=</td>
+ * <td>10</td>
  * </tr>
  * <tr>
  * <td>zipped</td>
@@ -24,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * <tr>
  * <td>threadPoolSize</td>
  * <td>=</td>
- * <td>5</td>
+ * <td>1</td>
  * </tr>
  * <tr>
  * <td>sendMsgLeftLastSession</td>
@@ -40,13 +45,15 @@ public class ProducerConfig {
 
    public static final int          MAX_THREADPOOL_SIZE                = 100;                                          //线程池大小最大值
    public static final ProducerMode DEFAULT_PRODUCER_MODE              = ProducerMode.SYNC_MODE;                       //默认Producer工作模式
-   public static final int          DEFAULT_RETRY_TIMES                = 0;                                            //默认发送失败重试次数
+   public static final int          DEFAULT_ASYNC_RETRY_TIMES          = 10;                                           //默认发送失败重试次数
+   public static final int          DEFAULT_SYNC_RETRY_TIMES           = 0;                                            //默认发送失败重试次数
    public static final boolean      DEFAULT_ZIPPED                     = false;                                        //默认是否对消息进行压缩
-   public static final int          DEFAULT_THREADPOOL_SIZE            = 5;                                            //默认线程池大小
+   public static final int          DEFAULT_THREADPOOL_SIZE            = 1;                                            //默认线程池大小
    public static final boolean      DEFAULT_SEND_MSG_LEFT_LAST_SESSION = false;                                        //默认是否重启续传
 
    private ProducerMode             mode                               = DEFAULT_PRODUCER_MODE;                        //Producer工作模式
-   private int                      retryTimes                         = DEFAULT_RETRY_TIMES;                          //发送失败重试次数
+   private int                      asyncRetryTimes                    = DEFAULT_ASYNC_RETRY_TIMES;                    //发送失败重试次数
+   private int                      syncRetryTimes                     = DEFAULT_SYNC_RETRY_TIMES;                     //发送失败重试次数
    private boolean                  zipped                             = DEFAULT_ZIPPED;                               //是否对待发送消息进行压缩
    private int                      threadPoolSize                     = DEFAULT_THREADPOOL_SIZE;                      //异步模式时，线程池大小
    private boolean                  sendMsgLeftLastSession             = DEFAULT_SEND_MSG_LEFT_LAST_SESSION;           //异步模式时，是否重启续传
@@ -70,22 +77,22 @@ public class ProducerConfig {
    /**
     * @return 发送失败重试次数
     */
-   public int getRetryTimes() {
-      return retryTimes;
+   public int getAsyncRetryTimes() {
+      return asyncRetryTimes;
    }
 
    /**
     * 设置消息发送的重试次数，默认为5
     * 
-    * @param retryTimes
+    * @param asyncRetryTimes
     */
-   public void setRetryTimes(int retryTimes) {
-      if (retryTimes < 0) {
-         this.retryTimes = DEFAULT_RETRY_TIMES;
-         LOGGER.warn("invalid retryTimes, use default value: " + this.retryTimes + ".");
+   public void setAsyncRetryTimes(int asyncRetryTimes) {
+      if (asyncRetryTimes < 0) {
+         this.asyncRetryTimes = DEFAULT_ASYNC_RETRY_TIMES;
+         LOGGER.warn("invalid asyncRetryTimes, use default value: " + this.asyncRetryTimes + ".");
          return;
       }
-      this.retryTimes = retryTimes;
+      this.asyncRetryTimes = asyncRetryTimes;
    }
 
    /**
@@ -149,10 +156,23 @@ public class ProducerConfig {
       return "Mode="
             + getMode()
             + "; RetryTimes="
-            + getRetryTimes()
+            + getAsyncRetryTimes()
             + "; Zipped="
             + isZipped()
             + (getMode() == ProducerMode.ASYNC_MODE ? "; ThreadPoolSize=" + getThreadPoolSize()
                   + "; SendMsgLeftLastSession=" + isSendMsgLeftLastSession() : "");
+   }
+
+   public int getSyncRetryTimes() {
+      return syncRetryTimes;
+   }
+
+   public void setSyncRetryTimes(int syncRetryTimes) {
+      if (syncRetryTimes < 0) {
+         this.syncRetryTimes = DEFAULT_SYNC_RETRY_TIMES;
+         LOGGER.warn("invalid syncRetryTimes, use default value: " + this.syncRetryTimes + ".");
+         return;
+      }
+      this.syncRetryTimes = syncRetryTimes;
    }
 }

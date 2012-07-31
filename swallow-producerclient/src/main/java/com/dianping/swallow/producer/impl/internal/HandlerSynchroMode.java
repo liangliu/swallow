@@ -26,7 +26,7 @@ public class HandlerSynchroMode implements ProducerHandler {
    private static final int          DELAY_BASE_MULTI = 5; //超时策略倍数
 
    public HandlerSynchroMode(ProducerImpl producer) {
-      this.sendTimes = producer.getProducerConfig().getRetryTimes() + 1;//初始值等于用户要求的retryTimes+1，这样可以保证至少执行一次
+      this.sendTimes = producer.getProducerConfig().getSyncRetryTimes() + 1;//初始值等于用户要求的retryTimes+1，这样可以保证至少执行一次
       this.delayBase = producer.getPunishTimeout();
       this.remoteService = producer.getRemoteService();
       this.destination = producer.getDestination();

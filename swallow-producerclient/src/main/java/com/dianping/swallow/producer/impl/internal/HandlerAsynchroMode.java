@@ -125,7 +125,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
    //从filequeue队列获取并发送Message
    private class TskGetAndSend implements Runnable {
 
-      private final int              sendTimes      = producer.getProducerConfig().getRetryTimes() + 1;
+      private final int              sendTimes      = producer.getProducerConfig().getAsyncRetryTimes() + 1;
       private int                    leftRetryTimes = sendTimes;
       private Packet                 message        = null;
       private ProducerSwallowService remoteService  = producer.getRemoteService();

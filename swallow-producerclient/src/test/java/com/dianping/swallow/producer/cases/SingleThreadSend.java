@@ -50,7 +50,7 @@ public class SingleThreadSend {
 
    public static void syncSendSomeObjectDemoWithZipped(int count, int freq) throws Exception {
       ProducerConfig config = new ProducerConfig();
-      config.setRetryTimes(1);
+      config.setAsyncRetryTimes(1);
       config.setZipped(true);
 
       Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("example"), config);
@@ -72,7 +72,7 @@ public class SingleThreadSend {
          throws Exception {
       ProducerConfig config = new ProducerConfig();
       config.setMode(ProducerMode.ASYNC_MODE);
-      config.setRetryTimes(1);
+      config.setAsyncRetryTimes(1);
       config.setSendMsgLeftLastSession(false);
       config.setThreadPoolSize(2);
       config.setZipped(false);
@@ -94,8 +94,8 @@ public class SingleThreadSend {
    }
 
    public static void main(String[] args) throws Exception {
-//      SingleThreadSend.syncSendSome("Hello world", -1, 1000, null, "songtong");
+      SingleThreadSend.syncSendSome("Hello world", -1, 1000, null, "songtong");
       //      SingleThreadSend.syncSendSomeObjectDemoWithZipped(1000, 1000);
-                  SingleThreadSend.asyncSendSome("Hello orange", 100, 100, null, null);
+//                  SingleThreadSend.asyncSendSome("Hello orange", 100, 100, null, null);
    }
 }
