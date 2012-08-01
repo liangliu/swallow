@@ -32,6 +32,7 @@ public final class ConfigManager {
    private int                  maxClientThreadCount            = 100;
    private int                  masterPort                      = 8081;
    private int                  slavePort                       = 8082;
+   private int                  maxAckedMessageIdUpdateInterval = 1000;
 
    //Master Ip
    private String               masterIp                        = "127.0.0.1";
@@ -96,6 +97,10 @@ public final class ConfigManager {
     */
    public int getHeartbeatUpdateInterval() {
       return heartbeatUpdateInterval;
+   }
+   
+   public int getMaxAckedMessageIdUpdateInterval() {
+      return maxAckedMessageIdUpdateInterval;
    }
 
    public static void main(String[] args) {

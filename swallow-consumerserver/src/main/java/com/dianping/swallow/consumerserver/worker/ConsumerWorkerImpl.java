@@ -67,6 +67,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
    private PullStrategy                           pullStgy;
    private ConfigManager                          configManager;
    private Map<Channel, Map<PktMessage, Boolean>> waitAckMessages   = new ConcurrentHashMap<Channel, Map<PktMessage, Boolean>>();
+   private volatile long maxAckedMessageId = 0L;
 
    public Map<Channel, Map<PktMessage, Boolean>> getWaitAckMessages() {
       return waitAckMessages;
@@ -136,7 +137,9 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
 
    private void updateMaxMessageId(Long ackedMsgId, Channel channel) {
       if (ackedMsgId != null && ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
-         ackDao.add(topicName, consumerid, ackedMsgId, connectedChannels.get(channel));
+//         ackDao.add(topicName, consumerid, ackedMsgId, connectedChannels.get(channel));
+         LOG.info(ackedMsgId + " ACKED from " + connectedChannels.get(channel));
+         maxAckedMessageId = Math.max(maxAckedMessageId, ackedMsgId);
       }
    }
 
@@ -328,6 +331,16 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
    @Override
    public boolean allChannelDisconnected() {
       return started && connectedChannels.isEmpty();
+   }
+   
+   @Override
+   public long getMaxAckedMessageId() {
+      return maxAckedMessageId;
+   }
+   
+   @Override
+   public ConsumerType getConsumerType() {
+      return consumerInfo.getConsumerType();
    }
 
    /**
