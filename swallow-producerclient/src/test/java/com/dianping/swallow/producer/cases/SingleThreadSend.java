@@ -98,12 +98,12 @@ public class SingleThreadSend {
 
    public static void main(String[] args) throws Exception {
       
-      MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
-      tree.getMessageId();
-      tree.getParentMessageId();
-      tree.getRootMessageId();
-      tree.setParentMessageId("");
-      MessageId.parse("mid").getDomain();
+//      MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
+//      tree.getMessageId();
+//      tree.getParentMessageId();
+//      tree.getRootMessageId();
+//      tree.setParentMessageId("");
+//      MessageId.parse("mid").getDomain();
       
       
       SingleThreadSend.syncSendSome("Hello world", -1, 1000, null, "songtong");

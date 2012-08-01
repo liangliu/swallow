@@ -15,9 +15,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
+import com.dianping.cat.CatConstants;
 import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Transaction;
-import com.dianping.cat.message.spi.MessageTree;
 import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.consumer.MessageFilter;
@@ -257,11 +257,16 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
    private void sendMsgFromCachedMessages(Channel channel) throws InterruptedException {
       PktMessage preparedMessage = cachedMessages.poll();
       Long messageId = preparedMessage.getContent().getMessageId();
-      
+
       //Cat begin
-      MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
-      String catEventId = tree.getMessageId();
-      preparedMessage.setCatEventID(catEventId);
+      String childEventId;
+      try {
+         childEventId = Cat.getProducer().createMessageId();
+      } catch (Exception e) {
+         childEventId = "UnknownMessageId";
+      }
+      Cat.getProducer().logEvent(CatConstants.TYPE_REMOTE_CALL, "SwallowPayload", com.dianping.cat.message.Message.SUCCESS, childEventId);
+      preparedMessage.setCatEventID(childEventId);
 
       Transaction t = Cat.getProducer().newTransaction("Out:" + topicName, consumerid);
       Event event = Cat.getProducer().newEvent("Message", "payload");
@@ -283,23 +288,24 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
             messageMap.put(preparedMessage, Boolean.TRUE);
          }
          //Cat begin
+         event.addData(preparedMessage.getContent().toSuccessKeyValuePairs());
          t.setStatus(com.dianping.cat.message.Message.SUCCESS);
          event.setStatus(com.dianping.cat.message.Message.SUCCESS);
          //Cat end
       } catch (RuntimeException e) {
          LOG.error(consumerInfo.toString() + "：channel write error.", e);
          cachedMessages.add(preparedMessage);
-         
+
          //Cat begin
+         event.addData(preparedMessage.getContent().toKeyValuePairs());
          t.setStatus(e);
          event.setStatus(e);
          Cat.getProducer().logError(e);
-      } finally{
+      } finally {
          t.complete();
          event.complete();
       }
       //Cat end
-
    }
 
    private void putMsg2CachedMsgFromMsgQueue() throws InterruptedException {

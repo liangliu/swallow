@@ -1,10 +1,10 @@
 package com.dianping.swallow.producer.impl.internal;
 
 import com.dianping.cat.Cat;
-import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.swallow.common.internal.packet.Packet;
+import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
@@ -36,15 +36,23 @@ public class HandlerSynchroMode implements ProducerHandler {
    //对外接口
    @Override
    public Packet doSendMsg(Packet pkt) throws SendFailedException {
+      if (pkt == null) {
+         throw new IllegalArgumentException("Argument soubld be a Packet.");
+      }
       defaultPullStrategy.succeess();
       Packet pktRet = null;
+      Transaction producerHandlerTransaction = Cat.getProducer().newTransaction("MessageTried", destination.getName());
+
       for (int leftRetryTimes = sendTimes; leftRetryTimes > 0;) {
          leftRetryTimes--;
          try {
             pktRet = remoteService.sendMessage(pkt);
+            producerHandlerTransaction.addData("sha1", ((PktSwallowPACK)pktRet).getShaInfo());
+            producerHandlerTransaction.setStatus(Message.SUCCESS);
          } catch (Exception e) {
             //如果剩余重试次数>0，继续重试
             if (leftRetryTimes > 0) {
+               producerHandlerTransaction.addData("Retry", sendTimes-leftRetryTimes);
                try {
                   defaultPullStrategy.fail(true);
                } catch (InterruptedException ie) {
@@ -53,23 +61,16 @@ public class HandlerSynchroMode implements ProducerHandler {
                continue;
             } else {
                //重置超时
+               producerHandlerTransaction.addData(((PktMessage)pkt).getContent().toKeyValuePairs());
+               producerHandlerTransaction.setStatus(e);
+               Cat.getProducer().logError(e);
                throw new SendFailedException("Message sent failed", e);
             }
+         } finally {
+            producerHandlerTransaction.complete();
          }
          break;
       }
-
-      Transaction t = Cat.getProducer().newTransaction("MessageProduced", destination.getName());
-      Event event = Cat.getProducer().newEvent("Message", "Payload");
-      if (pktRet != null) {
-         event.addData(((PktSwallowPACK) pktRet).getShaInfo());
-         event.setStatus(Message.SUCCESS);
-         t.setStatus(Message.SUCCESS);
-      } else {
-         event.complete();
-         t.complete();
-      }
-      
       return pktRet;
    }
 }

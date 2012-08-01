@@ -73,7 +73,9 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
          public void run() {
             SwallowMessage swallowMessage = ((PktMessage) e.getMessage()).getContent();
             
+            //Cat begin
             String catParentID = ((PktMessage)e.getMessage()).getCatEventID();
+            //Cat end
             
             Long messageId = swallowMessage.getMessageId();
 
@@ -82,7 +84,9 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
             //使用CAT监控处理消息的时间
             MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
-            tree.setParentMessageId(catParentID);
+            if (tree != null) {
+               tree.setMessageId(catParentID);
+            }
             
             Transaction t = Cat.getProducer().newTransaction("MessageConsumed", consumer.getDest().getName() + ":" + consumer.getConsumerId());
             Event event = Cat.getProducer().newEvent("Message", "payload");

@@ -69,6 +69,9 @@ public class ProducerServerForClient implements ProducerSwallowService {
     */
    @Override
    public Packet sendMessage(Packet pkt) throws ServerDaoException {
+      if(pkt == null) {
+         throw new IllegalArgumentException("Argument of remote service could not be null.");
+      }
       Packet pktRet = null;
       SwallowMessage swallowMessage;
       String topicName;
@@ -95,13 +98,14 @@ public class ProducerServerForClient implements ProducerSwallowService {
                catDomain = "UnknownDomain";
             }
             MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
-            tree.setParentMessageId(((PktMessage)pkt).getCatEventID());
+            tree.setMessageId(((PktMessage)pkt).getCatEventID());
+            
             Transaction t = Cat.getProducer().newTransaction("In:" + topicName, catDomain);
             Event event = Cat.getProducer().newEvent("Message", "Payload");
             //将swallowMessage保存到mongodb
             try {
                messageDAO.saveMessage(topicName, swallowMessage);
-               event.addData(swallowMessage.toKeyValuePairs());
+               event.addData(swallowMessage.toSuccessKeyValuePairs());
                event.setStatus(Message.SUCCESS);
                t.setStatus(Message.SUCCESS);
             } catch (Exception e) {
