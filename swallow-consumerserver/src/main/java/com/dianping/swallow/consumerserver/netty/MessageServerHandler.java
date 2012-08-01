@@ -26,7 +26,7 @@ import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 
-   private static final Logger   LOG          = LoggerFactory.getLogger(MongoHeartbeater.class);
+   private static final Logger   LOG          = LoggerFactory.getLogger(MessageServerHandler.class);
 
    private static ChannelGroup   channelGroup = new DefaultChannelGroup();
 

@@ -81,8 +81,14 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                   consumer.isClosed());
 
             //使用CAT监控处理消息的时间
-            MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
-            tree.setParentMessageId(catParentID);
+            try {
+               MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
+               if (tree != null) {
+                  tree.setParentMessageId(catParentID);
+               }
+            } catch (Exception e) {
+               LOG.warn("error get Cat tree", e);
+            }
             
             Transaction t = Cat.getProducer().newTransaction("MessageConsumed", consumer.getDest().getName() + ":" + consumer.getConsumerId());
             Event event = Cat.getProducer().newEvent("Message", "payload");
