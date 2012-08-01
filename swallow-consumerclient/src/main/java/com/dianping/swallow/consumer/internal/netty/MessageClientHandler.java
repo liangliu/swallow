@@ -73,7 +73,9 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
          public void run() {
             SwallowMessage swallowMessage = ((PktMessage) e.getMessage()).getContent();
             
+            //Cat begin
             String catParentID = ((PktMessage)e.getMessage()).getCatEventID();
+            //Cat end
             
             Long messageId = swallowMessage.getMessageId();
 
