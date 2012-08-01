@@ -6,11 +6,9 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.dianping.cat.Cat;
-import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.cat.message.internal.MessageId;
-import com.dianping.cat.message.spi.MessageTree;
 import com.dianping.dpsf.api.ServiceRegistry;
 import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.internal.dao.MessageDAO;
@@ -97,27 +95,23 @@ public class ProducerServerForClient implements ProducerSwallowService {
             } catch (Exception e) {
                catDomain = "UnknownDomain";
             }
-            MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
-            tree.setMessageId(((PktMessage)pkt).getCatEventID());
+//            MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
+//            tree.setMessageId(((PktMessage)pkt).getCatEventID());
             
-            Transaction t = Cat.getProducer().newTransaction("In:" + topicName, catDomain);
-            Event event = Cat.getProducer().newEvent("Message", "Payload");
+            Transaction producerServerTransaction = Cat.getProducer().newTransaction("In:" + topicName, catDomain);
             //将swallowMessage保存到mongodb
             try {
                messageDAO.saveMessage(topicName, swallowMessage);
-               event.addData(swallowMessage.toSuccessKeyValuePairs());
-               event.setStatus(Message.SUCCESS);
-               t.setStatus(Message.SUCCESS);
+               producerServerTransaction.addData(swallowMessage.getSha1());
+               producerServerTransaction.setStatus(Message.SUCCESS);
             } catch (Exception e) {
-               event.addData(swallowMessage.toKeyValuePairs());
-               event.setStatus(e);
-               t.setStatus(e);
+               producerServerTransaction.addData(swallowMessage.toKeyValuePairs());
+               producerServerTransaction.setStatus(e);
                Cat.getProducer().logError(e);
                LOGGER.error("[Save message to DB failed.]", e);
                throw new ServerDaoException(e);
             } finally{
-               event.complete();
-               t.complete();
+               producerServerTransaction.complete();
             }
             break;
          default:

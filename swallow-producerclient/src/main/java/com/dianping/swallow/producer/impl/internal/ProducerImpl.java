@@ -135,8 +135,13 @@ public class ProducerImpl implements Producer {
       Map<String, String> zipProperties = null;
 
       Transaction producerTransaction = Cat.getProducer().newTransaction("MessageProduced", destination.getName());
-      String childMessageId = Cat.getProducer().createMessageId();
-//      Cat.getProducer().logEvent(CatConstants.TYPE_REMOTE_CALL, "SwallowPayload", Message.SUCCESS, childMessageId);
+      String childMessageId;
+      try {
+         childMessageId = Cat.getProducer().createMessageId();
+         //      Cat.getProducer().logEvent(CatConstants.TYPE_REMOTE_CALL, "SwallowPayload", Message.SUCCESS, childMessageId);
+      } catch (Exception e) {
+         childMessageId = "UnknownMessageId";
+      }
       try {
          //根据content生成SwallowMessage
          swallowMsg.setContent(content);
@@ -189,7 +194,7 @@ public class ProducerImpl implements Producer {
                producerHandler.doSendMsg(pktMessage);
                break;
          }
-         
+
          producerTransaction.setStatus(Message.SUCCESS);
 
          return ret;
