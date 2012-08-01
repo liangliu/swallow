@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
-import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.cat.message.spi.MessageTree;
@@ -72,30 +71,26 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
          @Override
          public void run() {
             SwallowMessage swallowMessage = ((PktMessage) e.getMessage()).getContent();
-            
+
             //Cat begin
-            String catParentID = ((PktMessage)e.getMessage()).getCatEventID();
+            String catParentID = ((PktMessage) e.getMessage()).getCatEventID();
             //Cat end
-            
+
             Long messageId = swallowMessage.getMessageId();
 
             PktConsumerMessage consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, messageId,
                   consumer.isClosed());
 
             //使用CAT监控处理消息的时间
-            try {
-               MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
-               if (tree != null) {
-                  tree.setParentMessageId(catParentID);
-               }
-            } catch (Exception e) {
-               LOG.warn("error get Cat tree", e);
+            MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
+            if (tree != null) {
+               tree.setMessageId(catParentID);
             }
-            
-            Transaction t = Cat.getProducer().newTransaction("MessageConsumed", consumer.getDest().getName() + ":" + consumer.getConsumerId());
-            Event event = Cat.getProducer().newEvent("Message", "payload");
-            event.addData("mid", swallowMessage.getMessageId());
-            event.addData("sha1", swallowMessage.getSha1());
+
+            Transaction consumerClientTransaction = Cat.getProducer().newTransaction("MessageConsumed",
+                  consumer.getDest().getName() + ":" + consumer.getConsumerId());
+            consumerClientTransaction.addData("mid", swallowMessage.getMessageId());
+            consumerClientTransaction.addData("sha1", swallowMessage.getSha1());
 
             //处理消息
             //如果是压缩后的消息，则进行解压缩
@@ -110,15 +105,12 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                } catch (Exception e) {
                   LOG.info("exception in MessageListener", e);
                }
-               event.setStatus(Message.SUCCESS);
-               t.setStatus(Message.SUCCESS);
+               consumerClientTransaction.setStatus(Message.SUCCESS);
             } catch (IOException e) {
                LOG.error("can not uncompress message with messageId " + messageId, e);
-               event.setStatus(e);
-               t.setStatus(e);
+               consumerClientTransaction.setStatus(e);
             } finally {
-               event.complete();
-               t.complete();
+               consumerClientTransaction.complete();
             }
 
             try {

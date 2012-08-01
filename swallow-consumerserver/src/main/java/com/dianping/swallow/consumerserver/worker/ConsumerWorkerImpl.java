@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
 import com.dianping.cat.CatConstants;
-import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Transaction;
 import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.consumer.ConsumerType;
@@ -265,14 +264,13 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       String childEventId;
       try {
          childEventId = Cat.getProducer().createMessageId();
+         Cat.getProducer().logEvent(CatConstants.TYPE_REMOTE_CALL, "SwallowPayload", com.dianping.cat.message.Message.SUCCESS, childEventId);
       } catch (Exception e) {
          childEventId = "UnknownMessageId";
       }
-      Cat.getProducer().logEvent(CatConstants.TYPE_REMOTE_CALL, "SwallowPayload", com.dianping.cat.message.Message.SUCCESS, childEventId);
       preparedMessage.setCatEventID(childEventId);
 
       Transaction t = Cat.getProducer().newTransaction("Out:" + topicName, consumerid);
-      Event event = Cat.getProducer().newEvent("Message", "payload");
       //Cat end
 
       try {
@@ -291,22 +289,19 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
             messageMap.put(preparedMessage, Boolean.TRUE);
          }
          //Cat begin
-         event.addData(preparedMessage.getContent().toSuccessKeyValuePairs());
+         t.addData("sha1", preparedMessage.getContent().getSha1());
          t.setStatus(com.dianping.cat.message.Message.SUCCESS);
-         event.setStatus(com.dianping.cat.message.Message.SUCCESS);
          //Cat end
       } catch (RuntimeException e) {
          LOG.error(consumerInfo.toString() + "：channel write error.", e);
          cachedMessages.add(preparedMessage);
 
          //Cat begin
-         event.addData(preparedMessage.getContent().toKeyValuePairs());
+         t.addData(preparedMessage.getContent().toKeyValuePairs());
          t.setStatus(e);
-         event.setStatus(e);
          Cat.getProducer().logError(e);
       } finally {
          t.complete();
-         event.complete();
       }
       //Cat end
    }
