@@ -14,7 +14,7 @@ public class DurableConsumerExample {
       //以下两项根据自己情况而定，默认是不需要配的
       config.setThreadPoolSize(1);
       
-      Consumer c = ConsumerFactoryImpl.getInstance().createConsumer(Destination.topic("example2"), "myId", config);
+      Consumer c = ConsumerFactoryImpl.getInstance().createConsumer(Destination.topic("example"), "myId", config);
       c.setListener(new MessageListener() {
          
          @Override

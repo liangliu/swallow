@@ -105,7 +105,6 @@ public class SingleThreadSend {
 //      tree.setParentMessageId("");
 //      MessageId.parse("mid").getDomain();
       
-      
       SingleThreadSend.syncSendSome("Hello world", -1, 1000, null, "songtong");
       //      SingleThreadSend.syncSendSomeObjectDemoWithZipped(1000, 1000);
 //                  SingleThreadSend.asyncSendSome("Hello orange", 100, 100, null, null);

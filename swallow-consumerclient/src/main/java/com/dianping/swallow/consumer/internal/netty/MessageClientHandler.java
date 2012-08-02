@@ -72,26 +72,25 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
          public void run() {
             SwallowMessage swallowMessage = ((PktMessage) e.getMessage()).getContent();
 
-            //Cat begin
-            String catParentID = ((PktMessage) e.getMessage()).getCatEventID();
-            //Cat end
-
             Long messageId = swallowMessage.getMessageId();
 
             PktConsumerMessage consumermessage = new PktConsumerMessage(ConsumerMessageType.ACK, messageId,
                   consumer.isClosed());
 
             //使用CAT监控处理消息的时间
-            MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
-            if (tree != null) {
-               tree.setMessageId(catParentID);
-            }
 
             Transaction consumerClientTransaction = Cat.getProducer().newTransaction("MessageConsumed",
                   consumer.getDest().getName() + ":" + consumer.getConsumerId());
             consumerClientTransaction.addData("mid", swallowMessage.getMessageId());
             consumerClientTransaction.addData("sha1", swallowMessage.getSha1());
 
+            try {
+               MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
+               String catParentID = ((PktMessage) e.getMessage()).getCatEventID();
+               tree.setMessageId(catParentID);
+            } catch (Exception e) {
+            }
+            
             //处理消息
             //如果是压缩后的消息，则进行解压缩
             try {

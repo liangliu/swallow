@@ -3,6 +3,7 @@ package com.dianping.swallow.consumerserver.bootstrap;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
+
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -109,5 +110,4 @@ public class MasterBootStrap {
       bootstrap.bind(new InetSocketAddress(masterPort));
       LOG.info("Server started at port " + masterPort);
    }
-
 }

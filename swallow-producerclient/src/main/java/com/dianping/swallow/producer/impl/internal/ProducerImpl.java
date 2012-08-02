@@ -138,7 +138,7 @@ public class ProducerImpl implements Producer {
       String childMessageId;
       try {
          childMessageId = Cat.getProducer().createMessageId();
-         //      Cat.getProducer().logEvent(CatConstants.TYPE_REMOTE_CALL, "SwallowPayload", Message.SUCCESS, childMessageId);
+         //Cat.getProducer().logEvent(CatConstants.TYPE_REMOTE_CALL, "SwallowPayload", Message.SUCCESS, childMessageId);
       } catch (Exception e) {
          childMessageId = "UnknownMessageId";
       }
