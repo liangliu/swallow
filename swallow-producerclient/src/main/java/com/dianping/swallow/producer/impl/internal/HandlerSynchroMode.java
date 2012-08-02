@@ -47,12 +47,12 @@ public class HandlerSynchroMode implements ProducerHandler {
          leftRetryTimes--;
          try {
             pktRet = remoteService.sendMessage(pkt);
-            producerHandlerTransaction.addData("sha1", ((PktSwallowPACK)pktRet).getShaInfo());
+            producerHandlerTransaction.addData("sha1", ((PktSwallowPACK) pktRet).getShaInfo());
             producerHandlerTransaction.setStatus(Message.SUCCESS);
          } catch (Exception e) {
             //如果剩余重试次数>0，继续重试
             if (leftRetryTimes > 0) {
-               producerHandlerTransaction.addData("Retry", sendTimes-leftRetryTimes);
+               producerHandlerTransaction.addData("Retry", sendTimes - leftRetryTimes);
                try {
                   defaultPullStrategy.fail(true);
                } catch (InterruptedException ie) {
@@ -61,7 +61,7 @@ public class HandlerSynchroMode implements ProducerHandler {
                continue;
             } else {
                //重置超时
-               producerHandlerTransaction.addData(((PktMessage)pkt).getContent().toKeyValuePairs());
+               producerHandlerTransaction.addData(((PktMessage) pkt).getContent().toKeyValuePairs());
                producerHandlerTransaction.setStatus(e);
                Cat.getProducer().logError(e);
                throw new SendFailedException("Message sent failed", e);
