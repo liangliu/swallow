@@ -45,7 +45,7 @@ public class SwallowMessageTest {
       msg.setGeneratedTime(null);
       msg.setContent(demoBean);
       Assert.assertEquals(
-            "SwallowMessage [generatedTime=null, messageId=1, properties={property-key=property-value}, internalProperties={property-key=property-value}, version=0.6.0, sha1=sha-1 string, type=feed, sourceIp=localhost]",
+            "SwallowMessage [generatedTime=null, messageId=1, properties={property-key=property-value}, internalProperties={property-key=property-value}, version=0.6.0,content={\"a\":1,\"b\":\"b\"}, sha1=sha-1 string, type=feed, sourceIp=localhost]",
             msg.toString());
    }
 
