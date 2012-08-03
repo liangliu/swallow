@@ -36,7 +36,9 @@ public class SingleThreadSend {
 
    public static void syncSendSome(String content, int count, int freq, Map<String, String> properties, String type)
          throws Exception {
-      Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("helloworld"));
+      ProducerConfig config = new ProducerConfig();
+      config.setSyncRetryTimes(5);
+      Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("example"), config);
       int sent = 0;
       if (count <= 0) {
          while (true) {
@@ -44,14 +46,10 @@ public class SingleThreadSend {
             Thread.sleep(freq < 0 ? 0 : freq);
          }
       } else {
-         long begin = System.currentTimeMillis();
-         System.out.println("send start...");
          for (int i = 0; i < count; i++) {
-            producer.sendMessage(++sent + ": " + content, properties, type);
-//            System.out.println(producer.sendMessage(++sent + ": " + content, properties, type));
+            System.out.println(producer.sendMessage(++sent + ": " + content, properties, type));
             Thread.sleep(freq < 0 ? 0 : freq);
          }
-         System.out.println("send end, cost: " + (System.currentTimeMillis() - begin));
       }
    }
 
@@ -79,7 +77,7 @@ public class SingleThreadSend {
          throws Exception {
       ProducerConfig config = new ProducerConfig();
       config.setMode(ProducerMode.ASYNC_MODE);
-      config.setAsyncRetryTimes(1);
+      config.setAsyncRetryTimes(3);
       config.setSendMsgLeftLastSession(false);
       config.setThreadPoolSize(2);
       config.setZipped(false);
@@ -101,19 +99,13 @@ public class SingleThreadSend {
    }
 
    public static void main(String[] args) throws Exception {
-      
-//      MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
-//      tree.getMessageId();
-//      tree.getParentMessageId();
-//      tree.getRootMessageId();
-//      tree.setParentMessageId("");
-//      MessageId.parse("mid").getDomain();
+
       String content = "";
-      for(int i = 0; i < 10; i++){
+      for (int i = 0; i < 10; i++) {
          content += "abcdefghij1234567890!@#$%^&*()          abcdefghij1234567890!@#$%^&*()          abcdefghij1234567890";
       }
-      SingleThreadSend.syncSendSome(content, 1000, -1, null, "songtong");
+      SingleThreadSend.syncSendSome(content, -1, 1000, null, "songtong");
       //      SingleThreadSend.syncSendSomeObjectDemoWithZipped(1000, 1000);
-//                  SingleThreadSend.asyncSendSome("Hello orange", 100, 100, null, null);
+      //      SingleThreadSend.asyncSendSome(content, -1, 1000, null, null);
    }
 }

@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.dianping.cat.Cat;
+import com.dianping.cat.CatConstants;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
@@ -191,6 +192,7 @@ public class ProducerImpl implements Producer {
                }
                break;
             case ASYNC_MODE://异步模式
+               Cat.getProducer().logEvent(CatConstants.TYPE_REMOTE_CALL, "AsyncProducer", Message.SUCCESS, childMessageId);
                producerHandler.doSendMsg(pktMessage);
                break;
          }
@@ -199,11 +201,13 @@ public class ProducerImpl implements Producer {
 
       } catch (SendFailedException e) {
          //使用CAT监控处理消息的时间
+         producerTransaction.addData(swallowMsg.toKeyValuePairs());
          producerTransaction.setStatus(e);
          Cat.getProducer().logError(e);
          throw e;
       } catch (RuntimeException e) {
          //使用CAT监控处理消息的时间
+         producerTransaction.addData(swallowMsg.toKeyValuePairs());
          producerTransaction.setStatus(e);
          Cat.getProducer().logError(e);
          throw e;

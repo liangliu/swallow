@@ -4,7 +4,6 @@ import com.dianping.cat.Cat;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.swallow.common.internal.packet.Packet;
-import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
@@ -41,9 +40,9 @@ public class HandlerSynchroMode implements ProducerHandler {
       }
       defaultPullStrategy.succeess();
       Packet pktRet = null;
-      Transaction producerHandlerTransaction = Cat.getProducer().newTransaction("MessageTried", destination.getName());
 
       for (int leftRetryTimes = sendTimes; leftRetryTimes > 0;) {
+         Transaction producerHandlerTransaction = Cat.getProducer().newTransaction("MessageTried", destination.getName());
          leftRetryTimes--;
          try {
             pktRet = remoteService.sendMessage(pkt);
@@ -61,7 +60,6 @@ public class HandlerSynchroMode implements ProducerHandler {
                continue;
             } else {
                //重置超时
-               producerHandlerTransaction.addData(((PktMessage) pkt).getContent().toKeyValuePairs());
                producerHandlerTransaction.setStatus(e);
                Cat.getProducer().logError(e);
                throw new SendFailedException("Message sent failed", e);
