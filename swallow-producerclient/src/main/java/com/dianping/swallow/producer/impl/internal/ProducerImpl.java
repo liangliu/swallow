@@ -132,6 +132,7 @@ public class ProducerImpl implements Producer {
       }
       //根据content生成SwallowMessage
       SwallowMessage swallowMsg = new SwallowMessage();
+      String ret = null;
       Map<String, String> zipProperties = null;
 
       Transaction producerTransaction = Cat.getProducer().newTransaction("MessageProduced", destination.getName());
@@ -182,7 +183,6 @@ public class ProducerImpl implements Producer {
          //加入Cat的MessageID
          pktMessage.setCatEventID(childMessageId);
 
-         String ret = null;
          switch (producerConfig.getMode()) {
             case SYNC_MODE://同步模式
                PktSwallowPACK pktSwallowPACK = (PktSwallowPACK) producerHandler.doSendMsg(pktMessage);
@@ -197,7 +197,6 @@ public class ProducerImpl implements Producer {
 
          producerTransaction.setStatus(Message.SUCCESS);
 
-         return ret;
       } catch (SendFailedException e) {
          //使用CAT监控处理消息的时间
          producerTransaction.setStatus(e);
@@ -212,6 +211,7 @@ public class ProducerImpl implements Producer {
          producerTransaction.complete();
       }
 
+      return ret;
    }
 
    /**

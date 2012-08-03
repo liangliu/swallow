@@ -36,7 +36,7 @@ public class SingleThreadSend {
 
    public static void syncSendSome(String content, int count, int freq, Map<String, String> properties, String type)
          throws Exception {
-      Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("example"));
+      Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("helloworld"));
       int sent = 0;
       if (count <= 0) {
          while (true) {
@@ -44,10 +44,14 @@ public class SingleThreadSend {
             Thread.sleep(freq < 0 ? 0 : freq);
          }
       } else {
+         long begin = System.currentTimeMillis();
+         System.out.println("send start...");
          for (int i = 0; i < count; i++) {
-            System.out.println(producer.sendMessage(++sent + ": " + content, properties, type));
+            producer.sendMessage(++sent + ": " + content, properties, type);
+//            System.out.println(producer.sendMessage(++sent + ": " + content, properties, type));
             Thread.sleep(freq < 0 ? 0 : freq);
          }
+         System.out.println("send end, cost: " + (System.currentTimeMillis() - begin));
       }
    }
 
@@ -104,8 +108,11 @@ public class SingleThreadSend {
 //      tree.getRootMessageId();
 //      tree.setParentMessageId("");
 //      MessageId.parse("mid").getDomain();
-      
-      SingleThreadSend.syncSendSome("Hello world", -1, 1000, null, "songtong");
+      String content = "";
+      for(int i = 0; i < 10; i++){
+         content += "abcdefghij1234567890!@#$%^&*()          abcdefghij1234567890!@#$%^&*()          abcdefghij1234567890";
+      }
+      SingleThreadSend.syncSendSome(content, 1000, -1, null, "songtong");
       //      SingleThreadSend.syncSendSomeObjectDemoWithZipped(1000, 1000);
 //                  SingleThreadSend.asyncSendSome("Hello orange", 100, 100, null, null);
    }
