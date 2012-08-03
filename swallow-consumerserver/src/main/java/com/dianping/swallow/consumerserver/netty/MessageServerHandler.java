@@ -19,14 +19,13 @@ import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
 import com.dianping.swallow.common.internal.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.common.internal.util.NameCheckUtil;
-import com.dianping.swallow.consumerserver.impl.MongoHeartbeater;
 import com.dianping.swallow.consumerserver.worker.ConsumerId;
 import com.dianping.swallow.consumerserver.worker.ConsumerInfo;
 import com.dianping.swallow.consumerserver.worker.ConsumerWorkerManager;
 
 public class MessageServerHandler extends SimpleChannelUpstreamHandler {
 
-   private static final Logger   LOG          = LoggerFactory.getLogger(MongoHeartbeater.class);
+   private static final Logger   LOG          = LoggerFactory.getLogger(MessageServerHandler.class);
 
    private static ChannelGroup   channelGroup = new DefaultChannelGroup();
 

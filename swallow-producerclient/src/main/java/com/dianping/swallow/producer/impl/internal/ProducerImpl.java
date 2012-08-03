@@ -7,7 +7,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.dianping.cat.Cat;
-import com.dianping.cat.message.Event;
+import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
@@ -74,6 +74,7 @@ public class ProducerImpl implements Producer {
             producerHandler = new HandlerSynchroMode(this);
             break;
       }
+
    }
 
    /**
@@ -131,8 +132,17 @@ public class ProducerImpl implements Producer {
       }
       //根据content生成SwallowMessage
       SwallowMessage swallowMsg = new SwallowMessage();
+      String ret = null;
       Map<String, String> zipProperties = null;
 
+      Transaction producerTransaction = Cat.getProducer().newTransaction("MessageProduced", destination.getName());
+      String childMessageId;
+      try {
+         childMessageId = Cat.getProducer().createMessageId();
+         //Cat.getProducer().logEvent(CatConstants.TYPE_REMOTE_CALL, "SwallowPayload", Message.SUCCESS, childMessageId);
+      } catch (Exception e) {
+         childMessageId = "UnknownMessageId";
+      }
       try {
          //根据content生成SwallowMessage
          swallowMsg.setContent(content);
@@ -170,8 +180,9 @@ public class ProducerImpl implements Producer {
 
          //构造packet
          PktMessage pktMessage = new PktMessage(destination, swallowMsg);
+         //加入Cat的MessageID
+         pktMessage.setCatEventID(childMessageId);
 
-         String ret = null;
          switch (producerConfig.getMode()) {
             case SYNC_MODE://同步模式
                PktSwallowPACK pktSwallowPACK = (PktSwallowPACK) producerHandler.doSendMsg(pktMessage);
@@ -184,27 +195,23 @@ public class ProducerImpl implements Producer {
                break;
          }
 
-         return ret;
+         producerTransaction.setStatus(Message.SUCCESS);
+
       } catch (SendFailedException e) {
-       //使用CAT监控处理消息的时间
-         Transaction t = Cat.getProducer().newTransaction("SendMessage", destination.getName());
-         Event event = Cat.getProducer().newEvent("Message", "Payload");
-         event.addData(swallowMsg.toKeyValuePairs());
-         event.setStatus(e);
-         t.setStatus(e);
+         //使用CAT监控处理消息的时间
+         producerTransaction.setStatus(e);
          Cat.getProducer().logError(e);
          throw e;
       } catch (RuntimeException e) {
-       //使用CAT监控处理消息的时间
-         Transaction t = Cat.getProducer().newTransaction("SendMessage", destination.getName());
-         Event event = Cat.getProducer().newEvent("Message", "Payload");
-         event.addData(swallowMsg.toKeyValuePairs());
-         event.setStatus(e);
-         t.setStatus(e);
+         //使用CAT监控处理消息的时间
+         producerTransaction.setStatus(e);
          Cat.getProducer().logError(e);
          throw e;
+      } finally {
+         producerTransaction.complete();
       }
 
+      return ret;
    }
 
    /**

@@ -14,6 +14,9 @@ import org.jboss.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.CatConstants;
+import com.dianping.cat.message.Transaction;
 import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.consumer.MessageFilter;
@@ -63,6 +66,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
    private PullStrategy                           pullStgy;
    private ConfigManager                          configManager;
    private Map<Channel, Map<PktMessage, Boolean>> waitAckMessages   = new ConcurrentHashMap<Channel, Map<PktMessage, Boolean>>();
+   private volatile long                          maxAckedMessageId = 0L;
 
    public Map<Channel, Map<PktMessage, Boolean>> getWaitAckMessages() {
       return waitAckMessages;
@@ -132,7 +136,9 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
 
    private void updateMaxMessageId(Long ackedMsgId, Channel channel) {
       if (ackedMsgId != null && ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
-         ackDao.add(topicName, consumerid, ackedMsgId, connectedChannels.get(channel));
+         //         ackDao.add(topicName, consumerid, ackedMsgId, connectedChannels.get(channel));
+         LOG.info(ackedMsgId + " ACKED from " + connectedChannels.get(channel));
+         maxAckedMessageId = Math.max(maxAckedMessageId, ackedMsgId);
       }
    }
 
@@ -252,7 +258,21 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
 
    private void sendMsgFromCachedMessages(Channel channel) throws InterruptedException {
       PktMessage preparedMessage = cachedMessages.poll();
-      Long messageId = preparedMessage.getContent().getMessageId();      
+      Long messageId = preparedMessage.getContent().getMessageId();
+
+      //Cat begin
+      Transaction t = Cat.getProducer().newTransaction("Out:" + topicName, consumerid);
+      String childEventId;
+      try {
+         childEventId = Cat.getProducer().createMessageId();
+         preparedMessage.setCatEventID(childEventId);
+         Cat.getProducer().logEvent(CatConstants.TYPE_REMOTE_CALL, "ConsumedByWhom",
+               com.dianping.cat.message.Message.SUCCESS, childEventId);
+      } catch (Exception e) {
+         childEventId = "UnknownMessageId";
+      }
+      //Cat end
+
       try {
          channel.write(preparedMessage);
          //如果是AT_MOST模式，收到ACK之前更新messageId的类型
@@ -268,11 +288,22 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
             }
             messageMap.put(preparedMessage, Boolean.TRUE);
          }
+         //Cat begin
+         t.addData("sha1", preparedMessage.getContent().getSha1());
+         t.setStatus(com.dianping.cat.message.Message.SUCCESS);
+         //Cat end
       } catch (RuntimeException e) {
          LOG.error(consumerInfo.toString() + "：channel write error.", e);
          cachedMessages.add(preparedMessage);
-      }
 
+         //Cat begin
+         t.addData(preparedMessage.getContent().toKeyValuePairs());
+         t.setStatus(e);
+         Cat.getProducer().logError(e);
+      } finally {
+         t.complete();
+      }
+      //Cat end
    }
 
    private void putMsg2CachedMsgFromMsgQueue() throws InterruptedException {
@@ -295,6 +326,16 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
    @Override
    public boolean allChannelDisconnected() {
       return started && connectedChannels.isEmpty();
+   }
+
+   @Override
+   public long getMaxAckedMessageId() {
+      return maxAckedMessageId;
+   }
+
+   @Override
+   public ConsumerType getConsumerType() {
+      return consumerInfo.getConsumerType();
    }
 
    /**

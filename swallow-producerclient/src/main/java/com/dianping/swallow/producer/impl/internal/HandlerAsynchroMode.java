@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
 import com.dianping.cat.configuration.NetworkInterfaceManager;
-import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Heartbeat;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
@@ -17,6 +16,7 @@ import com.dianping.filequeue.DefaultFileQueueImpl;
 import com.dianping.filequeue.FileQueue;
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.internal.packet.Packet;
+import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
@@ -136,12 +136,11 @@ public class HandlerAsynchroMode implements ProducerHandler {
          DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, DELAY_BASE_MULTI * delayBase);
          Packet pktRet = null;
 
-         Transaction t = Cat.getProducer().newTransaction("Message", producer.getDestination().getName());
-         Event event = Cat.getProducer().newEvent("Message", "Payload");
 
          while (true) {
             //重置延时
             defaultPullStrategy.succeess();
+            Transaction producerHandlerTransaction = Cat.getProducer().newTransaction("MessageTried", producer.getDestination().getName());
             //从filequeue获取message，如果filequeue无元素则阻塞            
             message = messageQueue.get();
             //发送message，重试次数从Producer获取
@@ -149,9 +148,12 @@ public class HandlerAsynchroMode implements ProducerHandler {
                leftRetryTimes--;
                try {
                   pktRet = remoteService.sendMessage(message);
+                  producerHandlerTransaction.addData("sha1", ((PktSwallowPACK)pktRet).getShaInfo());
+                  producerHandlerTransaction.setStatus(Message.SUCCESS);
                } catch (Exception e) {
                   //如果剩余重试次数>0，超时重试
                   if (leftRetryTimes > 0) {
+                     producerHandlerTransaction.addData("Retry", sendTimes - leftRetryTimes);
                      try {
                         defaultPullStrategy.fail(true);
                      } catch (InterruptedException ie) {
@@ -160,15 +162,12 @@ public class HandlerAsynchroMode implements ProducerHandler {
                      //发送失败，重发
                      continue;
                   }
+                  producerHandlerTransaction.addData(((PktMessage)message).getContent().toKeyValuePairs());
+                  producerHandlerTransaction.setStatus(e);
+                  Cat.getProducer().logError(e);
                   LOGGER.error("Message sent failed: " + message.toString(), e);
-               }
-               if (pktRet != null) {
-                  event.addData(((PktSwallowPACK) pktRet).getShaInfo());
-                  event.setStatus(Message.SUCCESS);
-                  t.setStatus(Message.SUCCESS);
-               } else {
-                  event.complete();
-                  t.complete();
+               }finally{
+                  producerHandlerTransaction.complete();
                }
                //如果发送成功则跳出循环
                break;

@@ -44,9 +44,6 @@
 		<swallow-producerserver.aid>swallow-producerserver</swallow-producerserver.aid>
 		<swallow-producerserver.version>${swallow-models.version}</swallow-producerserver.version>
 		<swallow-producerserver.name>arch-swallow-producerserver</swallow-producerserver.name>
-		<swallow-example.aid>swallow-example</swallow-example.aid>
-		<swallow-example.version>${swallow-models.version}</swallow-example.version>
-		<swallow-example.name>arch-swallow-example</swallow-example.name>
 	</properties>
 
 	<description>swallow is a message service!</description>
