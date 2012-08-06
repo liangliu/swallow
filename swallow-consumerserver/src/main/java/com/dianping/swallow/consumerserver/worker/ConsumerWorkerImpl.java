@@ -1,6 +1,7 @@
 package com.dianping.swallow.consumerserver.worker;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -366,21 +367,32 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
          return "ConsumerId=" + consumerInfo.getConsumerId() + ",ConsumerType=" + consumerInfo.getConsumerType();
       }
 
-      public String getConsumerid() {
-         return consumerid;
-      }
+//      public String getConsumerid() {
+//         return consumerid;
+//      }
 
       public String getTopicName() {
          return topicName;
       }
 
-      public String getPreparedMessage() {
+      public String getCachedMessages() {
          if (cachedMessages != null) {
             return cachedMessages.toString();
          }
          return null;
       }
-
+      
+      public String getWaitAckMessages() {
+         StringBuilder sb = new StringBuilder();
+         if (waitAckMessages != null) {
+            for (Entry<Channel, Map<PktMessage, Boolean>> waitAckMessage : waitAckMessages.entrySet()) {
+               
+               sb.append(waitAckMessage.getKey().getRemoteAddress()).append(waitAckMessage.getValue().toString());
+            }
+         }
+         return sb.toString();
+         
+      }
       public boolean isGetMessageisAlive() {
          return getMessageisAlive;
       }
@@ -388,7 +400,10 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       public boolean isStarted() {
          return started;
       }
-
+      public String getMaxAckedMessageId() {
+         return  Long.toString(maxAckedMessageId);
+      }
+      
       public String getMessageFilter() {
          if (messageFilter != null) {
             return messageFilter.toString();
