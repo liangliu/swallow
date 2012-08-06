@@ -108,6 +108,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
             } catch (IOException e) {
                LOG.error("can not uncompress message with messageId " + messageId, e);
                consumerClientTransaction.setStatus(e);
+               Cat.getProducer().logError(e);
             } finally {
                consumerClientTransaction.complete();
             }
