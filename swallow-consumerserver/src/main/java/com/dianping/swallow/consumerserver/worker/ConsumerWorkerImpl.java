@@ -291,6 +291,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
          }
          //Cat begin
          t.addData("sha1", preparedMessage.getContent().getSha1());
+         t.addData("ip", channel.getRemoteAddress());
          t.setStatus(com.dianping.cat.message.Message.SUCCESS);
          //Cat end
       } catch (RuntimeException e) {
