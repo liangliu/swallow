@@ -5,6 +5,10 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.dianping.cat.Cat;
+import com.dianping.cat.message.Message;
+import com.dianping.cat.message.Transaction;
+import com.dianping.cat.message.internal.MessageId;
 import com.dianping.dpsf.api.ServiceRegistry;
 import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.internal.dao.MessageDAO;
@@ -21,11 +25,11 @@ import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 
 public class ProducerServerForClient implements ProducerSwallowService {
 
-   private static final Logger LOGGER             = Logger.getLogger(ProducerServerForClient.class);
-   private static final int    DEFAULT_PORT       = 4000;
-   public static final String  producerServerIP   = IPUtil.getFirstNoLoopbackIP4Address();
+   private static final Logger LOGGER           = Logger.getLogger(ProducerServerForClient.class);
+   private static final int    DEFAULT_PORT     = 4000;
+   public static final String  producerServerIP = IPUtil.getFirstNoLoopbackIP4Address();
 
-   private int                 port               = DEFAULT_PORT;
+   private int                 port             = DEFAULT_PORT;
    private MessageDAO          messageDAO;
    private String              remoteServiceName;
 
@@ -63,6 +67,9 @@ public class ProducerServerForClient implements ProducerSwallowService {
     */
    @Override
    public Packet sendMessage(Packet pkt) throws ServerDaoException {
+      if (pkt == null) {
+         throw new IllegalArgumentException("Argument of remote service could not be null.");
+      }
       Packet pktRet = null;
       SwallowMessage swallowMessage;
       String topicName;
@@ -82,12 +89,29 @@ public class ProducerServerForClient implements ProducerSwallowService {
             //设置swallowMessage的sha-1
             swallowMessage.setSha1(sha1);
 
+            String catDomain;
+            try {
+               catDomain = MessageId.parse(((PktMessage) pkt).getCatEventID()).getDomain();
+            } catch (Exception e) {
+               catDomain = "UnknownDomain";
+            }
+            //            MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
+            //            tree.setMessageId(((PktMessage)pkt).getCatEventID());
+
+            Transaction producerServerTransaction = Cat.getProducer().newTransaction("In:" + topicName, catDomain);
             //将swallowMessage保存到mongodb
             try {
                messageDAO.saveMessage(topicName, swallowMessage);
+               producerServerTransaction.addData(swallowMessage.getSha1());
+               producerServerTransaction.setStatus(Message.SUCCESS);
             } catch (Exception e) {
+               producerServerTransaction.addData(swallowMessage.toKeyValuePairs());
+               producerServerTransaction.setStatus(e);
+               Cat.getProducer().logError(e);
                LOGGER.error("[Save message to DB failed.]", e);
                throw new ServerDaoException(e);
+            } finally {
+               producerServerTransaction.complete();
             }
             break;
          default:

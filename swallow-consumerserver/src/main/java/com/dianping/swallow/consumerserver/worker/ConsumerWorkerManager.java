@@ -7,6 +7,7 @@ import org.jboss.netty.util.internal.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.consumer.MessageFilter;
 import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
 import com.dianping.swallow.common.internal.dao.AckDAO;
@@ -34,6 +35,8 @@ public class ConsumerWorkerManager {
    private Map<ConsumerId, ConsumerWorker> consumerId2ConsumerWorker = new ConcurrentHashMap<ConsumerId, ConsumerWorker>();
 
    private Thread idleWorkerManagerCheckerThread;
+   private Thread maxAckedMessageIdUpdaterThread;
+   private Map<ConsumerId, Long> consumerId2MaxSavedAckedMessageId = new ConcurrentHashMap<ConsumerId, Long>();
    private volatile boolean closed = false;
    
    public void setAckDAO(AckDAO ackDAO) {
@@ -107,6 +110,14 @@ public class ConsumerWorkerManager {
             Thread.currentThread().interrupt();
          }
       }
+      if (maxAckedMessageIdUpdaterThread != null) {
+         try {
+            maxAckedMessageIdUpdaterThread.join();
+            consumerId2MaxSavedAckedMessageId = new ConcurrentHashMap<ConsumerId, Long>();
+         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+         }
+      }
    }
 
    private ConsumerWorker findConsumerWorker(ConsumerInfo consumerInfo) {
@@ -135,11 +146,48 @@ public class ConsumerWorkerManager {
    public void init(boolean isSlave) {
 	   
       startIdleWorkerCheckerThread();
+      startMaxAckedMessageIdUpdaterThread();
 	   
       if (!isSlave) {
          startHeartbeater(configManager.getMasterIp());
       }
 
+   }
+   
+   private void startMaxAckedMessageIdUpdaterThread() {
+      maxAckedMessageIdUpdaterThread = threadFactory.newThread(new Runnable() {
+         
+         @Override
+         public void run() {
+            while (!closed) {
+               for (Map.Entry<ConsumerId, ConsumerWorker> entry : consumerId2ConsumerWorker.entrySet()) {
+                  ConsumerWorker worker = entry.getValue();
+                  ConsumerId consumerId = entry.getKey();
+                  updateMaxAckedMessageId(worker, consumerId);
+               }
+               try {
+                  Thread.sleep(configManager.getMaxAckedMessageIdUpdateInterval());
+               } catch (InterruptedException e) {
+                  break;
+               }
+            }
+            LOG.info("MaxAckedMessageIdUpdaterThread closed");
+         }
+
+      }, "maxAckedMessageIdUpdaterThread-");
+      maxAckedMessageIdUpdaterThread.start();
+   }
+   
+   private void updateMaxAckedMessageId(ConsumerWorker worker, ConsumerId consumerId) {
+      if(worker.getConsumerType() == ConsumerType.DURABLE_AT_LEAST_ONCE) {
+         Long lastSavedAckedMsgId = consumerId2MaxSavedAckedMessageId.get(consumerId);
+         lastSavedAckedMsgId = lastSavedAckedMsgId == null ? 0 : lastSavedAckedMsgId;
+         Long currentMaxAckedMsgId = worker.getMaxAckedMessageId();
+         if(currentMaxAckedMsgId > 0 && currentMaxAckedMsgId > lastSavedAckedMsgId) {
+            ackDAO.add(consumerId.getDest().getName(), consumerId.getConsumerId(), currentMaxAckedMsgId, "");
+            consumerId2MaxSavedAckedMessageId.put(consumerId, currentMaxAckedMsgId);
+         }
+      }
    }
 
    private void startIdleWorkerCheckerThread() {
@@ -152,6 +200,7 @@ public class ConsumerWorkerManager {
                   ConsumerWorker worker = entry.getValue();
                   ConsumerId consumerId = entry.getKey();
                   if(worker.allChannelDisconnected()) {
+                     updateMaxAckedMessageId(worker, consumerId);
                      workerDone(consumerId);
                      worker.closeMessageFetcherThread();
                      worker.closeAckExecutor();
@@ -197,6 +246,7 @@ public class ConsumerWorkerManager {
    }
 
    public void workerDone(ConsumerId consumerId) {
+      consumerId2MaxSavedAckedMessageId.remove(consumerId);
       consumerId2ConsumerWorker.remove(consumerId);
    }
 

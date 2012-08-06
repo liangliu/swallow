@@ -3,6 +3,7 @@ package com.dianping.swallow.consumerserver.bootstrap;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
+
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
@@ -45,11 +46,13 @@ public class MasterBootStrap {
             new String[] { "applicationContext-consumerserver.xml" });
       final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
       consumerWorkerManager.init(isSlave);
+      LOG.info("wait " + consumerWorkerManager.getConfigManager().getWaitSlaveShutDown() + " for slave to stop working");
       try {
          Thread.sleep(consumerWorkerManager.getConfigManager().getWaitSlaveShutDown());//主机启动的时候睡眠一会，给时间给slave关闭。
       } catch (InterruptedException e) {
          LOG.error("thread InterruptedException", e);
       }
+      LOG.info("start working");
 
       // Configure the server.
       final ServerBootstrap bootstrap = new ServerBootstrap(new NioServerSocketChannelFactory(
@@ -107,5 +110,4 @@ public class MasterBootStrap {
       bootstrap.bind(new InetSocketAddress(masterPort));
       LOG.info("Server started at port " + masterPort);
    }
-
 }

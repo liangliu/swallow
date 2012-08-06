@@ -30,6 +30,8 @@
 
 	<bean id="swallowBuffer"
 		class="com.dianping.swallow.consumerserver.buffer.SwallowBuffer">
+		<property name="delayBase" value="0" />
+		<property name="delayUpperbound" value="0" />
 	</bean>
 
 	<bean id="mongoClient"

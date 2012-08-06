@@ -3,7 +3,6 @@ package com.dianping.swallow.producer.impl.internal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -145,19 +144,6 @@ public final class SwallowPigeonConfiguration {
             } catch (Exception e) {
                LOGGER.warn("[Can not parse property " + key + ".]", e);
                continue;
-            }
-         }
-      }
-      if (LOGGER.isDebugEnabled()) {
-         Field[] fields = clazz.getDeclaredFields();
-         for (int i = 0; i < fields.length; i++) {
-            Field f = fields[i];
-            f.setAccessible(true);
-            if (!Modifier.isStatic(f.getModifiers())) {
-               try {
-                  LOGGER.debug(f.getName() + "=" + f.get(this));
-               } catch (Exception e) {
-               }
             }
          }
       }

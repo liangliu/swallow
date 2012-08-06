@@ -12,29 +12,34 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.consumer.MessageFilter;
+import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.message.Message;
 
 public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> implements CloseableBlockingQueue<Message> {
 
-   private static final long           serialVersionUID = -633276713494338593L;
-   private static final Logger         LOG              = LoggerFactory.getLogger(MessageBlockingQueue.class);
+   private static final long                      serialVersionUID = -633276713494338593L;
+   private static final Logger                    LOG              = LoggerFactory
+                                                                         .getLogger(MessageBlockingQueue.class);
 
-   private final String                cid;
-   private final String                topicName;
-   private final transient MessageRetriverThread messageRetriverThread;
+   private final String                           cid;
+   private final String                           topicName;
+   private final transient MessageRetrieverThread messageRetrieverThread;
 
    /** 最小剩余数量,当queue的消息数量小于threshold时，会触发从数据库加载数据的操作 */
-   private final int                   threshold;
+   private final int                              threshold;
 
-   protected transient MessageRetriever          messageRetriever;
+   protected transient MessageRetriever           messageRetriever;
 
-   private ReentrantLock               reentrantLock    = new ReentrantLock(true);
-   private transient Condition                   condition        = reentrantLock.newCondition();
+   private ReentrantLock                          reentrantLock    = new ReentrantLock(true);
+   private transient Condition                    condition        = reentrantLock.newCondition();
 
-   protected volatile Long             tailMessageId;
-   protected MessageFilter             messageFilter;
+   protected volatile Long                        tailMessageId;
+   protected MessageFilter                        messageFilter;
 
-   private AtomicBoolean               isClosed         = new AtomicBoolean(false);
+   private AtomicBoolean                          isClosed         = new AtomicBoolean(false);
+
+   private int                                    delayBase        = 100;
+   private int                                    delayUpperbound  = 500;
 
    public MessageBlockingQueue(String cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage) {
       super(capacity);
@@ -49,8 +54,8 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
          throw new IllegalArgumentException("messageIdOfTailMessage is null.");
       }
       this.tailMessageId = messageIdOfTailMessage;
-      messageRetriverThread = new MessageRetriverThread();
-      messageRetriverThread.start();
+      messageRetrieverThread = new MessageRetrieverThread();
+      messageRetrieverThread.start();
       //Hawk监控
       HawkJMXUtil.registerMBean(topicName + "-" + cid + "-MessageBlockingQueue", new HawkMBean());
    }
@@ -70,8 +75,8 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
       }
       this.tailMessageId = messageIdOfTailMessage;
       this.messageFilter = messageFilter;
-      messageRetriverThread = new MessageRetriverThread();
-      messageRetriverThread.start();
+      messageRetrieverThread = new MessageRetrieverThread();
+      messageRetrieverThread.start();
       //Hawk监控
       HawkJMXUtil.registerMBean(topicName + "-" + cid + "-MessageBlockingQueue", new HawkMBean());
    }
@@ -123,9 +128,11 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
       this.messageRetriever = messageRetriever;
    }
 
-   private class MessageRetriverThread extends Thread {
+   private class MessageRetrieverThread extends Thread {
 
-      public MessageRetriverThread() {
+      private DefaultPullStrategy pullStrategy = new DefaultPullStrategy(delayBase, delayUpperbound);
+
+      public MessageRetrieverThread() {
          this.setName("swallow-MessageRetriever-(topic=" + topicName + ",cid=" + cid + ")");
          this.setDaemon(true);
       }
@@ -137,7 +144,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
             reentrantLock.lock();
             try {
                condition.await();
-               retriveMessage();
+               retrieveMessage();
             } catch (InterruptedException e) {
                this.interrupt();
             } finally {
@@ -147,7 +154,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
          LOG.info("thread done:" + this.getName());
       }
 
-      private void retriveMessage() {
+      private void retrieveMessage() {
          if (LOG.isDebugEnabled()) {
             LOG.debug("retriveMessage() start:" + this.getName());
          }
@@ -174,9 +181,18 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
                      break;
                   }
                }
+               //如果本次获取完，queue的消息条数仍然比最低阀值小，那么消费者与生产者很有可能速度差不多，此时为了
+               //避免retrieve线程不断被唤醒，适当地睡眠一段时间
+               if (MessageBlockingQueue.this.size() < MessageBlockingQueue.this.threshold) {
+                  pullStrategy.fail(true);
+               } else {
+                  pullStrategy.succeess();
+               }
             }
-         } catch (Exception e1) {
+         } catch (RuntimeException e1) {
             LOG.error(e1.getMessage(), e1);
+         } catch (InterruptedException e) {
+            this.interrupt();
          }
          if (LOG.isDebugEnabled()) {
             LOG.debug("retriveMessage() done:" + this.getName());
@@ -216,7 +232,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
       }
 
       public String getMessageRetriverThreadStatus() {
-         return messageRetriverThread.getState().toString();
+         return messageRetrieverThread.getState().toString();
       }
    }
 
@@ -229,7 +245,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
    @Override
    public void close() {
       if (isClosed.compareAndSet(false, true)) {
-         this.messageRetriverThread.interrupt();
+         this.messageRetrieverThread.interrupt();
       }
    }
 
@@ -238,6 +254,14 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
       if (isClosed.get()) {
          throw new RuntimeException("MessageBlockingQueue- already closed! ");
       }
+   }
+
+   public void setDelayBase(int delayBase) {
+      this.delayBase = delayBase;
+   }
+
+   public void setDelayUpperbound(int delayUpperbound) {
+      this.delayUpperbound = delayUpperbound;
    }
 
 }

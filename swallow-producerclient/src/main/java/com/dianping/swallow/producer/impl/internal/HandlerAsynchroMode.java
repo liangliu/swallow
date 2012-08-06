@@ -8,15 +8,16 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
 import com.dianping.cat.configuration.NetworkInterfaceManager;
-import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Heartbeat;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
+import com.dianping.cat.message.spi.MessageTree;
 import com.dianping.filequeue.DefaultFileQueueConfig.FileQueueConfigHolder;
 import com.dianping.filequeue.DefaultFileQueueImpl;
 import com.dianping.filequeue.FileQueue;
 import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.internal.packet.Packet;
+import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
@@ -125,7 +126,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
    //从filequeue队列获取并发送Message
    private class TskGetAndSend implements Runnable {
 
-      private final int              sendTimes      = producer.getProducerConfig().getRetryTimes() + 1;
+      private final int              sendTimes      = producer.getProducerConfig().getAsyncRetryTimes() + 1;
       private int                    leftRetryTimes = sendTimes;
       private Packet                 message        = null;
       private ProducerSwallowService remoteService  = producer.getRemoteService();
@@ -136,43 +137,54 @@ public class HandlerAsynchroMode implements ProducerHandler {
          DefaultPullStrategy defaultPullStrategy = new DefaultPullStrategy(delayBase, DELAY_BASE_MULTI * delayBase);
          Packet pktRet = null;
 
-         Transaction t = Cat.getProducer().newTransaction("Message", producer.getDestination().getName());
-         Event event = Cat.getProducer().newEvent("Message", "Payload");
-
          while (true) {
             //重置延时
             defaultPullStrategy.succeess();
+            
             //从filequeue获取message，如果filequeue无元素则阻塞            
             message = messageQueue.get();
+
+            Transaction producerHandlerTransaction = Cat.getProducer().newTransaction("MessageTried",
+                  producer.getDestination().getName());
+            try {
+               //将自己设置为CatEventID的子节点
+               MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
+               tree.setMessageId(((PktMessage) message).getCatEventID());
+            } catch (Exception e) {
+               //跟丢了，舍弃
+            }
+            
             //发送message，重试次数从Producer获取
             for (leftRetryTimes = sendTimes; leftRetryTimes > 0;) {
                leftRetryTimes--;
                try {
                   pktRet = remoteService.sendMessage(message);
+                  producerHandlerTransaction.addData("sha1", ((PktSwallowPACK) pktRet).getShaInfo());
+                  producerHandlerTransaction.setStatus(Message.SUCCESS);
                } catch (Exception e) {
                   //如果剩余重试次数>0，超时重试
                   if (leftRetryTimes > 0) {
+                     Transaction retryTransaction = Cat.getProducer().newTransaction("MessageTried", producer.getDestination().getName());
                      try {
                         defaultPullStrategy.fail(true);
                      } catch (InterruptedException ie) {
                         return;
                      }
+                     retryTransaction.addData("Retry", sendTimes - leftRetryTimes);
+                     retryTransaction.setStatus(e);
+                     retryTransaction.complete();
                      //发送失败，重发
                      continue;
                   }
+                  producerHandlerTransaction.addData(((PktMessage) message).getContent().toKeyValuePairs());
+                  producerHandlerTransaction.setStatus(e);
+                  Cat.getProducer().logError(e);
                   LOGGER.error("Message sent failed: " + message.toString(), e);
-               }
-               if (pktRet != null) {
-                  event.addData(((PktSwallowPACK) pktRet).getShaInfo());
-                  event.setStatus(Message.SUCCESS);
-                  t.setStatus(Message.SUCCESS);
-               } else {
-                  event.complete();
-                  t.complete();
                }
                //如果发送成功则跳出循环
                break;
             }
+            producerHandlerTransaction.complete();
          }
       }
    }

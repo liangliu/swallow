@@ -2,6 +2,7 @@ package com.dianping.swallow.consumerserver.worker;
 
 import org.jboss.netty.channel.Channel;
 
+import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.internal.consumer.ACKHandlerType;
 
 public interface ConsumerWorker {
@@ -50,4 +51,16 @@ public interface ConsumerWorker {
     * @return
     */
    boolean allChannelDisconnected();
+   
+   /**
+    * 返回DURABLE_AT_LEAST模式下最大已收到ack的MessageId
+    * @return
+    */
+   long getMaxAckedMessageId();
+   
+   /**
+    * 获取ConsumerType
+    * @return
+    */
+   ConsumerType getConsumerType();
 }

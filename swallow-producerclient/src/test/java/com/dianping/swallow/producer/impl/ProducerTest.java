@@ -104,7 +104,7 @@ public class ProducerTest {
       ProducerConfig config = new ProducerConfig();
 
       config.setMode(ProducerMode.SYNC_MODE);
-      config.setRetryTimes(1);
+      config.setAsyncRetryTimes(1);
       config.setZipped(true);
 
       ProducerImpl producer = new ProducerImpl(dest, config, producerIP, producerVersion, normalRemoteService, 5000);
@@ -126,7 +126,7 @@ public class ProducerTest {
       ProducerConfig config = new ProducerConfig();
 
       config.setMode(ProducerMode.ASYNC_MODE);
-      config.setRetryTimes(2);
+      config.setAsyncRetryTimes(2);
       config.setZipped(false);
       config.setSendMsgLeftLastSession(false);
       config.setThreadPoolSize(2);
@@ -149,7 +149,7 @@ public class ProducerTest {
       ProducerConfig config = new ProducerConfig();
 
       config.setMode(ProducerMode.ASYNC_MODE);
-      config.setRetryTimes(2);
+      config.setAsyncRetryTimes(2);
       config.setZipped(false);
       config.setSendMsgLeftLastSession(false);
       config.setThreadPoolSize(2);
@@ -172,7 +172,7 @@ public class ProducerTest {
       ProducerConfig config = new ProducerConfig();
 
       config.setMode(ProducerMode.ASYNC_MODE);
-      config.setRetryTimes(2);
+      config.setAsyncRetryTimes(2);
       config.setZipped(true);
       config.setSendMsgLeftLastSession(true);
       config.setThreadPoolSize(2);
@@ -213,25 +213,28 @@ public class ProducerTest {
       //传入的config为null
       producer = (ProducerImpl) producerFactory.createProducer(dest, null);
       assertNotNull(producer);
-      assertEquals(ProducerMode.SYNC_MODE, producer.getProducerConfig().getMode());
-      assertEquals(5, producer.getProducerConfig().getRetryTimes());
-      assertEquals(false, producer.getProducerConfig().isZipped());
-      assertEquals(5, producer.getProducerConfig().getThreadPoolSize());
-      assertEquals(false, producer.getProducerConfig().isSendMsgLeftLastSession());
+      assertEquals(ProducerConfig.DEFAULT_PRODUCER_MODE, producer.getProducerConfig().getMode());
+      assertEquals(ProducerConfig.DEFAULT_ASYNC_RETRY_TIMES, producer.getProducerConfig().getAsyncRetryTimes());
+      assertEquals(ProducerConfig.DEFAULT_SYNC_RETRY_TIMES, producer.getProducerConfig().getSyncRetryTimes());
+      assertEquals(ProducerConfig.DEFAULT_ZIPPED, producer.getProducerConfig().isZipped());
+      assertEquals(ProducerConfig.DEFAULT_THREADPOOL_SIZE, producer.getProducerConfig().getThreadPoolSize());
+      assertEquals(ProducerConfig.DEFAULT_SEND_MSG_LEFT_LAST_SESSION, producer.getProducerConfig()
+            .isSendMsgLeftLastSession());
 
+      config.setSyncRetryTimes(12);
       producer = (ProducerImpl) producerFactory.createProducer(dest, config);
       assertNotNull(producer);
       assertEquals(ProducerMode.SYNC_MODE, producer.getProducerConfig().getMode());
-      assertEquals(5, producer.getProducerConfig().getRetryTimes());
+      assertEquals(12, producer.getProducerConfig().getSyncRetryTimes());
       assertEquals(false, producer.getProducerConfig().isZipped());
-      assertEquals(5, producer.getProducerConfig().getThreadPoolSize());
+      assertEquals(1, producer.getProducerConfig().getThreadPoolSize());
       assertEquals(false, producer.getProducerConfig().isSendMsgLeftLastSession());
 
       //测试创建异步模式的Producer
       producer = null;
 
       config.setMode(ProducerMode.ASYNC_MODE);
-      config.setRetryTimes(7);
+      config.setAsyncRetryTimes(7);
       config.setZipped(true);
       config.setSendMsgLeftLastSession(true);
       config.setThreadPoolSize(100);
@@ -239,7 +242,7 @@ public class ProducerTest {
       producer = (ProducerImpl) producerFactory.createProducer(dest, config);
       assertNotNull(producer);
       assertEquals(ProducerMode.ASYNC_MODE, producer.getProducerConfig().getMode());
-      assertEquals(7, producer.getProducerConfig().getRetryTimes());
+      assertEquals(7, producer.getProducerConfig().getAsyncRetryTimes());
       assertEquals(true, producer.getProducerConfig().isZipped());
       assertEquals(100, producer.getProducerConfig().getThreadPoolSize());
       assertEquals(true, producer.getProducerConfig().isSendMsgLeftLastSession());
@@ -251,34 +254,38 @@ public class ProducerTest {
       ProducerConfig producerConfig = new ProducerConfig();
 
       //测试默认值
-      assertEquals(ProducerMode.SYNC_MODE, producerConfig.getMode());
-      assertEquals(5, producerConfig.getRetryTimes());
-      assertEquals(false, producerConfig.isZipped());
-      assertEquals(5, producerConfig.getThreadPoolSize());
-      assertEquals(false, producerConfig.isSendMsgLeftLastSession());
+      assertEquals(ProducerConfig.DEFAULT_PRODUCER_MODE, producerConfig.getMode());
+      assertEquals(ProducerConfig.DEFAULT_ASYNC_RETRY_TIMES, producerConfig.getAsyncRetryTimes());
+      assertEquals(ProducerConfig.DEFAULT_SYNC_RETRY_TIMES, producerConfig.getSyncRetryTimes());
+      assertEquals(ProducerConfig.DEFAULT_ZIPPED, producerConfig.isZipped());
+      assertEquals(ProducerConfig.DEFAULT_THREADPOOL_SIZE, producerConfig.getThreadPoolSize());
+      assertEquals(ProducerConfig.DEFAULT_SEND_MSG_LEFT_LAST_SESSION, producerConfig.isSendMsgLeftLastSession());
 
       //测试设置值
       producerConfig.setMode(ProducerMode.ASYNC_MODE);
-      producerConfig.setRetryTimes(6);
+      producerConfig.setAsyncRetryTimes(6);
       producerConfig.setZipped(true);
       producerConfig.setThreadPoolSize(6);
       producerConfig.setSendMsgLeftLastSession(true);
 
       assertEquals(ProducerMode.ASYNC_MODE, producerConfig.getMode());
-      assertEquals(6, producerConfig.getRetryTimes());
+      assertEquals(6, producerConfig.getAsyncRetryTimes());
       assertEquals(true, producerConfig.isZipped());
       assertEquals(6, producerConfig.getThreadPoolSize());
       assertEquals(true, producerConfig.isSendMsgLeftLastSession());
 
       //测试非法值
-      producerConfig.setRetryTimes(-1);
-      assertEquals(5, producerConfig.getRetryTimes());
+      producerConfig.setAsyncRetryTimes(-1);
+      assertEquals(ProducerConfig.DEFAULT_ASYNC_RETRY_TIMES, producerConfig.getAsyncRetryTimes());
+
+      producerConfig.setSyncRetryTimes(-1);
+      assertEquals(ProducerConfig.DEFAULT_SYNC_RETRY_TIMES, producerConfig.getSyncRetryTimes());
 
       producerConfig.setThreadPoolSize(0);
-      assertEquals(5, producerConfig.getThreadPoolSize());
+      assertEquals(ProducerConfig.DEFAULT_THREADPOOL_SIZE, producerConfig.getThreadPoolSize());
 
       producerConfig.setThreadPoolSize(101);
-      assertEquals(5, producerConfig.getThreadPoolSize());
+      assertEquals(ProducerConfig.DEFAULT_THREADPOOL_SIZE, producerConfig.getThreadPoolSize());
    }
 
    @Test
@@ -294,7 +301,8 @@ public class ProducerTest {
       assertEquals(SwallowPigeonConfiguration.DEFAULT_TIMEOUT, defaultConfig.getTimeout());
       assertEquals(SwallowPigeonConfiguration.DEFAULT_WEIGHTS, defaultConfig.getWeights());
       assertEquals(SwallowPigeonConfiguration.DEFAULT_PUNISH_TIMEOUT, defaultConfig.getPunishTimeout());
-
+      assertNotNull(defaultConfig.toString());
+      
       //测试设置值
       defaultConfig.setHostsAndWeights("127.0.0.1:4999", "9");
       defaultConfig.setSerialize("what");
