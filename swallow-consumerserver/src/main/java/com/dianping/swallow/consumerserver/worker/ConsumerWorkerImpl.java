@@ -65,6 +65,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
    private volatile boolean                       started           = false;
    private ExecutorService                        ackExecutor;
    private PullStrategy                           pullStgy;
+   
    private ConfigManager                          configManager;
    private Map<Channel, Map<PktMessage, Boolean>> waitAckMessages   = new ConcurrentHashMap<Channel, Map<PktMessage, Boolean>>();
    private volatile long                          maxAckedMessageId = 0L;
@@ -149,6 +150,11 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       if (ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
          Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
          if (messageMap != null) {
+            try {
+               Thread.sleep(100);
+            } catch (InterruptedException e) {
+              //netty自身的线程，不会有谁Interrupt。
+            }
             for (Map.Entry<PktMessage, Boolean> messageEntry : messageMap.entrySet()) {
                cachedMessages.add(messageEntry.getKey());
             }
@@ -285,7 +291,9 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
             Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
             if (messageMap == null) {
                messageMap = new ConcurrentHashMap<PktMessage, Boolean>();
-               waitAckMessages.put(channel, messageMap);
+               if(connectedChannels.containsKey(channel)){
+                  waitAckMessages.put(channel, messageMap);
+               }              
             }
             messageMap.put(preparedMessage, Boolean.TRUE);
          }
@@ -387,8 +395,9 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
          StringBuilder sb = new StringBuilder();
          if (waitAckMessages != null) {
             for (Entry<Channel, Map<PktMessage, Boolean>> waitAckMessage : waitAckMessages.entrySet()) {
-               
-               sb.append(waitAckMessage.getKey().getRemoteAddress()).append(waitAckMessage.getValue().toString());
+               if(waitAckMessage.getValue().size() != 0){
+                  sb.append(waitAckMessage.getKey().getRemoteAddress()).append(waitAckMessage.getValue().toString());
+               }             
             }
          }
          return sb.toString();
