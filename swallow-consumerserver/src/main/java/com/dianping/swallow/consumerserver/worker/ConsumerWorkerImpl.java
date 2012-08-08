@@ -289,13 +289,15 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
          //如果是AT_LEAST模式，发送完后，在server端记录已发送但未收到ACK的消息记录
          if (ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
             Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
-            if (messageMap == null) {
-               messageMap = new ConcurrentHashMap<PktMessage, Boolean>();
-               if(connectedChannels.containsKey(channel)){
+            if (channel.isConnected()) {
+               if (messageMap == null) {
+                  messageMap = new ConcurrentHashMap<PktMessage, Boolean>();
                   waitAckMessages.put(channel, messageMap);
-               }              
+               }
+               messageMap.put(preparedMessage, Boolean.TRUE);
+            } else {
+               cachedMessages.add(preparedMessage);
             }
-            messageMap.put(preparedMessage, Boolean.TRUE);
          }
          //Cat begin
          t.addData("sha1", preparedMessage.getContent().getSha1());
