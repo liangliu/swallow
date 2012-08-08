@@ -99,6 +99,7 @@ public class ProducerServerForClient implements ProducerSwallowService {
             //            tree.setMessageId(((PktMessage)pkt).getCatEventID());
 
             Transaction producerServerTransaction = Cat.getProducer().newTransaction("In:" + topicName, catDomain);
+            producerServerTransaction.addData("ip", swallowMessage.getSourceIp());
             //将swallowMessage保存到mongodb
             try {
                messageDAO.saveMessage(topicName, swallowMessage);

@@ -1,6 +1,7 @@
 package com.dianping.swallow.consumer.internal;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
@@ -47,16 +48,14 @@ public class ConsumerThread extends Thread {
          synchronized (bootstrap) {
             if (!Thread.currentThread().isInterrupted()) {
                try {
-                  LOG.info("ConsumerThread(name=" + Thread.currentThread().getName() + ")-try connecting to "
-                        + remoteAddress);
+                  LOG.info("ConsumerThread-try connecting to " + remoteAddress);
                   ChannelFuture future = bootstrap.connect(remoteAddress);
                   future.awaitUninterruptibly();
                   if (future.getChannel().isConnected()) {
-                     LOG.info("ConsumerThread(name=" + Thread.currentThread().getName() + ")-connected to "
-                           + remoteAddress);
+                     SocketAddress localAddress = future.getChannel().getLocalAddress();
+                     LOG.info("ConsumerThread(localAddress=" + localAddress + ")-connected to " + remoteAddress);
                      future.getChannel().getCloseFuture().awaitUninterruptibly();//等待channel关闭，否则一直阻塞！
-                     LOG.info("ConsumerThread(name=" + Thread.currentThread().getName() + ")-closed from "
-                           + remoteAddress);
+                     LOG.info("ConsumerThread(localAddress=" + localAddress + ")-closed from " + remoteAddress);
                   }
                } catch (RuntimeException e) {
                   LOG.error(e.getMessage(), e);
@@ -69,7 +68,6 @@ public class ConsumerThread extends Thread {
             Thread.currentThread().interrupt();
          }
       }
-      LOG.info("ConsumerThread(name=" + Thread.currentThread().getName() + ",remoteAddress=" + remoteAddress
-            + ") done.");
+      LOG.info("ConsumerThread(remoteAddress=" + remoteAddress + ") done.");
    }
 }

@@ -21,8 +21,10 @@ import com.dianping.swallow.common.internal.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
+import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
 import com.dianping.swallow.common.internal.util.ZipUtil;
+import com.dianping.swallow.consumer.BackoutMessageException;
 import com.dianping.swallow.consumer.internal.ConsumerImpl;
 
 /**
@@ -90,7 +92,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                tree.setMessageId(catParentID);
             } catch (Exception e) {
             }
-            
+
             //处理消息
             //如果是压缩后的消息，则进行解压缩
             try {
@@ -100,7 +102,30 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                   }
                }
                try {
-                  consumer.getListener().onMessage(swallowMessage);
+                  DefaultPullStrategy pullStrategy = new DefaultPullStrategy(MessageClientHandler.this.consumer
+                        .getConfig().getDelayBaseOnBackoutMessageException(), MessageClientHandler.this.consumer
+                        .getConfig().getDelayUpperboundOnBackoutMessageException());
+                  int retryCount = 0;
+                  boolean success = false;
+                  while (!success
+                        && retryCount <= MessageClientHandler.this.consumer.getConfig()
+                              .getRetryCountOnBackoutMessageException()) {
+                     try {
+                        consumer.getListener().onMessage(swallowMessage);
+                        success = true;
+                     } catch (BackoutMessageException e) {
+                        retryCount++;
+                        if (retryCount <= MessageClientHandler.this.consumer.getConfig()
+                              .getRetryCountOnBackoutMessageException()) {
+                           LOG.error(
+                                 "BackoutMessageException occur on onMessage(), onMessage() will be retryed soon [retryCount="
+                                       + retryCount + "]. ", e);
+                           pullStrategy.fail(true);
+                        } else {
+                           LOG.error("BackoutMessageException occur on onMessage(), onMessage() failed.", e);
+                        }
+                     }
+                  }
                } catch (Exception e) {
                   LOG.info("exception in MessageListener", e);
                }
