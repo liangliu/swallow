@@ -1,6 +1,7 @@
 package com.dianping.swallow.consumerserver.worker;
 
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -64,6 +65,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
    private volatile boolean                       started           = false;
    private ExecutorService                        ackExecutor;
    private PullStrategy                           pullStgy;
+
    private ConfigManager                          configManager;
    private Map<Channel, Map<PktMessage, Boolean>> waitAckMessages   = new ConcurrentHashMap<Channel, Map<PktMessage, Boolean>>();
    private volatile long                          maxAckedMessageId = 0L;
@@ -137,7 +139,8 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
    private void updateMaxMessageId(Long ackedMsgId, Channel channel) {
       if (ackedMsgId != null && ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
          //         ackDao.add(topicName, consumerid, ackedMsgId, connectedChannels.get(channel));
-         LOG.info(ackedMsgId + " ACKED from " + connectedChannels.get(channel));
+         LOG.info("Receive ACK(" + topicName + "," + consumerid + "," + ackedMsgId + ") from "
+               + connectedChannels.get(channel));
          maxAckedMessageId = Math.max(maxAckedMessageId, ackedMsgId);
       }
    }
@@ -148,6 +151,11 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       if (ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
          Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
          if (messageMap != null) {
+            try {
+               Thread.sleep(100);
+            } catch (InterruptedException e) {
+               //netty自身的线程，不会有谁Interrupt。
+            }
             for (Map.Entry<PktMessage, Boolean> messageEntry : messageMap.entrySet()) {
                cachedMessages.add(messageEntry.getKey());
             }
@@ -178,7 +186,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
          @Override
          public void run() {
 
-            connectedChannels.put(channel, IPUtil.getIpFromChannel(channel, "127.0.0.1"));
+            connectedChannels.put(channel, IPUtil.getIpFromChannel(channel));
             started = true;
             for (int i = 0; i < clientThreadCount; i++) {
                freeChannels.add(channel);
@@ -282,11 +290,15 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
          //如果是AT_LEAST模式，发送完后，在server端记录已发送但未收到ACK的消息记录
          if (ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
             Map<PktMessage, Boolean> messageMap = waitAckMessages.get(channel);
-            if (messageMap == null) {
-               messageMap = new ConcurrentHashMap<PktMessage, Boolean>();
-               waitAckMessages.put(channel, messageMap);
+            if (channel.isConnected()) {
+               if (messageMap == null) {
+                  messageMap = new ConcurrentHashMap<PktMessage, Boolean>();
+                  waitAckMessages.put(channel, messageMap);
+               }
+               messageMap.put(preparedMessage, Boolean.TRUE);
+            } else {
+               cachedMessages.add(preparedMessage);
             }
-            messageMap.put(preparedMessage, Boolean.TRUE);
          }
          //Cat begin
          t.addData("sha1", preparedMessage.getContent().getSha1());
@@ -367,19 +379,32 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
          return "ConsumerId=" + consumerInfo.getConsumerId() + ",ConsumerType=" + consumerInfo.getConsumerType();
       }
 
-      public String getConsumerid() {
-         return consumerid;
-      }
+      //      public String getConsumerid() {
+      //         return consumerid;
+      //      }
 
       public String getTopicName() {
          return topicName;
       }
 
-      public String getPreparedMessage() {
+      public String getCachedMessages() {
          if (cachedMessages != null) {
             return cachedMessages.toString();
          }
          return null;
+      }
+
+      public String getWaitAckMessages() {
+         StringBuilder sb = new StringBuilder();
+         if (waitAckMessages != null) {
+            for (Entry<Channel, Map<PktMessage, Boolean>> waitAckMessage : waitAckMessages.entrySet()) {
+               if (waitAckMessage.getValue().size() != 0) {
+                  sb.append(waitAckMessage.getKey().getRemoteAddress()).append(waitAckMessage.getValue().toString());
+               }
+            }
+         }
+         return sb.toString();
+
       }
 
       public boolean isGetMessageisAlive() {
@@ -388,6 +413,10 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
 
       public boolean isStarted() {
          return started;
+      }
+
+      public String getMaxAckedMessageId() {
+         return Long.toString(maxAckedMessageId);
       }
 
       public String getMessageFilter() {

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
+import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.cat.message.spi.MessageTree;
@@ -21,8 +22,10 @@ import com.dianping.swallow.common.internal.consumer.ConsumerMessageType;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
+import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
 import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
 import com.dianping.swallow.common.internal.util.ZipUtil;
+import com.dianping.swallow.consumer.BackoutMessageException;
 import com.dianping.swallow.consumer.internal.ConsumerImpl;
 
 /**
@@ -63,7 +66,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) {
       //记录收到消息，并且记录发来消息的server的地址
       if (LOG.isDebugEnabled()) {
-         LOG.debug("messageReceived from " + ctx.getChannel().getRemoteAddress());
+         LOG.debug("messageReceived from " + e.getChannel().getRemoteAddress());
       }
 
       Runnable task = new Runnable() {
@@ -90,7 +93,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                tree.setMessageId(catParentID);
             } catch (Exception e) {
             }
-            
+
             //处理消息
             //如果是压缩后的消息，则进行解压缩
             try {
@@ -100,7 +103,36 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                   }
                }
                try {
-                  consumer.getListener().onMessage(swallowMessage);
+                  DefaultPullStrategy pullStrategy = new DefaultPullStrategy(MessageClientHandler.this.consumer
+                        .getConfig().getDelayBaseOnBackoutMessageException(), MessageClientHandler.this.consumer
+                        .getConfig().getDelayUpperboundOnBackoutMessageException());
+                  int retryCount = 0;
+                  boolean success = false;
+                  while (!success
+                        && retryCount <= MessageClientHandler.this.consumer.getConfig()
+                              .getRetryCountOnBackoutMessageException()) {
+                     Transaction consumeTryTras = Cat.getProducer().newTransaction("consumeTry", swallowMessage.getMessageId().toString());
+                     try {
+                        consumer.getListener().onMessage(swallowMessage);
+                        consumeTryTras.setStatus(Message.SUCCESS);
+                        success = true;
+                     } catch (BackoutMessageException e) {
+                        retryCount++;
+                        consumeTryTras.addData("Try", retryCount);
+                        consumeTryTras.setStatus(e);
+                        if (retryCount <= MessageClientHandler.this.consumer.getConfig()
+                              .getRetryCountOnBackoutMessageException()) {
+                           LOG.error(
+                                 "BackoutMessageException occur on onMessage(), onMessage() will be retryed soon [retryCount="
+                                       + retryCount + "]. ", e);
+                           pullStrategy.fail(true);
+                        } else {
+                           LOG.error("BackoutMessageException occur on onMessage(), onMessage() failed.", e);
+                        }
+                     } finally{
+                        consumeTryTras.complete();
+                     }
+                  }
                } catch (Exception e) {
                   LOG.info("exception in MessageListener", e);
                }
@@ -109,16 +141,21 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                LOG.error("can not uncompress message with messageId " + messageId, e);
                consumerClientTransaction.setStatus(e);
                Cat.getProducer().logError(e);
-            } finally {
-               consumerClientTransaction.complete();
             }
-
+            
+            Transaction ackTransaction = Cat.getProducer().newTransaction("MsgACK", swallowMessage.getMessageId().toString());
             try {
                e.getChannel().write(consumermessage);
+               ackTransaction.setStatus(Message.SUCCESS);
             } catch (RuntimeException e) {
                LOG.warn("write to swallowC error.", e);
+               ackTransaction.setStatus(e);
+               Cat.getProducer().logError(e);
+            } finally {
+               ackTransaction.complete();
             }
 
+            consumerClientTransaction.complete();
          }
       };
 

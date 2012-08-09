@@ -70,25 +70,14 @@ public class IPUtil {
       }
    }
 
-   public static String getIpFromChannel(Channel channel, String defaultIP) {
+   public static String getIpFromChannel(Channel channel) {
       if (channel == null) {
-         return defaultIP;
+         return "unknown";
       }
-      String channelIP = defaultIP;
       try {
-         String str = channel.getRemoteAddress().toString();
-         int beginIdx = str.indexOf("/") + 1;
-         int endIdx = str.indexOf(":");
-         if (beginIdx < 0) {
-            beginIdx = 0;
-         }
-         if (endIdx < 0) {
-            channelIP = str.substring(beginIdx).trim();
-         } else {
-            channelIP = str.substring(beginIdx, endIdx).trim();
-         }
-      } catch (Exception iobe) {
+         return channel.getRemoteAddress().toString().substring(1);
+      } catch (RuntimeException e) {
       }
-      return channelIP;
+      return "unknown";
    }
 }

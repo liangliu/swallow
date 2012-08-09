@@ -11,6 +11,8 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.common.consumer.ConsumerType;
 import com.dianping.swallow.common.internal.codec.JsonDecoder;
@@ -26,6 +28,8 @@ import com.dianping.swallow.consumer.internal.config.ConfigManager;
 import com.dianping.swallow.consumer.internal.netty.MessageClientHandler;
 
 public class ConsumerImpl implements Consumer {
+
+   private static final Logger    LOG           = LoggerFactory.getLogger(ConsumerImpl.class);
 
    private ConsumerThread         masterConsumerThread;
 
@@ -120,6 +124,7 @@ public class ConsumerImpl implements Consumer {
     */
    @Override
    public void start() {
+      LOG.info("Starting " + this.toString());
       if (listener == null) {
          throw new IllegalArgumentException(
                "MessageListener is null, MessageListener should be set(use setListener()) before start.");
@@ -177,4 +182,12 @@ public class ConsumerImpl implements Consumer {
          slaveConsumerThread.interrupt();
       }
    }
+
+   @Override
+   public String toString() {
+      return String.format(
+            "ConsumerImpl [consumerId=%s, dest=%s, masterAddress=%s, slaveAddress=%s, configManager=%s, config=%s]",
+            consumerId, dest, masterAddress, slaveAddress, configManager, config);
+   }
+
 }

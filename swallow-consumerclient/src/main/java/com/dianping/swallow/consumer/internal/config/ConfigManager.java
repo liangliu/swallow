@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * 该类用于设置Consumer的选项，所有Consumer共用一个ConsumerConfig。 <br>
  * <em>Internal-use-only</em> used by Swallow. <strong>DO NOT</strong> access
  * this class outside of Swallow.
  * 
@@ -30,10 +31,6 @@ public final class ConfigManager {
 
    public long getConnectSlaveInterval() {
       return connectSlaveInterval;
-   }
-
-   public static void main(String[] args) {
-      new ConfigManager();
    }
 
    public static ConfigManager getInstance() {
@@ -113,4 +110,11 @@ public final class ConfigManager {
          }
       }
    }
+
+   @Override
+   public String toString() {
+      return String.format("ConfigManager [connectMasterInterval=%s, connectSlaveInterval=%s]", connectMasterInterval,
+            connectSlaveInterval);
+   }
+
 }
