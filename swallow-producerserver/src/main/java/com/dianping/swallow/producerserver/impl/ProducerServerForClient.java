@@ -103,7 +103,7 @@ public class ProducerServerForClient implements ProducerSwallowService {
             //将swallowMessage保存到mongodb
             try {
                messageDAO.saveMessage(topicName, swallowMessage);
-               producerServerTransaction.addData(swallowMessage.getSha1());
+               producerServerTransaction.addData("sha1", swallowMessage.getSha1());
                producerServerTransaction.setStatus(Message.SUCCESS);
             } catch (Exception e) {
                producerServerTransaction.addData(swallowMessage.toKeyValuePairs());

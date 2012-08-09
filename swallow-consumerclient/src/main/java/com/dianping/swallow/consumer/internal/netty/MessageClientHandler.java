@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
-import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.cat.message.spi.MessageTree;
@@ -120,6 +119,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                         retryCount++;
                         consumeTryTras.addData("Try", retryCount);
                         consumeTryTras.setStatus(e);
+                        Cat.getProducer().logError(e);
                         if (retryCount <= MessageClientHandler.this.consumer.getConfig()
                               .getRetryCountOnBackoutMessageException()) {
                            LOG.error(

@@ -15,7 +15,10 @@
  */
 package com.dianping.swallow.common.internal.util;
 
+import java.util.regex.Pattern;
+
 public class NameCheckUtil {
+   static Pattern topicNamePattern = Pattern.compile("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,29}");
    private NameCheckUtil() {
    }
 
@@ -33,7 +36,7 @@ public class NameCheckUtil {
       if (topicName == null || topicName.length() == 0) {
          return false;
       }
-      if (topicName.matches("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,29}")) {
+      if(topicNamePattern.matcher(topicName).matches()){
          return true;
       }
       return false;

@@ -1,16 +1,17 @@
 package com.dianping.swallow.producer.cases;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.filequeue.FileQueueClosedException;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.SendFailedException;
 import com.dianping.swallow.producer.Producer;
 import com.dianping.swallow.producer.ProducerConfig;
+import com.dianping.swallow.producer.ProducerMode;
 import com.dianping.swallow.producer.impl.ProducerFactoryImpl;
 
 public class MultipleThreadSend {
@@ -36,11 +37,20 @@ public class MultipleThreadSend {
 
       @Override
       public void run() {
+         String content = "";
+         for (int i = 0; i < 10; i++) {
+            content += "abcdefghij1234567890!@#$%^&*()          abcdefghij1234567890!@#$%^&*()          abcdefghij1234567890";
+         }
          int i = 0;
+         long begin = System.currentTimeMillis();
          if (count > 0) {
             for (i = 0; i < count; i++) {
+               if (i % 10000 == 0) {
+                  System.out.println(pre + ": " + "sent " + i);
+               }
                try {
-                  System.out.println(producer.sendMessage(pre + ": " + ++i));
+                  producer.sendMessage(pre+ " " + ++i + ": " + content);
+                  //                  System.out.println();
                   Thread.sleep(freq < 0 ? 0 : freq);
                } catch (SendFailedException e) {
                   logger.warn("Message sent failed, message ID=" + i);
@@ -63,21 +73,172 @@ public class MultipleThreadSend {
                }
             }
          }
+         System.out.println(">>>>>>>>>>send end. cost: " + (System.currentTimeMillis() - begin));
       }
    }
 
-   public void syncSend(int threadNum, int count, int freq) {
-      ExecutorService threadPool = Executors.newFixedThreadPool(threadNum);
+   public void syncSend(int threadNum, final int count, int freq) throws InterruptedException {
       ProducerConfig config = new ProducerConfig();
-      config.setAsyncRetryTimes(1);
-      Producer producer = producerFactory.createProducer(Destination.topic("example"), config);
+      final Producer producer = producerFactory.createProducer(Destination.topic("example"), config);
+      String content = "";
+      for (int i = 0; i < 10; i++) {
+         content += "abcdefghij1234567890!@#$%^&*()          abcdefghij1234567890!@#$%^&*()          abcdefghij1234567890";
+      }
+      final String realContent = content;
+      final CountDownLatch end = new CountDownLatch(threadNum);
+      final CountDownLatch start = new CountDownLatch(1);
+      System.out.println(">>>>>>>>>sleep a while");
+      Thread.sleep(60000);
+
       for (int i = 0; i < threadNum;) {
          ++i;
-         threadPool.execute(new TskSync(producer, count, freq, "Thread " + i + ": "));
+         Thread t = new Thread(new Runnable() {
+            
+            @Override
+            public void run() {
+               try {
+                  start.await();
+               } catch (InterruptedException e) {
+                  // TODO Auto-generated catch block
+                  e.printStackTrace();
+               }
+               for(int i =0; i< count; i ++ ){
+                  try {
+                     producer.sendMessage(realContent);
+                  } catch (SendFailedException e) {
+                     e.printStackTrace();
+                  }
+               }
+             end.countDown();
+            }
+         });
+         t.start();
       }
+      
+    long begin = System.currentTimeMillis();
+    start.countDown();
+    try {
+       end.await();
+    } catch (InterruptedException e) {
+       // TODO Auto-generated catch block
+       e.printStackTrace();
+    }
+    System.out.println(">>>>>>>>cost:" + (System.currentTimeMillis() - begin));
    }
 
-   public static void main(String[] args) throws RemoteServiceInitFailedException {
-      new MultipleThreadSend().syncSend(500, -1, -1);
+   public void asyncSend(int threadNum, int threadPoolSizeForEachProducer, final int count, int freq) {
+//      ExecutorService threadPool = Executors.newFixedThreadPool(threadNum);
+      ProducerConfig config = new ProducerConfig();
+      config.setMode(ProducerMode.ASYNC_MODE);
+      config.setZipped(false);
+      config.setThreadPoolSize(threadPoolSizeForEachProducer);
+      config.setSendMsgLeftLastSession(false);
+      config.setAsyncRetryTimes(2);
+      final Producer producer = producerFactory.createProducer(Destination.topic("example"), config);
+      String content = "";
+      for (int i = 0; i < 10; i++) {
+         content += "abcdefghij1234567890!@#$%^&*()          abcdefghij1234567890!@#$%^&*()          abcdefghij1234567890";
+      }
+      final String realContent = content;
+      final CountDownLatch end = new CountDownLatch(threadNum);
+      final CountDownLatch start = new CountDownLatch(1);
+
+      for (int i = 0; i < threadNum;) {
+         ++i;
+         Thread t = new Thread(new Runnable() {
+            
+            @Override
+            public void run() {
+               try {
+                  start.await();
+               } catch (InterruptedException e) {
+                  // TODO Auto-generated catch block
+                  e.printStackTrace();
+               }
+               for(int i =0; i< count; i ++ ){
+                  try {
+                     producer.sendMessage(realContent);
+                  } catch (SendFailedException e) {
+                     e.printStackTrace();
+                  }
+               }
+             end.countDown();
+            }
+         });
+         t.start();
+      }
+      
+    long begin = System.currentTimeMillis();
+    start.countDown();
+    try {
+       end.await();
+    } catch (InterruptedException e) {
+       // TODO Auto-generated catch block
+       e.printStackTrace();
+    }
+    System.out.println(">>>>>>>>cost:" + (System.currentTimeMillis() - begin));
+    
+
+   }
+
+   public static void main(String[] args) throws RemoteServiceInitFailedException, FileQueueClosedException, InterruptedException {
+
+      new MultipleThreadSend().asyncSend(20, 2, 100000, -1);
+//      new MultipleThreadSend().syncSend(20, 100000, -1);
+//         final FileQueue<String> queue = new DefaultFileQueueImpl<String>("sendSpeedMulti-test",
+//               false);
+//
+//         StringBuilder sb = new StringBuilder();
+//         for (int i = 0; i < 1000; i++) {
+//            sb.append("a");
+//         }
+//
+//         final String content = sb.toString();
+//
+//         // prepare
+//         for (int i = 0; i < 100; i++) {
+//            queue.add(content);
+//         }
+//
+//         int threadCount = 20;
+//         final CountDownLatch end = new CountDownLatch(threadCount);
+//         final CountDownLatch start = new CountDownLatch(1);
+//
+//         for (int i = 0; i < threadCount; i++) {
+//            Thread t = new Thread(new Runnable() {
+//
+//               @Override
+//               public void run() {
+//                  try {
+//                     start.await();
+//                  } catch (InterruptedException e) {
+//                     // TODO Auto-generated catch block
+//                     e.printStackTrace();
+//                  }
+//                  for (int j = 0; j < 100000; j++) {
+//                     try {
+//                        queue.add(content);
+//                     } catch (FileQueueClosedException e) {
+//                        // TODO Auto-generated catch block
+//                        e.printStackTrace();
+//                     }
+//                  }
+//                  end.countDown();
+//               }
+//            });
+//            t.start();
+//         }
+//
+//         long startTime = System.currentTimeMillis();
+//         start.countDown();
+//         try {
+//            end.await();
+//         } catch (InterruptedException e) {
+//            // TODO Auto-generated catch block
+//            e.printStackTrace();
+//         }
+//         System.out.println("Send time: " + (System.currentTimeMillis() - startTime) + "ms for 200000 1k msg");
+//    
+//
    }
 }

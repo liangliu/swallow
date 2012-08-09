@@ -67,7 +67,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
                LOGGER.error(e.getMessage(), e);
             }
          }
-      }, "swallow-FilequeueHeartBeat-");
+      }, "swallow-FilequeueHeartBeat-").start();
    }
 
    /**
@@ -140,7 +140,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
          while (true) {
             //重置延时
             defaultPullStrategy.succeess();
-            
+
             //从filequeue获取message，如果filequeue无元素则阻塞            
             message = messageQueue.get();
 
@@ -153,7 +153,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
             } catch (Exception e) {
                //跟丢了，舍弃
             }
-            
+
             //发送message，重试次数从Producer获取
             for (leftRetryTimes = sendTimes; leftRetryTimes > 0;) {
                leftRetryTimes--;
@@ -164,7 +164,8 @@ public class HandlerAsynchroMode implements ProducerHandler {
                } catch (Exception e) {
                   //如果剩余重试次数>0，超时重试
                   if (leftRetryTimes > 0) {
-                     Transaction retryTransaction = Cat.getProducer().newTransaction("MessageTried", producer.getDestination().getName());
+                     Transaction retryTransaction = Cat.getProducer().newTransaction("MessageTried",
+                           producer.getDestination().getName());
                      try {
                         defaultPullStrategy.fail(true);
                      } catch (InterruptedException ie) {
