@@ -186,7 +186,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
          @Override
          public void run() {
 
-            connectedChannels.put(channel, IPUtil.getIpFromChannel(channel, "127.0.0.1"));
+            connectedChannels.put(channel, IPUtil.getIpFromChannel(channel));
             started = true;
             for (int i = 0; i < clientThreadCount; i++) {
                freeChannels.add(channel);

@@ -65,7 +65,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) {
       //记录收到消息，并且记录发来消息的server的地址
       if (LOG.isDebugEnabled()) {
-         LOG.debug("messageReceived from " + ctx.getChannel().getRemoteAddress());
+         LOG.debug("messageReceived from " + e.getChannel().getRemoteAddress());
       }
 
       Runnable task = new Runnable() {
