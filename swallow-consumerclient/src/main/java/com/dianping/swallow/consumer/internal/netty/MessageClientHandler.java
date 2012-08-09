@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
+import com.dianping.cat.message.Event;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.cat.message.spi.MessageTree;
@@ -110,11 +111,15 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                   while (!success
                         && retryCount <= MessageClientHandler.this.consumer.getConfig()
                               .getRetryCountOnBackoutMessageException()) {
+                     Transaction consumeTryTras = Cat.getProducer().newTransaction("consumeTry", swallowMessage.getMessageId().toString());
                      try {
                         consumer.getListener().onMessage(swallowMessage);
+                        consumeTryTras.setStatus(Message.SUCCESS);
                         success = true;
                      } catch (BackoutMessageException e) {
                         retryCount++;
+                        consumeTryTras.addData("Try", retryCount);
+                        consumeTryTras.setStatus(e);
                         if (retryCount <= MessageClientHandler.this.consumer.getConfig()
                               .getRetryCountOnBackoutMessageException()) {
                            LOG.error(
@@ -124,6 +129,8 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                         } else {
                            LOG.error("BackoutMessageException occur on onMessage(), onMessage() failed.", e);
                         }
+                     } finally{
+                        consumeTryTras.complete();
                      }
                   }
                } catch (Exception e) {
@@ -134,16 +141,21 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                LOG.error("can not uncompress message with messageId " + messageId, e);
                consumerClientTransaction.setStatus(e);
                Cat.getProducer().logError(e);
-            } finally {
-               consumerClientTransaction.complete();
             }
-
+            
+            Transaction ackTransaction = Cat.getProducer().newTransaction("MsgACK", swallowMessage.getMessageId().toString());
             try {
                e.getChannel().write(consumermessage);
+               ackTransaction.setStatus(Message.SUCCESS);
             } catch (RuntimeException e) {
                LOG.warn("write to swallowC error.", e);
+               ackTransaction.setStatus(e);
+               Cat.getProducer().logError(e);
+            } finally {
+               ackTransaction.complete();
             }
 
+            consumerClientTransaction.complete();
          }
       };
 
