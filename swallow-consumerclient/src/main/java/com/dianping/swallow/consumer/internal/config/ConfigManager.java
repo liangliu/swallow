@@ -110,4 +110,11 @@ public final class ConfigManager {
          }
       }
    }
+
+   @Override
+   public String toString() {
+      return String.format("ConfigManager [connectMasterInterval=%s, connectSlaveInterval=%s]", connectMasterInterval,
+            connectSlaveInterval);
+   }
+
 }

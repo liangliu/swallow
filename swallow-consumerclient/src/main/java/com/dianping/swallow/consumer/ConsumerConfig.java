@@ -141,4 +141,13 @@ public class ConsumerConfig {
       this.retryCountOnBackoutMessageException = retryCountOnBackoutMessageException;
    }
 
+   @Override
+   public String toString() {
+      return String
+            .format(
+                  "ConsumerConfig [threadPoolSize=%s, messageFilter=%s, consumerType=%s, delayBaseOnBackoutMessageException=%s, delayUpperboundOnBackoutMessageException=%s, retryCountOnBackoutMessageException=%s]",
+                  threadPoolSize, messageFilter, consumerType, delayBaseOnBackoutMessageException,
+                  delayUpperboundOnBackoutMessageException, retryCountOnBackoutMessageException);
+   }
+
 }
