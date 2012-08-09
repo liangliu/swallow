@@ -184,7 +184,7 @@ public class ConsumerWorkerManager {
          lastSavedAckedMsgId = lastSavedAckedMsgId == null ? 0 : lastSavedAckedMsgId;
          Long currentMaxAckedMsgId = worker.getMaxAckedMessageId();
          if(currentMaxAckedMsgId > 0 && currentMaxAckedMsgId > lastSavedAckedMsgId) {
-            ackDAO.add(consumerId.getDest().getName(), consumerId.getConsumerId(), currentMaxAckedMsgId, "");
+            ackDAO.add(consumerId.getDest().getName(), consumerId.getConsumerId(), currentMaxAckedMsgId, "batch");
             consumerId2MaxSavedAckedMessageId.put(consumerId, currentMaxAckedMsgId);
          }
       }
