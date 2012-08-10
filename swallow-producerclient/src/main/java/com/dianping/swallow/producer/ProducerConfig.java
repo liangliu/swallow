@@ -155,12 +155,11 @@ public class ProducerConfig {
    public String toString() {
       return "Mode="
             + getMode()
-            + "; RetryTimes="
-            + getAsyncRetryTimes()
             + "; Zipped="
             + isZipped()
             + (getMode() == ProducerMode.ASYNC_MODE ? "; ThreadPoolSize=" + getThreadPoolSize()
-                  + "; SendMsgLeftLastSession=" + isSendMsgLeftLastSession() : "");
+                  + "; SendMsgLeftLastSession=" + isSendMsgLeftLastSession() + "; AsyncRetryTimes="
+                  + getAsyncRetryTimes() : "; SyncRetryTimes=" + getSyncRetryTimes());
    }
 
    public int getSyncRetryTimes() {
