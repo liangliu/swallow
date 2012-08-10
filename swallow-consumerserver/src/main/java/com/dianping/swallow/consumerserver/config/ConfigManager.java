@@ -24,11 +24,11 @@ public final class ConfigManager {
    private long                 checkConnectedChannelInterval   = 10000L;
    private long                 retryIntervalWhenMongoException = 2000L;
    private long                 waitAckTimeWhenCloseSwc         = 15000L;
-   private long                 waitSlaveShutDown               = 3000L;
+   private long                 waitSlaveShutDown               = 30000L;
    private long                 closeChannelMaxWaitingTime      = 10000L;
-   private int                  heartbeatCheckInterval          = 3000;
+   private int                  heartbeatCheckInterval          = 2000;
    private int                  heartbeatMaxStopTime            = 10000;
-   private int                  heartbeatUpdateInterval         = 4000;
+   private int                  heartbeatUpdateInterval         = 2000;
    private int                  maxClientThreadCount            = 100;
    private int                  masterPort                      = 8081;
    private int                  slavePort                       = 8082;
