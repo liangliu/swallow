@@ -1,6 +1,9 @@
 package com.dianping.swallow.producerserver.impl;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -10,6 +13,10 @@ import junit.framework.Assert;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelEvent;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelStateEvent;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -42,6 +49,7 @@ public class ProducerServerForTextTest {
          @Override
          public boolean matches(Object arg0) {
             TextACK textAck = (TextACK)arg0;
+            System.out.println(textAck.toString());
             Assert.assertEquals(TextACK.class, arg0.getClass());
             switch(textAck.getStatus()){
                case ProducerServerTextHandler.OK:
@@ -79,6 +87,20 @@ public class ProducerServerForTextTest {
       
       doThrow(new RuntimeException()).when(messageDAO).saveMessage(Matchers.anyString(), (SwallowMessage)Matchers.anyObject());
       producerServerTextHandler.messageReceived(null, messageEvent);
+      
+      ChannelEvent e = mock(ChannelStateEvent.class);
+      ExceptionEvent e2 = mock (ExceptionEvent.class);
+      ChannelHandlerContext ctx = mock(ChannelHandlerContext.class);
+      producerServerTextHandler.handleUpstream(ctx, e);
+      producerServerTextHandler.exceptionCaught(ctx, e2);
+      
+      new ProducerServerForText().start();
    }
-
+   
+   @Test
+   public void testProducerServerTextPipelineFactory(){
+      MessageDAO messageDAO = mock(MessageDAO.class);
+      ProducerServerTextPipelineFactory pstp = new ProducerServerTextPipelineFactory(messageDAO);
+      System.out.println(pstp.getPipeline().toString());
+   }
 }

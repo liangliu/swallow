@@ -49,9 +49,6 @@ public class TextObject {
       this.isACK = isACK;
    }
    
-   public boolean getIsACK() {
-	   return isACK;
-   }
 
    @Override
    public String toString() {
