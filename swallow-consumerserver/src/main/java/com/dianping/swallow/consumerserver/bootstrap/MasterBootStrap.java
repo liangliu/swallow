@@ -46,7 +46,7 @@ public class MasterBootStrap {
             new String[] { "applicationContext-consumerserver.xml" });
       final ConsumerWorkerManager consumerWorkerManager = ctx.getBean(ConsumerWorkerManager.class);
       consumerWorkerManager.init(isSlave);
-      LOG.info("wait " + consumerWorkerManager.getConfigManager().getWaitSlaveShutDown() + " for slave to stop working");
+      LOG.info("wait " + consumerWorkerManager.getConfigManager().getWaitSlaveShutDown() + "ms for slave to stop working");
       try {
          Thread.sleep(consumerWorkerManager.getConfigManager().getWaitSlaveShutDown());//主机启动的时候睡眠一会，给时间给slave关闭。
       } catch (InterruptedException e) {

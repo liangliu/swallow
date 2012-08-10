@@ -24,11 +24,11 @@ public final class ConfigManager {
    private long                 checkConnectedChannelInterval   = 10000L;
    private long                 retryIntervalWhenMongoException = 2000L;
    private long                 waitAckTimeWhenCloseSwc         = 15000L;
-   private long                 waitSlaveShutDown               = 3000L;
+   private long                 waitSlaveShutDown               = 30000L;
    private long                 closeChannelMaxWaitingTime      = 10000L;
-   private int                  heartbeatCheckInterval          = 3000;
+   private int                  heartbeatCheckInterval          = 2000;
    private int                  heartbeatMaxStopTime            = 10000;
-   private int                  heartbeatUpdateInterval         = 4000;
+   private int                  heartbeatUpdateInterval         = 2000;
    private int                  maxClientThreadCount            = 100;
    private int                  masterPort                      = 8081;
    private int                  slavePort                       = 8082;
@@ -98,7 +98,7 @@ public final class ConfigManager {
    public int getHeartbeatUpdateInterval() {
       return heartbeatUpdateInterval;
    }
-   
+
    public int getMaxAckedMessageIdUpdateInterval() {
       return maxAckedMessageIdUpdateInterval;
    }
@@ -170,16 +170,20 @@ public final class ConfigManager {
       } else {
          LOG.info(configFileName + " not found, use default");
       }
-      if (LOG.isDebugEnabled()) {
-         Field[] fields = clazz.getDeclaredFields();
-         for (int i = 0; i < fields.length; i++) {
-            Field f = fields[i];
-            f.setAccessible(true);
-            if (!Modifier.isStatic(f.getModifiers())) {
-               try {
-                  LOG.debug(f.getName() + "=" + f.get(this));
-               } catch (Exception e) {
-               }
+      //设置masterIP
+      String masterIp = System.getProperty("masterIp");
+      if (masterIp != null && masterIp.length() > 0) {
+         this.masterIp = masterIp;
+      }
+      //打印参数
+      Field[] fields = clazz.getDeclaredFields();
+      for (int i = 0; i < fields.length; i++) {
+         Field f = fields[i];
+         f.setAccessible(true);
+         if (!Modifier.isStatic(f.getModifiers())) {
+            try {
+               LOG.info(f.getName() + "=" + f.get(this));
+            } catch (Exception e) {
             }
          }
       }
