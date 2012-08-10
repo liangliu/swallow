@@ -33,7 +33,7 @@ elif [ "$1" == "slave" ]; then
           usage
           exit 1
        fi
-       SLAVE_JAVA_OPTS="${SLAVE_JAVA_OPTS} $2"
+       SLAVE_JAVA_OPTS="${SLAVE_JAVA_OPTS} -DmasterIp=$2"
     else
        echo "no masterIp option (e.g. '<masterIp>'), would use the 'masterIp' property in swallow-consumerserver.properties "
     fi
