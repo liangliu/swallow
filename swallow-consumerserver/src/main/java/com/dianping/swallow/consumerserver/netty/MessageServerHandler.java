@@ -130,7 +130,7 @@ public class MessageServerHandler extends SimpleChannelUpstreamHandler {
    @Override
    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) {
       removeChannel(e);
-      LOG.error("Client disconnected from swallowC!", e.getCause());
+      LOG.error("Exception from " + e.getChannel().getRemoteAddress(), e.getCause());
       e.getChannel().close();
 
    }

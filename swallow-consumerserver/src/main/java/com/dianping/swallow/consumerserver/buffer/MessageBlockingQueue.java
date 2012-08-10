@@ -154,24 +154,20 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
          LOG.info("thread done:" + this.getName());
       }
 
+      @SuppressWarnings("rawtypes")
       private void retrieveMessage() {
          if (LOG.isDebugEnabled()) {
             LOG.debug("retriveMessage() start:" + this.getName());
          }
          try {
-            List<Message> messages = messageRetriever.retriveMessage(MessageBlockingQueue.this.topicName,
+            List messages = messageRetriever.retriveMessage(MessageBlockingQueue.this.topicName,
                   MessageBlockingQueue.this.tailMessageId, MessageBlockingQueue.this.messageFilter);
-            if (messages != null) {
-               int size = messages.size();
-               for (int i = 0; i < size; i++) {
-                  Message message = messages.get(i);
+            if (messages != null && messages.size() > 0) {
+               tailMessageId = (Long) messages.get(0);
+               for (int i = 1; i < messages.size(); i++) {
+                  Message message = (Message) messages.get(i);
                   try {
                      MessageBlockingQueue.this.put(message);
-                     Long messageId = message.getMessageId();
-                     if (messageId == null) {
-                        throw new IllegalStateException("the retrived message's messageId is null:" + message);
-                     }
-                     tailMessageId = messageId;
                      if (LOG.isDebugEnabled()) {
                         LOG.debug("add message to (topic=" + topicName + ",cid=" + cid + ") queue:"
                               + message.toString());

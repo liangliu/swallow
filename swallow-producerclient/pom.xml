@@ -69,7 +69,6 @@
 			<activation>
 				<property>
 					<name>env</name>
-					<value>product</value>
 				</property>
 			</activation>
 			<build>

@@ -18,7 +18,7 @@ public interface MessageDAO {
    SwallowMessage getMessage(String topicName, Long messageId);
 
    /**
-    * 获取topic数据库的topicName集合/表里，size条messageId字段比messageId参数大的记录
+    * 获取topic数据库的topicName集合/表里，size条messageId字段比messageId参数大的记录（按messageId正序排序）
     */
    List<SwallowMessage> getMessagesGreaterThan(String topicName, Long messageId, int size);
 
