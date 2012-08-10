@@ -88,7 +88,6 @@ public class SlaveBootStrap {
             consumerWorkerManager.close();
             LOG.info("consumerWorkerManager.close()-finished");
             closeNettyRelatedResource();
-            Thread.currentThread().interrupt();
          }
 
       });
