@@ -98,7 +98,7 @@ public final class ConfigManager {
    public int getHeartbeatUpdateInterval() {
       return heartbeatUpdateInterval;
    }
-   
+
    public int getMaxAckedMessageIdUpdateInterval() {
       return maxAckedMessageIdUpdateInterval;
    }
@@ -170,16 +170,20 @@ public final class ConfigManager {
       } else {
          LOG.info(configFileName + " not found, use default");
       }
-      if (LOG.isDebugEnabled()) {
-         Field[] fields = clazz.getDeclaredFields();
-         for (int i = 0; i < fields.length; i++) {
-            Field f = fields[i];
-            f.setAccessible(true);
-            if (!Modifier.isStatic(f.getModifiers())) {
-               try {
-                  LOG.debug(f.getName() + "=" + f.get(this));
-               } catch (Exception e) {
-               }
+      //设置masterIP
+      String masterIp = System.getProperty("masterIp");
+      if (masterIp != null && masterIp.length() > 0) {
+         this.masterIp = masterIp;
+      }
+      //打印参数
+      Field[] fields = clazz.getDeclaredFields();
+      for (int i = 0; i < fields.length; i++) {
+         Field f = fields[i];
+         f.setAccessible(true);
+         if (!Modifier.isStatic(f.getModifiers())) {
+            try {
+               LOG.info(f.getName() + "=" + f.get(this));
+            } catch (Exception e) {
             }
          }
       }
