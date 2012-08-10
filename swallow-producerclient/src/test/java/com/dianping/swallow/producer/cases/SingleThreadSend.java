@@ -40,8 +40,6 @@ public class SingleThreadSend {
       config.setSyncRetryTimes(2);
       Producer producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic("example"), config);
       int sent = 0;
-//      System.out.println(">>>>>>>>>sleep a while");
-//      Thread.sleep(60000);
       System.out.println(">>>>>>>>>>send start.");
       long begin = System.currentTimeMillis();
       if (count <= 0) {
@@ -51,10 +49,7 @@ public class SingleThreadSend {
          }
       } else {
          for (int i = 0; i < count; i++) {
-//            producer.sendMessage(++sent + ": " + content, properties, type);
             producer.sendMessage(content);
-            //            System.out.println();
-//            Thread.sleep(freq < 0 ? 0 : freq);
          }
       }
       System.out.println(">>>>>>>>>>>send end. cost: " + (System.currentTimeMillis() - begin));
@@ -98,9 +93,7 @@ public class SingleThreadSend {
          }
       } else {
          for (int i = 0; i < count; i++) {
-//            producer.sendMessage(content, properties, type);
             producer.sendMessage(content);
-//            Thread.sleep(freq < 0 ? 0 : freq);
          }
          System.out.println("total cost: " + (System.currentTimeMillis() - begin));
       }

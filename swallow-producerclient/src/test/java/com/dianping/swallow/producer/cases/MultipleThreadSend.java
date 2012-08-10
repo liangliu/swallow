@@ -50,7 +50,6 @@ public class MultipleThreadSend {
                }
                try {
                   producer.sendMessage(pre+ " " + ++i + ": " + content);
-                  //                  System.out.println();
                   Thread.sleep(freq < 0 ? 0 : freq);
                } catch (SendFailedException e) {
                   logger.warn("Message sent failed, message ID=" + i);
@@ -99,7 +98,6 @@ public class MultipleThreadSend {
                try {
                   start.await();
                } catch (InterruptedException e) {
-                  // TODO Auto-generated catch block
                   e.printStackTrace();
                }
                for(int i =0; i< count; i ++ ){
@@ -120,14 +118,12 @@ public class MultipleThreadSend {
     try {
        end.await();
     } catch (InterruptedException e) {
-       // TODO Auto-generated catch block
        e.printStackTrace();
     }
     System.out.println(">>>>>>>>cost:" + (System.currentTimeMillis() - begin));
    }
 
    public void asyncSend(int threadNum, int threadPoolSizeForEachProducer, final int count, int freq) {
-//      ExecutorService threadPool = Executors.newFixedThreadPool(threadNum);
       ProducerConfig config = new ProducerConfig();
       config.setMode(ProducerMode.ASYNC_MODE);
       config.setZipped(false);
@@ -152,7 +148,6 @@ public class MultipleThreadSend {
                try {
                   start.await();
                } catch (InterruptedException e) {
-                  // TODO Auto-generated catch block
                   e.printStackTrace();
                }
                for(int i =0; i< count; i ++ ){
@@ -173,7 +168,6 @@ public class MultipleThreadSend {
     try {
        end.await();
     } catch (InterruptedException e) {
-       // TODO Auto-generated catch block
        e.printStackTrace();
     }
     System.out.println(">>>>>>>>cost:" + (System.currentTimeMillis() - begin));
@@ -184,61 +178,5 @@ public class MultipleThreadSend {
    public static void main(String[] args) throws RemoteServiceInitFailedException, FileQueueClosedException, InterruptedException {
 
       new MultipleThreadSend().asyncSend(20, 2, 100000, -1);
-//      new MultipleThreadSend().syncSend(20, 100000, -1);
-//         final FileQueue<String> queue = new DefaultFileQueueImpl<String>("sendSpeedMulti-test",
-//               false);
-//
-//         StringBuilder sb = new StringBuilder();
-//         for (int i = 0; i < 1000; i++) {
-//            sb.append("a");
-//         }
-//
-//         final String content = sb.toString();
-//
-//         // prepare
-//         for (int i = 0; i < 100; i++) {
-//            queue.add(content);
-//         }
-//
-//         int threadCount = 20;
-//         final CountDownLatch end = new CountDownLatch(threadCount);
-//         final CountDownLatch start = new CountDownLatch(1);
-//
-//         for (int i = 0; i < threadCount; i++) {
-//            Thread t = new Thread(new Runnable() {
-//
-//               @Override
-//               public void run() {
-//                  try {
-//                     start.await();
-//                  } catch (InterruptedException e) {
-//                     // TODO Auto-generated catch block
-//                     e.printStackTrace();
-//                  }
-//                  for (int j = 0; j < 100000; j++) {
-//                     try {
-//                        queue.add(content);
-//                     } catch (FileQueueClosedException e) {
-//                        // TODO Auto-generated catch block
-//                        e.printStackTrace();
-//                     }
-//                  }
-//                  end.countDown();
-//               }
-//            });
-//            t.start();
-//         }
-//
-//         long startTime = System.currentTimeMillis();
-//         start.countDown();
-//         try {
-//            end.await();
-//         } catch (InterruptedException e) {
-//            // TODO Auto-generated catch block
-//            e.printStackTrace();
-//         }
-//         System.out.println("Send time: " + (System.currentTimeMillis() - startTime) + "ms for 200000 1k msg");
-//    
-//
    }
 }

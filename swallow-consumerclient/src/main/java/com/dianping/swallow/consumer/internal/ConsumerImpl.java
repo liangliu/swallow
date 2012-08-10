@@ -19,6 +19,7 @@ import com.dianping.swallow.common.internal.codec.JsonDecoder;
 import com.dianping.swallow.common.internal.codec.JsonEncoder;
 import com.dianping.swallow.common.internal.packet.PktConsumerMessage;
 import com.dianping.swallow.common.internal.packet.PktMessage;
+import com.dianping.swallow.common.internal.util.IPUtil;
 import com.dianping.swallow.common.internal.util.NameCheckUtil;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.consumer.Consumer;
@@ -54,6 +55,8 @@ public class ConsumerImpl implements Consumer {
    private volatile AtomicBoolean started       = new AtomicBoolean(false);
 
    private ConsumerConfig         config;
+
+   private final String           consumerIP    = IPUtil.getFirstNoLoopbackIP4Address();
 
    public boolean isClosed() {
       return closed;
@@ -188,6 +191,10 @@ public class ConsumerImpl implements Consumer {
       return String.format(
             "ConsumerImpl [consumerId=%s, dest=%s, masterAddress=%s, slaveAddress=%s, configManager=%s, config=%s]",
             consumerId, dest, masterAddress, slaveAddress, configManager, config);
+   }
+
+   public String getConsumerIP() {
+      return consumerIP;
    }
 
 }

@@ -136,7 +136,7 @@ public class ProducerImpl implements Producer {
       String ret = null;
       Map<String, String> zipProperties = null;
 
-      Transaction producerTransaction = Cat.getProducer().newTransaction("MessageProduced", destination.getName());
+      Transaction producerTransaction = Cat.getProducer().newTransaction("MsgProduced", destination.getName() + ":" + producerIP);
       String childMessageId;
       try {
          childMessageId = Cat.getProducer().createMessageId();
@@ -201,13 +201,11 @@ public class ProducerImpl implements Producer {
 
       } catch (SendFailedException e) {
          //使用CAT监控处理消息的时间
-         producerTransaction.addData(swallowMsg.toKeyValuePairs());
          producerTransaction.setStatus(e);
          Cat.getProducer().logError(e);
          throw e;
       } catch (RuntimeException e) {
          //使用CAT监控处理消息的时间
-         producerTransaction.addData(swallowMsg.toKeyValuePairs());
          producerTransaction.setStatus(e);
          Cat.getProducer().logError(e);
          throw e;
@@ -244,5 +242,9 @@ public class ProducerImpl implements Producer {
     */
    public int getPunishTimeout() {
       return punishTimeout;
+   }
+   
+   public String getProducerIP() {
+      return producerIP;
    }
 }

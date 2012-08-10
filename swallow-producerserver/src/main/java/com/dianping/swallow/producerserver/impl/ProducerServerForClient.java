@@ -89,17 +89,17 @@ public class ProducerServerForClient implements ProducerSwallowService {
             //设置swallowMessage的sha-1
             swallowMessage.setSha1(sha1);
 
-            String catDomain;
+            String parentDomain;
             try {
-               catDomain = MessageId.parse(((PktMessage) pkt).getCatEventID()).getDomain();
+               parentDomain = MessageId.parse(((PktMessage) pkt).getCatEventID()).getDomain();
             } catch (Exception e) {
-               catDomain = "UnknownDomain";
+               parentDomain = "UnknownDomain";
             }
             //            MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
             //            tree.setMessageId(((PktMessage)pkt).getCatEventID());
 
-            Transaction producerServerTransaction = Cat.getProducer().newTransaction("In:" + topicName, catDomain);
-            producerServerTransaction.addData("ip", swallowMessage.getSourceIp());
+            Transaction producerServerTransaction = Cat.getProducer().newTransaction("In:" + topicName,
+                  parentDomain + ":" + swallowMessage.getSourceIp());
             //将swallowMessage保存到mongodb
             try {
                messageDAO.saveMessage(topicName, swallowMessage);

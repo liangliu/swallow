@@ -269,7 +269,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       Long messageId = preparedMessage.getContent().getMessageId();
 
       //Cat begin
-      Transaction t = Cat.getProducer().newTransaction("Out:" + topicName, consumerid);
+      Transaction consumerServerTransaction = Cat.getProducer().newTransaction("Out:" + topicName, consumerid + ":" + IPUtil.getIpFromChannel(channel));
       String childEventId;
       try {
          childEventId = Cat.getProducer().createMessageId();
@@ -301,20 +301,19 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
             }
          }
          //Cat begin
-         t.addData("sha1", preparedMessage.getContent().getSha1());
-         t.addData("ip", channel.getRemoteAddress());
-         t.setStatus(com.dianping.cat.message.Message.SUCCESS);
+         consumerServerTransaction.addData("mid", preparedMessage.getContent().getMessageId());
+         consumerServerTransaction.setStatus(com.dianping.cat.message.Message.SUCCESS);
          //Cat end
       } catch (RuntimeException e) {
          LOG.error(consumerInfo.toString() + "：channel write error.", e);
          cachedMessages.add(preparedMessage);
 
          //Cat begin
-         t.addData(preparedMessage.getContent().toKeyValuePairs());
-         t.setStatus(e);
+         consumerServerTransaction.addData(preparedMessage.getContent().toKeyValuePairs());
+         consumerServerTransaction.setStatus(e);
          Cat.getProducer().logError(e);
       } finally {
-         t.complete();
+         consumerServerTransaction.complete();
       }
       //Cat end
    }

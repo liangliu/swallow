@@ -144,8 +144,8 @@ public class HandlerAsynchroMode implements ProducerHandler {
             //从filequeue获取message，如果filequeue无元素则阻塞            
             message = messageQueue.get();
 
-            Transaction producerHandlerTransaction = Cat.getProducer().newTransaction("MessageTried",
-                  producer.getDestination().getName());
+            Transaction producerHandlerTransaction = Cat.getProducer().newTransaction("MsgProduceTried",
+                  producer.getDestination().getName() + ":" + producer.getProducerIP());
             try {
                //将自己设置为CatEventID的子节点
                MessageTree tree = Cat.getManager().getThreadLocalMessageTree();
@@ -164,8 +164,8 @@ public class HandlerAsynchroMode implements ProducerHandler {
                } catch (Exception e) {
                   //如果剩余重试次数>0，超时重试
                   if (leftRetryTimes > 0) {
-                     Transaction retryTransaction = Cat.getProducer().newTransaction("MessageTried",
-                           producer.getDestination().getName());
+                     Transaction retryTransaction = Cat.getProducer().newTransaction("MsgProduceTried",
+                           producer.getDestination().getName() + ":" + producer.getProducerIP());
                      try {
                         defaultPullStrategy.fail(true);
                      } catch (InterruptedException ie) {
@@ -177,7 +177,12 @@ public class HandlerAsynchroMode implements ProducerHandler {
                      //发送失败，重发
                      continue;
                   }
-                  producerHandlerTransaction.addData(((PktMessage) message).getContent().toKeyValuePairs());
+                  Transaction failedTransaction = Cat.getProducer().newTransaction("MsgAsyncFailed",
+                        producer.getDestination().getName() + ":" + producer.getProducerIP());
+                  failedTransaction.addData("content", ((PktMessage)message).getContent().toKeyValuePairs());
+                  failedTransaction.setStatus(Message.SUCCESS);
+                  failedTransaction.complete();
+                  
                   producerHandlerTransaction.setStatus(e);
                   Cat.getProducer().logError(e);
                   LOGGER.error("Message sent failed: " + message.toString(), e);
