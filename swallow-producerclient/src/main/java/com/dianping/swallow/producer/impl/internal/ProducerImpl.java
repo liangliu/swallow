@@ -32,7 +32,7 @@ public class ProducerImpl implements Producer {
 
    //变量定义
    private final Destination            destination;                                  //Producer消息目的
-   private final ProducerConfig         producerConfig;
+   private final ProducerConfig         producerConfig = new ProducerConfig();
    private final String                 producerIP;                                   //Producer IP地址
    private final String                 producerVersion;                              //Producer版本号
    private final ProducerSwallowService remoteService;
@@ -50,10 +50,14 @@ public class ProducerImpl implements Producer {
    public ProducerImpl(Destination destination, ProducerConfig producerConfig, String producerIP,
                        String producerVersion, ProducerSwallowService remoteService, int punishTimeout) {
       if (producerConfig != null) {
-         this.producerConfig = producerConfig;
+         this.producerConfig.setAsyncRetryTimes(producerConfig.getAsyncRetryTimes());
+         this.producerConfig.setMode(producerConfig.getMode());
+         this.producerConfig.setSendMsgLeftLastSession(producerConfig.isSendMsgLeftLastSession());
+         this.producerConfig.setSyncRetryTimes(producerConfig.getSyncRetryTimes());
+         this.producerConfig.setThreadPoolSize(producerConfig.getThreadPoolSize());
+         this.producerConfig.setZipped(producerConfig.isZipped());
       } else {
          LOGGER.warn("config is null, use default settings.");
-         this.producerConfig = new ProducerConfig();
       }
 
       //设置Producer的IP地址及版本号,设置远程调用
