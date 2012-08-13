@@ -65,7 +65,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
    private volatile boolean                       started           = false;
    private ExecutorService                        ackExecutor;
    private PullStrategy                           pullStgy;
-   
+
    private ConfigManager                          configManager;
    private Map<Channel, Map<PktMessage, Boolean>> waitAckMessages   = new ConcurrentHashMap<Channel, Map<PktMessage, Boolean>>();
    private volatile long                          maxAckedMessageId = 0L;
@@ -139,7 +139,8 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
    private void updateMaxMessageId(Long ackedMsgId, Channel channel) {
       if (ackedMsgId != null && ConsumerType.DURABLE_AT_LEAST_ONCE.equals(consumerInfo.getConsumerType())) {
          //         ackDao.add(topicName, consumerid, ackedMsgId, connectedChannels.get(channel));
-         LOG.info(ackedMsgId + " ACKED from " + connectedChannels.get(channel));
+         LOG.info("Receive ACK(" + topicName + "," + consumerid + "," + ackedMsgId + ") from "
+               + connectedChannels.get(channel));
          maxAckedMessageId = Math.max(maxAckedMessageId, ackedMsgId);
       }
    }
@@ -153,7 +154,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
             try {
                Thread.sleep(100);
             } catch (InterruptedException e) {
-              //netty自身的线程，不会有谁Interrupt。
+               //netty自身的线程，不会有谁Interrupt。
             }
             for (Map.Entry<PktMessage, Boolean> messageEntry : messageMap.entrySet()) {
                cachedMessages.add(messageEntry.getKey());
@@ -185,7 +186,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
          @Override
          public void run() {
 
-            connectedChannels.put(channel, IPUtil.getIpFromChannel(channel, "127.0.0.1"));
+            connectedChannels.put(channel, IPUtil.getIpFromChannel(channel));
             started = true;
             for (int i = 0; i < clientThreadCount; i++) {
                freeChannels.add(channel);
@@ -268,7 +269,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       Long messageId = preparedMessage.getContent().getMessageId();
 
       //Cat begin
-      Transaction t = Cat.getProducer().newTransaction("Out:" + topicName, consumerid);
+      Transaction consumerServerTransaction = Cat.getProducer().newTransaction("Out:" + topicName, consumerid + ":" + IPUtil.getIpFromChannel(channel));
       String childEventId;
       try {
          childEventId = Cat.getProducer().createMessageId();
@@ -300,20 +301,19 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
             }
          }
          //Cat begin
-         t.addData("sha1", preparedMessage.getContent().getSha1());
-         t.addData("ip", channel.getRemoteAddress());
-         t.setStatus(com.dianping.cat.message.Message.SUCCESS);
+         consumerServerTransaction.addData("mid", preparedMessage.getContent().getMessageId());
+         consumerServerTransaction.setStatus(com.dianping.cat.message.Message.SUCCESS);
          //Cat end
       } catch (RuntimeException e) {
          LOG.error(consumerInfo.toString() + "：channel write error.", e);
          cachedMessages.add(preparedMessage);
 
          //Cat begin
-         t.addData(preparedMessage.getContent().toKeyValuePairs());
-         t.setStatus(e);
+         consumerServerTransaction.addData(preparedMessage.getContent().toKeyValuePairs());
+         consumerServerTransaction.setStatus(e);
          Cat.getProducer().logError(e);
       } finally {
-         t.complete();
+         consumerServerTransaction.complete();
       }
       //Cat end
    }
@@ -378,9 +378,9 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
          return "ConsumerId=" + consumerInfo.getConsumerId() + ",ConsumerType=" + consumerInfo.getConsumerType();
       }
 
-//      public String getConsumerid() {
-//         return consumerid;
-//      }
+      //      public String getConsumerid() {
+      //         return consumerid;
+      //      }
 
       public String getTopicName() {
          return topicName;
@@ -392,19 +392,20 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
          }
          return null;
       }
-      
+
       public String getWaitAckMessages() {
          StringBuilder sb = new StringBuilder();
          if (waitAckMessages != null) {
             for (Entry<Channel, Map<PktMessage, Boolean>> waitAckMessage : waitAckMessages.entrySet()) {
-               if(waitAckMessage.getValue().size() != 0){
+               if (waitAckMessage.getValue().size() != 0) {
                   sb.append(waitAckMessage.getKey().getRemoteAddress()).append(waitAckMessage.getValue().toString());
-               }             
+               }
             }
          }
          return sb.toString();
-         
+
       }
+
       public boolean isGetMessageisAlive() {
          return getMessageisAlive;
       }
@@ -412,10 +413,11 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       public boolean isStarted() {
          return started;
       }
+
       public String getMaxAckedMessageId() {
-         return  Long.toString(maxAckedMessageId);
+         return Long.toString(maxAckedMessageId);
       }
-      
+
       public String getMessageFilter() {
          if (messageFilter != null) {
             return messageFilter.toString();

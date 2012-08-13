@@ -37,12 +37,14 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
    private static final Logger LOG = LoggerFactory.getLogger(MessageClientHandler.class);
 
-   private ConsumerImpl        consumer;
+   private final ConsumerImpl  consumer;
+   private final String        catNameStr;
 
    private ExecutorService     service;
 
    public MessageClientHandler(ConsumerImpl consumer) {
       this.consumer = consumer;
+      catNameStr = consumer.getDest().getName() + ":" + consumer.getConsumerId() + ":" + consumer.getConsumerIP();
       service = Executors.newFixedThreadPool(consumer.getConfig().getThreadPoolSize(), new MQThreadFactory(
             "swallow-consumer-client-"));
    }
@@ -65,7 +67,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
    public void messageReceived(ChannelHandlerContext ctx, final MessageEvent e) {
       //记录收到消息，并且记录发来消息的server的地址
       if (LOG.isDebugEnabled()) {
-         LOG.debug("messageReceived from " + ctx.getChannel().getRemoteAddress());
+         LOG.debug("messageReceived from " + e.getChannel().getRemoteAddress());
       }
 
       Runnable task = new Runnable() {
@@ -81,8 +83,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
 
             //使用CAT监控处理消息的时间
 
-            Transaction consumerClientTransaction = Cat.getProducer().newTransaction("MessageConsumed",
-                  consumer.getDest().getName() + ":" + consumer.getConsumerId());
+            Transaction consumerClientTransaction = Cat.getProducer().newTransaction("MsgConsumed", catNameStr);
             consumerClientTransaction.addData("mid", swallowMessage.getMessageId());
             consumerClientTransaction.addData("sha1", swallowMessage.getSha1());
 
@@ -110,11 +111,17 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                   while (!success
                         && retryCount <= MessageClientHandler.this.consumer.getConfig()
                               .getRetryCountOnBackoutMessageException()) {
+                     Transaction consumeTryTras = Cat.getProducer().newTransaction("MsgConsumeTried", catNameStr);
                      try {
                         consumer.getListener().onMessage(swallowMessage);
+                        consumeTryTras.setStatus(Message.SUCCESS);
+                        consumerClientTransaction.setStatus(Message.SUCCESS);
                         success = true;
                      } catch (BackoutMessageException e) {
                         retryCount++;
+                        consumeTryTras.addData("retry", retryCount);
+                        consumeTryTras.setStatus(e);
+                        Cat.getProducer().logError(e);
                         if (retryCount <= MessageClientHandler.this.consumer.getConfig()
                               .getRetryCountOnBackoutMessageException()) {
                            LOG.error(
@@ -122,20 +129,28 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                                        + retryCount + "]. ", e);
                            pullStrategy.fail(true);
                         } else {
+                           Transaction consumeFailedTransaction = Cat.getProducer().newTransaction("MsgConsumeFailed",
+                                 catNameStr);
+                           consumeFailedTransaction.addData("mid", swallowMessage.getMessageId());
+                           consumeFailedTransaction.addData("content", swallowMessage.getContent());
+                           consumeFailedTransaction.setStatus(Message.SUCCESS);
+                           consumeFailedTransaction.complete();
+
+                           consumerClientTransaction.setStatus(e);
                            LOG.error("BackoutMessageException occur on onMessage(), onMessage() failed.", e);
                         }
+                     } finally {
+                        consumeTryTras.complete();
                      }
                   }
                } catch (Exception e) {
                   LOG.info("exception in MessageListener", e);
+                  consumerClientTransaction.setStatus(e);
                }
-               consumerClientTransaction.setStatus(Message.SUCCESS);
             } catch (IOException e) {
                LOG.error("can not uncompress message with messageId " + messageId, e);
                consumerClientTransaction.setStatus(e);
                Cat.getProducer().logError(e);
-            } finally {
-               consumerClientTransaction.complete();
             }
 
             try {
@@ -144,6 +159,7 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                LOG.warn("write to swallowC error.", e);
             }
 
+            consumerClientTransaction.complete();
          }
       };
 

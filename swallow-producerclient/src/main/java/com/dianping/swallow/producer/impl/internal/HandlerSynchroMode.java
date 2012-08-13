@@ -4,6 +4,7 @@ import com.dianping.cat.Cat;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.swallow.common.internal.packet.Packet;
+import com.dianping.swallow.common.internal.packet.PktMessage;
 import com.dianping.swallow.common.internal.packet.PktSwallowPACK;
 import com.dianping.swallow.common.internal.producer.ProducerSwallowService;
 import com.dianping.swallow.common.internal.threadfactory.DefaultPullStrategy;
@@ -22,6 +23,7 @@ public class HandlerSynchroMode implements ProducerHandler {
    private final DefaultPullStrategy defaultPullStrategy;
    private final Destination         destination;
    private ProducerSwallowService    remoteService;
+   private final String              producerIP;
    private static final int          DELAY_BASE_MULTI = 5; //超时策略倍数
 
    public HandlerSynchroMode(ProducerImpl producer) {
@@ -29,6 +31,7 @@ public class HandlerSynchroMode implements ProducerHandler {
       this.delayBase = producer.getPunishTimeout();
       this.remoteService = producer.getRemoteService();
       this.destination = producer.getDestination();
+      this.producerIP = producer.getProducerIP();
       defaultPullStrategy = new DefaultPullStrategy(delayBase, DELAY_BASE_MULTI * delayBase);
    }
 
@@ -42,7 +45,8 @@ public class HandlerSynchroMode implements ProducerHandler {
       Packet pktRet = null;
 
       for (int leftRetryTimes = sendTimes; leftRetryTimes > 0;) {
-         Transaction producerHandlerTransaction = Cat.getProducer().newTransaction("MessageTried", destination.getName());
+         Transaction producerHandlerTransaction = Cat.getProducer().newTransaction("MsgProduceTried",
+               destination.getName() + ":" + producerIP);
          leftRetryTimes--;
          try {
             pktRet = remoteService.sendMessage(pkt);
@@ -60,6 +64,12 @@ public class HandlerSynchroMode implements ProducerHandler {
                continue;
             } else {
                //重置超时
+               Transaction failedTransaction = Cat.getProducer().newTransaction("MsgSyncFailed",
+                     destination.getName() + ":" + producerIP);
+               failedTransaction.addData("content", ((PktMessage) pkt).getContent().toKeyValuePairs());
+               failedTransaction.setStatus(Message.SUCCESS);
+               failedTransaction.complete();
+
                producerHandlerTransaction.setStatus(e);
                Cat.getProducer().logError(e);
                throw new SendFailedException("Message sent failed", e);

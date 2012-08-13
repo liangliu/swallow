@@ -57,7 +57,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
       swallowMessage.setContent(textObject.getContent());
       swallowMessage.setGeneratedTime(new Date());
       swallowMessage.setSha1(SHAUtil.generateSHA(swallowMessage.getContent()));
-      swallowMessage.setSourceIp(IPUtil.getIpFromChannel(e.getChannel(), "127.0.0.1"));
+      swallowMessage.setSourceIp(IPUtil.getIpFromChannel(e.getChannel()));
 
       //初始化ACK对象
       TextACK textAck = new TextACK();

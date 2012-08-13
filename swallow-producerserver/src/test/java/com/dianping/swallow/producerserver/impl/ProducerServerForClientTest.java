@@ -83,6 +83,8 @@ public class ProducerServerForClientTest {
       } catch (ServerDaoException e) {
       }
       Assert.assertNull(ACK);
+      
+      System.out.println(producerServerForClient.getRemoteServiceName());
    }
 
    @Test
