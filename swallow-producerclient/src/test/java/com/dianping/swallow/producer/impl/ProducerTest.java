@@ -224,7 +224,7 @@ public class ProducerTest {
       config.setSyncRetryTimes(12);
       producer = (ProducerImpl) producerFactory.createProducer(dest, config);
       assertNotNull(producer);
-      assertEquals(ProducerMode.SYNC_MODE, producer.getProducerConfig().getMode());
+      assertEquals(ProducerMode.ASYNC_MODE, producer.getProducerConfig().getMode());
       assertEquals(12, producer.getProducerConfig().getSyncRetryTimes());
       assertEquals(false, producer.getProducerConfig().isZipped());
       assertEquals(1, producer.getProducerConfig().getThreadPoolSize());

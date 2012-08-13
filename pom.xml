@@ -8,7 +8,7 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.dianping.swallow</groupId>
-	<artifactId>parent</artifactId>
+	<artifactId>swallow-parent</artifactId>
 	<packaging>pom</packaging>
 	<version>0.6.0</version>
 	<name>arch-swallow</name>
