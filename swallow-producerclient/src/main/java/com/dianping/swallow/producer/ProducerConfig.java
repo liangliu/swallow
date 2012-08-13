@@ -44,7 +44,7 @@ public class ProducerConfig {
    private static final Logger      LOGGER                             = LoggerFactory.getLogger(ProducerConfig.class);
 
    public static final int          MAX_THREADPOOL_SIZE                = 100;                                          //线程池大小最大值
-   public static final ProducerMode DEFAULT_PRODUCER_MODE              = ProducerMode.SYNC_MODE;                       //默认Producer工作模式
+   public static final ProducerMode DEFAULT_PRODUCER_MODE              = ProducerMode.ASYNC_MODE;                       //默认Producer工作模式
    public static final int          DEFAULT_ASYNC_RETRY_TIMES          = 10;                                           //默认发送失败重试次数
    public static final int          DEFAULT_SYNC_RETRY_TIMES           = 0;                                            //默认发送失败重试次数
    public static final boolean      DEFAULT_ZIPPED                     = false;                                        //默认是否对消息进行压缩
