@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Swallow便捷工具</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+<!-- Le styles -->
+<link href="${rc.contextPath}/stylesheets/bootstrap.css"
+   rel="stylesheet">
+<style type="text/css">
+body {
+	padding-top: 60px;
+	padding-bottom: 40px;
+}
+
+.sidebar-nav {
+	padding: 9px 0;
+}
+</style>
+<link href="${rc.contextPath}/stylesheets/bootstrap-responsive.css"
+   rel="stylesheet">
+
+<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+<!-- Le fav and touch icons -->
+<link rel="shortcut icon" href="${rc.contextPath}/images/favicon.ico">
+<script>
+	window.contextpath = "${rc.contextPath}";
+</script>
+</head>
+
+<body>
+
+   <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+         <div class="container-fluid">
+            <a class="btn btn-navbar" data-toggle="collapse"
+               data-target=".nav-collapse"> <span class="icon-bar"></span>
+               <span class="icon-bar"></span> <span class="icon-bar"></span>
+            </a> <a class="brand" href="#">Swallow便捷工具</a>
+            <div class="nav-collapse collapse">
+               <p class="navbar-text pull-right">
+                  欢迎您， <a href="#" class="navbar-link">游侠</a>
+               </p>
+               <ul class="nav">
+                  <li><a href="#">Home</a></li>
+                  <li  class="active"><a href="#about">Producer</a></li>
+                  <li><a href="#contact">Consumer</a></li>
+               </ul>
+            </div>
+            <!--/.nav-collapse -->
+         </div>
+      </div>
+   </div>
+
+   <div class="container-fluid">
+      <div class="row-fluid">
+         <div class="span2">
+            <div class="well sidebar-nav">
+               <ul class="nav nav-list">
+                  <li class="nav-header">环境</li>
+                  <li class="active"><a href="#">dev</a></li>
+                  <li><a href="#">alpha</a></li>
+                  <li><a href="#">beta</a></li>
+               </ul>
+            </div>
+            <!--/.well -->
+         </div>
+         <!--/span-->
+         <div class="span10">
+            <!-- <form > -->
+            <legend>发送消息</legend>
+            <div class="container-fluid">
+               <div class="row-fluid">
+                  <div class="span6">
+                     <!--Sidebar content-->
+                     <label>Topic名称</label> <input style="width:300px" type="text"
+                        placeholder="输入Topic名称…" id="topic" name="topic">
+                     <label>消息内容</label>
+                     <textarea style="width:360px" name="content" id="content"
+                        placeholder="输入消息内容…" rows="5"></textarea>
+                     <label class="checkbox">
+                        <input id="sequenceSend" type="checkbox"> 连续发送 (间隔时间为1秒。连续发送过程中，取消勾选，可停止。)
+                     </label>
+                     <button id="sendButton" type="button" onclick="swallow.sendMsg()"
+                        class="btn">发送</button>
+                     <!-- </form> -->
+                     <div style="padding: 6px 6px;display:none" id="progress">
+                        <label></label>
+                        <div>
+                           <div class="bar" ></div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="span4" id="errorMsg" style="display: none">
+                     <label>错误消息</label>
+                     <textarea style="width:100%;"
+                        rows="20"></textarea>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <!--/span-->
+      </div>
+      <!--/row-->
+
+      <hr>
+
+      <footer>
+         <p>&copy; dianping.com 2012</p>
+      </footer>
+
+   </div>
+   <!--/.fluid-container-->
+
+   <!-- Le javascript
+    ================================================== -->
+   <!-- Placed at the end of the document so the pages load faster -->
+   <script src="${rc.contextPath}/javascripts/jquery-1.7.2.min.js"></script>
+   <script src="${rc.contextPath}/javascripts/bootstrap.js"></script>
+   <script src="${rc.contextPath}/javascripts/producer.js"></script>
+
+</body>
+</html>
