@@ -2,16 +2,20 @@ package com.dianping.swallow.dashboard.web;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
+import com.dianping.lion.EnvZooKeeperConfig;
 import com.dianping.swallow.common.message.Destination;
 import com.dianping.swallow.common.producer.exceptions.RemoteServiceInitFailedException;
 import com.dianping.swallow.common.producer.exceptions.SendFailedException;
@@ -32,14 +36,19 @@ public class ProducerController {
       config.setMode(ProducerMode.SYNC_MODE);
    }
 
+   @RequestMapping(value = "/")
+   public RedirectView index(HttpServletRequest request, HttpServletResponse response) {
+      return new RedirectView(request.getContextPath() + "/producer");
+   }
+
    @RequestMapping(value = "/producer")
-   public String dev() {
-      return "index";
+   public ModelAndView producer() {
+      return new ModelAndView("index", "env", EnvZooKeeperConfig.getEnv());
    }
 
    @RequestMapping(value = "/producer/sendMsg", method = RequestMethod.GET, produces = "application/javascript; charset=utf-8")
    @ResponseBody
-   public Object config(String topic, String content, String callback) throws JsonGenerationException,
+   public Object sendMsg(String topic, String content, String callback) throws JsonGenerationException,
          JsonMappingException, IOException {
       Map<String, Object> map = new HashMap<String, Object>();
       try {
@@ -66,14 +75,14 @@ public class ProducerController {
          }
          map.put("success", false);
          map.put("errorMsg", error.toString());
-      } catch(RuntimeException e){
+      } catch (RuntimeException e) {
          StringBuilder error = new StringBuilder();
          error.append(e.getMessage());
          for (StackTraceElement element : e.getStackTrace()) {
             error.append(element.toString()).append("\n");
          }
          map.put("success", false);
-//         map.put("errorMsg", error.toString());
+         //         map.put("errorMsg", error.toString());
          map.put("errorMsg", error.toString());
       }
       Gson gson = new Gson();

@@ -13,6 +13,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <env>dev</env>
   </properties>
 
   <dependencies>
@@ -145,7 +146,7 @@
     </dependency>
     <dependency>
       <groupId>com.dianping.lion</groupId>
-      <artifactId>lion-dev</artifactId>
+      <artifactId>lion-${env}</artifactId>
       <version>1.0.0</version>
     </dependency>
     <!-- 监控 -->
@@ -161,7 +162,7 @@
     </dependency>
   </dependencies>
   <build>
-    <finalName>swallow-dashboard</finalName>
+    <finalName>swallow-dashboard-${env}</finalName>
     <sourceDirectory>src/main/java</sourceDirectory>
     <testSourceDirectory>src/test/java</testSourceDirectory>
     <scriptSourceDirectory>scripts</scriptSourceDirectory>
@@ -207,7 +208,7 @@
             webapp
           </webAppSourceDirectory>
           <webApp>
-            <contextPath>/swallow-dashboard</contextPath>
+            <contextPath>/swallow-dashboard-dev</contextPath>
           </webApp>
           <systemProperties>
             <systemProperty>

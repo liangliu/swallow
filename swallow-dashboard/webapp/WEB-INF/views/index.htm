@@ -42,13 +42,13 @@ body {
             <a class="btn btn-navbar" data-toggle="collapse"
                data-target=".nav-collapse"> <span class="icon-bar"></span>
                <span class="icon-bar"></span> <span class="icon-bar"></span>
-            </a> <a class="brand" href="#">Swallow便捷工具</a>
+            </a> <a class="brand" href="${rc.contextPath}/">Swallow便捷工具</a>
             <div class="nav-collapse collapse">
                <p class="navbar-text pull-right">
                   欢迎您， <a href="#" class="navbar-link">游侠</a>
                </p>
                <ul class="nav">
-                  <li><a href="#">Home</a></li>
+                  <li><a href="${rc.contextPath}/">Home</a></li>
                   <li  class="active"><a href="#about">Producer</a></li>
                   <li><a href="#contact">Consumer</a></li>
                </ul>
@@ -63,10 +63,22 @@ body {
          <div class="span2">
             <div class="well sidebar-nav">
                <ul class="nav nav-list">
-                  <li class="nav-header">环境</li>
-                  <li class="active"><a href="#">dev</a></li>
-                  <li><a href="#">alpha</a></li>
-                  <li><a href="#">beta</a></li>
+                  <li class="nav-header">环境${env}</li>
+                  #if (${env}=="dev")
+                    <li class="active"><a href="/swallow-dashboard-dev/producer">dev</a></li>
+                  #else
+                    <li><a href="/swallow-dashboard-dev/producer">dev</a></li>
+                  #end
+                  #if (${env}=="qa")
+                    <li class="active"><a href="/swallow-dashboard-qa/producer">qa</a></li>
+                  #else
+                    <li><a href="/swallow-dashboard-qa/producer">qa</a></li>
+                  #end
+                  #if (${env}=="alpha")
+                    <li class="active"><a href="/swallow-dashboard-alpha/producer">alpha</a></li>
+                  #else
+                    <li><a href="/swallow-dashboard-alpha/producer">alpha</a></li>
+                  #end
                </ul>
             </div>
             <!--/.well -->
