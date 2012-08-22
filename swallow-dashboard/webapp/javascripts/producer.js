@@ -55,7 +55,7 @@ var swallow={
 				$('#progress > div').attr('class','progress progress-success progress-striped');
 			}, 500);
 			//如果启用了连续发送，则再次发送
-			if($('#sequenceSend').attr('class')=='btn active'){
+			if($('#sequenceSend').attr('class')=='btn btn-mini btn-info active'){
 				timer = setTimeout(function() {
 					swallow.sendMsg();
 				}, 1000);
