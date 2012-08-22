@@ -30,8 +30,8 @@ import com.google.gson.Gson;
 @Controller
 public class ProducerController {
 
-   private Map<String, Producer> producers = new ConcurrentHashMap<String, Producer>();
-   private ProducerConfig        config    = new ProducerConfig();
+   private ConcurrentHashMap<String, Producer> producers = new ConcurrentHashMap<String, Producer>();
+   private ProducerConfig                      config    = new ProducerConfig();
    {
       config.setMode(ProducerMode.SYNC_MODE);
    }
@@ -54,14 +54,20 @@ public class ProducerController {
       try {
          Producer producer = producers.get(topic);
          if (producer == null) {
-            producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic(topic), config);
+            synchronized (topic.intern()) {
+               producer = producers.get(topic);
+               if (producer == null) {
+                  producer = ProducerFactoryImpl.getInstance().createProducer(Destination.topic(topic), config);
+                  producers.putIfAbsent(topic, producer);
+               }
+            }
          }
          producer.sendMessage(content);
          map.put("success", true);
 
       } catch (SendFailedException e) {
          StringBuilder error = new StringBuilder();
-         error.append(e.getMessage());
+         error.append(e.getMessage()).append("\n");
          for (StackTraceElement element : e.getStackTrace()) {
             error.append(element.toString()).append("\n");
          }
@@ -69,7 +75,7 @@ public class ProducerController {
          map.put("errorMsg", error.toString());
       } catch (RemoteServiceInitFailedException e) {
          StringBuilder error = new StringBuilder();
-         error.append(e.getMessage());
+         error.append(e.getMessage()).append("\n");
          for (StackTraceElement element : e.getStackTrace()) {
             error.append(element.toString()).append("\n");
          }
@@ -77,12 +83,11 @@ public class ProducerController {
          map.put("errorMsg", error.toString());
       } catch (RuntimeException e) {
          StringBuilder error = new StringBuilder();
-         error.append(e.getMessage());
+         error.append(e.getMessage()).append("\n");
          for (StackTraceElement element : e.getStackTrace()) {
             error.append(element.toString()).append("\n");
          }
          map.put("success", false);
-         //         map.put("errorMsg", error.toString());
          map.put("errorMsg", error.toString());
       }
       Gson gson = new Gson();

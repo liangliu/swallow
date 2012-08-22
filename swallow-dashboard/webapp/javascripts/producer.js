@@ -34,8 +34,9 @@ var swallow={
 	"sendMsgDone":function(data){
 		if(data.success==false){
 			//显示错误消息
-			$('#errorMsg > textarea').val(data.errorMsg);
-			$('#errorMsg').show();
+			$('#errorMsg > div[class="modal-body"] > p').text(data.errorMsg);
+			//$('#errorMsg').show();
+			$('#errorMsg').modal('show');
 			//进度条显示成功，然后静止
 			$('#progress > div > div').width('100%');
 			$('#progress > div').attr('class','progress progress-danger progress-striped active');
@@ -54,8 +55,7 @@ var swallow={
 				$('#progress > div').attr('class','progress progress-success progress-striped');
 			}, 500);
 			//如果启用了连续发送，则再次发送
-			console.log($('#sequenceSend').attr('checked'));
-			if($('#sequenceSend').attr('checked') && $('#sequenceSend').attr('checked')=='checked'){
+			if($('#sequenceSend').attr('class')=='btn active'){
 				timer = setTimeout(function() {
 					swallow.sendMsg();
 				}, 1000);
@@ -64,6 +64,8 @@ var swallow={
 				//如果不是连续发送，则去掉按钮disable
 				$('#sendButton').removeAttr('disabled');
 			}
+			//msgCount++
+			$("#msgCount").text(parseInt($("#msgCount").text())+1);
 		}
 	},
 	"cancelSendMsg":function(){

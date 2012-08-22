@@ -48,9 +48,9 @@ body {
                   欢迎您， <a href="#" class="navbar-link">游侠</a>
                </p>
                <ul class="nav">
-                  <li><a href="${rc.contextPath}/">Home</a></li>
-                  <li  class="active"><a href="#about">Producer</a></li>
-                  <li><a href="#contact">Consumer</a></li>
+                  <li><a href="${rc.contextPath}/">首页</a></li>
+                  <li class="active"><a href="#about">模拟Producer</a></li>
+                  <li><a href="#contact">模拟Consumer</a></li>
                </ul>
             </div>
             <!--/.nav-collapse -->
@@ -63,21 +63,21 @@ body {
          <div class="span2">
             <div class="well sidebar-nav">
                <ul class="nav nav-list">
-                  <li class="nav-header">环境${env}</li>
-                  #if (${env}=="dev")
-                    <li class="active"><a href="/swallow-dashboard-dev/producer">dev</a></li>
+                  <li class="nav-header">选择环境 (${env})</li> #if
+                  (${env}=="dev")
+                  <li class="active"><a
+                     href="/swallow-dashboard-dev/producer">dev</a></li>
                   #else
-                    <li><a href="/swallow-dashboard-dev/producer">dev</a></li>
-                  #end
-                  #if (${env}=="qa")
-                    <li class="active"><a href="/swallow-dashboard-qa/producer">qa</a></li>
+                  <li><a href="/swallow-dashboard-dev/producer">dev</a></li>
+                  #end #if (${env}=="qa")
+                  <li class="active"><a
+                     href="/swallow-dashboard-qa/producer">qa</a></li> #else
+                  <li><a href="/swallow-dashboard-qa/producer">qa</a></li>
+                  #end #if (${env}=="alpha")
+                  <li class="active"><a
+                     href="/swallow-dashboard-alpha/producer">alpha</a></li>
                   #else
-                    <li><a href="/swallow-dashboard-qa/producer">qa</a></li>
-                  #end
-                  #if (${env}=="alpha")
-                    <li class="active"><a href="/swallow-dashboard-alpha/producer">alpha</a></li>
-                  #else
-                    <li><a href="/swallow-dashboard-alpha/producer">alpha</a></li>
+                  <li><a href="/swallow-dashboard-alpha/producer">alpha</a></li>
                   #end
                </ul>
             </div>
@@ -91,28 +91,60 @@ body {
                <div class="row-fluid">
                   <div class="span6">
                      <!--Sidebar content-->
-                     <label>Topic名称</label> <input style="width:300px" type="text"
-                        placeholder="输入Topic名称…" id="topic" name="topic">
-                     <label>消息内容</label>
-                     <textarea style="width:360px" name="content" id="content"
-                        placeholder="输入消息内容…" rows="5"></textarea>
-                     <label class="checkbox">
-                        <input id="sequenceSend" type="checkbox"> 连续发送 (间隔时间为1秒。连续发送过程中，取消勾选，可停止。)
+                     <label>Topic名称：</label> <input style="width: 300px"
+                        type="text" placeholder="输入Topic名称…" id="topic"
+                        name="topic"> <label>消息内容：</label>
+                     <textarea style="width: 360px" name="content"
+                        id="content" placeholder="输入消息内容…" rows="5"></textarea>
+                     <label>是否连续发送：<span style="color: #0088CC">(间隔时间为1秒。连续发送过程中，点击“关”，可停止。)</span></label>
+                     <div class="btn-group" data-toggle="buttons-radio">
+                        <button type="button" id="sequenceSend"
+                           class="btn">开</button>
+                        <button type="button" class="btn active">关</button>
+                     </div>
+                     <hr>
+                     <!-- 
+                     <label class="checkbox"> <input
+                        id="sequenceSend" type="checkbox"> 连续发送
                      </label>
-                     <button id="sendButton" type="button" onclick="swallow.sendMsg()"
-                        class="btn">发送</button>
+                      -->
+                     <button id="sendButton"
+                        type="button" onclick="swallow.sendMsg()"
+                        class="btn btn-primary">发送</button>
                      <!-- </form> -->
-                     <div style="padding: 6px 6px;display:none" id="progress">
+                     <!-- 进度条 -->
+                     <div id="progress" style="display: none">
+                        <hr>
                         <label></label>
                         <div>
-                           <div class="bar" ></div>
+                           <div class="bar"></div>
                         </div>
                      </div>
+                     <hr>
+                     <label style="margin-top: 10px">本次会话已发送的消息数：<span
+                        id="msgCount" style="color: #0088CC">0</span></label>
                   </div>
-                  <div class="span4" id="errorMsg" style="display: none">
-                     <label>错误消息</label>
-                     <textarea style="width:100%;"
-                        rows="20"></textarea>
+                  <div class="span5">
+                     <blockquote>
+                        <label><strong>帮助</strong></label>
+                        <ol>
+                           <li>填写 <span style="color: #0088CC">Topic</span>
+                              名称
+                           </li>
+                           <li>填写<span style="color: #0088CC">消息内容</span></li>
+                           <li>点击<span style="color: #0088CC">发送</span>，bingo！
+                              <ul>
+                                 <li>勾选 "连续发送" 选项，可<span
+                                    style="color: #0088CC">连续</span>发送消息
+                                 </li>
+                                 <li>取消勾选 "连续发送" 选项，可<span
+                                    style="color: #0088CC">停止</span>连续发送消息
+                                 </li>
+                              </ul>
+                           </li>
+                        </ol>
+                     </blockquote>
+                     <p></p>
                   </div>
                </div>
             </div>
@@ -121,10 +153,28 @@ body {
       </div>
       <!--/row-->
 
-      <hr>
+      <!-- 错误消息弹出框 -->
+      <div aria-hidden="true" aria-labelledby="myModalLabel"
+         role="dialog" tabindex="-1" class="modal hide fade"
+         id="errorMsg" style="display: none;">
+         <div class="modal-header">
+            <button aria-hidden="true" data-dismiss="modal"
+               class="close" type="button">×</button>
+            <h3 id="myModalLabel">消息发送失败</h3>
+         </div>
+         <div class="modal-body">
+            <p></p>
+         </div>
+         <div class="modal-footer">
+            <button data-dismiss="modal" class="btn">关闭</button>
+         </div>
+      </div>
 
+      <!-- 页脚 -->
+      <hr style="margin-top: 150px">
       <footer>
-         <p>&copy; dianping.com 2012</p>
+         <p style="margin: 0 auto; width: 200px">&copy; dianping.com
+            2012</p>
       </footer>
 
    </div>
