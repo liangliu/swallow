@@ -211,6 +211,9 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
    public void close() {
       getMessageisAlive = false;
       messageQueue.close();
+      //取消监控
+      String hawkMBeanName = topicName + '-' + consumerid + "-ConsumerWorkerImpl";
+      HawkJMXUtil.unregisterMBean(hawkMBeanName);
    }
 
    public long getMessageIdOfTailMessage(String topicName, String consumerId, Channel channel) {
