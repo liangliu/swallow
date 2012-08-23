@@ -34,7 +34,6 @@ import com.dianping.swallow.common.internal.util.MongoUtils;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.consumerserver.buffer.CloseableBlockingQueue;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
-import com.dianping.swallow.consumerserver.buffer.MessageBlockingQueue.HawkMBean;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 
 public final class ConsumerWorkerImpl implements ConsumerWorker {
