@@ -4,8 +4,8 @@ target/
 bin/
 .settings/
 .metadata/
-webapp/WEB-INF/classes/
-webapp/WEB-INF/lib/
+classes/
+lib/
 
 # Compiled source #
 ###################
