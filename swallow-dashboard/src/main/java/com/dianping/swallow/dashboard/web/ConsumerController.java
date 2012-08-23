@@ -5,15 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.view.RedirectView;
 
 import com.dianping.lion.EnvZooKeeperConfig;
 import com.dianping.swallow.common.message.Destination;
@@ -28,7 +24,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.gson.Gson;
 
 @Controller
-public class ProducerController {
+public class ConsumerController {
 
    private ConcurrentHashMap<String, Producer> producers = new ConcurrentHashMap<String, Producer>();
    private ProducerConfig                      config    = new ProducerConfig();
@@ -36,17 +32,12 @@ public class ProducerController {
       config.setMode(ProducerMode.SYNC_MODE);
    }
 
-   @RequestMapping(value = "/")
-   public RedirectView index(HttpServletRequest request, HttpServletResponse response) {
-      return new RedirectView(request.getContextPath() + "/producer");
-   }
-
-   @RequestMapping(value = "/producer")
+   @RequestMapping(value = "/consumer")
    public ModelAndView producer() {
-      return new ModelAndView("producer", "env", EnvZooKeeperConfig.getEnv());
+      return new ModelAndView("consumer", "env", EnvZooKeeperConfig.getEnv());
    }
 
-   @RequestMapping(value = "/producer/sendMsg", method = RequestMethod.GET, produces = "application/javascript; charset=utf-8")
+   @RequestMapping(value = "/consumer/receiveMsg", method = RequestMethod.GET, produces = "application/javascript; charset=utf-8")
    @ResponseBody
    public Object sendMsg(String topic, String content, String callback) throws JsonGenerationException,
          JsonMappingException, IOException {

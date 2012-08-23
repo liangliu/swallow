@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.internal.threadfactory.MQThreadFactory;
 
 public class ThreadStatusBean {
@@ -70,11 +69,6 @@ public class ThreadStatusBean {
       stat2Cnt.put("terminated", terminatedCount);
 
       return stat2Cnt;
-   }
-
-   public static void main(String[] args) throws InterruptedException {
-      HawkJMXUtil.registerMBean(new ThreadStatusBean());
-      Thread.sleep(1000000);
    }
 
 }

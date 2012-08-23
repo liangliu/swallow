@@ -35,6 +35,7 @@ public class ProducerServerForClient implements ProducerSwallowService {
 
    public ProducerServerForClient() {
       //Hawk监控
+      HawkJMXUtil.unregisterMBean("ProducerServerForClient");
       HawkJMXUtil.registerMBean("ProducerServerForClient", new HawkMBean());
    }
 

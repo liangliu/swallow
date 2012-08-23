@@ -34,6 +34,7 @@ import com.dianping.swallow.common.internal.util.MongoUtils;
 import com.dianping.swallow.common.message.Message;
 import com.dianping.swallow.consumerserver.buffer.CloseableBlockingQueue;
 import com.dianping.swallow.consumerserver.buffer.SwallowBuffer;
+import com.dianping.swallow.consumerserver.buffer.MessageBlockingQueue.HawkMBean;
 import com.dianping.swallow.consumerserver.config.ConfigManager;
 
 public final class ConsumerWorkerImpl implements ConsumerWorker {
@@ -95,7 +96,9 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       startMessageFetcherThread();
 
       //Hawk监控
-      HawkJMXUtil.registerMBean(topicName + '-' + consumerid + "-ConsumerWorkerImpl", new HawkMBean());
+      String hawkMBeanName = topicName + '-' + consumerid + "-ConsumerWorkerImpl";
+      HawkJMXUtil.unregisterMBean(hawkMBeanName);
+      HawkJMXUtil.registerMBean(hawkMBeanName, new HawkMBean());
    }
 
    @Override
@@ -269,7 +272,8 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       Long messageId = preparedMessage.getContent().getMessageId();
 
       //Cat begin
-      Transaction consumerServerTransaction = Cat.getProducer().newTransaction("Out:" + topicName, consumerid + ":" + IPUtil.getIpFromChannel(channel));
+      Transaction consumerServerTransaction = Cat.getProducer().newTransaction("Out:" + topicName,
+            consumerid + ":" + IPUtil.getIpFromChannel(channel));
       String childEventId;
       try {
          childEventId = Cat.getProducer().createMessageId();

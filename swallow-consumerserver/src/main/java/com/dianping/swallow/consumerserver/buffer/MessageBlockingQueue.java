@@ -57,7 +57,9 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
       messageRetrieverThread = new MessageRetrieverThread();
       messageRetrieverThread.start();
       //Hawk监控
-      HawkJMXUtil.registerMBean(topicName + "-" + cid + "-MessageBlockingQueue", new HawkMBean());
+      String hawkMBeanName = topicName + "-" + cid + "-MessageBlockingQueue";
+      HawkJMXUtil.unregisterMBean(hawkMBeanName);
+      HawkJMXUtil.registerMBean(hawkMBeanName, new HawkMBean());
    }
 
    public MessageBlockingQueue(String cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage,
@@ -78,7 +80,9 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
       messageRetrieverThread = new MessageRetrieverThread();
       messageRetrieverThread.start();
       //Hawk监控
-      HawkJMXUtil.registerMBean(topicName + "-" + cid + "-MessageBlockingQueue", new HawkMBean());
+      String hawkMBeanName = topicName + "-" + cid + "-MessageBlockingQueue";
+      HawkJMXUtil.unregisterMBean(hawkMBeanName);
+      HawkJMXUtil.registerMBean(hawkMBeanName, new HawkMBean());
    }
 
    @Override

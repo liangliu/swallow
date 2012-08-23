@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
 
 public class NameCheckUtil {
    static Pattern topicNamePattern = Pattern.compile("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,29}");
+
    private NameCheckUtil() {
    }
 
@@ -26,7 +27,7 @@ public class NameCheckUtil {
     * 判定topicName是否合法
     * 
     * <pre>
-    * topicName由字母,数字,小数点“.”,减号“-”和下划线“_”构成，只能以字母开头，长度为2到30。
+    * topicName由字母,数字,减号“-”和下划线“_”构成，只能以字母开头，长度为2到30。
     * </pre>
     * 
     * @param topicName
@@ -36,7 +37,7 @@ public class NameCheckUtil {
       if (topicName == null || topicName.length() == 0) {
          return false;
       }
-      if(topicNamePattern.matcher(topicName).matches()){
+      if (topicNamePattern.matcher(topicName).matches()) {
          return true;
       }
       return false;
@@ -46,7 +47,7 @@ public class NameCheckUtil {
     * 判定consumerId是否合法
     * 
     * <pre>
-    * consumerId由字母,数字,小数点“.”,减号“-”和下划线“_”构成，只能以字母开头，长度为2到30。
+    * consumerId由字母,数字,减号“-”和下划线“_”构成，只能以字母开头，长度为2到30。
     * </pre>
     * 
     * @param consumerId
@@ -69,7 +70,7 @@ public class NameCheckUtil {
       System.out.println(isTopicNameValid("ab_"));
       System.out.println(isTopicNameValid("a1-0"));
       System.out.println(isTopicNameValid("a1234567890123456789"));
-      System.out.println(isTopicNameValid("a1."));
+      System.out.println(isTopicNameValid("a1."));//false
       System.out.println(isTopicNameValid("a"));//false
       System.out.println(isTopicNameValid("_"));//false
       System.out.println(isTopicNameValid("3"));//false

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Swallow便捷工具</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+<!-- Le styles -->
+<link href="${rc.contextPath}/stylesheets/bootstrap.css"
+   rel="stylesheet">
+<style type="text/css">
+body {
+	padding-top: 60px;
+	padding-bottom: 40px;
+}
+
+.sidebar-nav {
+	padding: 9px 0;
+}
+</style>
+<link href="${rc.contextPath}/stylesheets/bootstrap-responsive.css"
+   rel="stylesheet">
+
+<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+<!-- Le fav and touch icons -->
+<link rel="shortcut icon" href="${rc.contextPath}/images/favicon.ico">
+<script>
+	window.contextpath = "${rc.contextPath}";
+</script>
+</head>
+
+<body>
+
+   <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+         <div class="container-fluid">
+            <a class="btn btn-navbar" data-toggle="collapse"
+               data-target=".nav-collapse"> <span class="icon-bar"></span>
+               <span class="icon-bar"></span> <span class="icon-bar"></span>
+            </a> <a class="brand" href="${rc.contextPath}/">Swallow便捷工具</a>
+            <div class="nav-collapse collapse">
+               <p class="navbar-text pull-right">
+                  欢迎您， <a href="#" class="navbar-link">游侠</a>
+               </p>
+               <ul class="nav">
+                  <li><a href="${rc.contextPath}/">首页</a></li>
+                  <li><a href="#about">模拟Producer</a></li>
+                  <li class="active"><a href="#contact">模拟Consumer</a></li>
+               </ul>
+            </div>
+            <!--/.nav-collapse -->
+         </div>
+      </div>
+   </div>
+
+   <div class="container-fluid">
+      <div class="row-fluid">
+         <div class="span2">
+            <div class="well sidebar-nav">
+               <ul class="nav nav-list">
+                  <li class="nav-header">选择环境 (${env})</li> #if
+                  (${env}=="dev")
+                  <li class="active"><a
+                     href="/swallow-dashboard-dev/producer">dev</a></li>
+                  #else
+                  <li><a href="/swallow-dashboard-dev/producer">dev</a></li>
+                  #end #if (${env}=="qa")
+                  <li class="active"><a
+                     href="/swallow-dashboard-qa/producer">qa</a></li> #else
+                  <li><a href="/swallow-dashboard-qa/producer">qa</a></li>
+                  #end #if (${env}=="alpha")
+                  <li class="active"><a
+                     href="/swallow-dashboard-alpha/producer">alpha</a></li>
+                  #else
+                  <li><a href="/swallow-dashboard-alpha/producer">alpha</a></li>
+                  #end
+               </ul>
+            </div>
+            <!--/.well -->
+         </div>
+         <!--/span-->
+         <div class="span10">
+            <!-- <form > -->
+            <legend>接收消息</legend>
+            <div class="container-fluid">
+               <div class="row-fluid">
+                  <div class="span6">
+                     <!--Sidebar content-->
+                     <label>Topic名称： <input style="width: 300px"
+                        type="text" placeholder="输入Topic名称…" id="topic"
+                        name="topic"></label>
+                     <!--Sidebar content-->
+                     <label>ConsumerId：<input
+                        style="width: 300px" type="text"
+                        placeholder="输入ConsumerId…" id="topic"
+                        name="topic">
+                     </label>
+                      <button id="sendButton" type="button"
+                        onclick="swallow.sendMsg()"
+                        class="btn btn-primary">启动</button>
+                     <hr>
+                     <label>消息内容：</label>
+                     <textarea style="width: 360px" name="content"
+                        id="content" placeholder="输入消息内容…" rows="5"></textarea>
+                     <hr>
+                     <label style="margin-top: 10px">本次会话已接收的消息数：<span
+                        id="msgCount" style="color: #0088CC">0</span></label>
+                  </div>
+                  <div class="span5">
+                     <blockquote>
+                        <label><strong>帮助</strong></label>
+                        <ol>
+                           <li>填写 <span style="color: #0088CC">Topic</span>
+                              名称
+                           </li>
+                           <li>填写<span style="color: #0088CC">消息内容</span></li>
+                           <li>点击<span style="color: #0088CC">发送</span>，bingo！
+                              <ul>
+                                 <li>勾选 "连续发送" 选项，可<span
+                                    style="color: #0088CC">连续</span>发送消息
+                                 </li>
+                                 <li>取消勾选 "连续发送" 选项，可<span
+                                    style="color: #0088CC">停止</span>连续发送消息
+                                 </li>
+                              </ul>
+                           </li>
+                        </ol>
+                     </blockquote>
+                     <p></p>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <!--/span-->
+      </div>
+      <!--/row-->
+
+      <!-- 错误消息弹出框 -->
+      <div aria-hidden="true" aria-labelledby="myModalLabel"
+         role="dialog" tabindex="-1" class="modal hide fade"
+         id="errorMsg" style="display: none;">
+         <div class="modal-header">
+            <button aria-hidden="true" data-dismiss="modal"
+               class="close" type="button">×</button>
+            <h3 id="myModalLabel">消息发送失败</h3>
+         </div>
+         <div class="modal-body">
+            <p></p>
+         </div>
+         <div class="modal-footer">
+            <button data-dismiss="modal" class="btn">关闭</button>
+         </div>
+      </div>
+
+      <!-- 页脚 -->
+      <hr style="margin-top: 150px">
+      <footer>
+         <p style="margin: 0 auto; width: 200px">&copy; dianping.com
+            2012</p>
+      </footer>
+
+   </div>
+   <!--/.fluid-container-->
+
+   <!-- Le javascript
+    ================================================== -->
+   <!-- Placed at the end of the document so the pages load faster -->
+   <script src="${rc.contextPath}/javascripts/jquery-1.7.2.min.js"></script>
+   <script src="${rc.contextPath}/javascripts/bootstrap.js"></script>
+   <script src="${rc.contextPath}/javascripts/producer.js"></script>
+
+</body>
+</html>

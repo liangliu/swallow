@@ -22,7 +22,7 @@ import com.dianping.swallow.common.internal.monitor.ThreadStatusBean;
  */
 public class MQThreadFactory implements ThreadFactory, Closeable {
 
-   private final static Logger                            LOG            = LoggerFactory.getLogger(MQThreadFactory.class);
+   private final static Logger                      LOG            = LoggerFactory.getLogger(MQThreadFactory.class);
 
    private static ThreadGroup                       topThreadGroup = new ThreadGroup("swallow-top");
    private final static String                      PREFIX_DEFAULT = "swallow-";
@@ -33,11 +33,12 @@ public class MQThreadFactory implements ThreadFactory, Closeable {
    private ConcurrentHashMap<String, AtomicInteger> prefixToSeq    = new ConcurrentHashMap<String, AtomicInteger>();
 
    public MQThreadFactory(String namePrefix) {
-      if(namePrefix != null) {
+      if (namePrefix != null) {
          this.prefix = namePrefix;
       } else {
          this.prefix = PREFIX_DEFAULT;
       }
+      HawkJMXUtil.unregisterMBean("SwallowThreadStatusBean");
       HawkJMXUtil.registerMBean("SwallowThreadStatusBean", new ThreadStatusBean());
    }
 

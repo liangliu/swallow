@@ -101,6 +101,7 @@ public class MongoClient implements ConfigChangeListener {
          LOG.debug("Init MongoClient - done.");
       }
       //hawk监控
+      HawkJMXUtil.unregisterMBean("MongoClient");
       HawkJMXUtil.registerMBean("MongoClient", new HawkMBean());
    }
 

@@ -18,6 +18,7 @@ public class ProducerServerForText {
 
    public ProducerServerForText() {
       //Hawk监控
+      HawkJMXUtil.unregisterMBean("ProducerServerForText");
       HawkJMXUtil.registerMBean("ProducerServerForText", new HawkMBean());
    }
 
