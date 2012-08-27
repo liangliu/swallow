@@ -1,5 +1,6 @@
 package com.dianping.swallow.producerserver.impl;
 
+import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
@@ -19,7 +20,7 @@ public class ProducerServerForText {
    public ProducerServerForText() {
       //Hawk监控
       HawkJMXUtil.unregisterMBean("ProducerServerForText");
-      HawkJMXUtil.registerMBean("ProducerServerForText", new HawkMBean());
+      HawkJMXUtil.registerMBean("ProducerServerForText", new HawkMBean(this));
    }
 
    public void start() {
@@ -45,9 +46,16 @@ public class ProducerServerForText {
    /**
     * 用于Hawk监控
     */
-   public class HawkMBean {
+   public static class HawkMBean {
+
+      private final WeakReference<ProducerServerForText> producerServerForText;
+
+      private HawkMBean(ProducerServerForText producerServerForText) {
+         this.producerServerForText = new WeakReference<ProducerServerForText>(producerServerForText);
+      }
+
       public int getPort() {
-         return port;
+         return (producerServerForText.get() != null) ? producerServerForText.get().port : null;
       }
    }
 

@@ -1,6 +1,7 @@
 package com.dianping.swallow.common.internal.dao.impl.mongodb;
 
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -102,7 +103,7 @@ public class MongoClient implements ConfigChangeListener {
       }
       //hawk监控
       HawkJMXUtil.unregisterMBean("MongoClient");
-      HawkJMXUtil.registerMBean("MongoClient", new HawkMBean());
+      HawkJMXUtil.registerMBean("MongoClient", new HawkMBean(this));
    }
 
    public MongoClient(String severURILionKey) {
@@ -549,50 +550,56 @@ public class MongoClient implements ConfigChangeListener {
    /**
     * 用于Hawk监控
     */
-   public class HawkMBean {
+   public static class HawkMBean {
+
+      private final WeakReference<MongoClient> mongoClient;
+
+      private HawkMBean(MongoClient mongoClient) {
+         this.mongoClient = new WeakReference<MongoClient>(mongoClient);
+      }
 
       public String getSeverURILionKey() {
-         return severURILionKey;
+         return (mongoClient.get() != null) ? mongoClient.get().severURILionKey : null;
       }
 
       public Map<String, Integer> getMsgTopicNameToSizes() {
-         return msgTopicNameToSizes;
+         return (mongoClient.get() != null) ? mongoClient.get().msgTopicNameToSizes : null;
       }
 
       public Map<String, Integer> getMsgTopicNameToMaxDocNums() {
-         return msgTopicNameToMaxDocNums;
+         return (mongoClient.get() != null) ? mongoClient.get().msgTopicNameToMaxDocNums : null;
       }
 
       public Map<String, Integer> getAckTopicNameToSizes() {
-         return ackTopicNameToSizes;
+         return (mongoClient.get() != null) ? mongoClient.get().ackTopicNameToSizes : null;
       }
 
       public Map<String, Integer> getAckTopicNameToMaxDocNums() {
-         return ackTopicNameToMaxDocNums;
+         return (mongoClient.get() != null) ? mongoClient.get().ackTopicNameToMaxDocNums : null;
       }
 
       public String getHeartbeatMongo() {
-         return heartbeatMongo.toString();
+         return (mongoClient.get() != null) ? mongoClient.get().heartbeatMongo.toString() : null;
       }
 
       public int getHeartbeatCappedCollectionSize() {
-         return heartbeatCappedCollectionSize;
+         return (mongoClient.get() != null) ? mongoClient.get().heartbeatCappedCollectionSize : null;
       }
 
       public int getHeartbeatCappedCollectionMaxDocNum() {
-         return heartbeatCappedCollectionMaxDocNum;
+         return (mongoClient.get() != null) ? mongoClient.get().heartbeatCappedCollectionMaxDocNum : null;
       }
 
       public String getTopicNameToMongoMap() {
-         return topicNameToMongoMap.toString();
+         return (mongoClient.get() != null) ? mongoClient.get().topicNameToMongoMap.toString() : null;
       }
 
       public String getMongoOptions() {
-         return mongoOptions.toString();
+         return (mongoClient.get() != null) ? mongoClient.get().mongoOptions.toString() : null;
       }
 
       public String getCollectionExistsSign() {
-         return collectionExistsSign.toString();
+         return (mongoClient.get() != null) ? mongoClient.get().collectionExistsSign.toString() : null;
       }
 
    }

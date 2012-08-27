@@ -1,5 +1,6 @@
 package com.dianping.swallow.consumerserver.buffer;
 
+import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -59,7 +60,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
       //Hawk监控
       String hawkMBeanName = topicName + "-" + cid + "-MessageBlockingQueue";
       HawkJMXUtil.unregisterMBean(hawkMBeanName);
-      HawkJMXUtil.registerMBean(hawkMBeanName, new HawkMBean());
+      HawkJMXUtil.registerMBean(hawkMBeanName, new HawkMBean(this));
    }
 
    public MessageBlockingQueue(String cid, String topicName, int threshold, int capacity, Long messageIdOfTailMessage,
@@ -82,7 +83,7 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
       //Hawk监控
       String hawkMBeanName = topicName + "-" + cid + "-MessageBlockingQueue";
       HawkJMXUtil.unregisterMBean(hawkMBeanName);
-      HawkJMXUtil.registerMBean(hawkMBeanName, new HawkMBean());
+      HawkJMXUtil.registerMBean(hawkMBeanName, new HawkMBean(this));
    }
 
    @Override
@@ -201,38 +202,45 @@ public final class MessageBlockingQueue extends LinkedBlockingQueue<Message> imp
    }
 
    //以下是供Hawk监控使用的MBean
-   public class HawkMBean {
+   public static class HawkMBean {
+
+      private final WeakReference<MessageBlockingQueue> messageBlockingQueue;
+
+      private HawkMBean(MessageBlockingQueue messageBlockingQueue) {
+         this.messageBlockingQueue = new WeakReference<MessageBlockingQueue>(messageBlockingQueue);
+      }
 
       public String getCid() {
-         return cid;
+         return (messageBlockingQueue.get() != null) ? messageBlockingQueue.get().cid : null;
       }
 
       public String getTopicName() {
-         return topicName;
+         return (messageBlockingQueue.get() != null) ? messageBlockingQueue.get().topicName : null;
       }
 
       public int getThreshold() {
-         return threshold;
+         return (messageBlockingQueue.get() != null) ? messageBlockingQueue.get().threshold : null;
       }
 
       public Long getTailMessageId() {
-         return tailMessageId;
+         return (messageBlockingQueue.get() != null) ? messageBlockingQueue.get().tailMessageId : null;
       }
 
       public MessageFilter getMessageFilter() {
-         return messageFilter;
+         return (messageBlockingQueue.get() != null) ? messageBlockingQueue.get().messageFilter : null;
       }
 
       public int getSize() {
-         return size();
+         return (messageBlockingQueue.get() != null) ? messageBlockingQueue.get().size() : null;
       }
 
       public int getRemainingCapacity() {
-         return remainingCapacity();
+         return (messageBlockingQueue.get() != null) ? messageBlockingQueue.get().remainingCapacity() : null;
       }
 
       public String getMessageRetriverThreadStatus() {
-         return messageRetrieverThread.getState().toString();
+         return (messageBlockingQueue.get() != null) ? messageBlockingQueue.get().messageRetrieverThread.getState()
+               .toString() : null;
       }
    }
 

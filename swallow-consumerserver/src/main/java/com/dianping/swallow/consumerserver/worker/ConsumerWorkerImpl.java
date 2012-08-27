@@ -1,5 +1,6 @@
 package com.dianping.swallow.consumerserver.worker;
 
+import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -97,7 +98,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       //Hawk监控
       String hawkMBeanName = topicName + '-' + consumerid + "-ConsumerWorkerImpl";
       HawkJMXUtil.unregisterMBean(hawkMBeanName);
-      HawkJMXUtil.registerMBean(hawkMBeanName, new HawkMBean());
+      HawkJMXUtil.registerMBean(hawkMBeanName, new HawkMBean(this));
    }
 
    @Override
@@ -359,29 +360,49 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
    /**
     * 用于Hawk监控
     */
-   public class HawkMBean {
+   public static class HawkMBean {
+
+      private final WeakReference<ConsumerWorkerImpl> consumerWorkerImpl;
+
+      private HawkMBean(ConsumerWorkerImpl consumerWorkerImpl) {
+         this.consumerWorkerImpl = new WeakReference<ConsumerWorkerImpl>(consumerWorkerImpl);
+      }
+
       public String getConnectedChannels() {
-         StringBuilder sb = new StringBuilder();
-         if (connectedChannels != null) {
-            for (Channel channel : connectedChannels.keySet()) {
-               sb.append(channel.getRemoteAddress()).append("(isConnected:").append(channel.isConnected()).append(')');
+         if (consumerWorkerImpl.get() != null) {
+            StringBuilder sb = new StringBuilder();
+            if (consumerWorkerImpl.get().connectedChannels != null) {
+               for (Channel channel : consumerWorkerImpl.get().connectedChannels.keySet()) {
+                  sb.append(channel.getRemoteAddress()).append("(isConnected:").append(channel.isConnected())
+                        .append(')');
+               }
             }
+            return sb.toString();
          }
-         return sb.toString();
+         return null;
       }
 
       public String getFreeChannels() {
-         StringBuilder sb = new StringBuilder();
-         if (freeChannels != null) {
-            for (Channel channel : freeChannels) {
-               sb.append(channel.getRemoteAddress()).append("(isConnected:").append(channel.isConnected()).append(')');
+         if (consumerWorkerImpl.get() != null) {
+            StringBuilder sb = new StringBuilder();
+            if (consumerWorkerImpl.get().freeChannels != null) {
+               for (Channel channel : consumerWorkerImpl.get().freeChannels) {
+                  sb.append(channel.getRemoteAddress()).append("(isConnected:").append(channel.isConnected())
+                        .append(')');
+               }
             }
+            return sb.toString();
          }
-         return sb.toString();
+         return null;
       }
 
       public String getConsumerInfo() {
-         return "ConsumerId=" + consumerInfo.getConsumerId() + ",ConsumerType=" + consumerInfo.getConsumerType();
+         if (consumerWorkerImpl.get() != null) {
+            return "ConsumerId=" + consumerWorkerImpl.get().consumerInfo.getConsumerId() + ",ConsumerType="
+                  + consumerWorkerImpl.get().consumerInfo.getConsumerType();
+         }
+         return null;
+
       }
 
       //      public String getConsumerid() {
@@ -389,44 +410,65 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
       //      }
 
       public String getTopicName() {
-         return topicName;
+         if (consumerWorkerImpl.get() != null) {
+            return consumerWorkerImpl.get().topicName;
+         }
+         return null;
       }
 
       public String getCachedMessages() {
-         if (cachedMessages != null) {
-            return cachedMessages.toString();
+         if (consumerWorkerImpl.get() != null) {
+            if (consumerWorkerImpl.get().cachedMessages != null) {
+               return consumerWorkerImpl.get().cachedMessages.toString();
+            }
          }
          return null;
       }
 
       public String getWaitAckMessages() {
-         StringBuilder sb = new StringBuilder();
-         if (waitAckMessages != null) {
-            for (Entry<Channel, Map<PktMessage, Boolean>> waitAckMessage : waitAckMessages.entrySet()) {
-               if (waitAckMessage.getValue().size() != 0) {
-                  sb.append(waitAckMessage.getKey().getRemoteAddress()).append(waitAckMessage.getValue().toString());
+         if (consumerWorkerImpl.get() != null) {
+            StringBuilder sb = new StringBuilder();
+            if (consumerWorkerImpl.get().waitAckMessages != null) {
+               for (Entry<Channel, Map<PktMessage, Boolean>> waitAckMessage : consumerWorkerImpl.get().waitAckMessages
+                     .entrySet()) {
+                  if (waitAckMessage.getValue().size() != 0) {
+                     sb.append(waitAckMessage.getKey().getRemoteAddress()).append(waitAckMessage.getValue().toString());
+                  }
                }
             }
+            return sb.toString();
          }
-         return sb.toString();
+         return null;
 
       }
 
-      public boolean isGetMessageisAlive() {
-         return getMessageisAlive;
+      public Boolean isGetMessageisAlive() {
+         if (consumerWorkerImpl.get() != null) {
+            return consumerWorkerImpl.get().getMessageisAlive;
+         }
+         return null;
       }
 
-      public boolean isStarted() {
-         return started;
+      public Boolean isStarted() {
+         if (consumerWorkerImpl.get() != null) {
+            return consumerWorkerImpl.get().started;
+         }
+         return null;
       }
 
       public String getMaxAckedMessageId() {
-         return Long.toString(maxAckedMessageId);
+         if (consumerWorkerImpl.get() != null) {
+            return Long.toString(consumerWorkerImpl.get().maxAckedMessageId);
+         }
+         return null;
+
       }
 
       public String getMessageFilter() {
-         if (messageFilter != null) {
-            return messageFilter.toString();
+         if (consumerWorkerImpl.get() != null) {
+            if (consumerWorkerImpl.get().messageFilter != null) {
+               return consumerWorkerImpl.get().messageFilter.toString();
+            }
          }
          return null;
       }

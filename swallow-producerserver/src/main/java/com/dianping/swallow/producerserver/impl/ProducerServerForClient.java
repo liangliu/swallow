@@ -1,5 +1,6 @@
 package com.dianping.swallow.producerserver.impl;
 
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,7 +37,7 @@ public class ProducerServerForClient implements ProducerSwallowService {
    public ProducerServerForClient() {
       //Hawk监控
       HawkJMXUtil.unregisterMBean("ProducerServerForClient");
-      HawkJMXUtil.registerMBean("ProducerServerForClient", new HawkMBean());
+      HawkJMXUtil.registerMBean("ProducerServerForClient", new HawkMBean(this));
    }
 
    /**
@@ -146,13 +147,20 @@ public class ProducerServerForClient implements ProducerSwallowService {
    /**
     * 用于Hawk监控
     */
-   public class HawkMBean {
+   public static class HawkMBean {
+
+      private final WeakReference<ProducerServerForClient> producerServerForClient;
+
+      private HawkMBean(ProducerServerForClient producerServerForClient) {
+         this.producerServerForClient = new WeakReference<ProducerServerForClient>(producerServerForClient);
+      }
+
       public String getProducerserverip() {
          return producerServerIP;
       }
 
       public int getPort() {
-         return port;
+         return (producerServerForClient.get() != null) ? producerServerForClient.get().port : null;
       }
    }
 
