@@ -143,8 +143,11 @@ public class MessageClientHandler extends SimpleChannelUpstreamHandler {
                         consumeTryTras.complete();
                      }
                   }
-               } catch (Exception e) {
-                  LOG.info("exception in MessageListener", e);
+               } catch (InterruptedException e) {
+                  LOG.warn("exception in MessageListener", e);//使用warn而不使用error是不希望其输出到cat，因为它是用户程序的异常；
+                  consumerClientTransaction.setStatus(e);
+               } catch (RuntimeException e) {
+                  LOG.warn("exception in MessageListener", e);//使用warn而不使用error是不希望其输出到cat，因为它是用户程序的异常；
                   consumerClientTransaction.setStatus(e);
                }
             } catch (IOException e) {
