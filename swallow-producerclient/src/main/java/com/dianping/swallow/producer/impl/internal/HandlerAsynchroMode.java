@@ -36,7 +36,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
 
    private static final int                      DEFAULT_FILEQUEUE_SIZE = 100 * 1024 * 1024;                        //默认的filequeue切片大小，512MB
    private static final int                      DELAY_BASE_MULTI       = 5;                                        //超时策略倍数
-   private static final int                      CAT_HEARTBEAT_FREQ     = 1000;                                    //1min
+   private static final int                      CAT_HEARTBEAT_FREQ     = 60000;                                    //1min
 
    private static Map<String, FileQueue<Packet>> messageQueues          = new HashMap<String, FileQueue<Packet>>(); //当前TopicName与Filequeue对应关系的集合
 
