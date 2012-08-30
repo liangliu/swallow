@@ -4,7 +4,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
 import com.dianping.cat.CatConstants;
@@ -28,7 +29,7 @@ import com.dianping.swallow.producer.ProducerHandler;
  */
 public class ProducerImpl implements Producer {
    //常量定义
-   private static final Logger          LOGGER = Logger.getLogger(ProducerImpl.class); //日志
+   private static final Logger          LOGGER = LoggerFactory.getLogger(ProducerImpl.class); //日志
 
    //变量定义
    private final Destination            destination;                                  //Producer消息目的

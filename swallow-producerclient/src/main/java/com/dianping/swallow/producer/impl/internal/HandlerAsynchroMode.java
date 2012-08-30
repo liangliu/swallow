@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
 import com.dianping.cat.configuration.NetworkInterfaceManager;
-import com.dianping.cat.message.Heartbeat;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.cat.message.spi.MessageTree;
@@ -37,7 +36,7 @@ public class HandlerAsynchroMode implements ProducerHandler {
 
    private static final int                      DEFAULT_FILEQUEUE_SIZE = 100 * 1024 * 1024;                        //默认的filequeue切片大小，512MB
    private static final int                      DELAY_BASE_MULTI       = 5;                                        //超时策略倍数
-   private static final int                      CAT_HEARTBEAT_FREQ     = 60000;                                    //1min
+   private static final int                      CAT_HEARTBEAT_FREQ     = 30000;                                    //10min
 
    private static Map<String, FileQueue<Packet>> messageQueues          = new HashMap<String, FileQueue<Packet>>(); //当前TopicName与Filequeue对应关系的集合
 
@@ -52,15 +51,13 @@ public class HandlerAsynchroMode implements ProducerHandler {
          public void run() {
             try {
                while (true) {
-                  Transaction t = Cat.getProducer().newTransaction("System", "SwallowHeartbeat");
-                  Heartbeat heartbeat = Cat.getProducer().newHeartbeat("SwallowProducerClient", ip);
+                  //Filequeue心跳，每隔一段时间就将当前容量告诉Cat
+                  //TODO 和老马商量heartbeat监控频率以及监控脚本调度频率
                   for (Map.Entry<String, FileQueue<Packet>> entry : messageQueues.entrySet()) {
-                     heartbeat.addData(entry.getKey(), entry.getValue().size());
+                     Transaction heartbeat = Cat.getProducer().newTransaction("SwallowHeartbeat", ip + ":" + entry.getKey() + ":" + entry.getValue().size());
+                     heartbeat.setStatus(Message.SUCCESS);
+                     heartbeat.complete();
                   }
-                  heartbeat.setStatus(Message.SUCCESS);
-                  heartbeat.complete();
-                  t.setStatus(Message.SUCCESS);
-                  t.complete();
                   Thread.sleep(CAT_HEARTBEAT_FREQ); // 1 min
                }
             } catch (InterruptedException e) {

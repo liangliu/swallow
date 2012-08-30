@@ -3,13 +3,14 @@ package com.dianping.swallow.producerserver.impl;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dianping.swallow.common.internal.dao.MessageDAO;
 import com.dianping.swallow.common.internal.message.SwallowMessage;
@@ -25,7 +26,7 @@ public class ProducerServerTextHandler extends SimpleChannelUpstreamHandler {
    public static final int     INVALID_TOPIC_NAME = 251;
    public static final int     SAVE_FAILED        = 252;
 
-   private static final Logger LOGGER             = Logger.getLogger(ProducerServerForText.class);
+   private static final Logger LOGGER             = LoggerFactory.getLogger(ProducerServerForText.class);
 
    /**
     * 构造函数

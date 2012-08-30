@@ -3,7 +3,8 @@ package com.dianping.swallow.producerserver.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
 import com.dianping.cat.message.Message;
@@ -25,7 +26,7 @@ import com.dianping.swallow.common.producer.exceptions.ServerDaoException;
 
 public class ProducerServerForClient implements ProducerSwallowService {
 
-   private static final Logger LOGGER           = Logger.getLogger(ProducerServerForClient.class);
+   private static final Logger LOGGER           = LoggerFactory.getLogger(ProducerServerForClient.class);
    private static final int    DEFAULT_PORT     = 4000;
    public static final String  producerServerIP = IPUtil.getFirstNoLoopbackIP4Address();
 
