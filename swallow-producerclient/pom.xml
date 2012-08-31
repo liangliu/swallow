@@ -30,6 +30,7 @@
 		<dependency>
 			<groupId>com.dianping</groupId>
 			<artifactId>file-queue</artifactId>
+            <scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.dianping.swallow</groupId>
@@ -38,6 +39,7 @@
 		<dependency>
 			<groupId>com.dianping.dpsf</groupId>
 			<artifactId>dpsf-net</artifactId>
+            <scope>provided</scope>
 		</dependency>
 		<!-- lion -->
 		<dependency>
