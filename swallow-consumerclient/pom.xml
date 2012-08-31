@@ -53,6 +53,11 @@
 			<artifactId>cat-core</artifactId>
 			<scope>provided</scope>
 		</dependency>
+        <dependency>
+            <groupId>com.dianping.hawk</groupId>
+            <artifactId>hawk-client</artifactId>
+            <scope>provided</scope>
+        </dependency>
 	</dependencies>
 	
 	<profiles>
