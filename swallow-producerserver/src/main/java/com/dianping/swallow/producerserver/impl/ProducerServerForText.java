@@ -4,9 +4,10 @@ import java.lang.ref.WeakReference;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 
-import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.dianping.hawk.jmx.HawkJMXUtil;
 import com.dianping.swallow.common.internal.dao.MessageDAO;
@@ -14,7 +15,7 @@ import com.dianping.swallow.common.internal.dao.MessageDAO;
 public class ProducerServerForText {
    private static final int    DEFAULT_PORT = 8000;
    private int                 port         = DEFAULT_PORT;
-   private static final Logger LOGGER       = Logger.getLogger(ProducerServerForText.class);
+   private static final Logger LOGGER       = LoggerFactory.getLogger(ProducerServerForText.class);
    private MessageDAO          messageDAO;
 
    public ProducerServerForText() {

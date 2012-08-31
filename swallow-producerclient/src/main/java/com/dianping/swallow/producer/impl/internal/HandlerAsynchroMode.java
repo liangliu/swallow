@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import com.dianping.cat.Cat;
 import com.dianping.cat.configuration.NetworkInterfaceManager;
-import com.dianping.cat.message.Heartbeat;
 import com.dianping.cat.message.Message;
 import com.dianping.cat.message.Transaction;
 import com.dianping.cat.message.spi.MessageTree;
@@ -52,15 +51,15 @@ public class HandlerAsynchroMode implements ProducerHandler {
          public void run() {
             try {
                while (true) {
-                  Transaction t = Cat.getProducer().newTransaction("System", "SwallowHeartbeat");
-                  Heartbeat heartbeat = Cat.getProducer().newHeartbeat("SwallowProducerClient", ip);
+                  //Filequeue心跳，每隔一段时间就将当前容量告诉Cat
                   for (Map.Entry<String, FileQueue<Packet>> entry : messageQueues.entrySet()) {
-                     heartbeat.addData(entry.getKey(), entry.getValue().size());
+                     Transaction heartbeat = Cat.getProducer().newTransaction("SwallowHeartbeat", ip + ":" + entry.getKey() + ":" + entry.getValue().size());
+                     heartbeat.addData("ip", ip);
+                     heartbeat.addData("topic", entry.getKey());
+                     heartbeat.addData("cumulate", entry.getValue().size());
+                     heartbeat.setStatus(Message.SUCCESS);
+                     heartbeat.complete();
                   }
-                  heartbeat.setStatus(Message.SUCCESS);
-                  heartbeat.complete();
-                  t.setStatus(Message.SUCCESS);
-                  t.complete();
                   Thread.sleep(CAT_HEARTBEAT_FREQ); // 1 min
                }
             } catch (InterruptedException e) {
