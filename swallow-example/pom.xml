@@ -6,13 +6,14 @@
   <groupId>com.dianping.swallow</groupId>
   <artifactId>swallow-example</artifactId>
   <name>arch-swallow-example</name>
-  <version>0.6.0</version>
+  <version>${swallow.version}</version>
   <packaging>jar</packaging>
 
   <url>http://maven.apache.org</url>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <swallow.version>0.6.1</swallow.version>
+    <env>dev</env>
   </properties>
 
   <dependencies>
@@ -49,12 +50,12 @@
     <dependency>
       <groupId>com.dianping.swallow</groupId>
       <artifactId>swallow-consumerclient</artifactId>
-      <version>0.6.0</version>
+      <version>${swallow.version}</version>
     </dependency>
     <dependency>
       <groupId>com.dianping.swallow</groupId>
       <artifactId>swallow-producerclient</artifactId>
-      <version>0.6.0</version>
+      <version>${swallow.version}</version>
     </dependency>
     <!-- lion -->
     <dependency>
@@ -64,7 +65,7 @@
     </dependency>
     <dependency>
       <groupId>com.dianping.lion</groupId>
-      <artifactId>lion-dev</artifactId>
+      <artifactId>lion-${env}</artifactId>
       <version>1.0.0</version>
     </dependency>
     <!-- 监控 -->
@@ -79,14 +80,14 @@
       <version>0.6.7</version>
     </dependency>
     <dependency>
-        <groupId>com.dianping.dpsf</groupId>
-        <artifactId>dpsf-net</artifactId>
-        <version>1.6.0</version>
+      <groupId>com.dianping.dpsf</groupId>
+      <artifactId>dpsf-net</artifactId>
+      <version>1.6.0</version>
     </dependency>
     <dependency>
-        <groupId>com.dianping</groupId>
-        <artifactId>file-queue</artifactId>
-        <version>1.1.0</version>
+      <groupId>com.dianping</groupId>
+      <artifactId>file-queue</artifactId>
+      <version>1.1.0</version>
     </dependency>
   </dependencies>
   <build>

@@ -4,21 +4,21 @@
   <parent>
     <artifactId>swallow-parent</artifactId>
     <groupId>com.dianping.swallow</groupId>
-    <version>0.6.0</version>
+    <version>${swallow.version}</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.dianping.swallow</groupId>
-  <artifactId>${swallow-producerserver.aid}</artifactId>
-  <version>${swallow-producerserver.version}</version>
+  <artifactId>swallow-producerserver</artifactId>
+  <version>${swallow.version}</version>
   <packaging>jar</packaging>
 
-  <name>${swallow-producerserver.name}</name>
+  <name>arch-swallow-producerserver</name>
   <url>http://maven.apache.org</url>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <swallow.version>0.6.1</swallow.version>
     <env>dev</env>
   </properties>
 

@@ -1,90 +1,90 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<parent>
-		<artifactId>swallow-parent</artifactId>
-		<groupId>com.dianping.swallow</groupId>
-		<version>0.6.0</version>
-	</parent>
+  <parent>
+    <artifactId>swallow-parent</artifactId>
+    <groupId>com.dianping.swallow</groupId>
+    <version>${swallow.version}</version>
+  </parent>
 
-	<modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.dianping.swallow</groupId>
-	<artifactId>${swallow-common.aid}</artifactId>
-	<version>${swallow-common.version}</version>
-	<packaging>jar</packaging>
+  <groupId>com.dianping.swallow</groupId>
+  <artifactId>swallow-common</artifactId>
+  <version>${swallow.version}</version>
+  <packaging>jar</packaging>
 
-	<name>${swallow-common.name}</name>
-	<url>http://maven.apache.org</url>
+  <name>arch-swallow-common</name>
+  <url>http://maven.apache.org</url>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<env>dev</env>
-	</properties>
+  <properties>
+    <swallow.version>0.6.1</swallow.version>
+    <env>dev</env>
+  </properties>
 
-	<dependencies>
-		<!-- Message核心类 -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		<!-- Base64 -->
-		<dependency>
-			<groupId>commons-codec</groupId><!-- use the Base64 codec function -->
-			<artifactId>commons-codec</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<!-- 使用codec需要依赖 -->
-		<dependency>
-			<groupId>org.jboss.netty</groupId>
-			<artifactId>netty</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.caucho</groupId>
-			<artifactId>hessian</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongo-java-driver</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.caucho</groupId>
-			<artifactId>hessian</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.dianping.lion</groupId>
-			<artifactId>lion-client</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.dianping.lion</groupId>
-			<artifactId>lion-${env}</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency><!-- lion need log4j -->
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<!-- 监控 -->
-		<dependency>
-			<groupId>com.dianping.cat</groupId>
-			<artifactId>cat-core</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>com.dianping.hawk</groupId>
-			<artifactId>hawk-client</artifactId>
-			<optional>true</optional>
-		</dependency>
-	</dependencies>
+  <dependencies>
+    <!-- Message核心类 -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+    </dependency>
+    <!-- Base64 -->
+    <dependency>
+      <groupId>commons-codec</groupId><!-- use the Base64 codec function -->
+      <artifactId>commons-codec</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <!-- 使用codec需要依赖 -->
+    <dependency>
+      <groupId>org.jboss.netty</groupId>
+      <artifactId>netty</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.caucho</groupId>
+      <artifactId>hessian</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.mongodb</groupId>
+      <artifactId>mongo-java-driver</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.caucho</groupId>
+      <artifactId>hessian</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.dianping.lion</groupId>
+      <artifactId>lion-client</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.dianping.lion</groupId>
+      <artifactId>lion-${env}</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency><!-- lion need log4j -->
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>cglib</groupId>
+      <artifactId>cglib</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <!-- 监控 -->
+    <dependency>
+      <groupId>com.dianping.cat</groupId>
+      <artifactId>cat-core</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.dianping.hawk</groupId>
+      <artifactId>hawk-client</artifactId>
+      <optional>true</optional>
+    </dependency>
+  </dependencies>
 </project>
