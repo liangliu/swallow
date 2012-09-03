@@ -126,18 +126,18 @@
     <dependencies>
       <dependency>
         <groupId>com.dianping.swallow</groupId>
-        <artifactId>${swallow-common.aid}</artifactId>
-        <version>${swallow-common.version}</version>
+        <artifactId>swallow-common</artifactId>
+        <version>${swallow.version}</version>
       </dependency>
       <dependency>
         <groupId>com.dianping.swallow</groupId>
-        <artifactId>${swallow-consumerclient.aid}</artifactId>
-        <version>${swallow-consumerclient.version}</version>
+        <artifactId>swallow-consumerclient</artifactId>
+        <version>${swallow.version}</version>
       </dependency>
       <dependency>
         <groupId>com.dianping.swallow</groupId>
-        <artifactId>${swallow-producerclient.aid}</artifactId>
-        <version>${swallow-producerclient.version}</version>
+        <artifactId>swallow-producerclient</artifactId>
+        <version>${swallow.version}</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>

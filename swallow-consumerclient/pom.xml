@@ -34,7 +34,7 @@
     </dependency>
     <dependency>
       <groupId>com.dianping.swallow</groupId>
-      <artifactId>${swallow-common.aid}</artifactId>
+      <artifactId>swallow-common</artifactId>
     </dependency>
     <!-- lion -->
     <dependency>
