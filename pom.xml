@@ -10,7 +10,7 @@
   <groupId>com.dianping.swallow</groupId>
   <artifactId>swallow-parent</artifactId>
   <packaging>pom</packaging>
-  <version>${swallow.version}</version>
+  <version>0.6.1</version>
   <name>arch-swallow</name>
   <organization>
     <name>dianping</name>
