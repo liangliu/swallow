@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
  * <tr>
  * <td>sendMsgLeftLastSession</td>
  * <td>=</td>
- * <td>false</td>
+ * <td>true</td>
  * </tr>
  * </table>
  * 
@@ -49,7 +49,7 @@ public class ProducerConfig {
    public static final int          DEFAULT_SYNC_RETRY_TIMES           = 0;                                            //默认发送失败重试次数
    public static final boolean      DEFAULT_ZIPPED                     = false;                                        //默认是否对消息进行压缩
    public static final int          DEFAULT_THREADPOOL_SIZE            = 1;                                            //默认线程池大小
-   public static final boolean      DEFAULT_SEND_MSG_LEFT_LAST_SESSION = false;                                        //默认是否重启续传
+   public static final boolean      DEFAULT_SEND_MSG_LEFT_LAST_SESSION = true;                                        //默认是否重启续传
 
    private ProducerMode             mode                               = DEFAULT_PRODUCER_MODE;                        //Producer工作模式
    private int                      asyncRetryTimes                    = DEFAULT_ASYNC_RETRY_TIMES;                    //发送失败重试次数
@@ -66,7 +66,7 @@ public class ProducerConfig {
    }
 
    /**
-    * 设置消息发送模式，默认为同步{@link ProducerMode}<code>.SYNC_MODE</code>
+    * 设置消息发送模式，默认为{@link ProducerMode}<code>.SYNC_MODE</code>
     * 
     * @param mode Producer工作模式
     */
@@ -82,7 +82,7 @@ public class ProducerConfig {
    }
 
    /**
-    * 设置消息发送的重试次数，默认为5
+    * 设置异步Producer消息发送重试次数，默认为10
     * 
     * @param asyncRetryTimes
     */
@@ -121,7 +121,7 @@ public class ProducerConfig {
 
    /**
     * 设置异步模式（{@link ProducerMode}<code>.ASYNC_MODE</code>
-    * ）从FileQueue获取并发送消息的线程数量，默认为5
+    * ）从FileQueue获取并发送消息的线程数量，默认为1
     * 
     * @param threadPoolSize 线程池大小
     */
@@ -143,7 +143,7 @@ public class ProducerConfig {
    }
 
    /**
-    * 设置重启producer时是否发送上次未发送的消息，默认为false
+    * 设置重启producer时是否发送上次未发送的消息，默认为true
     * 
     * @param sendMsgLeftLastSession
     */
@@ -165,7 +165,11 @@ public class ProducerConfig {
    public int getSyncRetryTimes() {
       return syncRetryTimes;
    }
-
+   
+   /**
+    * 设置同步模式Producer发送失败重试次数，默认为0
+    * @param syncRetryTimes 发送失败重试次数
+    */
    public void setSyncRetryTimes(int syncRetryTimes) {
       if (syncRetryTimes < 0) {
          this.syncRetryTimes = DEFAULT_SYNC_RETRY_TIMES;
