@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
  * <tr>
  * <td>mode</td>
  * <td>=</td>
- * <td>{@link ProducerMode}.SYNC_MODE</td>
+ * <td>{@link ProducerMode}.ASYNC_MODE</td>
  * </tr>
  * <tr>
  * <td>syncRetryTimes</td>
@@ -66,7 +66,7 @@ public class ProducerConfig {
    }
 
    /**
-    * 设置消息发送模式，默认为{@link ProducerMode}<code>.SYNC_MODE</code>
+    * 设置消息发送模式，默认为{@link ProducerMode}<code>.ASYNC_MODE</code>
     * 
     * @param mode Producer工作模式
     */
