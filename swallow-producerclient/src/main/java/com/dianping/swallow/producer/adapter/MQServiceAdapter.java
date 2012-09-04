@@ -33,7 +33,7 @@ public class MQServiceAdapter implements MQService{
             int retryTimes = Integer.parseInt(options.get(ProducerOptionKey.MsgSendRetryCount).toString());
             
             if(retryTimes == -1){
-               config.setAsyncRetryTimes(999999);
+               config.setAsyncRetryTimes(Integer.MAX_VALUE);
             } else {
                config.setAsyncRetryTimes(retryTimes);
             }

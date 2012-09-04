@@ -53,7 +53,8 @@ public class HandlerAsynchroMode implements ProducerHandler {
                while (true) {
                   //Filequeue心跳，每隔一段时间就将当前容量告诉Cat
                   for (Map.Entry<String, FileQueue<Packet>> entry : messageQueues.entrySet()) {
-                     Transaction heartbeat = Cat.getProducer().newTransaction("SwallowHeartbeat", ip + ":" + entry.getKey() + ":" + entry.getValue().size());
+                     Transaction heartbeat = Cat.getProducer().newTransaction("SwallowHeartbeat",
+                           ip + ":" + entry.getKey() + ":" + entry.getValue().size());
                      heartbeat.addData("ip", ip);
                      heartbeat.addData("topic", entry.getKey());
                      heartbeat.addData("cumulate", entry.getValue().size());
@@ -125,7 +126,8 @@ public class HandlerAsynchroMode implements ProducerHandler {
    //从filequeue队列获取并发送Message
    private class TskGetAndSend implements Runnable {
 
-      private final int              sendTimes      = producer.getProducerConfig().getAsyncRetryTimes() + 1;
+      private final int              sendTimes      = producer.getProducerConfig().getAsyncRetryTimes() == Integer.MAX_VALUE ? Integer.MAX_VALUE
+                                                          : producer.getProducerConfig().getAsyncRetryTimes() + 1;
       private int                    leftRetryTimes = sendTimes;
       private Packet                 message        = null;
       private ProducerSwallowService remoteService  = producer.getRemoteService();
