@@ -228,7 +228,7 @@ public class ProducerTest {
       assertEquals(12, producer.getProducerConfig().getSyncRetryTimes());
       assertEquals(false, producer.getProducerConfig().isZipped());
       assertEquals(1, producer.getProducerConfig().getThreadPoolSize());
-      assertEquals(false, producer.getProducerConfig().isSendMsgLeftLastSession());
+      assertEquals(true, producer.getProducerConfig().isSendMsgLeftLastSession());
 
       //测试创建异步模式的Producer
       producer = null;
