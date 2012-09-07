@@ -7,6 +7,10 @@ import com.dianping.swallow.consumer.ConsumerConfig;
 import com.dianping.swallow.consumer.MessageListener;
 import com.dianping.swallow.consumer.impl.ConsumerFactoryImpl;
 
+/**
+ * 
+ * @rundemo_name 消费者例子(持久)
+ */
 public class DurableConsumerExample {
 
    public static void main(String[] args) {
