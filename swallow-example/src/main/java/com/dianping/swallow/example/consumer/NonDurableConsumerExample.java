@@ -8,6 +8,9 @@ import com.dianping.swallow.consumer.ConsumerConfig;
 import com.dianping.swallow.consumer.MessageListener;
 import com.dianping.swallow.consumer.impl.ConsumerFactoryImpl;
 
+/**
+ * @rundemo_name 消费者例子(非持久)
+ */
 public class NonDurableConsumerExample {
 
    public static void main(String[] args) {
@@ -17,14 +20,14 @@ public class NonDurableConsumerExample {
       config.setConsumerType(ConsumerType.NON_DURABLE);
       Consumer c = ConsumerFactoryImpl.getInstance().createConsumer(Destination.topic("example"), config);
       c.setListener(new MessageListener() {
-         
+
          @Override
          public void onMessage(Message msg) {
             System.out.println(msg.getContent());
-//            System.out.println(msg.transferContentToBean(MsgClass.class));
+            //            System.out.println(msg.transferContentToBean(MsgClass.class));
          }
       });
       c.start();
    }
-   
+
 }

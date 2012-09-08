@@ -8,7 +8,6 @@ import com.dianping.swallow.consumer.MessageListener;
 import com.dianping.swallow.consumer.impl.ConsumerFactoryImpl;
 
 /**
- * 
  * @rundemo_name 消费者例子(持久)
  */
 public class DurableConsumerExample {
@@ -17,17 +16,17 @@ public class DurableConsumerExample {
       ConsumerConfig config = new ConsumerConfig();
       //以下两项根据自己情况而定，默认是不需要配的
       config.setThreadPoolSize(1);
-      
+
       Consumer c = ConsumerFactoryImpl.getInstance().createConsumer(Destination.topic("example"), "myId", config);
       c.setListener(new MessageListener() {
-         
+
          @Override
          public void onMessage(Message msg) {
             System.out.println(msg.getContent());
-//            System.out.println(msg.transferContentToBean(MsgClass.class));
+            //            System.out.println(msg.transferContentToBean(MsgClass.class));
          }
       });
       c.start();
    }
-   
+
 }
