@@ -35,6 +35,11 @@
       <groupId>com.dianping.swallow</groupId>
       <artifactId>swallow-common</artifactId>
     </dependency>
+	<dependency>
+		<groupId>com.dianping.swallow</groupId>
+		<artifactId>swallow-client</artifactId>
+		<scope>provided</scope>
+	</dependency>
     <!-- lion -->
     <dependency>
       <groupId>com.dianping.lion</groupId>
