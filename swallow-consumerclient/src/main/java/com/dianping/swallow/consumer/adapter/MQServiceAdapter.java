@@ -5,6 +5,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.dianping.lion.EnvZooKeeperConfig;
 import com.dianping.lion.client.ConfigCache;
 import com.dianping.lion.client.LionException;
 import com.dianping.swallow.Destination;
@@ -30,7 +31,7 @@ public class MQServiceAdapter implements MQService{
 		String topicToTest = dest.getName();
 		
 		try {
-			String doneTopicStr = ConfigCache.getInstance().getProperty("swallow.oldTopicUpdate.done");
+			String doneTopicStr = ConfigCache.getInstance(EnvZooKeeperConfig.getZKAddress()).getProperty("swallow.oldTopicUpdate.done");
 			if(doneTopicStr != null) {
 				String[] topics = doneTopicStr.trim().split(",");
 				for (int i = 0; i < topics.length; i++) {
