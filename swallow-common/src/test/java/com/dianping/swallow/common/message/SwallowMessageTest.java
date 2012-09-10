@@ -21,6 +21,7 @@ public class SwallowMessageTest {
       msg.setContent(demoBean);
       Assert.assertEquals("{\"a\":1,\"b\":\"b\"}", msg.getContent());
       Assert.assertEquals(demoBean, msg.transferContentToBean(DemoBean.class));
+//      System.out.println("<p>输出中文</p>");
    }
 
    @Test

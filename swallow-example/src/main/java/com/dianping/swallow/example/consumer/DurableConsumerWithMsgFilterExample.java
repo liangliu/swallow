@@ -11,6 +11,9 @@ import com.dianping.swallow.consumer.ConsumerConfig;
 import com.dianping.swallow.consumer.MessageListener;
 import com.dianping.swallow.consumer.impl.ConsumerFactoryImpl;
 
+/**
+ * @rundemo_name 消费者例子(持久并带过滤功能)
+ */
 public class DurableConsumerWithMsgFilterExample {
 
    public static void main(String[] args) {
@@ -20,17 +23,18 @@ public class DurableConsumerWithMsgFilterExample {
       Set<String> matchedTypes = new HashSet<String>();
       matchedTypes.add("myType");
       config.setMessageFilter(MessageFilter.createInSetMessageFilter(matchedTypes));
-      
-      Consumer c = ConsumerFactoryImpl.getInstance().createConsumer(Destination.topic("example"), "myIdWithFilter", config);
+
+      Consumer c = ConsumerFactoryImpl.getInstance().createConsumer(Destination.topic("example"), "myIdWithFilter",
+            config);
       c.setListener(new MessageListener() {
-         
+
          @Override
          public void onMessage(Message msg) {
             System.out.println(msg.getContent());
-//            System.out.println(msg.transferContentToBean(MsgClass.class));
+            //            System.out.println(msg.transferContentToBean(MsgClass.class));
          }
       });
       c.start();
    }
-   
+
 }
