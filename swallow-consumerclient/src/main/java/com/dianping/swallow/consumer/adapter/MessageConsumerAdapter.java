@@ -15,19 +15,12 @@ import com.dianping.swallow.impl.MongoMQService;
 
 public class MessageConsumerAdapter implements MessageConsumer {
 
-	private static MongoMQService oldMqService;
-	
-	private MessageConsumer oldConsumer;
-	private Consumer newConsumer;
-	private Destination oldDest;
-	private Map<ConsumerOptionKey, Object> options;
+	private MessageConsumer oldConsumer = null;
+	private Consumer newConsumer = null;
 
-	public MessageConsumerAdapter(MongoMQService oldMqService, Destination oldDest, Map<ConsumerOptionKey, Object> options) {
-		
-		MessageConsumerAdapter.oldMqService = oldMqService;
-		this.oldDest = oldDest;
-		this.options = options;
-		
+	public MessageConsumerAdapter(MongoMQService oldMqService,
+			Destination oldDest, Map<ConsumerOptionKey, Object> options, boolean startOldConsumer) {
+
 		ConsumerConfig config = new ConsumerConfig();
 
 		String consumerId = null;
@@ -41,34 +34,39 @@ public class MessageConsumerAdapter implements MessageConsumer {
 
 		com.dianping.swallow.common.message.Destination newDest = com.dianping.swallow.common.message.Destination
 				.topic(oldDest.getName());
-		newConsumer = ConsumerFactoryImpl.getInstance().createConsumer(newDest, consumerId, config);
+		newConsumer = ConsumerFactoryImpl.getInstance().createConsumer(newDest,	consumerId, config);
+		if(startOldConsumer && oldMqService != null){
+			oldConsumer = oldMqService.createConsumer(oldDest, options);
+		}
 	}
 
 	@Override
 	public void setMessageListener(final MessageListener listener) {
-		if(oldMqService != null) {
-			oldConsumer  = oldMqService.createConsumer(oldDest, options);
+		if (oldConsumer != null) {
 			oldConsumer.setMessageListener(listener);
 		}
 		newConsumer.setListener(new com.dianping.swallow.consumer.MessageListener() {
-			
-			@Override
-			public void onMessage(com.dianping.swallow.common.message.Message msg)
-					throws com.dianping.swallow.consumer.BackoutMessageException {
-				try {
-					listener.onMessage(new StringMessageAdapter(msg));
-				} catch (BackoutMessageException e) {
-					throw new com.dianping.swallow.consumer.BackoutMessageException(e);
-				}
-			}
-		});
+					@Override
+					public void onMessage(
+							com.dianping.swallow.common.message.Message msg)
+							throws com.dianping.swallow.consumer.BackoutMessageException {
+						try {
+							listener.onMessage(new StringMessageAdapter(msg));
+						} catch (BackoutMessageException e) {
+							throw new com.dianping.swallow.consumer.BackoutMessageException(e);
+						}
+					}
+				});
 		newConsumer.start();
 	}
 
 	@Override
 	public void close() {
-		oldConsumer.close();
-		newConsumer.close();
+		if (oldConsumer != null) {
+			oldConsumer.close();
+		}
+		if(newConsumer != null){
+			newConsumer.close();
+		}
 	}
-
 }
