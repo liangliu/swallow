@@ -2,13 +2,21 @@ package com.dianping.swallow.consumer.adapter;
 
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.dianping.lion.client.ConfigCache;
+import com.dianping.lion.client.LionException;
 import com.dianping.swallow.Destination;
 import com.dianping.swallow.MQService;
 import com.dianping.swallow.MessageConsumer;
 import com.dianping.swallow.MessageProducer;
+import com.dianping.swallow.consumer.internal.ConsumerImpl;
 import com.dianping.swallow.impl.MongoMQService;
 
 public class MQServiceAdapter implements MQService{
+	
+	private static final Logger    LOG           = LoggerFactory.getLogger(MQServiceAdapter.class);
 	
 	private MongoMQService oldMqService;
 	private String mongoUri;
@@ -17,8 +25,27 @@ public class MQServiceAdapter implements MQService{
 		this.mongoUri = mongoUri;
 	}
 	
-	public static boolean shouldStartOldConsumer(Destination dest) {
-		return true;
+	public boolean shouldStartOldConsumer(Destination dest) {
+		boolean shouldStartOldConsumer = true;
+		String topicToTest = dest.getName();
+		
+		try {
+			String doneTopicStr = ConfigCache.getInstance().getProperty("swallow.oldTopicUpdate.done");
+			if(doneTopicStr != null) {
+				String[] topics = doneTopicStr.trim().split(",");
+				for (int i = 0; i < topics.length; i++) {
+					if(topicToTest.equals(topics[i])) {
+						shouldStartOldConsumer = false;
+						break;
+					}
+				}
+			}
+		} catch (LionException e) {
+			LOG.error("Error parsing config from lion", e);
+		}
+		
+		LOG.info("start old swallow consumer " + shouldStartOldConsumer);
+		return shouldStartOldConsumer;
 	}
 
    @Override
@@ -33,6 +60,10 @@ public class MQServiceAdapter implements MQService{
 
    @Override
    public synchronized MessageConsumer createConsumer(Destination dest, Map<ConsumerOptionKey, Object> options) {
+	   if(dest == null) {
+		   throw new IllegalArgumentException("Destination can not be null");
+	   }
+	   
 	   if(shouldStartOldConsumer(dest) && oldMqService == null) {
 		   oldMqService = new MongoMQService(mongoUri);
 	   }
