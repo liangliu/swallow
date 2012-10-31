@@ -307,7 +307,7 @@ public final class ConsumerWorkerImpl implements ConsumerWorker {
                cachedMessages.add(preparedMessage);
             }
          }
-         //Cat begin
+         //Cat begin TODO 应该放在messageMap.put(preparedMessage, Boolean.TRUE);之后
          consumerServerTransaction.addData("mid", preparedMessage.getContent().getMessageId());
          consumerServerTransaction.setStatus(com.dianping.cat.message.Message.SUCCESS);
          //Cat end

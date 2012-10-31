@@ -1,14 +1,20 @@
 (function(w){
 var timer;
 var swallow={
-	"sendMsg":function(){
+	"sendMsg":function(async){
 		//发送到服务端，如果保存成功,则继续，否则alert错误信息
 		var param = new Object();
 		param.topic = $("#topic").val();
 		param.content = $("#content").val();
 		console.log($("#topic").val());
 		//发送ajax请求jsonp
-		var url = window.contextpath + '/producer/sendMsg';
+		var url;
+		if(async != null){
+			url = window.contextpath + '/async/producer/sendMsg';			
+		}else{
+			url = window.contextpath + '/producer/sendMsg';
+		}
+		
 		$.ajax({
 			type : 'GET',
 			url : url,

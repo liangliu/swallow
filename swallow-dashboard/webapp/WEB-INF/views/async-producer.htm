@@ -11,12 +11,12 @@
    rel="stylesheet">
 <style type="text/css">
 body {
-    padding-top: 60px;
-    padding-bottom: 40px;
+	padding-top: 60px;
+	padding-bottom: 40px;
 }
 
 .sidebar-nav {
-    padding: 9px 0;
+	padding: 9px 0;
 }
 </style>
 <link href="${rc.contextPath}/stylesheets/bootstrap-responsive.css"
@@ -30,7 +30,7 @@ body {
 <!-- Le fav and touch icons -->
 <link rel="shortcut icon" href="${rc.contextPath}/images/favicon.ico">
 <script>
-    window.contextpath = "${rc.contextPath}";
+	window.contextpath = "${rc.contextPath}";
 </script>
 </head>
 
@@ -66,24 +66,28 @@ body {
                   <li class="nav-header">选择环境 (${env})</li> #if
                   (${env}=="dev")
                   <li class="active"><a
-                     href="/swallow-dashboard-dev/producer">dev</a></li>
+                     href="/swallow-dashboard-dev/async/producer">dev</a></li>
                   #else
-                  <li><a href="/swallow-dashboard-dev/producer">dev</a></li>
+                  <li><a
+                     href="/swallow-dashboard-dev/async/producer">dev</a></li>
                   #end #if (${env}=="qa")
                   <li class="active"><a
-                     href="/swallow-dashboard-qa/producer">qa</a></li> #else
-                  <li><a href="/swallow-dashboard-qa/producer">qa</a></li>
+                     href="/swallow-dashboard-qa/async/producer">qa</a></li>
+                  #else
+                  <li><a
+                     href="/swallow-dashboard-qa/async/producer">qa</a></li>
                   #end #if (${env}=="alpha")
                   <li class="active"><a
-                     href="/swallow-dashboard-alpha/producer">alpha</a></li>
+                     href="/swallow-dashboard-alpha/async/producer">alpha</a></li>
                   #else
-                  <li><a href="/swallow-dashboard-alpha/producer">alpha</a></li>
-                  #end
-                  #if (${env}=="product")
+                  <li><a
+                     href="/swallow-dashboard-alpha/async/producer">alpha</a></li>
+                  #end #if (${env}=="product")
                   <li class="active"><a
-                     href="/swallow-dashboard-product/producer">product</a></li>
+                     href="/swallow-dashboard-product/async/producer">product</a></li>
                   #else
-                  <li><a href="/swallow-dashboard-product/producer">product</a></li>
+                  <li><a
+                     href="/swallow-dashboard-product/async/producer">product</a></li>
                   #end
                </ul>
             </div>
@@ -106,7 +110,8 @@ body {
                      <div class="btn-group" data-toggle="buttons-radio">
                         <button type="button" id="sequenceSend"
                            class="btn btn-mini btn-info">开</button>
-                        <button type="button" class="btn btn-mini active">关</button>
+                        <button type="button"
+                           class="btn btn-mini active">关</button>
                      </div>
                      <hr>
                      <!-- 
@@ -114,8 +119,8 @@ body {
                         id="sequenceSend" type="checkbox"> 连续发送
                      </label>
                       -->
-                     <button id="sendButton"
-                        type="button" onclick="swallow.sendMsg()"
+                     <button id="sendButton" type="button"
+                        onclick="swallow.sendMsg('async')"
                         class="btn btn-primary">发送</button>
                      <!-- </form> -->
                      <!-- 进度条 -->
