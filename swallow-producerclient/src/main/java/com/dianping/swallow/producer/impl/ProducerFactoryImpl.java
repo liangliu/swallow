@@ -45,7 +45,7 @@ public final class ProducerFactoryImpl implements ProducerFactory {
    private static final String              CONFIG_FILE_NAME = "swallow-producerclient-pigeon.properties";        //配置文件名称
 
    private final String                     producerIP       = IPUtil.getFirstNoLoopbackIP4Address();             //Producer IP地址
-   private final String                     producerVersion  = "0.6.2";                                           //Producer版本号
+   private final String                     producerVersion  = "0.6.3";                                           //Producer版本号
    private final SwallowPigeonConfiguration pigeonConfigure;                                                      //ProducerFactory配置类
    private ProducerSwallowService           remoteService;                                                        //远程调用对象
 
