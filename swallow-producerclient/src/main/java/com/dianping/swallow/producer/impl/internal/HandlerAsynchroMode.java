@@ -157,9 +157,15 @@ public class HandlerAsynchroMode implements ProducerHandler {
             } catch (Exception e) {
                Transaction fileQueueTransaction = Cat.getProducer().newTransaction("FileQueueFailed",
                      producer.getDestination().getName() + ":" + producer.getProducerIP());
-               fileQueueTransaction.setStatus(Message.SUCCESS);
+               fileQueueTransaction.setStatus(e);
+               Cat.getProducer().logError(e);
                fileQueueTransaction.complete();
+               
+               producerHandlerTransaction.setStatus(e);
+               Cat.getProducer().logError(e);
+               producerHandlerTransaction.complete();
                LOGGER.error("Can not get msg from fileQueue.", e);
+               continue;
             }
 
             //发送message，重试次数从Producer获取
