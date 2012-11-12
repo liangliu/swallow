@@ -10,7 +10,7 @@
 	<groupId>com.dianping.swallow</groupId>
 	<artifactId>swallow-parent</artifactId>
 	<packaging>pom</packaging>
-	<version>0.6.2</version>
+	<version>0.6.3</version>
 	<name>arch-swallow</name>
 	<organization>
 		<name>dianping</name>
@@ -29,7 +29,7 @@
 	</modules>
 
 	<properties>
-		<swallow.version>0.6.2</swallow.version>
+		<swallow.version>0.6.3</swallow.version>
 	</properties>
 
 	<description>swallow is a message service!</description>
