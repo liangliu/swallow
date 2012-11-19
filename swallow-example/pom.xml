@@ -4,7 +4,7 @@
   <parent>
     <artifactId>swallow-parent</artifactId>
     <groupId>com.dianping.swallow</groupId>
-    <version>0.6.3</version>
+    <version>0.6.4</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
@@ -77,7 +77,7 @@
     <dependency>
       <groupId>com.dianping.cat</groupId>
       <artifactId>cat-core</artifactId>
-      <version>0.3.4</version>
+      <version>0.4.1</version>
     </dependency>
     <dependency>
       <groupId>com.dianping.hawk</groupId>
@@ -92,7 +92,7 @@
     <dependency>
       <groupId>com.dianping</groupId>
       <artifactId>file-queue</artifactId>
-      <version>1.1.0</version>
+      <version>1.1.1</version>
     </dependency>
   </dependencies>
   <build>
