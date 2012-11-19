@@ -18,7 +18,8 @@ package com.dianping.swallow.common.internal.util;
 import java.util.regex.Pattern;
 
 public class NameCheckUtil {
-   static Pattern topicNamePattern = Pattern.compile("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,29}");
+   private static Pattern topicNamePattern = Pattern.compile("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,49}");
+   private static Pattern consumerIdPattern = Pattern.compile("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,29}");
 
    private NameCheckUtil() {
    }
@@ -57,9 +58,9 @@ public class NameCheckUtil {
       if (consumerId == null || consumerId.length() == 0) {
          return false;
       }
-      if (consumerId.matches("[a-z|A-Z][a-z|A-Z|_|\\-|0-9]{1,29}")) {
-         return true;
-      }
+      if (consumerIdPattern.matcher(consumerId).matches()) {
+          return true;
+       }
       return false;
    }
 
@@ -74,6 +75,6 @@ public class NameCheckUtil {
       System.out.println(isTopicNameValid("a"));//false
       System.out.println(isTopicNameValid("_"));//false
       System.out.println(isTopicNameValid("3"));//false
-      System.out.println(isTopicNameValid("a123456789012345678901234567890"));//false
+      System.out.println(isTopicNameValid("a123456789012345678901234567890"));//true
    }
 }
