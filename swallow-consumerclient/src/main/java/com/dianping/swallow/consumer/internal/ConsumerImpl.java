@@ -112,9 +112,18 @@ public class ConsumerImpl implements Consumer {
          }
       } else {//持久类型，需要验证consumerId
          if (!NameCheckUtil.isConsumerIdValid(consumerId)) {
-            throw new IllegalArgumentException("ConsumerId is invalid");
+            throw new IllegalArgumentException("ConsumerId is invalid, should be [0-9,a-z,A-Z,'_','-'], begin with a letter, and length is 2-30 long：" + consumerId);
          }
       }
+      //ack#<topic>#<cid>长度不超过64字节(mongodb对数据库名的长度限制是64字节)
+      int length = 0;
+      length += dest.getName().length();
+      length += consumerId != null ? consumerId.length() : 0;
+      if (length > 59) {
+          throw new IllegalArgumentException("TopicName and consumerId's summary length must less than 59 ：topicName is "
+                  + dest.getName() + ", consumerId is " + consumerId);
+      }
+
       this.dest = dest;
       this.consumerId = consumerId;
       this.config = config == null ? new ConsumerConfig() : config;
