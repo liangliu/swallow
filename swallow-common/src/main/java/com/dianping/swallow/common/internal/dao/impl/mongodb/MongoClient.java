@@ -44,7 +44,7 @@ public class MongoClient implements ConfigChangeListener {
    private static final String           LION_KEY_HEARTBEAT_CAPPED_COLLECTION_SIZE        = "swallow.mongo.heartbeatCappedCollectionSize";
    private static final String           LION_KEY_HEARTBEAT_CAPPED_COLLECTION_MAX_DOC_NUM = "swallow.mongo.heartbeatCappedCollectionMaxDocNum";
 
-   private static final int              MILLION                                          = 1000000;
+   private static final long              MILLION                                          = 1000000;
 
    //serverURI的名字可配置(consumer和producer在Lion上的名字是不同的)
    private final String                  severURILionKey;
@@ -603,5 +603,10 @@ public class MongoClient implements ConfigChangeListener {
       }
 
    }
+   
+   public static void main(String[] args) {
+       int size = 10000;
+       System.out.println((long)MILLION*size);
+}
 
 }
